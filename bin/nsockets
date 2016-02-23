@@ -1,0 +1,5 @@
+#!/bin/sh
+CPUFILE=/proc/cpuinfo
+test -f $CPUFILE || exit 0
+NUMPHY=$(grep "physical id" $CPUFILE | sort -u | wc -l)
+echo $NUMPHY

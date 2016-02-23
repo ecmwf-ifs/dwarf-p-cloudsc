@@ -1,0 +1,8 @@
+#!/bin/sh
+NUMLOG=1
+CPUFILE=/proc/cpuinfo
+if test -f $CPUFILE ; then
+    NUMLOG=$(grep "processor" $CPUFILE | wc -l)
+fi
+echo $NUMLOG
+exit 0

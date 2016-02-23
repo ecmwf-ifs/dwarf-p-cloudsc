@@ -1,0 +1,140 @@
+#!/bin/bash
+
+cmd=$(basename $0)
+
+gprof=1
+echo $cmd | grep -q '.gprof' || gprof=0
+
+echo "$cmd ${*:-}"
+echo " "
+
+comp=UNKNOWN
+ngptot=0
+npromas=0
+
+if [[ $# -ge 1 ]] ; then
+    comp=$1
+    shift
+    if [[ $# -ge 1 ]] ; then
+	ngptot=$1
+	shift
+	if [[ $# -ge 1 ]] ; then
+	    npromas=$*
+	fi
+    fi
+fi
+
+set -e
+
+exe=./main.x.$comp
+
+args="$ngptot $npromas"
+
+maxcores_log=$(bin/logical_cores) # logical cores i.e. with hyperthreading
+maxcores_phys=$(bin/physical_cores) # physical cores i.e. w/o hyperthreading
+nsockets=$(bin/nsockets) # no. of CPU sockets
+
+powof2="1024 512 256 128 64 32 16 8 4 2 1"
+this="$maxcores_log $maxcores_phys $((maxcores_phys/nsockets)) $((maxcores_phys/nsockets/2)) $((maxcores_phys/nsockets/3)) $((maxcores_phys/nsockets/4))"
+
+omplist=$(echo "$powof2 $this" | perl -pe 's/^\s+//; s/$//; s/(\d+)\s*/\1\n/g' | perl -ne 'print $_ if($_ >= 1 && $_ <= '$maxcores_log' )')
+omplist=$(echo "$omplist" | sort -nru | perl -pe 's/\n/ /')
+
+if [[ $gprof -eq 1 ]] ; then
+    omplist=1 # this is a profiling run
+fi
+
+#	tool="valgrind --tool=memcheck --track-origins=yes"
+#	tool="valgrind"
+#	tool="gdb"
+tool=${tool:=""}
+if [[ "$tool" != "" ]] ; then
+    omplist=1 # using some tool
+fi
+
+echo "$omplist"
+
+set -x
+make veryclean
+
+make -j $maxcores_phys COMP=$comp GPROF=$gprof
+
+make COMP=$comp version
+
+make COMP=$comp options
+
+bin/system_used
+
+ulimit -s unlimited
+#ulimit -c unlimited
+ulimit -a
+
+set +x
+    
+echo " "
+echo "COMPILER : $comp "
+echo "HOST     : $(hostname -s)"
+echo "Physical number of cores : $maxcores_phys"
+echo "Logical number of cores  : $maxcores_log"
+echo "Number of sockets        : $nsockets"
+echo "Running with the following OMP_NUM_THREADS : $omplist" 
+echo " "
+
+# eliminate mmap use by malloc
+export MALLOC_MMAP_MAX_=0
+# trims heap when this amount total is freed
+export MALLOC_TRIM_THRESHOLD_=536870912 # 512MB
+# better trace when malloc/free aborts
+export MALLOC_CHECK_=7
+
+for omp in $omplist
+do
+    export OMP_NUM_THREADS=$omp
+    export OMP_SCHEDULE=${OMP_SCHEDULE:="dynamic,1"} # try also f.ex. "static", "static,1", "guided"
+    export OMP_STACKSIZE=${OMP_STACKSIZE:="64M"} # may not be enough for very large NPROMAs -- may even have to be 1G
+
+    echo "*** OMP_NUM_THREADS=$OMP_NUM_THREADS"
+    echo "    OMP_STACKSIZE=$OMP_STACKSIZE"
+
+    if [[ $comp = "GNU" ]] ; then
+	#export GFORTRAN_CONVERT_UNIT=big-endian
+	export GOMP_AFFINITY=0-$omp
+	echo "    GOMP_AFFINITY=$GOMP_AFFINITY"
+    elif [[ $comp = "INTEL" ]] ; then
+	export KMP_AFFINITY=${KMP_AFFINITY:="scatter"} # try also "compact,granularity=fine"
+	echo "    KMP_AFFINITY=$KMP_AFFINITY"
+    elif [[ $comp = "PGI" ]] ; then
+	#export GFORTRAN_CONVERT_UNIT=big-endian
+#	export MP_BIND=yes
+#	echo "    MP_BIND=$MP_BIND"
+	export NO_STOP_MESSAGE=${NO_STOP_MESSAGE:="yes"}
+	echo "    NO_STOP_MESSAGE=$NO_STOP_MESSAGE"
+    else
+	export OMP_PROC_BIND=${OMP_PROC_BIND:="true"} # "true" seems to enforce thread# == core# -- usually no good
+	echo "    OMP_PROC_BIND=$OMP_PROC_BIND"
+    fi
+    echo "    OMP_SCHEDULE=$OMP_SCHEDULE"
+
+    set -x
+    # -- use valgrind only with small NGPTOT values or you run forever :-)
+    #valgrind --tool=memcheck --track-origins=yes $omp $exe $args
+    
+    $tool $exe $omp $args
+
+    set +x
+
+    if [[ "$tool" != "" ]] ; then
+	echo "Exiting due to use of a tool $tool"
+	exit 1
+    fi
+
+    echo " "
+    echo " "
+    echo " "
+done
+
+if [[ $gprof -eq 1 && -f gmon.out ]]  ; then
+    mv gmon.out gmon.out.$comp
+    set -x
+    gprof $exe gmon.out.$comp
+fi

@@ -1,0 +1,1592 @@
+run GNU 160000 1000 64 12
+ 
+48 32 24 16 12 8 6 4 3 2 1 
++ make veryclean
+/bin/rm -f libcloudsc.a
+/bin/rm -f dummy/abor1.o dummy/routines.o ifs/module/diag_mod.o ifs/module/diff_mod.o ifs/module/expand_mod.o ifs/module/surface_fields_mix.o ifs/module/timer_mod.o ifs/module/yoecldp.o ifs/module/yoephli.o ifs/module/yoethf.o ifs/module/yomcst.o ifs/module/yomct0.o ifs/module/yomct3.o ifs/module/yomdim.o ifs/module/yomdyn.o ifs/module/yomjfh.o ifs/module/yomlun.o ifs/module/yommp0.o ifs/module/yomphy2.o ifs/module/yomphyder.o ifs/phys_ec/cloud_layer.o ifs/phys_ec/cloudsc.o ifs/phys_ec/cloudsc_driver.o ifs/phys_ec/cloudsc_in.o ifs/phys_ec/cloudsc_out.o ifs/phys_ec/cuadjtq.o ifs/programs/cloudsc_dwarf.o ifs/programs/main.o ifsaux/module/parkind1.o ifsaux/module/yomlun_ifsaux.o ifsaux/utilities/mycpu.o
+/bin/rm -f .module/*.mod
+/bin/rm -rf .module
+/bin/rm -f *.x*
+/bin/rm -f gmon.*
++ make -j 24 COMP=GNU GPROF=0
+mkdir -p .module || :
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow dummy/abor1.F90 -o dummy/abor1.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow dummy/routines.F90 -o dummy/routines.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifsaux/module/parkind1.F90 -o ifsaux/module/parkind1.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/programs/main.F90 -o ifs/programs/main.o
+gcc -g -fPIC -fopenmp -c -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -O2 ifsaux/utilities/mycpu.c -o ifsaux/utilities/mycpu.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/diag_mod.F90 -o ifs/module/diag_mod.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomphyder.F90 -o ifs/module/yomphyder.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomct0.F90 -o ifs/module/yomct0.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomdim.F90 -o ifs/module/yomdim.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomdyn.F90 -o ifs/module/yomdyn.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifsaux/module/yomlun_ifsaux.F90 -o ifsaux/module/yomlun_ifsaux.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/timer_mod.F90 -o ifs/module/timer_mod.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yoecldp.F90 -o ifs/module/yoecldp.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yoephli.F90 -o ifs/module/yoephli.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yoethf.F90 -o ifs/module/yoethf.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomcst.F90 -o ifs/module/yomcst.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomct3.F90 -o ifs/module/yomct3.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomjfh.F90 -o ifs/module/yomjfh.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yommp0.F90 -o ifs/module/yommp0.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomphy2.F90 -o ifs/module/yomphy2.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/programs/cloudsc_dwarf.F90 -o ifs/programs/cloudsc_dwarf.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/yomlun.F90 -o ifs/module/yomlun.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/phys_ec/cuadjtq.F90 -o ifs/phys_ec/cuadjtq.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/expand_mod.F90 -o ifs/module/expand_mod.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/phys_ec/cloudsc.F90 -o ifs/phys_ec/cloudsc.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/phys_ec/cloudsc_in.F90 -o ifs/phys_ec/cloudsc_in.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/phys_ec/cloudsc_out.F90 -o ifs/phys_ec/cloudsc_out.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/surface_fields_mix.F90 -o ifs/module/surface_fields_mix.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/module/diff_mod.F90 -o ifs/module/diff_mod.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/phys_ec/cloudsc_driver.F90 -o ifs/phys_ec/cloudsc_driver.o
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow ifs/phys_ec/cloud_layer.F90 -o ifs/phys_ec/cloud_layer.o
+/bin/rm -f libcloudsc.a
+ar -crv libcloudsc.a dummy/abor1.o dummy/routines.o ifs/module/diag_mod.o ifs/module/diff_mod.o ifs/module/expand_mod.o ifs/module/surface_fields_mix.o ifs/module/timer_mod.o ifs/module/yoecldp.o ifs/module/yoephli.o ifs/module/yoethf.o ifs/module/yomcst.o ifs/module/yomct0.o ifs/module/yomct3.o ifs/module/yomdim.o ifs/module/yomdyn.o ifs/module/yomjfh.o ifs/module/yomlun.o ifs/module/yommp0.o ifs/module/yomphy2.o ifs/module/yomphyder.o ifs/phys_ec/cloud_layer.o ifs/phys_ec/cloudsc.o ifs/phys_ec/cloudsc_driver.o ifs/phys_ec/cloudsc_in.o ifs/phys_ec/cloudsc_out.o ifs/phys_ec/cuadjtq.o ifs/programs/cloudsc_dwarf.o ifs/programs/main.o ifsaux/module/parkind1.o ifsaux/module/yomlun_ifsaux.o ifsaux/utilities/mycpu.o
+a - dummy/abor1.o
+a - dummy/routines.o
+a - ifs/module/diag_mod.o
+a - ifs/module/diff_mod.o
+a - ifs/module/expand_mod.o
+a - ifs/module/surface_fields_mix.o
+a - ifs/module/timer_mod.o
+a - ifs/module/yoecldp.o
+a - ifs/module/yoephli.o
+a - ifs/module/yoethf.o
+a - ifs/module/yomcst.o
+a - ifs/module/yomct0.o
+a - ifs/module/yomct3.o
+a - ifs/module/yomdim.o
+a - ifs/module/yomdyn.o
+a - ifs/module/yomjfh.o
+a - ifs/module/yomlun.o
+a - ifs/module/yommp0.o
+a - ifs/module/yomphy2.o
+a - ifs/module/yomphyder.o
+a - ifs/phys_ec/cloud_layer.o
+a - ifs/phys_ec/cloudsc.o
+a - ifs/phys_ec/cloudsc_driver.o
+a - ifs/phys_ec/cloudsc_in.o
+a - ifs/phys_ec/cloudsc_out.o
+a - ifs/phys_ec/cuadjtq.o
+a - ifs/programs/cloudsc_dwarf.o
+a - ifs/programs/main.o
+a - ifsaux/module/parkind1.o
+a - ifsaux/module/yomlun_ifsaux.o
+a - ifsaux/utilities/mycpu.o
+ar -dv libcloudsc.a main.o
+d - main.o
+ranlib libcloudsc.a
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -Wl,--as-needed -ffast-math ifs/programs/main.o -o main.x.GNU -L. -lcloudsc 
+ldd main.x.GNU
+	linux-vdso.so.1 =>  (0x00007ffe482d5000)
+	libgfortran.so.3 => /lib64/libgfortran.so.3 (0x00007f0369c2a000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f0369927000)
+	libgomp.so.1 => /lib64/libgomp.so.1 (0x00007f0369710000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f036934f000)
+	libquadmath.so.0 => /lib64/libquadmath.so.0 (0x00007f0369112000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f0368efc000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f0368ce0000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f0369f5d000)
++ make COMP=GNU version
+ 
+gfortran -v
+Using built-in specs.
+COLLECT_GCC=gfortran
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.3/lto-wrapper
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.3-20140911/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.3-20140911/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.8.3 20140911 (Red Hat 4.8.3-9) (GCC) 
+ 
+gcc -v
+Using built-in specs.
+COLLECT_GCC=gcc
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.3/lto-wrapper
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.3-20140911/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.3-20140911/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.8.3 20140911 (Red Hat 4.8.3-9) (GCC) 
+ 
++ make COMP=GNU options
+ 
+=== Fortran compiler options:
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -c -J .module -I .module -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -fno-second-underscore -ffree-form  -O2 -fstack-arrays -ffpe-trap=invalid,zero,overflow
+ 
+=== C compiler options:
+gcc -g -fPIC -fopenmp -c -DGNU -DECMWF -DLINUX -I include/41r2/ifs -I include/41r2/ifsaux -I ifs/function -O2
+ 
+=== Linking options:
+gfortran -g -fPIC -fopenmp -fconvert=big-endian -fbacktrace -Wl,--as-needed -ffast-math -L. -lcloudsc 
+ 
++ bin/system_used
+hpcgpu1.ecmwf.int: Tue 20 Oct 10:36:28 GMT 2015
+hpcgpu1.ecmwf.int: Linux hpcgpu1.ecmwf.int 3.10.0-229.7.2.el7.x86_64 #1 SMP Tue Jun 23 22:06:11 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux
+hpcgpu1.ecmwf.int: This system has 2 CPU-sockets and 48 logical H/W threads.
+hpcgpu1.ecmwf.int: For every CPU-socket there are 12 cores.
+hpcgpu1.ecmwf.int: The CPU is a Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz with 30720 KB cache
+hpcgpu1.ecmwf.int: Hyper-threading is 2-way and is enabled
+hpcgpu1.ecmwf.int: Memory size is 131337856 kB
++ ulimit -s unlimited
++ ulimit -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 512116
+max locked memory       (kbytes, -l) 64
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 1024
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) unlimited
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 4096
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
++ set +x
+ 
+COMPILER : GNU 
+HOST     : hpcgpu1
+Physical number of cores : 24
+Logical number of cores  : 48
+Number of sockets        : 2
+Running with the following OMP_NUM_THREADS : 48 32 24 16 12 8 6 4 3 2 1 
+ 
+*** OMP_NUM_THREADS=48
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-48
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 48 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=48, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         48    160000      5000         5      1000    0 :       3666       170 @ core#37
+         48    160000      2000         2      1000    1 :       3278        76 @ core#25
+         48    160000      5000         5      1000    2 :       3646       171 @ core#38
+         48    160000      4000         4      1000    3 :       3156       158 @ core#39
+         48    160000      2000         2      1000    4 :       3378        73 @ core#26
+         48    160000      2000         2      1000    5 :       3282        76 @ core#27
+         48    160000      5000         5      1000    6 :       3570       174 @ core#40
+         48    160000      2000         2      1000    7 :       3361        74 @ core#28
+         48    160000      4000         4      1000    8 :       3143       158 @ core#41
+         48    160000      2000         2      1000    9 :       3384        73 @ core#29
+         48    160000      5000         5      1000   10 :       3558       175 @ core#42
+         48    160000      2000         2      1000   11 :       3334        74 @ core#30
+         48    160000      5000         5      1000   12 :       3495       178 @ core#43
+         48    160000      2000         2      1000   13 :       3388        73 @ core#31
+         48    160000      5000         5      1000   14 :       3633       171 @ core#44
+         48    160000      2000         2      1000   15 :       3383        73 @ core#32
+         48    160000      5000         5      1000   16 :       3521       177 @ core#45
+         48    160000      2000         2      1000   17 :       3385        73 @ core#33
+         48    160000      5000         5      1000   18 :       3653       170 @ core#46
+         48    160000      5000         5      1000   19 :       3517       177 @ core#47
+         48    160000      2000         2      1000   20 :       3347        74 @ core#34
+         48    160000      5000         5      1000   21 :       3557       175 @ core#36
+         48    160000      2000         2      1000   22 :       3395        73 @ core#11
+         48    160000      5000         5      1000   23 :       3650       170 @ core#13
+         48    160000      2000         2      1000   24 :       3382        73 @ core#24
+         48    160000      4000         4      1000   25 :       3152       158 @ core#17
+         48    160000      2000         2      1000   26 :       3390        73 @ core#0
+         48    160000      4000         4      1000   27 :       3150       158 @ core#18
+         48    160000      2000         2      1000   28 :       3277        76 @ core#1
+         48    160000      5000         5      1000   29 :       3512       177 @ core#19
+         48    160000      2000         2      1000   30 :       3383        73 @ core#2
+         48    160000      5000         5      1000   31 :       3662       170 @ core#22
+         48    160000      2000         2      1000   32 :       3288        75 @ core#3
+         48    160000      4000         4      1000   33 :       3159       158 @ core#23
+         48    160000      2000         2      1000   34 :       3371        74 @ core#4
+         48    160000      5000         5      1000   35 :       3651       170 @ core#14
+         48    160000      4000         4      1000   36 :       3157       158 @ core#15
+         48    160000      2000         2      1000   37 :       3372        74 @ core#5
+         48    160000      5000         5      1000   38 :       3615       172 @ core#16
+         48    160000      2000         2      1000   39 :       3358        74 @ core#6
+         48    160000      2000         2      1000   40 :       3368        74 @ core#10
+         48    160000      2000         2      1000   41 :       3380        73 @ core#7
+         48    160000      2000         2      1000   42 :       3367        74 @ core#8
+         48    160000      2000         2      1000   43 :       3389        73 @ core#9
+         48    160000      5000         5      1000   44 :       3652       170 @ core#20
+         48    160000      4000         4      1000   45 :       3147       158 @ core#21
+         48    160000      4000         4      1000   46 :       3157       158 @ core#12
+         48    160000      2000         2      1000   47 :       3394        73 @ core#35
+         48    160000    160000       160      1000   -1 :       3666      5446 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=48, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         48    160000      3392        53        64    0 :       2092       202 @ core#13
+         48    160000      3200        50        64    1 :       2100       190 @ core#25
+         48    160000      3392        53        64    2 :       2122       199 @ core#38
+         48    160000      3456        54        64    3 :       2115       203 @ core#39
+         48    160000      3264        51        64    4 :       2102       193 @ core#26
+         48    160000      3328        52        64    5 :       2115       196 @ core#27
+         48    160000      3520        55        64    6 :       2114       207 @ core#40
+         48    160000      3136        49        64    7 :       2094       186 @ core#28
+         48    160000      3392        53        64    8 :       2116       200 @ core#41
+         48    160000      3200        50        64    9 :       2096       190 @ core#29
+         48    160000      3456        54        64   10 :       2127       202 @ core#42
+         48    160000      3328        52        64   11 :       2122       195 @ core#30
+         48    160000      3456        54        64   12 :       2094       205 @ core#43
+         48    160000      3200        50        64   13 :       2106       189 @ core#31
+         48    160000      3392        53        64   14 :       2127       198 @ core#44
+         48    160000      3264        51        64   15 :       2115       192 @ core#32
+         48    160000      3456        54        64   16 :       2115       203 @ core#45
+         48    160000      3200        50        64   17 :       2112       189 @ core#33
+         48    160000      3392        53        64   18 :       2114       200 @ core#46
+         48    160000      3456        54        64   19 :       2114       204 @ core#47
+         48    160000      3264        51        64   20 :       2118       192 @ core#34
+         48    160000      3456        54        64   21 :       2121       203 @ core#36
+         48    160000      3200        50        64   22 :       2103       189 @ core#11
+         48    160000      3456        54        64   23 :       2114       203 @ core#37
+         48    160000      3264        51        64   24 :       2109       193 @ core#24
+         48    160000      3392        53        64   25 :       2116       200 @ core#17
+         48    160000      3264        51        64   26 :       2119       192 @ core#0
+         48    160000      3456        54        64   27 :       2129       202 @ core#18
+         48    160000      3200        50        64   28 :       2107       189 @ core#1
+         48    160000      3392        53        64   29 :       2127       198 @ core#20
+         48    160000      3264        51        64   30 :       2113       192 @ core#2
+         48    160000      3520        55        64   31 :       2104       208 @ core#16
+         48    160000      3264        51        64   32 :       2097       194 @ core#3
+         48    160000      3456        54        64   33 :       2121       203 @ core#23
+         48    160000      3136        49        64   34 :       2093       186 @ core#4
+         48    160000      3392        53        64   35 :       2121       199 @ core#14
+         48    160000      3392        53        64   36 :       2094       202 @ core#15
+         48    160000      3264        51        64   37 :       2116       192 @ core#5
+         48    160000      3392        53        64   38 :       2121       199 @ core#22
+         48    160000      3264        51        64   39 :       2106       193 @ core#6
+         48    160000      3264        51        64   40 :       2118       192 @ core#10
+         48    160000      3200        50        64   41 :       2100       190 @ core#7
+         48    160000      3264        51        64   42 :       2125       191 @ core#8
+         48    160000      3200        50        64   43 :       2103       189 @ core#9
+         48    160000      3456        54        64   44 :       2102       205 @ core#19
+         48    160000      3392        53        64   45 :       2094       202 @ core#21
+         48    160000      3456        54        64   46 :       2114       203 @ core#12
+         48    160000      3200        50        64   47 :       2102       189 @ core#35
+         48    160000    160000      2500        64   -1 :       2129      9378 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=48, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         48    160000      3348       279        12    0 :       2129       196 @ core#13
+         48    160000      3324       277        12    1 :       2127       195 @ core#25
+         48    160000      3348       279        12    2 :       2127       196 @ core#16
+         48    160000      3348       279        12    3 :       2129       196 @ core#39
+         48    160000      3324       277        12    4 :       2127       195 @ core#26
+         48    160000      3324       277        12    5 :       2129       194 @ core#27
+         48    160000      3360       280        12    6 :       2129       196 @ core#40
+         48    160000      3324       277        12    7 :       2127       195 @ core#28
+         48    160000      3348       279        12    8 :       2127       196 @ core#41
+         48    160000      3324       277        12    9 :       2130       194 @ core#29
+         48    160000      3360       280        12   10 :       2130       196 @ core#42
+         48    160000      3312       276        12   11 :       2125       194 @ core#30
+         48    160000      3348       279        12   12 :       2129       196 @ core#43
+         48    160000      3324       277        12   13 :       2130       194 @ core#31
+         48    160000      3312       276        12   14 :       2130       194 @ core#44
+         48    160000      3312       276        12   15 :       2130       194 @ core#32
+         48    160000      3360       280        12   16 :       2131       196 @ core#45
+         48    160000      3324       277        12   17 :       2129       194 @ core#33
+         48    160000      3348       279        12   18 :       2130       196 @ core#14
+         48    160000      3348       279        12   19 :       2127       196 @ core#47
+         48    160000      3324       277        12   20 :       2127       194 @ core#34
+         48    160000      3348       279        12   21 :       2130       196 @ core#36
+         48    160000      3304       276        12   22 :       2128       193 @ core#11
+         48    160000      3336       278        12   23 :       2125       195 @ core#37
+         48    160000      3324       277        12   24 :       2127       195 @ core#24
+         48    160000      3360       280        12   25 :       2131       196 @ core#17
+         48    160000      3312       276        12   26 :       2125       194 @ core#0
+         48    160000      3360       280        12   27 :       2127       197 @ core#18
+         48    160000      3312       276        12   28 :       2125       194 @ core#1
+         48    160000      3348       279        12   29 :       2131       196 @ core#20
+         48    160000      3300       275        12   30 :       2130       193 @ core#2
+         48    160000      3360       280        12   31 :       2131       196 @ core#22
+         48    160000      3324       277        12   32 :       2125       195 @ core#3
+         48    160000      3360       280        12   33 :       2130       196 @ core#23
+         48    160000      3324       277        12   34 :       2125       195 @ core#4
+         48    160000      3348       279        12   35 :       2127       196 @ core#38
+         48    160000      3348       279        12   36 :       2125       196 @ core#15
+         48    160000      3312       276        12   37 :       2128       194 @ core#5
+         48    160000      3348       279        12   38 :       2128       196 @ core#46
+         48    160000      3324       277        12   39 :       2129       194 @ core#6
+         48    160000      3312       276        12   40 :       2127       194 @ core#10
+         48    160000      3324       277        12   41 :       2125       195 @ core#7
+         48    160000      3300       275        12   42 :       2125       193 @ core#8
+         48    160000      3324       277        12   43 :       2125       195 @ core#9
+         48    160000      3348       279        12   44 :       2125       196 @ core#19
+         48    160000      3324       277        12   45 :       2128       194 @ core#21
+         48    160000      3348       279        12   46 :       2127       196 @ core#12
+         48    160000      3324       277        12   47 :       2127       195 @ core#35
+         48    160000    160000     13334        12   -1 :       2132      9367 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=32
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-32
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 32 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=32, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         32    160000      5000         5      1000    0 :       3170       196 @ core#37
+         32    160000      3000         3      1000    1 :       3027       123 @ core#25
+         32    160000      6000         6      1000    2 :       3099       241 @ core#38
+         32    160000      7000         7      1000    3 :       2940       297 @ core#39
+         32    160000      3000         3      1000    4 :       3065       122 @ core#26
+         32    160000      3000         3      1000    5 :       3079       121 @ core#27
+         32    160000      6000         6      1000    6 :       3242       230 @ core#40
+         32    160000      5000         5      1000    7 :       3139       198 @ core#28
+         32    160000      7000         7      1000    8 :       2889       302 @ core#41
+         32    160000      5000         5      1000    9 :       2935       212 @ core#29
+         32    160000      5000         5      1000   10 :       3129       199 @ core#42
+         32    160000      5000         5      1000   11 :       3126       199 @ core#30
+         32    160000      5000         5      1000   12 :       3097       201 @ core#43
+         32    160000      5000         5      1000   13 :       3100       201 @ core#31
+         32    160000      5000         5      1000   14 :       3137       198 @ core#44
+         32    160000      5000         5      1000   15 :       3094       201 @ core#32
+         32    160000      7000         7      1000   16 :       2926       298 @ core#45
+         32    160000      5000         5      1000   17 :       3139       198 @ core#33
+         32    160000      7000         7      1000   18 :       2904       300 @ core#46
+         32    160000      7000         7      1000   19 :       2927       298 @ core#47
+         32    160000      5000         5      1000   20 :       3139       198 @ core#34
+         32    160000      7000         7      1000   21 :       2915       299 @ core#36
+         32    160000      5000         5      1000   22 :       3122       199 @ core#35
+         32    160000      3000         3      1000   23 :       3078       121 @ core#3
+         32    160000      3000         3      1000   24 :       3059       122 @ core#24
+         32    160000      5000         5      1000   25 :       3134       199 @ core#18
+         32    160000      3000         3      1000   26 :       3062       122 @ core#0
+         32    160000      6000         6      1000   27 :       2868       261 @ core#19
+         32    160000      3000         3      1000   28 :       3038       123 @ core#1
+         32    160000      6000         6      1000   29 :       3002       249 @ core#20
+         32    160000      3000         3      1000   30 :       3053       122 @ core#2
+         32    160000      5000         5      1000   31 :       3161       197 @ core#13
+         32    160000    160000       160      1000   -1 :       3243      6158 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=32, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         32    160000      4928        77        64    0 :       2374       259 @ core#37
+         32    160000      3840        60        64    1 :       2386       200 @ core#25
+         32    160000      6208        97        64    2 :       2383       325 @ core#38
+         32    160000      6144        96        64    3 :       2374       322 @ core#39
+         32    160000      5952        93        64    4 :       2381       311 @ core#26
+         32    160000      3904        61        64    5 :       2390       203 @ core#27
+         32    160000      6208        97        64    6 :       2392       323 @ core#44
+         32    160000      3840        60        64    7 :       2393       200 @ core#28
+         32    160000      5248        82        64    8 :       2382       274 @ core#41
+         32    160000      3776        59        64    9 :       2389       197 @ core#29
+         32    160000      5824        91        64   10 :       2374       306 @ core#42
+         32    160000      6080        95        64   11 :       2395       316 @ core#30
+         32    160000      6208        97        64   12 :       2389       324 @ core#43
+         32    160000      6016        94        64   13 :       2393       313 @ core#31
+         32    160000      4032        63        64   14 :       2391       210 @ core#40
+         32    160000      5952        93        64   15 :       2392       310 @ core#32
+         32    160000      4352        68        64   16 :       2380       228 @ core#45
+         32    160000      5888        92        64   17 :       2388       307 @ core#33
+         32    160000      4352        68        64   18 :       2397       226 @ core#46
+         32    160000      6144        96        64   19 :       2377       322 @ core#47
+         32    160000      6016        94        64   20 :       2374       316 @ core#34
+         32    160000      5760        90        64   21 :       2386       301 @ core#36
+         32    160000      5952        93        64   22 :       2393       310 @ core#35
+         32    160000      3904        61        64   23 :       2402       202 @ core#3
+         32    160000      3776        59        64   24 :       2394       196 @ core#5
+         32    160000      4032        63        64   25 :       2397       209 @ core#22
+         32    160000      6016        94        64   26 :       2390       314 @ core#0
+         32    160000      4032        63        64   27 :       2398       209 @ core#16
+         32    160000      3840        60        64   28 :       2379       201 @ core#1
+         32    160000      4032        63        64   29 :       2389       210 @ core#17
+         32    160000      3840        60        64   30 :       2401       199 @ core#4
+         32    160000      3904        61        64   31 :       2387       204 @ core#21
+         32    160000    160000      2500        64   -1 :       2402      8313 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=32, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         32    160000      3924       327        12    0 :       2445       200 @ core#37
+         32    160000      3864       322        12    1 :       2438       197 @ core#25
+         32    160000      6180       515        12    2 :       2438       316 @ core#38
+         32    160000      6132       511        12    3 :       2441       313 @ core#39
+         32    160000      6048       504        12    4 :       2439       309 @ core#26
+         32    160000      3852       321        12    5 :       2444       196 @ core#27
+         32    160000      6108       509        12    6 :       2441       312 @ core#44
+         32    160000      3852       321        12    7 :       2439       197 @ core#28
+         32    160000      6120       510        12    8 :       2440       313 @ core#41
+         32    160000      3864       322        12    9 :       2438       197 @ core#29
+         32    160000      3936       328        12   10 :       2438       201 @ core#42
+         32    160000      6096       508        12   11 :       2442       311 @ core#30
+         32    160000      6180       515        12   12 :       2439       316 @ core#43
+         32    160000      6108       509        12   13 :       2438       312 @ core#31
+         32    160000      3912       326        12   14 :       2439       200 @ core#40
+         32    160000      6096       508        12   15 :       2438       312 @ core#32
+         32    160000      6132       511        12   16 :       2438       313 @ core#45
+         32    160000      6060       505        12   17 :       2438       310 @ core#33
+         32    160000      6132       511        12   18 :       2440       313 @ core#46
+         32    160000      6108       509        12   19 :       2439       312 @ core#47
+         32    160000      6060       505        12   20 :       2438       310 @ core#34
+         32    160000      3912       326        12   21 :       2443       199 @ core#36
+         32    160000      6036       503        12   22 :       2440       308 @ core#35
+         32    160000      3852       321        12   23 :       2442       196 @ core#3
+         32    160000      3876       323        12   24 :       2443       198 @ core#5
+         32    160000      3948       329        12   25 :       2440       201 @ core#18
+         32    160000      6120       510        12   26 :       2441       312 @ core#0
+         32    160000      3924       327        12   27 :       2440       200 @ core#16
+         32    160000      3864       322        12   28 :       2440       197 @ core#1
+         32    160000      3912       326        12   29 :       2441       199 @ core#13
+         32    160000      3876       323        12   30 :       2443       198 @ core#4
+         32    160000      3916       327        12   31 :       2441       200 @ core#12
+         32    160000    160000     13334        12   -1 :       2445      8167 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=24
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-24
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 24 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=24, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         24    160000      6000         6      1000    0 :       3185       235 @ core#0
+         24    160000      7000         7      1000    1 :       2826       309 @ core#37
+         24    160000      7000         7      1000    2 :       2841       307 @ core#38
+         24    160000      6000         6      1000    3 :       2991       250 @ core#31
+         24    160000      6000         6      1000    4 :       3106       241 @ core#32
+         24    160000      7000         7      1000    5 :       2868       304 @ core#39
+         24    160000      5000         5      1000    6 :       2811       221 @ core#33
+         24    160000      7000         7      1000    7 :       2831       308 @ core#40
+         24    160000      6000         6      1000    8 :       3192       234 @ core#34
+         24    160000      8000         8      1000    9 :       3167       315 @ core#41
+         24    160000      6000         6      1000   10 :       3202       233 @ core#35
+         24    160000      7000         7      1000   11 :       2827       309 @ core#42
+         24    160000      7000         7      1000   12 :       2828       308 @ core#12
+         24    160000      8000         8      1000   13 :       3136       318 @ core#43
+         24    160000      6000         6      1000   14 :       3191       234 @ core#25
+         24    160000      7000         7      1000   15 :       2816       310 @ core#44
+         24    160000      6000         6      1000   16 :       3160       236 @ core#26
+         24    160000      8000         8      1000   17 :       3153       316 @ core#45
+         24    160000      6000         6      1000   18 :       3041       246 @ core#27
+         24    160000      6000         6      1000   19 :       3245       230 @ core#28
+         24    160000      8000         8      1000   20 :       3158       316 @ core#46
+         24    160000      6000         6      1000   21 :       3057       244 @ core#29
+         24    160000      8000         8      1000   22 :       3142       317 @ core#47
+         24    160000      6000         6      1000   23 :       3192       234 @ core#30
+         24    160000    160000       160      1000   -1 :       3246      6152 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=24, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         24    160000      6720       105        64    0 :       2598       322 @ core#0
+         24    160000      6656       104        64    1 :       2598       319 @ core#37
+         24    160000      6656       104        64    2 :       2582       321 @ core#38
+         24    160000      6656       104        64    3 :       2603       319 @ core#31
+         24    160000      6592       103        64    4 :       2598       316 @ core#32
+         24    160000      6720       105        64    5 :       2590       323 @ core#39
+         24    160000      6592       103        64    6 :       2583       318 @ core#33
+         24    160000      6720       105        64    7 :       2602       322 @ core#40
+         24    160000      6656       104        64    8 :       2598       319 @ core#34
+         24    160000      6720       105        64    9 :       2601       322 @ core#41
+         24    160000      6656       104        64   10 :       2606       318 @ core#35
+         24    160000      6656       104        64   11 :       2590       320 @ core#42
+         24    160000      6720       105        64   12 :       2602       322 @ core#12
+         24    160000      6720       105        64   13 :       2602       322 @ core#43
+         24    160000      6592       103        64   14 :       2582       318 @ core#25
+         24    160000      6720       105        64   15 :       2606       321 @ core#44
+         24    160000      6656       104        64   16 :       2600       319 @ core#26
+         24    160000      6656       104        64   17 :       2596       320 @ core#45
+         24    160000      6656       104        64   18 :       2591       320 @ core#27
+         24    160000      6656       104        64   19 :       2592       320 @ core#28
+         24    160000      6656       104        64   20 :       2590       320 @ core#46
+         24    160000      6656       104        64   21 :       2603       319 @ core#29
+         24    160000      6720       105        64   22 :       2590       323 @ core#47
+         24    160000      6592       103        64   23 :       2582       318 @ core#30
+         24    160000    160000      2500        64   -1 :       2606      7661 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=24, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         24    160000      6600       550        12    0 :       2642       311 @ core#0
+         24    160000      6720       560        12    1 :       2642       317 @ core#37
+         24    160000      6684       557        12    2 :       2643       315 @ core#38
+         24    160000      6648       554        12    3 :       2644       313 @ core#29
+         24    160000      6624       552        12    4 :       2645       312 @ core#27
+         24    160000      6724       561        12    5 :       2644       317 @ core#39
+         24    160000      6648       554        12    6 :       2642       313 @ core#31
+         24    160000      6708       559        12    7 :       2644       316 @ core#40
+         24    160000      6612       551        12    8 :       2644       312 @ core#33
+         24    160000      6708       559        12    9 :       2647       316 @ core#42
+         24    160000      6624       552        12   10 :       2645       312 @ core#32
+         24    160000      6720       560        12   11 :       2647       316 @ core#12
+         24    160000      6708       559        12   12 :       2643       316 @ core#41
+         24    160000      6708       559        12   13 :       2643       316 @ core#45
+         24    160000      6624       552        12   14 :       2643       312 @ core#28
+         24    160000      6696       558        12   15 :       2644       316 @ core#44
+         24    160000      6624       552        12   16 :       2644       312 @ core#26
+         24    160000      6696       558        12   17 :       2645       315 @ core#47
+         24    160000      6612       551        12   18 :       2645       311 @ core#25
+         24    160000      6624       552        12   19 :       2643       312 @ core#35
+         24    160000      6720       560        12   20 :       2647       316 @ core#43
+         24    160000      6636       553        12   21 :       2644       313 @ core#30
+         24    160000      6684       557        12   22 :       2644       315 @ core#46
+         24    160000      6648       554        12   23 :       2645       313 @ core#34
+         24    160000    160000     13334        12   -1 :       2647      7544 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=16
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-16
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 16 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=16, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         16    160000     10000        10      1000    0 :       4000       312 @ core#6
+         16    160000     10000        10      1000    1 :       3846       324 @ core#37
+         16    160000     10000        10      1000    2 :       3825       326 @ core#38
+         16    160000      9000         9      1000    3 :       3836       292 @ core#31
+         16    160000     10000        10      1000    4 :       4121       302 @ core#32
+         16    160000     10000        10      1000    5 :       3829       325 @ core#39
+         16    160000     10000        10      1000    6 :       4192       297 @ core#33
+         16    160000     10000        10      1000    7 :       3835       325 @ core#40
+         16    160000      9000         9      1000    8 :       3823       293 @ core#34
+         16    160000     11000        11      1000    9 :       4190       327 @ core#41
+         16    160000     10000        10      1000   10 :       3845       324 @ core#21
+         16    160000     11000        11      1000   11 :       4134       332 @ core#42
+         16    160000      9000         9      1000   12 :       3839       292 @ core#24
+         16    160000     11000        11      1000   13 :       4177       328 @ core#43
+         16    160000     10000        10      1000   14 :       4047       308 @ core#25
+         16    160000     10000        10      1000   15 :       3851       324 @ core#44
+         16    160000    160000       160      1000   -1 :       4192      4763 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=16, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         16    160000      9920       155        64    0 :       3796       326 @ core#6
+         16    160000     10048       157        64    1 :       3815       328 @ core#37
+         16    160000      9984       156        64    2 :       3796       328 @ core#38
+         16    160000     10048       157        64    3 :       3804       329 @ core#31
+         16    160000     10048       157        64    4 :       3815       328 @ core#32
+         16    160000     10048       157        64    5 :       3796       330 @ core#39
+         16    160000      9920       155        64    6 :       3800       325 @ core#33
+         16    160000      9984       156        64    7 :       3799       327 @ core#40
+         16    160000      9984       156        64    8 :       3809       327 @ core#34
+         16    160000      9984       156        64    9 :       3801       327 @ core#41
+         16    160000      9984       156        64   10 :       3808       327 @ core#21
+         16    160000     10048       157        64   11 :       3820       328 @ core#42
+         16    160000      9984       156        64   12 :       3802       327 @ core#24
+         16    160000     10048       157        64   13 :       3811       329 @ core#43
+         16    160000      9984       156        64   14 :       3811       326 @ core#25
+         16    160000      9984       156        64   15 :       3801       327 @ core#44
+         16    160000    160000      2500        64   -1 :       3820      5227 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=16, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         16    160000      9972       831        12    0 :       3972       313 @ core#32
+         16    160000     10020       835        12    1 :       3975       314 @ core#43
+         16    160000     10044       837        12    2 :       3975       315 @ core#38
+         16    160000      9972       831        12    3 :       3974       313 @ core#31
+         16    160000      9960       830        12    4 :       3972       312 @ core#6
+         16    160000     10044       837        12    5 :       3976       315 @ core#42
+         16    160000      9948       829        12    6 :       3972       312 @ core#33
+         16    160000     10044       837        12    7 :       3976       315 @ core#39
+         16    160000      9936       828        12    8 :       3972       312 @ core#25
+         16    160000     10020       835        12    9 :       3976       314 @ core#37
+         16    160000     10024       836        12   10 :       3974       314 @ core#21
+         16    160000     10020       835        12   11 :       3976       314 @ core#44
+         16    160000      9960       830        12   12 :       3976       312 @ core#24
+         16    160000     10044       837        12   13 :       3976       315 @ core#41
+         16    160000      9972       831        12   14 :       3972       313 @ core#34
+         16    160000     10020       835        12   15 :       3972       314 @ core#40
+         16    160000    160000     13334        12   -1 :       3977      5021 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=12
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-12
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 12 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=12, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         12    160000     13000        13      1000    0 :       5023       322 @ core#33
+         12    160000     14000        14      1000    1 :       5209       335 @ core#37
+         12    160000     14000        14      1000    2 :       5237       333 @ core#38
+         12    160000     13000        13      1000    3 :       5121       316 @ core#34
+         12    160000     13000        13      1000    4 :       5206       311 @ core#35
+         12    160000     14000        14      1000    5 :       5215       335 @ core#39
+         12    160000     13000        13      1000    6 :       5059       320 @ core#24
+         12    160000     13000        13      1000    7 :       4844       334 @ core#40
+         12    160000     13000        13      1000    8 :       5151       315 @ core#25
+         12    160000     13000        13      1000    9 :       4870       333 @ core#41
+         12    160000     13000        13      1000   10 :       5208       311 @ core#26
+         12    160000     14000        14      1000   11 :       5159       338 @ core#42
+         12    160000    160000       160      1000   -1 :       5237      3813 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=12, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         12    160000     13248       207        64    0 :       5047       327 @ core#24
+         12    160000     13440       210        64    1 :       5055       331 @ core#37
+         12    160000     13376       209        64    2 :       5047       330 @ core#38
+         12    160000     13312       208        64    3 :       5032       330 @ core#35
+         12    160000     13248       207        64    4 :       5047       327 @ core#26
+         12    160000     13376       209        64    5 :       5055       330 @ core#41
+         12    160000     13248       207        64    6 :       5032       328 @ core#33
+         12    160000     13376       209        64    7 :       5047       330 @ core#39
+         12    160000     13248       207        64    8 :       5047       327 @ core#25
+         12    160000     13376       209        64    9 :       5046       330 @ core#40
+         12    160000     13312       208        64   10 :       5032       330 @ core#34
+         12    160000     13440       210        64   11 :       5055       331 @ core#42
+         12    160000    160000      2500        64   -1 :       5055      3950 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=12, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+         12    160000     13332      1111        12    0 :       5229       318 @ core#24
+         12    160000     13332      1111        12    1 :       5229       318 @ core#37
+         12    160000     13332      1111        12    2 :       5226       318 @ core#38
+         12    160000     13296      1108        12    3 :       5229       317 @ core#35
+         12    160000     13296      1108        12    4 :       5225       317 @ core#26
+         12    160000     13368      1114        12    5 :       5225       319 @ core#41
+         12    160000     13332      1111        12    6 :       5227       318 @ core#33
+         12    160000     13296      1108        12    7 :       5226       317 @ core#39
+         12    160000     13344      1112        12    8 :       5225       318 @ core#25
+         12    160000     13372      1115        12    9 :       5227       319 @ core#40
+         12    160000     13284      1107        12   10 :       5226       317 @ core#34
+         12    160000     13416      1118        12   11 :       5226       320 @ core#42
+         12    160000    160000     13334        12   -1 :       5229      3819 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=8
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-8
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 8 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=8, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          8    160000     20000        20      1000    0 :       7488       333 @ core#6
+          8    160000     20000        20      1000    1 :       7378       338 @ core#37
+          8    160000     20000        20      1000    2 :       7377       338 @ core#38
+          8    160000     20000        20      1000    3 :       7532       331 @ core#31
+          8    160000     20000        20      1000    4 :       7700       324 @ core#32
+          8    160000     20000        20      1000    5 :       7397       337 @ core#39
+          8    160000     20000        20      1000    6 :       7607       328 @ core#33
+          8    160000     20000        20      1000    7 :       7383       338 @ core#40
+          8    160000    160000       160      1000   -1 :       7700      2593 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=8, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          8    160000     19968       312        64    0 :       7474       333 @ core#6
+          8    160000     20032       313        64    1 :       7494       333 @ core#39
+          8    160000     19968       312        64    2 :       7474       333 @ core#13
+          8    160000     19968       312        64    3 :       7484       333 @ core#33
+          8    160000     19904       311        64    4 :       7474       332 @ core#32
+          8    160000     20096       314        64    5 :       7482       335 @ core#38
+          8    160000     19968       312        64    6 :       7472       333 @ core#31
+          8    160000     20096       314        64    7 :       7492       334 @ core#40
+          8    160000    160000      2500        64   -1 :       7494      2664 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=8, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          8    160000     20004      1667        12    0 :       7833       318 @ core#6
+          8    160000     20040      1670        12    1 :       7829       319 @ core#39
+          8    160000     19992      1666        12    2 :       7833       318 @ core#13
+          8    160000     19956      1663        12    3 :       7829       318 @ core#33
+          8    160000     20040      1670        12    4 :       7829       319 @ core#32
+          8    160000     20028      1669        12    5 :       7833       319 @ core#38
+          8    160000     20008      1668        12    6 :       7831       318 @ core#31
+          8    160000     19932      1661        12    7 :       7829       317 @ core#40
+          8    160000    160000     13334        12   -1 :       7833      2549 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=6
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-6
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 6 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=6, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          6    160000     26000        26      1000    0 :       9670       335 @ core#6
+          6    160000     27000        27      1000    1 :       9819       343 @ core#37
+          6    160000     27000        27      1000    2 :       9790       344 @ core#38
+          6    160000     27000        27      1000    3 :       9999       337 @ core#31
+          6    160000     26000        26      1000    4 :       9757       332 @ core#32
+          6    160000     27000        27      1000    5 :       9849       342 @ core#39
+          6    160000    160000       160      1000   -1 :       9999      1997 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=6, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          6    160000     26560       415        64    0 :       9993       331 @ core#6
+          6    160000     26752       418        64    1 :      10016       333 @ core#38
+          6    160000     26816       419        64    2 :      10016       334 @ core#37
+          6    160000     26496       414        64    3 :      10016       330 @ core#31
+          6    160000     26624       416        64    4 :      10003       332 @ core#32
+          6    160000     26752       418        64    5 :      10017       333 @ core#39
+          6    160000    160000      2500        64   -1 :      10017      1993 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=6, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          6    160000     26664      2222        12    0 :      10355       321 @ core#6
+          6    160000     26704      2226        12    1 :      10355       321 @ core#38
+          6    160000     26724      2227        12    2 :      10357       322 @ core#37
+          6    160000     26688      2224        12    3 :      10355       321 @ core#31
+          6    160000     26508      2209        12    4 :      10355       319 @ core#32
+          6    160000     26712      2226        12    5 :      10356       321 @ core#39
+          6    160000    160000     13334        12   -1 :      10357      1928 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=4
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-4
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 4 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=4, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          4    160000     39000        39      1000    0 :      14516       335 @ core#33
+          4    160000     40000        40      1000    1 :      14522       343 @ core#37
+          4    160000     41000        41      1000    2 :      14872       344 @ core#38
+          4    160000     40000        40      1000    3 :      14853       336 @ core#34
+          4    160000    160000       160      1000   -1 :      14872      1342 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=4, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          4    160000     39808       622        64    0 :      14891       333 @ core#33
+          4    160000     40128       627        64    1 :      14890       336 @ core#37
+          4    160000     40000       625        64    2 :      14900       335 @ core#38
+          4    160000     40064       626        64    3 :      14900       335 @ core#39
+          4    160000    160000      2500        64   -1 :      14900      1340 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=4, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          4    160000     39772      3315        12    0 :      15536       319 @ core#33
+          4    160000     40056      3338        12    1 :      15536       321 @ core#37
+          4    160000     40104      3342        12    2 :      15535       322 @ core#38
+          4    160000     40068      3339        12    3 :      15536       321 @ core#39
+          4    160000    160000     13334        12   -1 :      15536      1285 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=3
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-3
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 3 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=3, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          3    160000     53000        53      1000    0 :      19660       336 @ core#25
+          3    160000     54000        54      1000    1 :      19473       346 @ core#37
+          3    160000     53000        53      1000    2 :      19625       337 @ core#26
+          3    160000    160000       160      1000   -1 :      19660      1015 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=3, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          3    160000     53120       830        64    0 :      19984       331 @ core#25
+          3    160000     53504       836        64    1 :      19985       334 @ core#37
+          3    160000     53376       834        64    2 :      19984       333 @ core#26
+          3    160000    160000      2500        64   -1 :      19985       999 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=3, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          3    160000     53100      4425        12    0 :      20680       320 @ core#25
+          3    160000     53424      4452        12    1 :      20678       322 @ core#37
+          3    160000     53476      4457        12    2 :      20679       322 @ core#15
+          3    160000    160000     13334        12   -1 :      20680       965 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=2
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-2
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 2 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=2, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          2    160000     79000        79      1000    0 :      28947       340 @ core#33
+          2    160000     81000        81      1000    1 :      29248       345 @ core#37
+          2    160000    160000       160      1000   -1 :      29248       682 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=2, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          2    160000     79744      1246        64    0 :      29928       332 @ core#33
+          2    160000     80256      1254        64    1 :      29942       334 @ core#37
+          2    160000    160000      2500        64   -1 :      29942       666 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=2, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          2    160000     79836      6653        12    0 :      31077       320 @ core#33
+          2    160000     80164      6681        12    1 :      31076       321 @ core#37
+          2    160000    160000     13334        12   -1 :      31077       642 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
+*** OMP_NUM_THREADS=1
+    OMP_STACKSIZE=64M
+    GOMP_AFFINITY=0-1
+    OMP_SCHEDULE=dynamic,1
++ ./main.x.GNU 1 160000 1000 64 12
+ KLON,KLEV,KFLDX,NCLV=         100         137           0           5
+     => CASE#1 : NUMOMP=1, NGPTOT=160000, NPROMA=1000, NGPBLKS=160, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          1    160000    160000       160      1000    0 :      57685       346 @ core#33
+          1    160000    160000       160      1000   -1 :      57685       346 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#1
+     => CASE#2 : NUMOMP=1, NGPTOT=160000, NPROMA=64, NGPBLKS=2500, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          1    160000    160000      2500        64    0 :      59289       336 @ core#37
+          1    160000    160000      2500        64   -1 :      59289       336 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#2
+     => CASE#3 : NUMOMP=1, NGPTOT=160000, NPROMA=12, NGPBLKS=13334, OMP_SCHEDULE=dynamic,1
+     NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+          1    160000    160000     13334        12    0 :      61670       323 @ core#37
+          1    160000    160000     13334        12   -1 :      61670       323 : TOTAL
+             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00     
+     => END CASE#3
++ set +x
+ 
+ 
+ 
