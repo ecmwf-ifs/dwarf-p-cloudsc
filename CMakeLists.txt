@@ -45,6 +45,7 @@ ecbuild_add_option(FEATURE MPI
 
 # build executables
 add_subdirectory(src)
+add_subdirectory(doc)
 
 # documentation
 ecbuild_add_option( FEATURE DOCS
@@ -52,13 +53,12 @@ ecbuild_add_option( FEATURE DOCS
                     DEFAULT OFF
                     REQUIRED_PACKAGES "Latex" )
 
-if(HAVE_DOCS)
-    add_subdirectory(doc)
-endif()
+#if(HAVE_DOCS)
+#  add_subdirectory(doc)
+#endif()
 
 # finalize
 ecbuild_install_project(NAME dwarf3)
 
 # print summary
-ecbuild_print_summary
-)
+ecbuild_print_summary()

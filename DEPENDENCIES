@@ -15,3 +15,6 @@
   version : develop
   cmake   : -DENABLE_VIENNACL=OFF -DENABLE_MKL=OFF -DENABLE_MPISTUBS=OFF -DENABLE_ARMADILLO=OFF -DENABLE_CUDA=OFF -DENABLE_ECKIT_CMD=OFF -DENABLE_ECKIT_ECML=OFF
 
+[dwarf3-cloudscheme]
+  kind    : project
+  required:
