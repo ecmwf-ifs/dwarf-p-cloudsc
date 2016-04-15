@@ -4,49 +4,61 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 # In applying this licence, ECMWF does not waive the privileges and immunities
-# granted to it by virtue of its status as an intergovernmental organisation nor
-# does it submit to any jurisdiction.
-################################################################################
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+###############################################################################
 
-cmake_minimum_required( VERSION 2.8.4 FATAL_ERROR )
+# define minimum version of cmake required
+cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
-project( dwarf3-cloud_scheme )
+set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild/cmake" )
+
+# define the project
+project(dwarf3)
 
 set(ENABLE_OS_TYPES_TEST       OFF   CACHE BOOL " ")
 set(ENABLE_OS_FUNCTIONS_TEST   OFF   CACHE BOOL " ")
 set(ENABLE_LARGE_FILE_SUPPORT  OFF   CACHE BOOL " ")
 set(ENABLE_OS_ENDINESS_TEST    OFF   CACHE BOOL " ")
 
+# include ecbuild required commands
 include(ecbuild_system NO_POLICY_SCOPE)
-ecbuild_requires_macro_version(1.9)
+ecbuild_requires_macro_version(2.0)
 ecbuild_declare_project()
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module)
 
-#ecbuild_add_option(FEATURE ATLAS
-#                   DESCRIPTION "dwarf2: Support for atlas"
-#                   REQUIRED_PACKAGES "PROJECT atlas")
-#if(NOT DWARF3_HAVE_ATLAS)
-#    ecbuild_warn( "The dwarf3 executables requiring atlas cannot be built")
-#endif()
+# include necessary libraries for dwarf3
+ecbuild_add_option(
+    FEATURE OMP
+    DESCRIPTION "Dwarf3: Support for OpenMP threaded parallelism"
+    REQUIRED_PACKAGES "OMP COMPONENTS Fortran" )
 
-#ecbuild_add_option(FEATURE GRIB
-#                   DESCRIPTION "dwarf2: Support for grib data format"
-#                   REQUIRED_PACKAGES "PROJECT grib_api VERSION 1.14.3")
-#if(NOT DWARF2_HAVE_GRIB)
-#    ecbuild_error("The dwarf2 executables require grib_api")
-#endif()
+if(HAVE_OMP)
+  ecbuild_enable_omp()
+else()
+  ecbuild_enable_ompstubs()
+endif()
 
+ecbuild_add_option(FEATURE MPI
+                   DESCRIPTION "Dwarf3: Support for MPI distributed parallelism"
+                   REQUIRED_PACKAGES "MPI COMPONENTS Fortran")
 
-
-###############################################################################
 # build executables
-##############################################################################
-add_subdirectory(src) 
+add_subdirectory(src)
 
+# documentation
+ecbuild_add_option( FEATURE DOCS
+                    DESCRIPTION "Documentation"
+                    DEFAULT OFF
+                    REQUIRED_PACKAGES "Latex" )
 
+if(HAVE_DOCS)
+    add_subdirectory(doc)
+endif()
 
-###############################################################################
 # finalize
-###############################################################################
 ecbuild_install_project(NAME dwarf3)
-ecbuild_print_summary()
+
+# print summary
+ecbuild_print_summary
+)

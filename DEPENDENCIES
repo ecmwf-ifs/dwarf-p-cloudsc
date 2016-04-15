@@ -1,0 +1,19 @@
+[ecbuild]
+  kind    : project
+  url     : ${STASH}/ESCAPE/ecbuild.git
+  version : develop
+  cmake   : -DENABLE_INSTALL=ON
+
+[fckit]
+  kind    : project
+  url     : ${STASH}/ESCAPE/fckit.git
+  version : develop
+
+[eckit]
+  kind    : project
+  url     : ${STASH}/ESCAPE/eckit.git
+  version : develop
+  cmake   : -DENABLE_VIENNACL=OFF -DENABLE_MKL=OFF -DENABLE_MPISTUBS=OFF -DENABLE_ARMADILLO=OFF -DENABLE_CUDA=OFF -DENABLE_ECKIT_CMD=OFF -DENABLE_ECKIT_ECML=OFF
+
+[dwarf2-ellipticsolver]
+  kind    : project
