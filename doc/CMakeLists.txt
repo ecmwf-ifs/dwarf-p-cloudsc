@@ -1,16 +1,16 @@
-set(USERGUIDESRC ${CMAKE_CURRENT_SOURCE_DIR})
-set(USERGUIDE ${CMAKE_CURRENT_BINARY_DIR})
+set(DOCUMENTATIONSRC ${CMAKE_CURRENT_SOURCE_DIR})
+set(DOCUMENTATION ${CMAKE_CURRENT_BINARY_DIR})
 
 
 
 # HTML GENERATION =============================================================
-file(MAKE_DIRECTORY ${USERGUIDE}/html)
+file(MAKE_DIRECTORY ${DOCUMENTATION}/html)
 
-add_custom_target(dwarf3-user-guide-html
-   export TEXINPUTS=${CMAKE_SOURCE_DIR}//:${USERGUIDESRC}//: &&
-   ${HTLATEX} ${USERGUIDESRC}/user-guide.tex
-   "${USERGUIDESRC}/styling.cfg,html,3,next,NoFonts"
-   WORKING_DIRECTORY ${USERGUIDE}/html )
+add_custom_target(dwarf3-documentation-html
+   export TEXINPUTS=${CMAKE_SOURCE_DIR}//:${DOCUMENTATIONSRC}//: &&
+   ${HTLATEX} ${DOCUMENTATIONSRC}/documentation.tex
+   "${DOCUMENTATIONSRC}/styling.cfg,html,3,next,NoFonts"
+   WORKING_DIRECTORY ${DOCUMENTATION}/html )
 
 
 # If tex4ht successful, create img dir and copy images across
@@ -22,13 +22,13 @@ FILE(GLOB_RECURSE imgfiles
     "applications/*/imgs/*.png" "applications/*/imgs/*jpg")
 
 add_custom_command(
-   TARGET dwarf3-user-guide-html
-   POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${USERGUIDE}/html/imgs)
+   TARGET dwarf3-documentation-html
+   POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION}/html/imgs)
 
 FOREACH(img ${imgfiles})
-   ADD_CUSTOM_COMMAND(TARGET dwarf3-user-guide-html
+   ADD_CUSTOM_COMMAND(TARGET dwarf3-documentation-html
        POST_BUILD COMMAND
-       ${CMAKE_COMMAND} -E copy ${img} ${USERGUIDE}/html/imgs)
+       ${CMAKE_COMMAND} -E copy ${img} ${DOCUMENTATION}/html/imgs)
 ENDFOREACH()
 # -----------------------------------------------------------------------------
 
@@ -44,9 +44,9 @@ FIND_PROGRAM(CONVERT convert)
 FOREACH(pdf ${pdffiles})
    GET_FILENAME_COMPONENT(BASENAME ${pdf} NAME_WE)
    ADD_CUSTOM_COMMAND(
-       TARGET dwarf3-user-guide-html
+       TARGET dwarf3-documentation-html
        POST_BUILD COMMAND
-       ${CONVERT} ${pdf} ${USERGUIDE}/html/imgs/${BASENAME}.png)
+       ${CONVERT} ${pdf} ${DOCUMENTATION}/html/imgs/${BASENAME}.png)
 ENDFOREACH()
 
 # =============================================================================
@@ -55,21 +55,21 @@ FIND_PROGRAM(BIBTEX bibtex)
 MARK_AS_ADVANCED(BIBTEX)
 
 # PDF GENERATION ==============================================================
-add_custom_target(dwarf3-user-guide-pdf
+add_custom_target(dwarf3-documentation-pdf
    export TEXINPUTS=${CMAKE_SOURCE_DIR}//: &&
-   ${PDFLATEX} --output-directory ${USERGUIDE} ${USERGUIDESRC}/user-guide.tex
-   COMMAND TEXMFOUTPUT=${USERGUIDE} ${BIBTEX} ${USERGUIDE}/user-guide.aux
+   ${PDFLATEX} --output-directory ${DOCUMENTATION} ${DOCUMENTATIONSRC}/documentation.tex
+   COMMAND TEXMFOUTPUT=${DOCUMENTATION} ${BIBTEX} ${DOCUMENTATION}/documentation.aux
    COMMAND export TEXINPUTS=${CMAKE_SOURCE_DIR}//: &&
-   ${PDFLATEX} --output-directory ${USERGUIDE} ${USERGUIDESRC}/user-guide.tex
-   ${PDFLATEX} --output-directory ${USERGUIDE} ${USERGUIDESRC}/user-guide.tex
-   WORKING_DIRECTORY ${USERGUIDESRC} )
+   ${PDFLATEX} --output-directory ${DOCUMENTATION} ${DOCUMENTATIONSRC}/documentation.tex
+   ${PDFLATEX} --output-directory ${DOCUMENTATION} ${DOCUMENTATIONSRC}/documentation.tex
+   WORKING_DIRECTORY ${DOCUMENTATIONSRC} )
 # =============================================================================
 
 add_custom_target(dwarf3_doc_pdf)
-add_dependencies(dwarf3_doc_pdf dwarf3-user-guide-pdf)
+add_dependencies(dwarf3_doc_pdf dwarf3-documentation-pdf)
 
 add_custom_target(dwarf3_doc_html)
-add_dependencies(dwarf3_doc_html dwarf3-user-guide-html)
+add_dependencies(dwarf3_doc_html dwarf3-documentation-html)
 
 add_custom_target(dwarf3_doc)
 add_dependencies(dwarf3_doc dwarf3_doc_pdf)

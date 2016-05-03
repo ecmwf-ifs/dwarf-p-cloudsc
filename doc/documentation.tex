@@ -3,7 +3,7 @@
 \documentclass[
 a4paper,     % Stock and paper size.
 12pt,        % Type size.
-%article,
+article,
 %oneside, 
 onecolumn,   % Only one column of text on a page.
 % openright, % Each chapter will start on a recto page.
@@ -12,22 +12,20 @@ openany,     % A chapter may start on either a recto or verso page.
 ]{memoir}
 
 
-
 %%% PACKAGES 
 %%%------------------------------------------------------------------------------
 % If utf8 encoding
-\usepackage[utf8]{inputenc} 
+\usepackage[utf8]{inputenc}
 
 % If not utf8 encoding, then this is probably the way to go
-%\usepackage[latin1]{inputenc} 
-\usepackage[T1]{fontenc}    
+\usepackage[T1]{fontenc}
 \usepackage{lmodern}
 
 % English please
 \usepackage[english]{babel}
 
 % Less badboxes
-\usepackage[final]{microtype} 
+\usepackage[final]{microtype}
 
 % Math
 \usepackage{amsmath,amssymb,mathtools}
@@ -48,9 +46,13 @@ openany,     % A chapter may start on either a recto or verso page.
 %%% PAGE LAYOUT 
 %%%-----------------------------------------------------------------------------
 % Left and right margin
-\setlrmarginsandblock{0.15\paperwidth}{*}{1} 
+\setlrmarginsandblock{0.15\paperwidth}{*}{1}
 % Upper and lower margin
-\setulmarginsandblock{0.2\paperwidth}{*}{1}  
+\setulmarginsandblock{0.2\paperwidth}{*}{1}
+
+\setpnumwidth{3em}
+\setrmarg{4em}
+\setlength{\cftpartnumwidth}{3em}
 \checkandfixthelayout
 
 \newlength\forceindent
@@ -59,38 +61,22 @@ openany,     % A chapter may start on either a recto or verso page.
 \renewcommand{\indent}{\hspace*{\forceindent}}
 \setlength{\parskip}{1em}
 
-
 %%% SECTIONAL DIVISIONS
 %%%------------------------------------------------------------------------------
 % Subsections (and higher) are numbered
-\maxsecnumdepth{paragraph} 
+\maxsecnumdepth{paragraph}
 \setsecnumdepth{paragraph}
-
-\makeatletter 
-\makechapterstyle{standard}{
-  \setlength{\beforechapskip}{0\baselineskip}
-  \setlength{\midchapskip}{1\baselineskip}
-  \setlength{\afterchapskip}{8\baselineskip}
-  \renewcommand{\chapterheadstart}{\vspace*{\beforechapskip}}
-  \renewcommand{\chapnamefont}{\centering\normalfont\Large}
-  \renewcommand{\printchaptername}{\chapnamefont \@chapapp}
-  \renewcommand{\chapternamenum}{\space}
-  \renewcommand{\chapnumfont}{\normalfont\Large}
-  \renewcommand{\printchapternum}{\chapnumfont \thechapter}
-  \renewcommand{\afterchapternum}{\par\nobreak\vskip \midchapskip}
-  \renewcommand{\printchapternonum}{\vspace*{\midchapskip}\vspace*{5mm}}
-  \renewcommand{\chaptitlefont}{\centering\bfseries\LARGE}
-  \renewcommand{\afterchaptertitle}{\par\nobreak\vskip \afterchapskip}
-}
-\makeatother
 
 \usepackage{titlesec}
 \usepackage{etoolbox}
 
-%\counterwithout{section}{chapter}
-%\titleformat*{\section}{\Large\bfseries}
+\titlespacing\section{0pt}{12pt plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+\titlespacing\subsection{0pt}{12pt plus 2pt minus 1pt}{0pt plus 1pt minus 1pt}
+\titlespacing\subsubsection{0pt}{12pt plus 2pt minus 1pt}{0pt plus 1pt minus 1pt}
+
+\counterwithout{section}{chapter}
+\titleformat*{\section}{\Large\bfseries}
 %\patchcmd{\thebibliography}{\chapter*}{\section}{}{}
-\chapterstyle{madsen}
 
 \setsecheadstyle{\normalfont\large\bfseries}
 \setsubsecheadstyle{\normalfont\normalsize\bfseries}
@@ -120,32 +106,30 @@ openany,     % A chapter may start on either a recto or verso page.
 \usepackage{tabularx}
 %\usepackage{float}
 
-
 %%% ABSTRACT
 %%%------------------------------------------------------------------------------
 % Font of abstract title
 \renewcommand{\abstractnamefont}{\normalfont\small\bfseries}
 % Width of abstract 
-\setlength{\absleftindent}{0.1\textwidth} 
+\setlength{\absleftindent}{0.1\textwidth}
 \setlength{\absrightindent}{\absleftindent}
-
-
 
 %%% HEADER AND FOOTER 
 %%%------------------------------------------------------------------------------
 % Make standard pagestyle
-\makepagestyle{standard}
+\makepagestyle{memoirStylePages}
+\makerunningwidth{memoirStylePages}{\textwidth}
 
-% Define standard pagestyle
-\makeatletter
-\makeevenfoot{standard}{}{}{}
-\makeoddfoot{standard}{}{}{}
-\makeevenhead{standard}{\bfseries\thepage\normalfont\qquad\small\leftmark}{}{}
-\makeoddhead{standard}{}{}{\small\rightmark\qquad\bfseries\thepage}
-\makeatother
+\makeheadrule{memoirStylePages}{\textwidth}{\normalrulethickness}
+\makefootrule{memoirStylePages}{\textwidth}{\normalrulethickness}{0pt}
+
+\makeevenfoot{memoirStylePages}{}{\bfseries\thepage}{}
+\makeoddfoot{memoirStylePages}{}{\bfseries\thepage}{}
+\makeevenhead{memoirStylePages}{}{\textit{Dwarf 3: Cloud scheme}}{}
+\makeoddhead{memoirStylePages}{}{\textit{Dwarf 3: Cloud schem}}{}
 
 \makeatletter
-\makepsmarks{standard}{
+\makepsmarks{memoirStylePages}{
 \createmark{chapter}{both}{shownumber}{\@chapapp\ }{ \quad }
 \createmark{section}{right}{shownumber}{}{ \quad }
 \createplainmark{toc}{both}{\contentsname}
@@ -157,22 +141,9 @@ openany,     % A chapter may start on either a recto or verso page.
 }
 \makeatother
 
-% Make new chapter pagestyle
-\makepagestyle{chap}
-
-\makeatletter
-% Define new chapter pagestyle
-\makeevenfoot{chap}{}{\small\bfseries\thepage}{}
-\makeoddfoot{chap}{}{\small\bfseries\thepage}{}
-\makeevenhead{chap}{}{}{}
-\makeoddhead{chap}{}{}{}
-\makeatother
-
-\nouppercaseheads
 % Choosing pagestyle and chapter pagestyle
-\pagestyle{standard}
-\aliaspagestyle{chapter}{chap} 
-
+\pagestyle{memoirStylePages}
+\aliaspagestyle{chapter}{chap}
 
 
 %%% NEW COMMANDS
@@ -552,33 +523,54 @@ pdfauthor={I am the Author}
 \mainmatter
 
 
-\chapter{Scope and Objectives}
-In this chapter, we briefly identify the scope of dwarf 3 
-by outlining the motivations behind its implementation and 
-we present the main objectives we want to achieve.
+\section{Scope}
+The spectral transform method constitutes one of the core 
+building blocks of many weather \& climate models; for instance, 
+the Integrated Forecast System (IFS) at ECMWF has started using
+it approximately thirty years ago and it is still now the skeleton 
+of the global operational forecast run everyday.
+However, with the increase in resolutuion, spectral transform 
+models are believed to become prohibitively expensive because 
+of the relative increase in computational cost of the Legendre 
+transforms compared to the gridpoint computations \cite{Wedi2013}. 
 
-\section{Broad scope}
-TBC
+The overarching scope of this dwarf is to understand if this
+core building block can be effectively ported into the next 
+generation exascale HPC machines, in an heterogeneous computing 
+environment, where the need for extreme parallelism might limit 
+of make it impossible the use of the spectral transform method.
+
+
 
 \section{Objectives}
-TBC
+The main objective of this dwarf is to port the code into 
+GPU/accelerators and try to match or exceed the performance 
+that can be achieved on a CPU.
+In particular, it is important to achieve a time-to-solution
+comparable or better than the current implementation of CPUs 
+while saving energy due to the use of GPUs and accelerators.
+
+The detailed goals are therefore a) measure the time-to-solution
+provided by the different implmentation on the different hardware, 
+b) measure the energy-to-solution and c) find the best compromise 
+that minimise the time-to-solution and maximise the energy-to-solution.
 
 
 
-\chapter{Definition of the Dwarf}
-Dwarf 3 aims to test the cloud microphysics.
 
-TBC
+\section{Definition of the Dwarf}
+Dwarf 3 implements the cloud microphysics.
 
 
-\chapter{Dwarf Usage}
-In this chapter we describe how to download and install 
+
+\section{Dwarf usage and testing}
+In this section we describe how to download and install 
 the dwarf along with all its dependencies and we show 
 how to run it for a simple test case.
 
 
 
-\section{Download and installation}
+\subsection{Download and installation}
 The first step is to download and install the dwarf along 
 with all its dependencies. With this purpose, it is possible 
 to use the script provided under the ESCAPE software collaboration 
@@ -726,20 +718,18 @@ testing framework is not already able to verify its
 functionality.
 \end{warningbox}
 %
-If you encounter any problem in the installation 
-procedure, please contact either Gianmarco Mengaldo 
-(\url{gianmarco.mengaldo@ecmwf.int}) or Willem 
-Deconinck (\url{willem.deconinck@ecmwf.int}).
-
 For instructions on how to run the executables 
 see the next section.
-
 
 
 \section{Run the dwarf}
 TBC
 
-\cite{Eisenstat1983} 
+ 
+
+
+\section{Integration}
+TBC
 
 
 
