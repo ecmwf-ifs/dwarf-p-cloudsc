@@ -12,9 +12,9 @@
 cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
 set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild/cmake" )
-
+set( CMAKE_BUILD_TYPE None )
 # define the project
-project(dwarf3)
+project(dwarf3 C Fortran )
 
 set(ENABLE_OS_TYPES_TEST       OFF   CACHE BOOL " ")
 set(ENABLE_OS_FUNCTIONS_TEST   OFF   CACHE BOOL " ")
@@ -27,21 +27,7 @@ ecbuild_requires_macro_version(2.0)
 ecbuild_declare_project()
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module)
 
-# include necessary libraries for dwarf3
-ecbuild_add_option(
-    FEATURE OMP
-    DESCRIPTION "Dwarf3: Support for OpenMP threaded parallelism"
-    REQUIRED_PACKAGES "OMP COMPONENTS Fortran" )
-
-if(HAVE_OMP)
-  ecbuild_enable_omp()
-else()
-  ecbuild_enable_ompstubs()
-endif()
-
-ecbuild_add_option(FEATURE MPI
-                   DESCRIPTION "Dwarf3: Support for MPI distributed parallelism"
-                   REQUIRED_PACKAGES "MPI COMPONENTS Fortran")
+include(CompilerFlags)
 
 # build executables
 add_subdirectory(src)
