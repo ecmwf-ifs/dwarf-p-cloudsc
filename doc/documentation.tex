@@ -524,21 +524,265 @@ pdfauthor={I am the Author}
 
 
 \section{Scope}
-Provide the broad scope of the dwarf and the motivations 
-why we are implementing it.
+The cloud and precipitation microphysics is an essential building block 
+of any weather and climate prediction model as it is necessary to represent 
+the effects of small-scale sub-grid physical processes, such as cloud 
+and precipitation microphysics, through a parameterization of the grid-scale 
+prognostic variables in the model.
+The cloud microphysics scheme is a computationally expensive routine and alternative 
+ways that can accelerate its computation will be extremely beneficial 
+for the computational performance of weather and climate prediction models.
+
 
 
 \section{Objectives}
-Provide the main objectives we want to achieve.
+The main objective of this dwarf is to assess the scalability limits 
+of the cloud scheme on different hardware such as hosts (e.g. CPUs) 
+and devices (e.g. GPUs) and to test a hybrid combination of the two.
+
+In addition, some new implementations of the cloud scheme are envisioned.
+These are believed to perform better on device-type hardware, thereby 
+providing a more energy-efficient and computationally faster solution 
+for the cloud scheme.
+
+More specfically, we aim to investigate the following points:
+%
+\begin{itemize}
+\item multi-core (e.g. Broadwell) and many-core hosts (e.g. KNL) using 
+multi-threading through OpenMP;
+\item multi-device (e.g. multiple GPU nodes) implementing multi-threading 
+using OpenACC, CUDA, etc;
+\item explore different data-alignment / data-structure strategies 
+to enhance compiler perfomance;
+\item relax level-dependency by using data from previous time step 
+that might provide finer grain parallelism (that would be beneficial 
+for GPUs and KNL with OpenMP 4.5);
+\end{itemize}
+%
+Each of the points outlined above will have a specific prototype 
+implementation to permit a better understanding of the results, 
+thus ultimately allowing the identification of the solution that 
+guarantess the best compromise in terms of energy requirements 
+/ time-to-solution.
+
 
 
 
 \section{Definition of the Dwarf}
-Define and briefly describe the dwarf.
+Weather and climate prediction models need to represent the effects of 
+sub-grid scale physical processes. Radiation, turbulent 
+mixing, convection, cloud and precipitation microphysics are 
+examples of physical processes that are parametrized as a function 
+of the grid-scale prognostic variables in models. This dwarf 
+is the parametrizaton scheme for cloud and precipitation processes 
+in the IFS, described by prognostic equations for cloud liquid water, 
+cloud ice, rain, snow and a grid-box fractional cloud cover. The cloud 
+scheme represents the sources and sinks of cloud and precipitation due 
+to the major generation and destruction processes, including cloud formation 
+by detrainment from cumulus convection, condensation, ice deposition, evaporation, 
+hydrometeor collection, melting and freezing. The scheme is based on \cite{Tiedtke1993} 
+but with an enhanced representation of the ice-phase in clouds and precipitation. 
+A multi-dimensional implicit solver is used for the numerical solution of 
+the cloud and precipitation prognostic equations.  A more detailed description 
+of the formulation of the parametrization can be found in \cite{IFSdoc} with 
+further discussion in \cite{ForbesandTompkins2011} and \cite{Forbesetal2011}.
 
-Citation example: \cite{Eisenstat1983}.
 
-Dwarf 3 implements the cloud microphysics... TBC
+
+\subsection{Governing equations}
+The equations for the tendency of the grid-box averaged cloud
+liquid, cloud ice, rain and snow water contents are
+
+\begin{equation}
+\frac{\partial q_{\text{l}}}{\partial t} =A(q_{\text{l}}) +S_{\text{conv}} 
++S_{\text{strat}}+S_{\text{melt}}^{\text{ice}}-S_{\text{dep}}^{\text{ice}}
+-S_{\text{evap}}^{\text{liq}}-S_{\text{auto}}^{\text{rain}}-S_{\text {rime}}^{\text{snow}}
+\end{equation}
+\begin{equation}
+\frac{\partial q_{\text{i}}}{\partial t} =A(q_{\text{i}}) +S_{\text{conv}} 
++S_{\text{strat}}+S_{\text{dep}}^{\text{ice}}-S_{\text{melt}}^{\text{ice}}
+-S_{\text{evap}}^{\text{ice}}-S_{\text{auto}}^{\text{snow}}
+\end{equation}
+\begin{equation}
+\frac{\partial q_{\text{r}}}{\partial t} =A(q_{\text{r}}) 
+-S_{\text{evap}}^{\text{rain}}+S_{\text{auto}}^{\text{rain}}+S_{\text{melt}^{\text snow}} 
+-S_{\text{frz}}^{\text{rain}}  
+\end{equation}
+\begin{equation}
+\frac{\partial q_{\text{s}}}{\partial t} =A(q_{\text{s}}) 
+-S_{\text{evap}}^{\text{snow}}+S_{\text{auto}}^{\text{snow}}-S_{\text{melt}}^{\text{snow}} 
++S_{\text{frz}}^{\text{rain}}+S_{\text{rime}}^{\text{snow}}
+\end{equation}
+
+and for the cloud fraction,
+
+\begin{equation}
+\frac{\partial a}{\partial t} =A(a) +\delta a_{\text{conv}} 
++\delta a_{\text{strat}}-\delta a_{\text{evap}}
+\end{equation}
+
+The terms on the right-hand side represent the following processes:
+\begin{itemize}
+\item    $A(q), A(a)$  -- rate of change of water contents and cloud
+area due to transport through the boundaries of the grid volume (advection, 
+sedimentation).
+\item    $S_{\text{conv}}, \delta a_{\text{conv}}$ -- rate of formation 
+of cloud water/ice and cloud area by convective processes.
+\item    $S_{\text{strat}}, \delta a_{\text{strat}}$ -- rate of formation 
+of cloud water/ice and cloud area by stratiform condensation processes.
+\item    $S_{\text{evap}}$ -- rate of evaporation of cloud water/ice, 
+rain/snow. 
+\item    $S_{\text{auto}}$ -- rate of generation of precipitation from
+cloud water/ice (autoconversion).
+\item    $S_{\text{melt}}$ -- rate of melting ice/snow.
+\item    $S_{\text{rime}}$ -- rate of riming (collection of cloud liquid 
+drops).
+\item    $S_{\text{frz}} $ -- rate of freezing of rain.
+\item    $\delta a_{\text{evap}}$  -- rate of decrease of cloud area due 
+to evaporation.
+\end{itemize}
+
+The large-scale budget equations for specific humidity $q_v$, 
+and dry static energy $s =c_pT +gz$ in the cloud scheme are
+\begin{equation}
+\frac{\partial q_{\text{v}}}{\partial t} =A(q_{\text{v}}) -S_{\text{strat}} +
+S_{\text{evap}}
+\end{equation}
+and
+\begin{equation}
+\frac{\partial s}{\partial t} =A(s)+L_{\text{vap}}(S_{\text{strat}} -
+S_{\text{evap}})+L_{\text{fus}}(S_{\text{frz}} + S_{\text{rime}} - S_{\text{melt}})
+\end{equation}
+where $A(q_v)$ and $A(s)$ represent all processes except those
+related to clouds, $L_{\text{vap}}$ is the latent heat
+of condensation and $L_{\text{fus}}$ is the latent heat
+of freezing.
+
+Each of the microphysical source and sink terms is represented by an equation 
+or set of equations that vary in complexity, from a simple linear form to more 
+non-linear functions involving exponentials and power laws. Some terms are formulated
+explicitly and others implicitly and they are combined in a multi-dimensional solver 
+to produce the tendencies for the prognostic variables
+(cloud liquid, cloud ice, rain, snow and humidity). Cloud fraction is treated
+separately as this is a non-conservative variable. The temperature tendency due
+to change in phase (vapour, liquid, ice) is calculated after the solver once the
+final tendencies are known. 
+
+
+%-------------------------------------------------------------------------------
+\subsection{Integration of the equations}
+  
+The above equations governing the tendency for each prognostic cloud
+variable within the cloud scheme can be written as:
+\begin{equation}
+\frac{\partial {q}_x}{\partial t} = A_x +
+\frac{1}{\rho}\frac{\partial}{\partial z} \left( \rho V_x {q}_x \right)
+\end{equation}
+where $q_x$ is the specific water content for category $x$ (so $x=1$
+represents cloud liquid, $x=2$ for rain, and so on), $A_x$ is the net source
+or sink of $q_x$ through microphysical processes, and the last term
+represents the sedimentation of $q_x$ with fall speed $V_x$.
+
+The solution to this set of equations uses the upstream approach. Writing the
+advection term in mass flux form and collecting all fast processes (relative to
+the model timestep) into an implicit term, gives:
+\begin{equation}
+\frac{q_x^{n+1}-q_x^{n}}{\Delta t} = A_x 
++\sum_{x=1}^{m}B_{xy}q_y^{n+1}
+-\sum_{x=1}^{m}B_{yx}q_x^{n+1}
++\frac{ 
+\rho_{k-1} V_{x} q_{x,k-1}^{n+1} - \rho V_{x} q_{x}^{n+1} }{ \rho \Delta
+Z}
+\label{eqn-impl}
+\end{equation}
+
+for timestep $n$. The subscript "$k-1$" refers to a term calculated at the model
+level above the present level $k$ for which all other terms are being
+calculated. The matrix $\widetilde{B}$ (with terms $B_{xx}$, $B_{xy}$, $B_{yx}$)
+represents all the implicit microphysical pathways such that $B_{xy}>0$
+represents a sink of $q_y$ and a source of $q_x$. Matrix $\widetilde{B}$ is
+positive-definite off the diagonal, with zero diagonal terms since $B_{xx}=0$ by
+definition.  Some terms, such as the creation of cloud through condensation
+resulting from adiabatic motion or diabatic heating, are more suitable for an
+explicit framework, and are retained in the explicit term $A$.
+
+For cloud fraction, there are no multi-dimensional dependencies, so the equation
+simplifies to
+\begin{equation}
+\frac{a^{n+1}-a^{n}}{\Delta t} = A + Ba^{n+1}
+\end{equation}
+
+However, for the cloud and precipitation variables,  a
+matrix approach is required. Due to the cross-terms $q_y^{n+1}$, 
+(\ref{eqn-impl}) is rearranged to give a straight forward matrix equation which
+can be solved with standard methods. 
+The solution method is simplified by assuming the vertical advection terms due
+to convective subsidence and sedimentation act only in the downward direction,
+allowing the solution to be conducted level by level from the model top down.
+
+The matrix on the left-hand side has the microphysical terms in isolation off the diagonal,
+with the sedimentation term on the diagonal, thus the matrix equation for a
+3-variable system is
+{\footnotesize
+\begin{eqnarray}
+\left(
+\begin{array}{ccc}
+1+ \Delta t(\frac{V_1}{\Delta z} + B_{21} + B_{31}) & -\Delta t B_{12}
+& -\Delta t B_{13} \\
+-\Delta t B_{21} & 1+ \Delta t(\frac{V_2}{\Delta z} + B_{12} + B_{32}) &
+-\Delta t B_{23}  \\
+-\Delta t B_{31} & -\Delta t B_{32} & 1+ \Delta t(\frac{V_3}{\Delta z} 
++ B_{13} + B_{23}) \\
+\end{array}
+\right) \cdot
+\left(
+\begin{array}{c}
+q_1^{n+1} \\
+q_2^{n+1} \\
+q_3^{n+1} \\
+\end{array}
+\right)
+= \nonumber \\
+\newline
+\left[ 
+q_1^{n} + \Delta t \left(A_1 +
+\frac{ \rho_{k-1} V_{1} q_{1,k-1}^{n+1}}{\rho \Delta Z} \right) 
+,q_2^{n} + \Delta t \left(A_2 +
+\frac{ \rho_{k-1} V_{2} q_{2,k-1}^{n+1}}{\rho \Delta Z} \right) 
+,q_3^{n} + \Delta t \left(A_3 +
+\frac{ \rho_{k-1} V_{3} q_{3,k-1}^{n+1}}{\rho \Delta Z} \right) 
+\right].
+\end{eqnarray}
+}
+
+There are some aspects that require attention.  Firstly, although
+implicit terms are unable to reduce a cloud category to zero, the
+explicit can, and often will, achieve this.  Thus safety checks are
+required to ensure that all end-of-timestep variables remain positive
+definite, in addition to ensuring conservation.  Practically, to aid
+the conservation requirement, the explicit source and sink terms are
+thus also generalised from a vector $\vec A$ to an anti-symmetric
+matrix  $\widetilde{A}$,
+\begin{eqnarray}
+\widetilde{A}=\left(
+\begin{array}{ccc}
+A_{11} & A_{21} & A_{31} \\
+-A_{12} & A_{22} & A_{32} \\
+-A_{13} & -A_{23} & A_{33} \\
+\end{array}
+\right)
+\end{eqnarray}
+
+Thus $A_{xy}>0$ represents a source of $q_x$ and a sink of $q_y$, and
+the original vector for $A$ can be obtained by summing over the rows.
+Although this matrix approach involves a degree of redundancy, it is a
+simple method of ensuring conservation properties. The matrix
+diagonals $A_{xx}$ contain the 'external' sources of $q_x$ such as the
+cloud water detrainment terms from the convection scheme.
+
+In order to simultaneously guarantee conservation and
+positive-definite properties, the sum of all sinks for 
+a given variable are scaled to avoid negative values. 
 
 
 
@@ -604,7 +848,7 @@ of this dwarf, you can do so by typing:
 --version <branch-name>
 \end{lstlisting}
 % 
-Analogous approach can be used for the \inlsh{-\,-user} 
+An analogous approach can be used for the \inlsh{-\,-user} 
 version of the command. You should now have a folder called 
 \inlsh{dwarf3-cloudscheme}.
 
@@ -702,13 +946,13 @@ see the next section.
 
 
 \section{Run the dwarf}
-TBC
+To be completed.
 
  
 
 
 \section{Integration}
-TBC
+To be completed.
 
 
 
