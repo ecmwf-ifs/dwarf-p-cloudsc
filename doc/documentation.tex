@@ -914,46 +914,81 @@ can type the following command:
 %
 
 \subsection{Testing}
-You should now verify that the dwarf works as expected.
-With this purpose, we created a testing framework that
-allows us to verify that the main features of the dwarf 
-are working correctly.
+Not supported yet.
 
-To run this verification, you should run the following 
-command:
-%
-\begin{lstlisting}[style=BashStyle]
-ctest -j<number-of-tasks>
-\end{lstlisting}
-%
-from inside the \inlsh{builds/dwarf3-cloudscheme}
-folder.
-%
-\begin{warningbox}
-We strongly advise you to verify via ctest that 
-the main functionalities of the dwarf are working 
-properly any time you apply modifications to the 
-code. Updates that do not pass the tests cannot 
-be merged. 
-In addition, if you add a new feature to the dwarf,
-this should be supported by a test if the existing
-testing framework is not already able to verify its
-functionality.
-\end{warningbox}
-%
-For instructions on how to run the executables 
-see the next section.
+%You should now verify that the dwarf works as expected.
+%With this purpose, we created a testing framework that
+%allows us to verify that the main features of the dwarf 
+%are working correctly.
+
+%To run this verification, you should run the following 
+%command:
+%%
+%\begin{lstlisting}[style=BashStyle]
+%ctest -j<number-of-tasks>
+%\end{lstlisting}
+%%
+%from inside the \inlsh{builds/dwarf3-cloudscheme}
+%folder.
+%%
+%\begin{warningbox}
+%We strongly advise you to verify via ctest that 
+%the main functionalities of the dwarf are working 
+%properly any time you apply modifications to the 
+%code. Updates that do not pass the tests cannot 
+%be merged. 
+%In addition, if you add a new feature to the dwarf,
+%this should be supported by a test if the existing
+%testing framework is not already able to verify its
+%functionality.
+%\end{warningbox}
+%%
+%For instructions on how to run the executables 
+%see the next section.
 
 
 \section{Run the dwarf}
-To be completed.
+To run a simple test case you need to link the input file, called \inlsh{cloudsc.bin}, 
+required by this dwarf to the directory from where you intend to run the excutable.
+This is located in the \inlsh{data} subfolder inside the \inlsh{dwarf3-cloudscheme} 
+directory and the link can be created as follows
+%
+\begin{lstlisting}[style=BashStyle]
+ln -s dwarf3-cloudscheme/sources/data/cloudsc.bin .
+\end{lstlisting}
+%
+The input data cloudsc.bin is a Fortran unformatted stream binary (no record delimiters). 
+It contains data for just 100 grid point columns and will be inflated to full spectre 
+of NGPTOT, where NGPTOT is the number of grid point columns.
+To run the a simple test you can now type:
+%
+\begin{lstlisting}[style=BashStyle]
+dwarf3-cloudscheme/builds/bin/dwarf3-cloudscheme OMP NGPTOT NPROMA-list
+\end{lstlisting}
+%
+where OMP is the number of threads for OMP-parallel regions, NGPTOT is the already 
+mentioned number of grid point columns, NPROMA-list is a list of NPROMAs to use.
+For a simple test-case you can try the following parameter-combination:
+%
+\begin{lstlisting}[style=BashStyle]
+dwarf3-cloudscheme/builds/bin/dwarf3-cloudsc 4 160000 2
+\end{lstlisting}
+%
+Note that if you installed the dwarf through the bundle option, the executable 
+can be run with the following command:
+%
+\begin{lstlisting}[style=BashStyle]
+dwarf3-cloudscheme/builds/bundle/bin/dwarf3-cloudsc 4 160000 2
+\end{lstlisting}
+%
 
  
 
 
 \section{Integration}
-To be completed.
-
+The cloud scheme is part of the physical processes required by any NWP model.
+Its inteegration is therefore naturally guaranteed independently from the 
+dynamical core being used.
 
 
 \backmatter

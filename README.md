@@ -1,49 +1,51 @@
-This is the CLOUDSC mini-application (version 1.0)
---------------------------------------------------
+Dwarf 3
+-------
 
-A test case has NGPTOT = 160000
+Project home: https://software.ecmwf.int/wiki/display/DWARF3/DWARF3
 
-To run a test case with varying NPROMAs = 1000 64 12
-use the following command :
+Contact: Gianmarco Mengaldo (gianmarco.mengaldo@ecmwf.int), Sami Saarinen (sami.saarinen@ecmwf.int), 
+Willem Deconinck (willem.deconinck@ecmwf.int)
 
-    ./run COMP 160000 1000 64 12 2>&1 | tee COMP.$(hostname -s).out
+Dwarf 3 is intended to test the cloud micro physics.
 
-where COMP is one of INTEL, GNU, PGI or CCE.
+The code is written in Fortran 2003 and it has been tested using the various compilers, including:
 
+    GCC 4.8.
+    Cray 8.4.
+    PGI.
+    INTEL. 
 
-This command will rebuild from scratch using the 'makefile'
-and run test cases with varying number of OpenMP-threads
+This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands 
+OpenMP directives. Fortran must be at least level F2003.
 
+Inside the dwarf directory you can find some example of outputs inside the example_outputs/ directory.
 
-Once your executable is around, you could
-also run the executable (caveat: stack size not set, nor binding/affinity)
-manually by
-
-    ./main.x.COMP OMP NGPTOT NPROMA-list
-
-where OMP is the number of threads for OMP-parallel regions,
-NGPTOT the number of grid point columns, NPROMA-list
-is a list of NPROMAs to use.  
+In addition, to run the dwarf it is necessary to use an input file that can be found inside the data/ directory 
+winthin the dwarf folder.
 
 
-Some example outputs can be seen under example_outputs/ directory.
+Third Party Requirements
+------------------------
+
+Requirements to compile dwarf3:
+
+    CMake: for use and installation see http://www.cmake.org/
+    ecbuild
+    eckit (with mpi support -- meaning either eckit_mpi or eckit_mpistubs library)
+
+Recommended:
+
+    MPI: distributed memory parallelisation
+    OpenMP: shared memory parallelisation
 
 
-Please observe also the directory bin/ for some tools to discover 
-f.ex. your system properties (core count, number of sockets etc.) 
-These tools are invoked by the run-script
+Download and Installation
+-------------------------
+
+Please refer to: https://software.ecmwf.int/stash/projects/ESCAPE/repos/escape/browse
 
 
-The input data cloudsc.bin is a Fortran unformatted stream binary
-(no record delimiters). In contains data for just 100 grid point columns
-and will be inflated to full spectre of NGPTOT.
+Running and testing
+-------------------
 
-
-This application does not need MPI nor BLAS libraries for performance.
-Just a compiler that understands OpenMP directives.
-Fortran must be at least level F2003. 
-
-
-Sami Saarinen, ECMWF
-20-Oct-2015
-email: sami.saarinen@ecmwf.int
+Please refer to the documentation: https://software.ecmwf.int/wiki/display/ESCAPE/Dwarf+3+-+cloud+scheme 
