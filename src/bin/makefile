@@ -125,8 +125,8 @@ LIB = libcloudsc.a
 EXE = main.x.$(COMP)
 
 OBJS = \
-	dummy/abor1.o \
-	dummy/routines.o \
+	include/abor1.o \
+	include/routines.o \
 	ifs/module/diag_mod.o \
 	ifs/module/diff_mod.o \
 	ifs/module/expand_mod.o \
