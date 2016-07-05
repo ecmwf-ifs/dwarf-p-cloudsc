@@ -1,6 +1,5 @@
 Dwarf 3
 -------
-
 Project home: https://software.ecmwf.int/wiki/display/DWARF3/DWARF3
 
 Contact: Gianmarco Mengaldo (gianmarco.mengaldo@ecmwf.int), Sami Saarinen (sami.saarinen@ecmwf.int), 
@@ -18,15 +17,19 @@ The code is written in Fortran 2003 and it has been tested using the various com
 This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands 
 OpenMP directives. Fortran must be at least level F2003.
 
-Inside the dwarf directory you can find some example of outputs inside the example_outputs/ directory.
+Inside the dwarf directory you can find some example of outputs inside the example-outputs/ directory.
 
-In addition, to run the dwarf it is necessary to use an input file that can be found inside the data/ directory 
-winthin the dwarf folder.
+In addition, to run the dwarf it is necessary to use an input file that can be found inside the config-files/ 
+directory winthin the dwarf folder.
+
+
+Prototypes available
+--------------------
+- prototype1: cloud scheme from IFS.
 
 
 Third Party Requirements
 ------------------------
-
 Requirements to compile dwarf3:
 
     CMake: for use and installation see http://www.cmake.org/
@@ -41,11 +44,9 @@ Recommended:
 
 Download and Installation
 -------------------------
-
 Please refer to: https://software.ecmwf.int/stash/projects/ESCAPE/repos/escape/browse
 
 
 Running and testing
 -------------------
-
 Please refer to the documentation: https://software.ecmwf.int/wiki/display/ESCAPE/Dwarf+3+-+cloud+scheme 
