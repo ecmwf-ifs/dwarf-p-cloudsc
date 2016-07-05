@@ -1,7 +1,5 @@
 Dwarf 3
 -------
-Project home: https://software.ecmwf.int/wiki/display/DWARF3/DWARF3
-
 Contact: Gianmarco Mengaldo (gianmarco.mengaldo@ecmwf.int), Sami Saarinen (sami.saarinen@ecmwf.int), 
 Willem Deconinck (willem.deconinck@ecmwf.int)
 
