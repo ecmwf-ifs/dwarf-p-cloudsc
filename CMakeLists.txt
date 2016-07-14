@@ -13,8 +13,9 @@ cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
 set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild/cmake" )
 set( CMAKE_BUILD_TYPE None )
+
 # define the project
-project(dwarf3 C Fortran )
+project(dwarf3 )
 
 set(ENABLE_OS_TYPES_TEST       OFF   CACHE BOOL " ")
 set(ENABLE_OS_FUNCTIONS_TEST   OFF   CACHE BOOL " ")

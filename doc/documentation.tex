@@ -892,7 +892,7 @@ The second way is to create a bundle that compile
 and install all the dependencies together:
 %
 \begin{lstlisting}[style=BashStyle]
-./escape/bin/escape generate_bundle dwarf3-cloudscheme
+./escape/bin/escape generate-bundle dwarf3-cloudscheme
 \end{lstlisting}
 % 
 This command will create an infrastructure to avoid
@@ -954,7 +954,7 @@ This is located in the \inlsh{config-files} subfolder inside the \inlsh{dwarf3-c
 directory and the link can be created as follows
 %
 \begin{lstlisting}[style=BashStyle]
-ln -s dwarf3-cloudscheme/sources/data/cloudsc.bin .
+ln -s dwarf3-cloudscheme/sources/dwarf3-cloudscheme/config-files/cloudsc.bin .
 \end{lstlisting}
 %
 The input data cloudsc.bin is a Fortran unformatted stream binary (no record delimiters). 
@@ -963,7 +963,7 @@ of NGPTOT, where NGPTOT is the number of grid point columns.
 To run the a simple test you can now type:
 %
 \begin{lstlisting}[style=BashStyle]
-dwarf3-cloudscheme/builds/bin/dwarf3-cloudscheme OMP NGPTOT NPROMA-list
+dwarf3-cloudscheme/builds/bundle/bin/dwarf3-cloudscheme OMP NGPTOT NPROMA-list
 \end{lstlisting}
 %
 where OMP is the number of threads for OMP-parallel regions, NGPTOT is the already 
