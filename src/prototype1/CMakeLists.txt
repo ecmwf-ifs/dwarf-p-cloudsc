@@ -1,4 +1,4 @@
-list(APPEND dwarf3_cloudsc_srcs
+list(APPEND dwarf_P_cloudMicrophysics_IFSScheme_srcs
 cloudsc/cloud_layer.F90
 cloudsc/cloudsc.F90
 cloudsc/cloudsc_driver.F90
@@ -7,7 +7,7 @@ cloudsc/cloudsc_out.F90
 cloudsc/cuadjtq.F90
 )
 
-list(APPEND dwarf3_support_srcs
+list(APPEND dwarf_P_cloudMicrophysics_IFSScheme_support_srcs
 support/abor1.F90
 support/diag_mod.F90
 support/diff_mod.F90
@@ -46,17 +46,17 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
-ecbuild_add_library(TARGET dwarf3-cloudsc-libs
+ecbuild_add_library(TARGET dwarf-P-cloudMicrophysics-IFSScheme-libs
                     DEFINITIONS
                         ${CLOUDSC_DEFINITIONS}
                     SOURCES
-                        ${dwarf3_cloudsc_srcs}
-                        ${dwarf3_support_srcs}
+                        ${dwarf_P_cloudMicrophysics_IFSScheme_srcs}
+                        ${dwarf_P_cloudMicrophysics_IFSScheme_support_srcs}
 )
 
 
-ecbuild_add_executable(TARGET  dwarf3-cloudsc
+ecbuild_add_executable(TARGET  dwarf-P-cloudMicrophysics-IFSScheme
                        SOURCES cloudsc_dwarf.F90 
-                       LIBS    dwarf3-cloudsc-libs                                
+                       LIBS    dwarf-P-cloudMicrophysics-IFSScheme-libs                                
 )
 

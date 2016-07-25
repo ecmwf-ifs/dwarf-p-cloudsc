@@ -125,8 +125,8 @@ openany,     % A chapter may start on either a recto or verso page.
 
 \makeevenfoot{memoirStylePages}{}{\bfseries\thepage}{}
 \makeoddfoot{memoirStylePages}{}{\bfseries\thepage}{}
-\makeevenhead{memoirStylePages}{}{\textit{Dwarf 3: Cloud scheme}}{}
-\makeoddhead{memoirStylePages}{}{\textit{Dwarf 3: Cloud scheme}}{}
+\makeevenhead{memoirStylePages}{}{\textit{Dwarf-P-cloudMicrophysics-IFSScheme}}{}
+\makeoddhead{memoirStylePages}{}{\textit{Dwarf-P-cloudMicrophysics-IFSScheme}}{}
 
 \makeatletter
 \makepsmarks{memoirStylePages}{
@@ -529,27 +529,28 @@ of any weather and climate prediction model as it is necessary to represent
 the effects of small-scale sub-grid physical processes, such as cloud 
 and precipitation microphysics, through a parameterization of the grid-scale 
 prognostic variables in the model.
-The cloud microphysics scheme is a computationally expensive routine and alternative 
-ways that can accelerate its computation will be extremely beneficial 
-for the computational performance of weather and climate prediction models.
+The cloud microphysics scheme is a computationally expensive routine 
+and alternative ways that can accelerate its computation will be extremely 
+beneficial for the computational performance of weather and climate prediction 
+models.
 
 
 
 \section{Objectives}
 The main objective of this dwarf is to assess the scalability limits 
-of the cloud scheme on different hardware such as hosts (e.g. CPUs) 
-and devices (e.g. GPUs) and to test a hybrid combination of the two.
-
-In addition, some new implementations of the cloud scheme are envisioned.
+of cloud microphysics, mainly based on the IFS scheme, on different 
+hardware such as hosts (e.g. CPUs), devices (e.g. GPUs) and a hybrid 
+combination of them. 
+Some new implementations of the IFS-based cloud scheme are also envisioned.
 These are believed to perform better on device-type hardware, thereby 
 providing a more energy-efficient and computationally faster solution 
 for the cloud scheme.
 
-More specfically, we aim to investigate the following points:
+More specifically, we aim to investigate the following points:
 %
 \begin{itemize}
-\item multi-core (e.g. Broadwell) and many-core hosts (e.g. KNL) using 
-multi-threading through OpenMP;
+\item multi-core (e.g. Broadwell) and many-core hosts (e.g. KNL) 
+using multi-threading via OpenMP;
 \item multi-device (e.g. multiple GPU nodes) implementing multi-threading 
 using OpenACC, CUDA, etc;
 \item explore different data-alignment / data-structure strategies 
@@ -562,15 +563,15 @@ for GPUs and KNL with OpenMP 4.5);
 Each of the points outlined above will have a specific prototype 
 implementation to permit a better understanding of the results, 
 thus ultimately allowing the identification of the solution that 
-guarantess the best compromise in terms of energy requirements 
+guarantees the best compromise in terms of energy requirements 
 / time-to-solution.
 
 
 
 
 \section{Definition of the Dwarf}
-Weather and climate prediction models need to represent the effects of 
-sub-grid scale physical processes. Radiation, turbulent 
+Weather and climate prediction models need to represent the 
+effects of sub-grid scale physical processes. Radiation, turbulent 
 mixing, convection, cloud and precipitation microphysics are 
 examples of physical processes that are parametrized as a function 
 of the grid-scale prognostic variables in models. This dwarf 
@@ -827,7 +828,7 @@ To download the dwarf and its dependencies you need to run
 the following command:
 %
 \begin{lstlisting}[style=BashStyle]
-./escape/bin/escape checkout dwarf3-cloudscheme --ssh
+./escape/bin/escape checkout dwarf-D-cloudMicrophysics-IFSScheme --ssh
 \end{lstlisting}
 % 
 Note the option \inlsh{--ssh}. This can be used only internally 
@@ -835,7 +836,7 @@ at ECMWF for the moment. If you are an external project partner
 you should use the following command instead:
 %
 \begin{lstlisting}[style=BashStyle]
-./escape/bin/escape checkout dwarf3-cloudscheme --user <username>
+./escape/bin/escape checkout dwarf-D-cloudMicrophysics-IFSScheme --user <username>
 \end{lstlisting}
 % 
 and follow the instructions. 
@@ -844,13 +845,13 @@ version of the dwarf. If you want to download a specific branch
 of this dwarf, you can do so by typing:
 %
 \begin{lstlisting}[style=BashStyle]
-./escape/bin/escape checkout dwarf3-cloudscheme --ssh \
+./escape/bin/escape checkout dwarf-D-cloudMicrophysics-IFSScheme --ssh \
 --version <branch-name>
 \end{lstlisting}
 % 
 An analogous approach can be used for the \inlsh{-\,-user} 
 version of the command. You should now have a folder called 
-\inlsh{dwarf3-cloudscheme}.
+\inlsh{dwarf-D-cloudMicrophysics-IFSScheme}.
 
 In the above command, you can specify several other optional 
 parameters. To see all these options and how to use them you 
@@ -867,15 +868,15 @@ different ways. The first way is to compile and
 install each dependency and the dwarf separately:
 %
 \begin{lstlisting}[style=BashStyle]
-./escape/bin/escape generate-install dwarf3-cloudscheme
+./escape/bin/escape generate-install dwarf-D-cloudMicrophysics-IFSScheme
 \end{lstlisting}
 % 
 The command above will generate a script 
-called \inlsh{install-dwarf3-cloudscheme} 
+called \inlsh{install-dwarf-D-cloudMicrophysics-IFSScheme} 
 that can be run by typing:
 %
 \begin{lstlisting}[style=BashStyle]
-./install-dwarf3-cloudscheme
+./install-dwarf-D-cloudMicrophysics-IFSScheme
 \end{lstlisting}
 %
 This last step will build and install the dwarf 
@@ -883,8 +884,8 @@ along with all its dependencies in the following
 paths:
 %
 \begin{lstlisting}[style=BashStyle]
-dwarf3-cloudscheme/builds/
-dwarf3-cloudscheme/install/
+dwarf-D-cloudMicrophysics-IFSScheme/builds/
+dwarf-D-cloudMicrophysics-IFSScheme/install/
 \end{lstlisting}
 %
 
@@ -892,7 +893,7 @@ The second way is to create a bundle that compile
 and install all the dependencies together:
 %
 \begin{lstlisting}[style=BashStyle]
-./escape/bin/escape generate-bundle dwarf3-cloudscheme
+./escape/bin/escape generate-bundle dwarf-D-cloudMicrophysics-IFSScheme
 \end{lstlisting}
 % 
 This command will create an infrastructure to avoid
@@ -928,7 +929,7 @@ Not supported yet.
 %ctest -j<number-of-tasks>
 %\end{lstlisting}
 %%
-%from inside the \inlsh{builds/dwarf3-cloudscheme}
+%from inside the \inlsh{builds/dwarf-D-cloudMicrophysics-IFSScheme}
 %folder.
 %%
 %\begin{warningbox}
@@ -948,37 +949,49 @@ Not supported yet.
 
 
 \section{Run the dwarf}
-To run a simple test case you need to link the input file, called \inlsh{cloudsc.bin}, 
-required by this dwarf to the directory from where you intend to run the excutable.
-This is located in the \inlsh{config-files} subfolder inside the \inlsh{dwarf3-cloudscheme} 
-directory and the link can be created as follows
+For the sake of compactness, we rename the various main 
+folders of the downloaded dwarf as follows 
 %
 \begin{lstlisting}[style=BashStyle]
-ln -s dwarf3-cloudscheme/sources/dwarf3-cloudscheme/config-files/cloudsc.bin .
+srcs=dwarf-D-cloudMicrophysics-IFSScheme/sources/
+inst=dwarf-D-cloudMicrophysics-IFSScheme/sources/
 \end{lstlisting}
 %
-The input data cloudsc.bin is a Fortran unformatted stream binary (no record delimiters). 
-It contains data for just 100 grid point columns and will be inflated to full spectre 
-of NGPTOT, where NGPTOT is the number of grid point columns.
-To run the a simple test you can now type:
+To run a simple test case you need to link the input file, 
+called \inlsh{cloudsc.bin}, required by this dwarf to the 
+directory from where you intend to run the excutable.
+This is located in the \inlsh{config-files} subfolder inside 
+the \inlsh{dwarf-D-cloudMicrophysics-IFSScheme} directory 
+and the link can be created as follows
 %
 \begin{lstlisting}[style=BashStyle]
-dwarf3-cloudscheme/builds/bundle/bin/dwarf3-cloudscheme OMP NGPTOT NPROMA-list
+ln -s srcs/dwarf-D-cloudMicrophysics-IFSScheme/config-files/cloudsc.bin .
 \end{lstlisting}
 %
-where OMP is the number of threads for OMP-parallel regions, NGPTOT is the already 
-mentioned number of grid point columns, NPROMA-list is a list of NPROMAs to use.
-For a simple test-case you can try the following parameter-combination:
+The input data cloudsc.bin is a Fortran unformatted stream binary 
+(no record delimiters). It contains data for just 100 grid point 
+columns and will be inflated to full spectre of NGPTOT, where 
+NGPTOT is the number of grid point columns. To run the a simple 
+test you can now type:
 %
 \begin{lstlisting}[style=BashStyle]
-dwarf3-cloudscheme/builds/bin/dwarf3-cloudsc 4 160000 2
+inst/bundle/bin/dwarf-D-cloudMicrophysics-IFSScheme OMP NGPTOT NPROMA-list
 \end{lstlisting}
 %
-Note that if you installed the dwarf through the bundle option, the executable 
-can be run with the following command:
+where OMP is the number of threads for OMP-parallel regions, 
+NGPTOT is the already mentioned number of grid point columns, 
+NPROMA-list is a list of NPROMAs to use. For a simple test-case 
+you can try the following parameter-combination:
 %
 \begin{lstlisting}[style=BashStyle]
-dwarf3-cloudscheme/builds/bundle/bin/dwarf3-cloudsc 4 160000 2
+inst/bin/dwarf3-cloudsc 4 160000 2
+\end{lstlisting}
+%
+Note that if you installed the dwarf through the bundle option, 
+the executable can be run with the following command:
+%
+\begin{lstlisting}[style=BashStyle]
+inst/bundle/bin/dwarf3-cloudsc 4 160000 2
 \end{lstlisting}
 %
 
@@ -987,7 +1000,7 @@ dwarf3-cloudscheme/builds/bundle/bin/dwarf3-cloudsc 4 160000 2
 
 \section{Integration}
 The cloud scheme is part of the physical processes required by any NWP model.
-Its inteegration is therefore naturally guaranteed independently from the 
+Its integration is therefore naturally guaranteed independently from the 
 dynamical core being used.
 
 
