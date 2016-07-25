@@ -4,5 +4,5 @@
   version : develop
   cmake   : -DENABLE_INSTALL=ON
 
-[dwarf3-cloudscheme]
+[dwarf-P-cloudMicrophysics-IFSScheme]
   kind    : project

@@ -6,5 +6,5 @@
 # granted to it by virtue of its status as an intergovernmental organisation nor
 # does it submit to any jurisdiction.
 
-file ( STRINGS "VERSION.tex" DWARF3VER )
-set  ( ${PROJECT_NAME}_VERSION_STR  ${DWARF3VER} )
+file ( STRINGS "VERSION.tex" DWARFVER )
+set  ( ${PROJECT_NAME}_VERSION_STR  ${DWARFVER} )

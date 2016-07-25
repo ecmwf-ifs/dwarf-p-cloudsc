@@ -1,9 +1,10 @@
-Dwarf 3
--------
-Contact: Gianmarco Mengaldo (gianmarco.mengaldo@ecmwf.int), Sami Saarinen (sami.saarinen@ecmwf.int), 
+Dwarf-P-cloudMicrophysics-IFSScheme
+-----------------------------------
+Contact: Gianmarco Mengaldo (gianmarco.mengaldo@ecmwf.int), 
+Sami Saarinen (sami.saarinen@ecmwf.int), 
 Willem Deconinck (willem.deconinck@ecmwf.int)
 
-Dwarf 3 is intended to test the cloud micro physics.
+Dwarf-P-cloudMicrophysics-IFSScheme is intended to test the cloud micro physics.
 
 The code is written in Fortran 2003 and it has been tested using the various compilers, including:
 
@@ -23,12 +24,14 @@ directory winthin the dwarf folder.
 
 Prototypes available
 --------------------
-- prototype1: cloud scheme from IFS.
+- prototype1: includes the cloud scheme from IFS that is naturally 
+suited to host-type machines and optimized on the Cray system at 
+ECMWF.
 
 
 Third Party Requirements
 ------------------------
-Requirements to compile dwarf3:
+Requirements to compile this dwarf:
 
     CMake: for use and installation see http://www.cmake.org/
     ecbuild
