@@ -494,7 +494,7 @@ pdfauthor={I am the Author}
 %%% THE DOCUMENT
 %%%-------------------------------------------------------------------------------
 \author{ECMWF, Shinfield Park, Reading, UK\newline}
-\title{Dwarf 3: Cloud Scheme}
+\title{Dwarf-P-cloudMicrophysics-IFSScheme}
 \date{\today}
 
 
@@ -685,8 +685,8 @@ or sink of $q_x$ through microphysical processes, and the last term
 represents the sedimentation of $q_x$ with fall speed $V_x$.
 
 The solution to this set of equations uses the upstream approach. Writing the
-advection term in mass flux form and collecting all fast processes (relative to
-the model timestep) into an implicit term, gives:
+advection term in mass flux form and collecting all fast processes (relative 
+to the model timestep) into an implicit term, gives:
 \begin{equation}
 \frac{q_x^{n+1}-q_x^{n}}{\Delta t} = A_x 
 +\sum_{x=1}^{m}B_{xy}q_y^{n+1}
@@ -774,16 +774,33 @@ A_{11} & A_{21} & A_{31} \\
 \right)
 \end{eqnarray}
 
-Thus $A_{xy}>0$ represents a source of $q_x$ and a sink of $q_y$, and
-the original vector for $A$ can be obtained by summing over the rows.
-Although this matrix approach involves a degree of redundancy, it is a
-simple method of ensuring conservation properties. The matrix
-diagonals $A_{xx}$ contain the 'external' sources of $q_x$ such as the
-cloud water detrainment terms from the convection scheme.
+Thus $A_{xy}>0$ represents a source of $q_x$ and a sink of $q_y$, 
+and the original vector for $A$ can be obtained by summing over 
+the rows.
+Although this matrix approach involves a degree of redundancy, 
+it is a simple method of ensuring conservation properties. The 
+matrix diagonals $A_{xx}$ contain the 'external' sources of $q_x$ 
+such as the cloud water detrainment terms from the convection scheme.
 
 In order to simultaneously guarantee conservation and
 positive-definite properties, the sum of all sinks for 
 a given variable are scaled to avoid negative values. 
+
+
+\subsection{Dwarf interfaces}
+
+
+
+\section{Prototypes}
+In this section we describe the prototypes available.
+
+
+
+\subsection{Prototype1}
+The first prototype implements the cloud microphysics using 
+the column-based scheme coming from the IFS. The implementation 
+is optimised to run on a traditional host-based machine.
+
 
 
 
@@ -975,7 +992,8 @@ NGPTOT is the number of grid point columns. To run the a simple
 test you can now type:
 %
 \begin{lstlisting}[style=BashStyle]
-inst/bundle/bin/dwarf-D-cloudMicrophysics-IFSScheme OMP NGPTOT NPROMA-list
+inst/bundle/bin/dwarf-D-cloudMicrophysics-IFSScheme-prototype1 \
+OMP NGPTOT NPROMA-list
 \end{lstlisting}
 %
 where OMP is the number of threads for OMP-parallel regions, 
@@ -984,14 +1002,14 @@ NPROMA-list is a list of NPROMAs to use. For a simple test-case
 you can try the following parameter-combination:
 %
 \begin{lstlisting}[style=BashStyle]
-inst/bin/dwarf3-cloudsc 4 160000 2
+inst/bin/dwarf-P-cloudMicrophysics-IFSScheme-prototype1 4 160000 2
 \end{lstlisting}
 %
 Note that if you installed the dwarf through the bundle option, 
 the executable can be run with the following command:
 %
 \begin{lstlisting}[style=BashStyle]
-inst/bundle/bin/dwarf3-cloudsc 4 160000 2
+inst/bundle/bin/dwarf-D-cloudMicrophysics-IFSScheme-prototype1 4 160000 2
 \end{lstlisting}
 %
 
@@ -999,9 +1017,10 @@ inst/bundle/bin/dwarf3-cloudsc 4 160000 2
 
 
 \section{Integration}
-The cloud scheme is part of the physical processes required by any NWP model.
-Its integration is therefore naturally guaranteed independently from the 
-dynamical core being used.
+The cloud scheme is part of the physical processes required 
+by any NWP model. Its integration is therefore naturally 
+guaranteed independently from the dynamical core being 
+used.
 
 
 \backmatter

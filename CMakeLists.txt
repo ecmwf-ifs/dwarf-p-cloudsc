@@ -15,7 +15,7 @@ set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} 
 set( CMAKE_BUILD_TYPE None )
 
 # define the project
-project(dwarf3 )
+project(dwarf-P-cloudMicrophysics-IFSScheme)
 
 set(ENABLE_OS_TYPES_TEST       OFF   CACHE BOOL " ")
 set(ENABLE_OS_FUNCTIONS_TEST   OFF   CACHE BOOL " ")
@@ -44,7 +44,7 @@ if(HAVE_DOCS)
 endif()
 
 # finalize
-ecbuild_install_project(NAME dwarf3)
+ecbuild_install_project(NAME dwarf-P-cloudMicrophysics-IFSScheme)
 
 # print summary
 ecbuild_print_summary()

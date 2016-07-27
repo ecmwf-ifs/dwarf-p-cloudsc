@@ -6,7 +6,7 @@ set(DOCUMENTATION ${CMAKE_CURRENT_BINARY_DIR})
 # HTML GENERATION =============================================================
 file(MAKE_DIRECTORY ${DOCUMENTATION}/html)
 
-add_custom_target(dwarf3-documentation-html
+add_custom_target(dwarf-P-cloudMicrophysics-IFSScheme-documentation-html
    export TEXINPUTS=${CMAKE_SOURCE_DIR}//:${DOCUMENTATIONSRC}//: &&
    ${HTLATEX} ${DOCUMENTATIONSRC}/documentation.tex
    "${DOCUMENTATIONSRC}/styling.cfg,html,3,next,NoFonts"
@@ -22,11 +22,11 @@ FILE(GLOB_RECURSE imgfiles
     "applications/*/imgs/*.png" "applications/*/imgs/*jpg")
 
 add_custom_command(
-   TARGET dwarf3-documentation-html
+   TARGET dwarf-P-cloudMicrophysics-IFSScheme-documentation-html
    POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION}/html/imgs)
 
 FOREACH(img ${imgfiles})
-   ADD_CUSTOM_COMMAND(TARGET dwarf3-documentation-html
+   ADD_CUSTOM_COMMAND(TARGET dwarf-P-cloudMicrophysics-IFSScheme-documentation-html
        POST_BUILD COMMAND
        ${CMAKE_COMMAND} -E copy ${img} ${DOCUMENTATION}/html/imgs)
 ENDFOREACH()
@@ -44,7 +44,7 @@ FIND_PROGRAM(CONVERT convert)
 FOREACH(pdf ${pdffiles})
    GET_FILENAME_COMPONENT(BASENAME ${pdf} NAME_WE)
    ADD_CUSTOM_COMMAND(
-       TARGET dwarf3-documentation-html
+       TARGET dwarf-P-cloudMicrophysics-IFSScheme-documentation-html
        POST_BUILD COMMAND
        ${CONVERT} ${pdf} ${DOCUMENTATION}/html/imgs/${BASENAME}.png)
 ENDFOREACH()
@@ -55,7 +55,7 @@ FIND_PROGRAM(BIBTEX bibtex)
 MARK_AS_ADVANCED(BIBTEX)
 
 # PDF GENERATION ==============================================================
-add_custom_target(dwarf3-documentation-pdf
+add_custom_target(dwarf-P-cloudMicrophysics-IFSScheme-documentation-pdf
    export TEXINPUTS=${CMAKE_SOURCE_DIR}//: &&
    ${PDFLATEX} --output-directory ${DOCUMENTATION} ${DOCUMENTATIONSRC}/documentation.tex
    COMMAND TEXMFOUTPUT=${DOCUMENTATION} ${BIBTEX} ${DOCUMENTATION}/documentation.aux
@@ -65,17 +65,17 @@ add_custom_target(dwarf3-documentation-pdf
    WORKING_DIRECTORY ${DOCUMENTATIONSRC} )
 # =============================================================================
 
-add_custom_target(dwarf3_doc_pdf)
-add_dependencies(dwarf3_doc_pdf dwarf3-documentation-pdf)
+add_custom_target(dwarf-P-cloudMicrophysics-IFSScheme_doc_pdf)
+add_dependencies(dwarf-P-cloudMicrophysics-IFSScheme_doc_pdf dwarf-P-cloudMicrophysics-IFSScheme-documentation-pdf)
 
-add_custom_target(dwarf3_doc_html)
-add_dependencies(dwarf3_doc_html dwarf3-documentation-html)
+add_custom_target(dwarf-P-cloudMicrophysics-IFSScheme_doc_html)
+add_dependencies(dwarf-P-cloudMicrophysics-IFSScheme_doc_html dwarf-P-cloudMicrophysics-IFSScheme-documentation-html)
 
-add_custom_target(dwarf3_doc)
-add_dependencies(dwarf3_doc dwarf3_doc_pdf)
+add_custom_target(dwarf-P-cloudMicrophysics-IFSScheme_doc)
+add_dependencies(dwarf-P-cloudMicrophysics-IFSScheme_doc dwarf-P-cloudMicrophysics-IFSScheme_doc_pdf)
 
 if( PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME )
   add_custom_target(doc)
-  add_dependencies(doc dwarf3_doc)
+  add_dependencies(doc dwarf-P-cloudMicrophysics-IFSScheme_doc)
 endif()
 
