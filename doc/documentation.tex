@@ -28,7 +28,9 @@ openany,     % A chapter may start on either a recto or verso page.
 \usepackage[final]{microtype}
 
 % Math
-\usepackage{amsmath,amssymb,mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
 
 % http://ctan.org/pkg/pifont
 \usepackage{pifont}
@@ -39,9 +41,15 @@ openany,     % A chapter may start on either a recto or verso page.
 \usepackage{graphicx}
 \usepackage{makeidx}
 \usepackage{import}
-\usepackage[]{algorithm2e}
+\usepackage{algorithm}
 \usepackage{algpseudocode}
-\RestyleAlgo{boxruled}
+
+\algdef{SE}[SUBALG]{Indent}{EndIndent}{}{\algorithmicend\ }%
+\algtext*{Indent}
+\algtext*{EndIndent}
+
+\algnewcommand{\LineComment}[1]{\State \(\triangleright\) #1}
+
 
 %%% PAGE LAYOUT 
 %%%-----------------------------------------------------------------------------
@@ -774,27 +782,413 @@ A_{11} & A_{21} & A_{31} \\
 \right)
 \end{eqnarray}
 
-Thus $A_{xy}>0$ represents a source of $q_x$ and a sink of $q_y$, 
+Thus $A_{xy}>0$ represents a source of $q_{x}$ and a sink of $q_{y}$, 
 and the original vector for $A$ can be obtained by summing over 
 the rows.
 Although this matrix approach involves a degree of redundancy, 
 it is a simple method of ensuring conservation properties. The 
-matrix diagonals $A_{xx}$ contain the 'external' sources of $q_x$ 
-such as the cloud water detrainment terms from the convection scheme.
+matrix diagonals $A_{xx}$ contain the 'external' sources of $q_{x}$ 
+such as the cloud water detrainment terms from the convection 
+scheme.
 
 In order to simultaneously guarantee conservation and
 positive-definite properties, the sum of all sinks for 
 a given variable are scaled to avoid negative values. 
 
 
-\subsection{Dwarf interfaces}
+\newpage
+\subsection{Pseudo-algorithm}
+The steps described in the previous subsections leads to the cloud 
+microphysics pseudo-algorithm reported in the following blocks 
+of code.
+
+\newpage
+%
+\begin{algorithm}[H]
+\caption{Core cloud micro physics loop}\label{alg:core-loop}
+\begin{algorithmic}
+\State \textbf{set} constants and \textbf{erase} input cloud values
+\vspace{.1cm}
+\State \textbf{for} jk = ncldtop,...,klev
+\Indent
+\LineComment{initialize variables}
+\Indent
+\State $A_{a} = 0$;\;\;\; $B_{a} = 0$; \;\;\; 
+$A_{q_{x} q_{y}} = 0$; \;\;\; $B_{q_{x} q_{y}} = 0$
+\EndIndent
+\vspace{.2cm}
+\State \textcolor{blue}{\textbf{compute} cloud processes} \label{lis:cloud-proc}
+\State \textcolor{blue}{\textbf{compute} precipitation processes} \label{lis:precipitation-proc}
+\vspace{.3cm}
+\State \textbf{solve} for cloud cover (a) at $t^{n+1}$: $a^{n+1} = (a^{n} + A_{a})/(1 + B_{a})$
+\vspace{.1cm}
+\LineComment{cloud microphysics calculations}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\For{jl = 0,...,ngptot}
+\For{jm = 0,...,mtot}
+\For{jn = 0,...,ntot}
+\State \textbf{add up} all sink terms and \textbf{calculate} overshoot
+\State \textbf{if} overshoot == false \textbf{then} scaling factor = 1
+\State \textbf{else if} overshoot == true \textbf{then} compute scaling factor 
+\State \textbf{scale} sink terms in the correct order
+\EndFor
+\EndFor
+\EndFor
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\EndIndent
+\vspace{.5cm}
+\LineComment{cloud/vapour calculations}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\For{jl = 0,...,ngptot}
+\For{jm = 0,...,mtot}
+\For{jn = 0,...,ntot}
+\If{jn == jm}
+\State zqlhs(jl,jn,jm) = 1 + zfallsink(jl,jm)
+\For{jo = 0,...,nclv}
+\State $zqlhs(jl,jn,jm)=zqlhs(jl,jn,jm) + zsolqb(jl,jo,jn)$ 
+\State \textbf{or} $zqlhs(x,y) = zqlhs(x,y) + B_{q_z q_x}$
+\EndFor
+\EndIf
+\If{jn != jm}
+\State $zqlhs(jl,jn,jm)= -zsolqb(jl,jn,jm)$ 
+\State \textbf{or}  $zqlhs(x,y) = - B_{q_x q_y}$
+\EndIf
+\EndFor
+\EndFor
+\EndFor
+\State ....
+\EndIndent
+\EndIndent
+\algstore{bkbreak1}
+\end{algorithmic}
+\end{algorithm}
+%
+%
+\begin{algorithm}[H]
+\begin{algorithmic}
+\algrestore{bkbreak1}
+\Indent
+\Indent
+\State ...
+\LineComment{continuing cloud/vapour calculations}
+\LineComment{Set the right hand side of the equation (explicit terms)}
+\State $q_{n+1} = q_{n} + A_{q_{x} q_{y}}$
+\vspace{.1cm}
+\State \textbf{solve} matrix equation (11) \label{lst:equation11} 
+\State \textbf{compute} precipitation fluxes (loops over jl and jm)
+\vspace{.2cm}
+\State \textbf{update} tendencies (jl,jm) - temperature and cloud condensate
+\Indent
+\State \textbf{compute} temperature changes from phase changes
+\State \textbf{compute} cloud tendencies $q_{n+1} - q_{n}$
+\EndIndent
+\vspace{.1cm}
+\State \textbf{update} tendencies (jl) - humidity and cloud cover
+\vspace{-.2cm}
+\EndIndent
+\State ---------------------------------------------------------------------------------------
+\EndIndent
+\State \textbf{end for} (close main loop over levels jk)
+\State \textbf{compute} flux changes for diagnostics (jl,jk-loops)
+\end{algorithmic}
+\end{algorithm}
+
+
+\newpage
+%
+\begin{algorithm}[H]
+\caption{Computation of cloud processes (see line \ref{lis:cloud-proc} 
+in Algorithm~\ref{alg:core-loop})}
+\label{alg:cloud-proc}
+\begin{algorithmic}
+\vspace{.2cm}
+\LineComment{supersaturation due to change in humidity}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State - from this timestep (jl-loop)
+\State $A_{q_li q_v} = A_{q_li q_v} + S_{q_{zsupsat}}$
+\State $A_{q_v q_li} = A_{q_v q_li} - S_{q_{zsupsat}}$
+\State $A_a = A_a + S_{a_zsupsat}$
+\State - from previous timestep (jl-loop)
+\State $A_{q_l q_l} = A_{q_l q_l} + S_{q_{psupsat}}$
+\State $A_{q_i q_i} = A_{q_i q_i} + S_{q_{psupsat}}$
+\State $A_a = A_a + S_{a_psupsat}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+
+\LineComment{detrain cloud from convection (jl-loop)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_l q_l} = A_{q_l q_l} + S_{q_{zconvsrce}}$
+\State $A_{q_i q_i} = A_{q_i q_i} + S_{q_{zconvsrce}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+
+\LineComment{environmental subsidence and evaporation (jl,jm-loops)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State - subsidence source (explicit - dependency on level above)
+\State $A_{q_l q_l} = A_{q_l q_l} + S_{q_{zlcust}}$
+\State $A_{q_i q_i} = A_{q_i q_i} + S_{q_{zlcust}}$
+\State $A_a = A_a + S_{a_zacust}$
+\State - evaporation (explicit)    
+\State $A_{q_li q_v} = A_{q_li q_v} + S_{q_{zevap}}$
+\State $A_{q_v q_li} = A_{q_v q_li} - S_{q_{zevap}}$
+\State - Subsidence sink (implicit)
+\State $B_{q_l q_l} = B_{q_l q_l} + S_{q_{zmfdn}}$
+\State $B_{q_i q_i} = B_{q_i q_i} + S_{q_{zmfdn}}$
+\State $B_a = B_a + S_{a_zmfdn}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+
+\LineComment{erosion of clouds by turbulent mixing (jl-loop)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_li q_v} = A_{q_li q_v} + S_{q_{zleros}}$
+\State $A_{q_v q_li} = A_{q_v q_li} - S_{q_{zleros}}$
+\State $A_a = A_a + S_{a_zaeros}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\State ...
+\algstore{bkbreak2}
+\end{algorithmic}
+\end{algorithm}
+%
+
+%
+\begin{algorithm}[H]
+\begin{algorithmic}
+\algrestore{bkbreak2}
+\vspace{.2cm}
+\State ...
+\vspace{.2cm}
+\LineComment{condensation/evaporation (jl-loop)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State \textbf{call cuadjtq} to calculate saturation adjustment (jl,jk 2d arrays)
+\State - evaporation of cloud
+\State $A_{q_li q_v} = A_{q_li q_v} + S_{q_{zlevap}}$
+\State $A_{q_v q_li} = A_{q_v q_li} - S_{q_{zlevap}}$
+\State - condensation in existing cloud
+\State $A_{q_li q_v} = A_{q_li q_v} + S_{q_{zlcond1}}$
+\State $A_{q_v q_li} = A_{q_v q_li} - S_{q_{zlcond1}}$
+\State - condensation of new cloud
+\State $A_{q_li q_v} = A_{q_li q_v} + S_{q_{zlcond2}}$
+\State $A_{q_v q_li} = A_{q_v q_li} - S_{q_{zlcond2}}$
+\State $A_a = A_a + S_{a_zacond}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\LineComment{growth of ice by vapour deposition (jl-loop)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_i q_l} = A_{q_i q_l} + S_{q_{zdepos}}$
+\State $A_{q_l q_i} = A_{q_l q_i} + S_{q_{zdepos}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\EndIndent
+\end{algorithmic}
+\end{algorithm}
+%
+
+
+
+\newpage
+%
+\begin{algorithm}[H]
+\caption{Computation of precipitation processes (see line \ref{lis:precipitation-proc} 
+in Algorithm~\ref{alg:core-loop})}
+\label{alg:cloud-proc}
+\begin{algorithmic}
+\vspace{.2cm}
+\LineComment{sedimentation of ice, rain, snow (jl,jm-loops, dependency on level above)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_i q_i} = A_{q_i q_i} + S_{q_{zfallsrce}}$
+\State $A_{q_r q_r} = A_{q_r q_r} + S_{q_{zfallsrce}}$
+\State $A_{q_s q_s} = A_{q_s q_s} + S_{q_{zfallsrce}}$
+\State \textbf{update} precipitation cover zcovptot and related variables
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+
+\LineComment{autoconversion of ice to snow (implicit) (jl-loop)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $B_{q_s q_i} = B_{q_s q_i} + S_{q_{zsnowaut}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+
+\LineComment{autoconversion of liquid to rain (jl-loop)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_rs q_l} = A_{q_rs q_l} + S_{q_{zrainaut}}$
+\State $A_{q_l q_rs} = A_{q_l q_rs} - S_{q_{zrainaut}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+
+\LineComment{riming - collection of cloud liquid by snow (implicit) (jl-loop,}
+\State dependency on level above)
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $B_{q_s q_l} = B_{q_s q_l} + S_{q_{zsnowrime}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\LineComment{melting of snow and ice (jl,jm-loops, dependency on level above)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_r q_is} = A_{q_r q_is} + S_{q_{zmelt}}$
+\State $A_{q_is q_r} = A_{q_is q_r} - S_{q_{zmelt}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\LineComment{freezing of rain (jl-loop, dependency on level above)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_s q_r} = A_{q_s q_r} + S_{q_{zfrz}}$
+\State $A_{q_r q_s} = A_{q_r q_s} - S_{q_{zfrz}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\LineComment{freezing of cloud liquid (jl-loop)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_i q_l} = A_{q_i q_l} + S_{q_{zfrz}}$
+\State $A_{q_l q_i} = A_{q_l q_i} - S_{q_{zfrz}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\State ...
+\algstore{bkbreak3}
+\end{algorithmic}
+\end{algorithm}
+%
+
+%
+\begin{algorithm}[H]
+\begin{algorithmic}
+\algrestore{bkbreak3}
+\vspace{.2cm}
+\State ...
+\vspace{.2cm}
+\LineComment{rain evaporation (jl-loop, dependency on level above)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_v q_r} = A_{q_v q_r} + S_{q_{zevap}}$
+\State $A_{q_r q_v} = A_{q_r q_v} - S_{q_{zevap}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\LineComment{snow evaporation (jl-loop, dependency on level above)}
+\Indent
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{-.2cm}
+\State $A_{q_v q_s} = A_{q_v q_s} + S_{q_{zevap}}$
+\State $A_{q_s q_v} = A_{q_s q_v} - S_{q_{zevap}}$
+\vspace{-.2cm}
+\State ---------------------------------------------------------------------------------------
+\vspace{.4cm}
+\EndIndent
+\end{algorithmic}
+\end{algorithm}
+%
+
+
+At line \ref{lst:equation11}, this dwarf uses a non-pivoting recursive factorization 
+followed by back substitution to give the cloud variables at the new timestep 
+$q_{n+1}$.
+
+
+
+
+\newpage
+\subsection{I/O interfaces}
+The primary I/O interface data is as follows:
+%
+\begin{itemize}
+\item \textbf{Input}: an array of vertical profiles in grid point space of the start of 
+timestep temperature, humidity, cloud liquid water, cloud ice, cloud fraction, rain 
+and snow, as well as the accumulated tendencies for these variables from all the 
+processes up to this point (dynamics and physics). Adding the accumulated tendencies 
+to the start of timestep values gives the updated values at the current point in the 
+timestep.
+\item \textbf{Output}: an array of vertical profiles of the tendencies of temperature, 
+humidity, cloud liquid water, cloud ice, cloud fraction, rain and snow calculated 
+within this call of the cloud scheme.
+\end{itemize}
+%
+The dimensions of the grid point fields are (KLON,KLEV) where KLON is the number 
+of grid columns and KLEV is the number of levels. KLEV is 91 or 137 for current operational 
+applications and could be around 200 for next generation systems. Grid columns are 
+completely independent of each other for the call to the cloud scheme, so KLON can 
+be any value depending on the domain decomposition. For the full globe for current 
+operations and for next generation NWP, typical global number of grid columns are 
+of order 6.E6 for TCo1279 (9 km global resolution ? currently operational), 2.E7 for 
+TCo1999 (5 km global resolution), 8.E7 for TCo3999 (2.5 km global resolution), and 
+3.E8 for TCo7999 (1.3 km global resolution). The acronym TCo refers to the Cubic 
+Octahedral grid.
 
 
 
 \section{Prototypes}
 In this section we describe the prototypes available.
-
-
 
 \subsection{Prototype1}
 The first prototype implements the cloud microphysics using 
