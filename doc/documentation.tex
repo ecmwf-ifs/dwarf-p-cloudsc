@@ -730,8 +730,8 @@ to convective subsidence and sedimentation act only in the downward direction,
 allowing the solution to be conducted level by level from the model top down.
 
 The matrix on the left-hand side has the microphysical terms in isolation off the diagonal,
-with the sedimentation term on the diagonal, thus the matrix equation for a
-3-variable system is
+with the sedimentation term on the diagonal, thus the matrix equation for a 3-variable 
+system is
 {\footnotesize
 \begin{eqnarray}
 \left(
@@ -764,14 +764,13 @@ q_1^{n} + \Delta t \left(A_1 +
 \end{eqnarray}
 }
 
-There are some aspects that require attention.  Firstly, although
-implicit terms are unable to reduce a cloud category to zero, the
-explicit can, and often will, achieve this.  Thus safety checks are
-required to ensure that all end-of-timestep variables remain positive
-definite, in addition to ensuring conservation.  Practically, to aid
-the conservation requirement, the explicit source and sink terms are
-thus also generalised from a vector $\vec A$ to an anti-symmetric
-matrix  $\widetilde{A}$,
+There are some aspects that require attention.  Firstly, although implicit terms are unable 
+to reduce a cloud category to zero, the explicit can, and often will, achieve this.  Thus 
+safety checks are required to ensure that all end-of-timestep variables remain positive 
+definite, in addition to ensuring conservation.  Practically, to aid the conservation requirement, 
+the explicit source and sink terms are thus also generalised from a vector $\vec A$ to an 
+anti-symmetric matrix  $\widetilde{A}$,
+%
 \begin{eqnarray}
 \widetilde{A}=\left(
 \begin{array}{ccc}
@@ -781,33 +780,31 @@ A_{11} & A_{21} & A_{31} \\
 \end{array}
 \right)
 \end{eqnarray}
+%
+Thus $A_{xy}>0$ represents a source of $q_{x}$ and a sink of $q_{y}$, and the original vector 
+for $A$ can be obtained by summing over the rows. Although this matrix approach involves 
+a degree of redundancy, it is a simple method of ensuring conservation properties. The matrix 
+diagonals $A_{xx}$ contain the 'external' sources of $q_{x}$ such as the cloud water detrainment 
+terms from the convection scheme.
 
-Thus $A_{xy}>0$ represents a source of $q_{x}$ and a sink of $q_{y}$, 
-and the original vector for $A$ can be obtained by summing over 
-the rows.
-Although this matrix approach involves a degree of redundancy, 
-it is a simple method of ensuring conservation properties. The 
-matrix diagonals $A_{xx}$ contain the 'external' sources of $q_{x}$ 
-such as the cloud water detrainment terms from the convection 
-scheme.
-
-In order to simultaneously guarantee conservation and
-positive-definite properties, the sum of all sinks for 
-a given variable are scaled to avoid negative values. 
+In order to simultaneously guarantee conservation and positive-definite properties, the sum of all 
+sinks for a given variable are scaled to avoid negative values. 
 
 
 \newpage
 \subsection{Pseudo-algorithm}
-The steps described in the previous subsections leads to the cloud 
-microphysics pseudo-algorithm reported in the following blocks 
-of code.
+The steps described in the previous subsections leads to the cloud microphysics pseudo-algorithm 
+reported in the following blocks of code. Note that, to solve the cloud/precipitation/vapour equation, 
+(see also line \ref{lst:equation11} in Algorithm~\ref{alg:core-loop}), this dwarf uses an LU decomposition 
+with non-pivoting recursive factorization followed by back substitution to give the cloud variables 
+at the new timestep $q_{n+1}$.
 
 \newpage
 %
 \begin{algorithm}[H]
 \caption{Core cloud micro physics loop}\label{alg:core-loop}
 \begin{algorithmic}
-\State \textbf{set} constants and \textbf{erase} input cloud values
+\State \textbf{set} constants
 \vspace{.1cm}
 \State \textbf{for} jk = ncldtop,...,klev
 \Indent
@@ -842,7 +839,7 @@ $A_{q_{x} q_{y}} = 0$; \;\;\; $B_{q_{x} q_{y}} = 0$
 \vspace{-.2cm}
 \EndIndent
 \vspace{.5cm}
-\LineComment{cloud/vapour calculations}
+\LineComment{cloud/precipitation//vapour calculations}
 \Indent
 \vspace{-.2cm}
 \State ---------------------------------------------------------------------------------------
@@ -854,12 +851,10 @@ $A_{q_{x} q_{y}} = 0$; \;\;\; $B_{q_{x} q_{y}} = 0$
 \State zqlhs(jl,jn,jm) = 1 + zfallsink(jl,jm)
 \For{jo = 0,...,nclv}
 \State $zqlhs(jl,jn,jm)=zqlhs(jl,jn,jm) + zsolqb(jl,jo,jn)$ 
-\State \textbf{or} $zqlhs(x,y) = zqlhs(x,y) + B_{q_z q_x}$
 \EndFor
 \EndIf
 \If{jn != jm}
 \State $zqlhs(jl,jn,jm)= -zsolqb(jl,jn,jm)$ 
-\State \textbf{or}  $zqlhs(x,y) = - B_{q_x q_y}$
 \EndIf
 \EndFor
 \EndFor
@@ -878,7 +873,7 @@ $A_{q_{x} q_{y}} = 0$; \;\;\; $B_{q_{x} q_{y}} = 0$
 \Indent
 \Indent
 \State ...
-\LineComment{continuing cloud/vapour calculations}
+\LineComment{continuing cloud/precipitation/vapour calculations}
 \LineComment{Set the right hand side of the equation (explicit terms)}
 \State $q_{n+1} = q_{n} + A_{q_{x} q_{y}}$
 \vspace{.1cm}
@@ -1149,11 +1144,6 @@ in Algorithm~\ref{alg:core-loop})}
 \end{algorithmic}
 \end{algorithm}
 %
-
-
-At line \ref{lst:equation11}, this dwarf uses a non-pivoting recursive factorization 
-followed by back substitution to give the cloud variables at the new timestep 
-$q_{n+1}$.
 
 
 
