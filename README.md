@@ -35,12 +35,9 @@ Requirements to compile this dwarf:
 
     CMake: for use and installation see http://www.cmake.org/
     ecbuild
-    eckit (with mpi support -- meaning either eckit_mpi or eckit_mpistubs library)
-    fckit
 
 Recommended:
 
-    MPI: distributed memory parallelisation
     OpenMP: shared memory parallelisation
 
 
