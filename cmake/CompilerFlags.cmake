@@ -14,6 +14,7 @@ elseif ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
     ecbuild_add_fortran_flags("-fno-second-underscore"           )
     ecbuild_add_fortran_flags("-ffree-form"                      )
     ecbuild_add_fortran_flags("-ffast-math"                      )
+    ecbuild_add_fortran_flags("-fno-unsafe-math-optimizations"   )
 
 elseif ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel")
     ecbuild_add_fortran_flags("-O2"                           )
