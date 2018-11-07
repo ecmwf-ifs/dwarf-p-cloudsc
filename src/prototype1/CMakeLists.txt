@@ -43,20 +43,36 @@ if(${EC_OS_NAME} MATCHES "macosx")
   list( APPEND CLOUDSC_DEFINITIONS DARWIN)
 endif()
 
+
+# Default install dir if not given by the user
+if(NOT SERIALBOX_ROOT)
+  set(SERIALBOX_ROOT "/home/rd/naml/apps/serialbox2/install")
+  message(STATUS "Set serialbox2 install directory to: ${SERIALBOX_ROOT}")
+endif()
+set( SERIALBOX_USE_SHARED_LIBS ON )
+# Find installed version of serialbox
+find_package(Serialbox REQUIRED COMPONENTS Fortran HINTS
+  "${SERIALBOX_ROOT}/cmake/"
+)
+
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
 ecbuild_add_library(TARGET dwarf-P-cloudMicrophysics-IFSScheme-libs
                     DEFINITIONS
                         ${CLOUDSC_DEFINITIONS}
+		    INCLUDES
+		        ${SERIALBOX_INCLUDE_DIRS}
                     SOURCES
                         ${dwarf_P_cloudMicrophysics_IFSScheme_srcs}
                         ${dwarf_P_cloudMicrophysics_IFSScheme_support_srcs}
+                    LIBS
+		        ${SERIALBOX_FORTRAN_LIBRARIES}
 )
-
 
 ecbuild_add_executable(TARGET  dwarf-P-cloudMicrophysics-IFSScheme
                        SOURCES cloudsc_dwarf.F90 
-                       LIBS    dwarf-P-cloudMicrophysics-IFSScheme-libs                                
+                       LIBS
+		           dwarf-P-cloudMicrophysics-IFSScheme-libs
 )
-
