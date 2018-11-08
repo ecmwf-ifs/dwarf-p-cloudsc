@@ -12,6 +12,7 @@ support/abor1.F90
 support/diag_mod.F90
 support/diff_mod.F90
 support/expand_mod.F90
+support/serialize_mod.F90
 support/mycpu.c
 support/parkind1.F90
 support/routines.F90
