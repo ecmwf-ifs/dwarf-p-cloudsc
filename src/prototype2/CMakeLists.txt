@@ -6,7 +6,8 @@ ecbuild_add_library(
         ${SERIALBOX_INCLUDE_DIRS}
     SOURCES 
         modules/parkind1.F90    	    
-        cloudsc/cloudsc_driver.F90
+        cloudsc/cloudsc_global_state_mod.F90
+        cloudsc/load_state_mod.F90
     LIBS
         ${SERIALBOX_FORTRAN_LIBRARIES}
 )
