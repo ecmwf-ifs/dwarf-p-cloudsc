@@ -6,7 +6,7 @@ USE EXPAND_MOD, ONLY : loadjj, expand
 USE DIAG_MOD, ONLY : NGPTOT, NPROMA, NGPBLKS, NPROMAS_IN, NUMOMP
 USE timer_mod, ONLY : ftimer
 USE diff_mod, ONLY : errhead, errcalc, saveref
-USE serialize_mod, ONLY : query_dimensions, serialize, deserialize
+USE serialize_mod, ONLY : query_dimensions, serialize, deserialize, serialize_reference
 
 #ifdef _OPENMP
 use omp_lib
@@ -312,7 +312,15 @@ CALL CLOUDSC &
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
      & PFSQLTUR, PFSQITUR , &
      & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN,&
-     & PEXTRA_tmp,   KFLDX)  
+     & PEXTRA_tmp,   KFLDX)
+
+! Generate reference data if flag is set
+call serialize_reference( KLON, KLEV, &
+     & PCOVPTOT, PRAINFRAC_TOPRFZ,&
+     & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
+     & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
+     & PFSQLTUR, PFSQITUR , &
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN)
 
 CALL saveref('PLUDE',PLUDE_tmp)
 DEALLOCATE(PLUDE_tmp)

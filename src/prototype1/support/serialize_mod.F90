@@ -616,4 +616,57 @@ contains
     call ppser_finalize
   end subroutine deserialize
 
+  subroutine serialize_reference( KLON, KLEV, &
+       & PCOVPTOT, PRAINFRAC_TOPRFZ,&
+       & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
+       & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
+       & PFSQLTUR, PFSQITUR, PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN)
+    ! Serialize reference data for offline validation
+    INTEGER(KIND=JPIM), INTENT(IN) :: KLON, KLEV
+    REAL(KIND=JPRB), INTENT(INOUT) :: PCOVPTOT(KLON,KLEV)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PRAINFRAC_TOPRFZ(KLON)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFSQLF(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFSQIF(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFCQLNG(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFCQNNG(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFSQRF(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFSQSF(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFCQRNG(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFCQSNG(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFSQLTUR(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFSQITUR(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFPLSL(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFPLSN(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFHPSL(KLON,KLEV+1)
+    REAL(KIND=JPRB), INTENT(INOUT) :: PFHPSN(KLON,KLEV+1)
+
+    ! Initialize serializer for storing reference input
+    call ppser_initialize(directory='data', prefix='reference')
+    call fs_create_savepoint('reference', ppser_savepoint)
+    call ppser_set_mode(0)
+
+    ! Store dimensions on the serializer
+    call fs_add_serializer_metainfo(ppser_serializer, 'KLON', KLON)
+    call fs_add_serializer_metainfo(ppser_serializer, 'KLEV', KLEV)
+
+    ! Store the reference field data
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PCOVPTOT', PCOVPTOT)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PRAINFRAC_TOPRFZ', PRAINFRAC_TOPRFZ)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFSQLF', PFSQLF)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFSQIF', PFSQIF)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFCQLNG', PFCQLNG)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFCQNNG', PFCQNNG)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFSQRF', PFSQRF)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFSQSF', PFSQSF)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFCQRNG', PFCQRNG)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFCQSNG', PFCQSNG)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFSQLTUR', PFSQLTUR)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFSQITUR', PFSQITUR)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFPLSL', PFPLSL)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFPLSN', PFPLSN)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFHPSL', PFHPSL)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PFHPSN', PFHPSN)
+
+    call ppser_finalize
+  end subroutine serialize_reference
 end module serialize_mod
