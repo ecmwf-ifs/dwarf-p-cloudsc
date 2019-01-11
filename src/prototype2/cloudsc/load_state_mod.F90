@@ -118,14 +118,19 @@ contains
     call expand(buffer, field, nlon, nproma, nlev, ndim, ngptot, nblocks)
   end subroutine load_and_expand_r3
 
-  subroutine load_and_expand_state(name, field, nlon, nlev, ndim, nproma, ngptot, nblocks)
+  subroutine load_and_expand_state(name, state, field, nlon, nlev, ndim, nproma, ngptot, nblocks)
     ! Load into the local memory buffer and expand to global field
     character(len=*) :: name
+    type(state_type), pointer, intent(inout) :: state(:)
     real(kind=JPRB), pointer, intent(inout) :: field(:,:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     real(kind=JPRB) :: buffer(nlon, nlev, 6+ndim)
 
+    integer :: b
+
+    allocate(state(nblocks))
     allocate(field(nproma, nlev, 6+ndim, nblocks))
+
     ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_U', buffer(:,:,1))
     ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_V', buffer(:,:,2))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_T', buffer(:,:,3))
@@ -134,8 +139,6 @@ contains
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_Q', buffer(:,:,6))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_CLD', buffer(:,:,7:))
 
-    ! This is a beyond hacky! We basically rely on the underlyingstructure
-    ! of the memory block under the the apparent STATE_TYPE array.
     ! call expand(buffer(:,:,1), field(:,:,1,:), nlon, nproma, nlev, ngptot, nblocks)
     ! call expand(buffer(:,:,2), field(:,:,2,:), nlon, nproma, nlev, ngptot, nblocks)
     call expand(buffer(:,:,3), field(:,:,3,:), nlon, nproma, nlev, ngptot, nblocks)
@@ -143,6 +146,18 @@ contains
     call expand(buffer(:,:,5), field(:,:,5,:), nlon, nproma, nlev, ngptot, nblocks)
     call expand(buffer(:,:,6), field(:,:,6,:), nlon, nproma, nlev, ngptot, nblocks)
     call expand(buffer(:,:,7:), field(:,:,7:,:), nlon, nproma, nlev, ndim, ngptot, nblocks)
+
+    !OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B)
+    do b=1, nblocks
+       ! state(b)%u => field(:,:,1,b)
+       ! state(b)%v => field(:,:,2,b)
+       state(b)%t => field(:,:,3,b)
+       ! state(b)%o3 => field(:,:,4,b)
+       state(b)%a => field(:,:,5,b)
+       state(b)%q => field(:,:,6,b)
+       state(b)%cld => field(:,:,7:6+ndim,b)
+    end do
+
   end subroutine load_and_expand_state
 
   subroutine expand_l1(buffer, field, nlon, nproma, ngptot, nblocks)
