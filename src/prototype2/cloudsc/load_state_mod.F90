@@ -39,16 +39,17 @@ module load_state_mod
 
 contains
 
-  subroutine query_dimensions(KLON, KLEV, KFLDX)
+  subroutine query_dimensions(KLON, KLEV, KFLDX, NAME)
     ! Initial query routine to determine data dimensions
     INTEGER(KIND=JPIM),INTENT(OUT) :: KLON             ! Number of grid points
     INTEGER(KIND=JPIM),INTENT(OUT) :: KLEV             ! Number of levels
     ! INTEGER(KIND=JPIM),INTENT(OUT) :: NCLV
     INTEGER(KIND=JPIM),INTENT(OUT) :: KFLDX
+    CHARACTER(*), INTENT(IN) :: NAME
 
     ! Get dimensions information from stored metadata
-    call ppser_initialize(directory='data', prefix='dummy', prefix_ref='input')
-    call fs_create_savepoint('input', ppser_savepoint)
+    call ppser_initialize(directory='data', prefix='dummy', prefix_ref=NAME)
+    call fs_create_savepoint(NAME, ppser_savepoint)
     call ppser_set_mode(1)
 
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'KLON', KLON)
@@ -426,4 +427,7 @@ contains
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'YREPHLI_RLPP00', YREPHLI%RLPP00)
   end subroutine initialise_parameters
 
+  subroutine finalize()
+    call ppser_finalize()
+  end subroutine finalize
 end module load_state_mod

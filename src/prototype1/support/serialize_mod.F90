@@ -27,15 +27,16 @@ implicit none
 
 contains
 
-  subroutine query_dimensions(KLON, KLEV, KFLDX)
+  subroutine query_dimensions(KLON, KLEV, KFLDX, NAME)
     ! Initial query routine to determine data dimensions
     INTEGER(KIND=JPIM),INTENT(OUT) :: KLON             ! Number of grid points
     INTEGER(KIND=JPIM),INTENT(OUT) :: KLEV             ! Number of levels
     ! INTEGER(KIND=JPIM),INTENT(OUT) :: NCLV
     INTEGER(KIND=JPIM),INTENT(OUT) :: KFLDX
+    CHARACTER(*), INTENT(IN) :: NAME
 
     ! Get dimensions information from stored metadata
-    call ppser_initialize(directory='data', prefix='dummy', prefix_ref='input')
+    call ppser_initialize(directory='data', prefix='dummy', prefix_ref=NAME)
     call fs_create_savepoint('input', ppser_savepoint)
     call ppser_set_mode(1)
 
@@ -616,13 +617,14 @@ contains
     call ppser_finalize
   end subroutine deserialize
 
-  subroutine serialize_reference( KLON, KLEV, &
-       & PCOVPTOT, PRAINFRAC_TOPRFZ,&
+  subroutine serialize_reference( KLON, KLEV, KFLDX, &
+       & PLUDE,    PCOVPTOT, PRAINFRAC_TOPRFZ,&
        & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
        & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
        & PFSQLTUR, PFSQITUR, PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN)
     ! Serialize reference data for offline validation
-    INTEGER(KIND=JPIM), INTENT(IN) :: KLON, KLEV
+    INTEGER(KIND=JPIM), INTENT(IN) :: KLON, KLEV, KFLDX
+    REAL(KIND=JPRB), INTENT(INOUT) :: PLUDE(KLON,KLEV)
     REAL(KIND=JPRB), INTENT(INOUT) :: PCOVPTOT(KLON,KLEV)
     REAL(KIND=JPRB), INTENT(INOUT) :: PRAINFRAC_TOPRFZ(KLON)
     REAL(KIND=JPRB), INTENT(INOUT) :: PFSQLF(KLON,KLEV+1)
@@ -648,8 +650,10 @@ contains
     ! Store dimensions on the serializer
     call fs_add_serializer_metainfo(ppser_serializer, 'KLON', KLON)
     call fs_add_serializer_metainfo(ppser_serializer, 'KLEV', KLEV)
+    call fs_add_serializer_metainfo(ppser_serializer, 'KFLDX', KFLDX)
 
     ! Store the reference field data
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'PLUDE', PLUDE)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PCOVPTOT', PCOVPTOT)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PRAINFRAC_TOPRFZ', PRAINFRAC_TOPRFZ)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PFSQLF', PFSQLF)

@@ -243,7 +243,7 @@ call serialize( &
  & PA, PCLV, PSUPSAT, PLCRIT_AER,PICRIT_AER, &
  & PRE_ICE, PCCN, PNICE, PEXTRA, KFLDX)
 
-call query_dimensions(KLON, KLEV, KFLDX)
+call query_dimensions(KLON, KLEV, KFLDX, name='input')
 write(0,*) 'KLON,KLEV,KFLDX,NCLV=',KLON,KLEV,KFLDX,NCLV
 
 call deserialize( &
@@ -315,8 +315,8 @@ CALL CLOUDSC &
      & PEXTRA_tmp,   KFLDX)
 
 ! Generate reference data if flag is set
-call serialize_reference( KLON, KLEV, &
-     & PCOVPTOT, PRAINFRAC_TOPRFZ,&
+call serialize_reference( KLON, KLEV, KFLDX, &
+     & PLUDE_tmp,    PCOVPTOT, PRAINFRAC_TOPRFZ,&
      & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
      & PFSQLTUR, PFSQITUR , &

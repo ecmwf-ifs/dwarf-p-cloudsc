@@ -38,6 +38,7 @@ ENDIF
 ! TODO: Create a global global memory state from serialized input data
 CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT)
 
+! Call the driver to perform the parallel loop over our kernel
 CALL CLOUDSC_DRIVER(NPROMA, GLOBAL_STATE%KLEV, NGPTOT, GLOBAL_STATE%KFLDX, GLOBAL_STATE%PTSPHY, &
      & GLOBAL_STATE%PT, GLOBAL_STATE%PQ, &
      & GLOBAL_STATE%TENDENCY_CML, GLOBAL_STATE%TENDENCY_TMP, GLOBAL_STATE%TENDENCY_LOC, &
@@ -59,12 +60,7 @@ CALL CLOUDSC_DRIVER(NPROMA, GLOBAL_STATE%KLEV, NGPTOT, GLOBAL_STATE%KFLDX, GLOBA
      & GLOBAL_STATE%PFPLSL,   GLOBAL_STATE%PFPLSN,   GLOBAL_STATE%PFHPSL,   GLOBAL_STATE%PFHPSN, &
      & GLOBAL_STATE%PEXTRA    )
 
-! TODO: Call the parallel execution loop with the CLOUDSC kernel
-! For now, this should be a plain outer-parallel OpenMP loop,
-! but later it will use a generic "parallel_loop" abstraction.
-
-
-! TODO: Validate the output against serialized reference data
-! CALL GLOBAL_STATE%VALIDATE()
+! Validate the output against serialized reference data
+CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT)
 
 END PROGRAM DWARF_CLOUDSC
