@@ -164,13 +164,24 @@ contains
   subroutine expand_l1(buffer, field, nlon, nproma, ngptot, nblocks)
     logical, intent(inout) :: buffer(nlon), field(nproma, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
-    integer :: b, bsize, bidx
+    integer :: b, gidx, bidx, bsize, bend, fsize
 
-    !omp parallel do default(shared) private(b, bsize, bidx)
+    !omp parallel do default(shared) private(b, gidx, bidx, bsize, bend, fsize)
     do b=1, nblocks
-       bsize = min(nproma, ngptot - (b-1)*nproma)  ! Field block size
-       bidx = mod((b-1)*nproma, nlon)  ! Rolling index into input buffer
-       field(1:bsize,b) = buffer(1:bsize)
+       gidx = (b-1)*nproma + 1  ! Index of the block in global iteration domain
+       bsize = min(nproma, ngptot - gidx + 1)  ! Field block size
+       bidx = mod(gidx, nlon)  ! Rolling index into input buffer
+       bend = min(bidx+bsize-1, nlon)
+       if (bend-bidx+1 < bsize) then
+          ! The input buffer does not hold enough data to fill field block;
+          ! we need to fill the rest of the block with data from front of buffer.
+          fsize = nlon - bidx + 1
+          field(1:fsize,b) = buffer(bidx:nlon)
+          field(fsize+1:bsize,b) = buffer(1:bsize-fsize)
+       else
+          ! Simply copy a block of data from the rolling buffer index
+          field(1:bsize,b) = buffer(bidx:bend)
+       end if
 
        ! Zero out the remainder of last block
        field(bsize+1:nproma,b) = .FALSE.
@@ -180,13 +191,24 @@ contains
   subroutine expand_i1(buffer, field, nlon, nproma, ngptot, nblocks)
     integer(kind=jpim), intent(inout) :: buffer(nlon), field(nproma, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
-    integer :: b, bsize, bidx
+    integer :: b, gidx, bidx, bsize, bend, fsize
 
-    !omp parallel do default(shared) private(b, bsize, bidx)
+    !omp parallel do default(shared) private(b, gidx, bidx, bsize, bend, fsize)
     do b=1, nblocks
-       bsize = min(nproma, ngptot - (b-1)*nproma)  ! Field block size
-       bidx = mod((b-1)*nproma, nlon)  ! Rolling index into input buffer
-       field(1:bsize,b) = buffer(1:bsize)
+       gidx = (b-1)*nproma + 1  ! Index of the block in global iteration domain
+       bsize = min(nproma, ngptot - gidx + 1)  ! Field block size
+       bidx = mod(gidx, nlon)  ! Rolling index into input buffer
+       bend = min(bidx+bsize-1, nlon)
+       if (bend-bidx+1 < bsize) then
+          ! The input buffer does not hold enough data to fill field block;
+          ! we need to fill the rest of the block with data from front of buffer.
+          fsize = nlon - bidx + 1
+          field(1:fsize,b) = buffer(bidx:nlon)
+          field(fsize+1:bsize,b) = buffer(1:bsize-fsize)
+       else
+          ! Simply copy a block of data from the rolling buffer index
+          field(1:bsize,b) = buffer(bidx:bend)
+       end if
 
        ! Zero out the remainder of last block
        field(bsize+1:nproma,b) = 0_JPIM
@@ -196,13 +218,24 @@ contains
   subroutine expand_r1(buffer, field, nlon, nproma, ngptot, nblocks)
     real(kind=JPRB), intent(inout) :: buffer(nlon), field(nproma, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
-    integer :: b, bsize, bidx
+    integer :: b, gidx, bidx, bsize, bend, fsize
 
-    !omp parallel do default(shared) private(b, bsize, bidx)
+    !omp parallel do default(shared) private(b, gidx, bidx, bsize, bend, fsize)
     do b=1, nblocks
-       bsize = min(nproma, ngptot - (b-1)*nproma)  ! Field block size
-       bidx = mod((b-1)*nproma, nlon)  ! Rolling index into input buffer
-       field(1:bsize,b) = buffer(1:bsize)
+       gidx = (b-1)*nproma + 1  ! Index of the block in global iteration domain
+       bsize = min(nproma, ngptot - gidx + 1)  ! Field block size
+       bidx = mod(gidx, nlon)  ! Rolling index into input buffer
+       bend = min(bidx+bsize-1, nlon)
+       if (bend-bidx+1 < bsize) then
+          ! The input buffer does not hold enough data to fill field block;
+          ! we need to fill the rest of the block with data from front of buffer.
+          fsize = nlon - bidx + 1
+          field(1:fsize,b) = buffer(bidx:nlon)
+          field(fsize+1:bsize,b) = buffer(1:bsize-fsize)
+       else
+          ! Simply copy a block of data from the rolling buffer index
+          field(1:bsize,b) = buffer(bidx:bend)
+       end if
 
        ! Zero out the remainder of last block
        field(bsize+1:nproma,b) = 0.0_JPRB
@@ -212,13 +245,24 @@ contains
   subroutine expand_r2(buffer, field, nlon, nproma, nlev, ngptot, nblocks)
     real(kind=JPRB), intent(inout) :: buffer(nlon, nlev), field(nproma, nlev, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
-    integer :: b, bsize, bidx
+    integer :: b, gidx, bidx, bsize, bend, fsize
 
-    !omp parallel do default(shared) private(b, bsize, bidx)
+    !omp parallel do default(shared) private(b, gidx, bidx, bsize, bend, fsize)
     do b=1, nblocks
-       bsize = min(nproma, ngptot - (b-1)*nproma)  ! Field block size
-       bidx = mod((b-1)*nproma, nlon)  ! Rolling index into input buffer
-       field(1:bsize,:,b) = buffer(1:bsize,:)
+       gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
+       bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
+       bidx = mod(gidx, nlon)  ! Rolling index into the input buffer
+       bend = min(bidx+bsize-1, nlon)  ! Idealised final index in the input buffer
+       if (bend-bidx+1 < bsize) then
+          ! The input buffer does not hold enough data to fill field block;
+          ! we need to fill the rest of the block with data from front of buffer.
+          fsize = nlon - bidx + 1
+          field(1:fsize,:,b) = buffer(bidx:nlon,:)
+          field(fsize+1:bsize,:,b) = buffer(1:bsize-fsize,:)
+       else
+          ! Simply copy a block of data from the rolling buffer index
+          field(1:bsize,:,b) = buffer(bidx:bend,:)
+       end if
 
        ! Zero out the remainder of last block
        field(bsize+1:nproma,:,b) = 0.0_JPRB
@@ -228,13 +272,24 @@ contains
   subroutine expand_r3(buffer, field, nlon, nproma, nlev, ndim, ngptot, nblocks)
     real(kind=JPRB), intent(inout) :: buffer(nlon, nlev, ndim), field(nproma, nlev, ndim, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
-    integer :: b, bsize, bidx
+    integer :: b, gidx, bidx, bsize, bend, fsize
 
-    !omp parallel do default(shared) private(b, bsize, bidx)
+    !omp parallel do default(shared) private(b, gidx, bidx, bsize, bend, fsize)
     do b=1, nblocks
-       bsize = min(nproma, ngptot - (b-1)*nproma)  ! Field block size
-       bidx = mod((b-1)*nproma, nlon)  ! Rolling index into input buffer
-       field(1:bsize,:,:,b) = buffer(1:bsize,:,:)
+       gidx = (b-1)*nproma + 1  ! Index of the block in global iteration domain
+       bsize = min(nproma, ngptot - gidx + 1)  ! Field block size
+       bidx = mod(gidx, nlon)  ! Rolling index into input buffer
+       bend = min(bidx+bsize-1, nlon)
+       if (bend-bidx+1 < bsize) then
+          ! The input buffer does not hold enough data to fill field block;
+          ! we need to fill the rest of the block with data from front of buffer.
+          fsize = nlon - bidx + 1
+          field(1:fsize,:,:,b) = buffer(bidx:nlon,:,:)
+          field(fsize+1:bsize,:,:,b) = buffer(1:bsize-fsize,:,:)
+       else
+          ! Simply copy a block of data from the rolling buffer index
+          field(1:bsize,:,:,b) = buffer(bidx:bend,:,:)
+       end if
 
        ! Zero out the remainder of last block
        field(bsize+1:nproma,:,:,b) = 0.0_JPRB
