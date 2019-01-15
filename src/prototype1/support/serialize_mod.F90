@@ -9,6 +9,7 @@ module serialize_mod
    & RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
   USE YOEPHLI  , ONLY : YREPHLI, TEPHLI
 
+#ifdef HAVE_SERIALBOX
   USE m_serialize, ONLY: &
    fs_create_savepoint, &
    fs_add_serializer_metainfo, &
@@ -22,6 +23,7 @@ module serialize_mod
    ppser_serializer_ref, &
    ppser_set_mode, &
    ppser_savepoint
+#endif
 
 implicit none
 
@@ -35,6 +37,7 @@ contains
     INTEGER(KIND=JPIM),INTENT(OUT) :: KFLDX
     CHARACTER(*), INTENT(IN) :: NAME
 
+#ifdef HAVE_SERIALBOX
     ! Get dimensions information from stored metadata
     call ppser_initialize(directory='data', prefix='dummy', prefix_ref=NAME)
     call fs_create_savepoint('input', ppser_savepoint)
@@ -44,7 +47,7 @@ contains
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'KLEV', KLEV)
     ! call fs_get_serializer_metainfo(ppser_serializer_ref, 'NCLV', NCLV)
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'KFLDX', KFLDX)
-
+#endif
   end subroutine query_dimensions
 
   subroutine serialize( &
@@ -99,6 +102,7 @@ contains
     REAL(KIND=JPRB)   ,INTENT(INOUT)    :: PNICE(KLON,KLEV)    ! ice number concentration (cf. CCN)
     REAL(KIND=JPRB)   ,INTENT(INOUT)    :: PEXTRA(KLON,KLEV,KFLDX) ! extra fields
 
+#ifdef HAVE_SERIALBOX
     ! Initialize serializer for storing reference input
     call ppser_initialize(directory='data', prefix='input')
     call fs_create_savepoint('input', ppser_savepoint)
@@ -329,6 +333,7 @@ contains
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PEXTRA', PEXTRA)
 
     call ppser_finalize
+#endif
   end subroutine serialize
 
 
@@ -384,6 +389,7 @@ contains
     REAL(KIND=JPRB)   ,INTENT(OUT)    :: PNICE(KLON,KLEV)    ! ice number concentration (cf. CCN)
     REAL(KIND=JPRB)   ,INTENT(OUT)    :: PEXTRA(KLON,KLEV,KFLDX) ! extra fields
 
+#ifdef HAVE_SERIALBOX
     ! ! Create serializer for storing reference output
     ! ! We need to use prefix_ref to not over-write prvious data.
     ! call ppser_initialize(directory='data', prefix='dummy', prefix_ref='input')
@@ -615,6 +621,7 @@ contains
     ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'PEXTRA', PEXTRA)
 
     call ppser_finalize
+#endif
   end subroutine deserialize
 
   subroutine serialize_reference( KLON, KLEV, KFLDX, &
@@ -644,6 +651,7 @@ contains
     REAL(KIND=JPRB), INTENT(INOUT) :: PFHPSN(KLON,KLEV+1)
     TYPE(STATE_TYPE),INTENT(INOUT) :: TENDENCY_LOC
 
+#ifdef HAVE_SERIALBOX
     ! Initialize serializer for storing reference input
     call ppser_initialize(directory='data', prefix='reference')
     call fs_create_savepoint('reference', ppser_savepoint)
@@ -678,5 +686,6 @@ contains
     call fs_write_field(ppser_serializer, ppser_savepoint, 'TENDENCY_LOC_CLD', TENDENCY_LOC%CLD)
 
     call ppser_finalize
+#endif
   end subroutine serialize_reference
 end module serialize_mod
