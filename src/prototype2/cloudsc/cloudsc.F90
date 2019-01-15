@@ -122,7 +122,6 @@ SUBROUTINE CLOUDSC &
 
 USE PARKIND1 , ONLY : JPIM, JPRB
 !USE YOMHOOK  , ONLY : LHOOK, DR_HOOK
-USE YOMMP0   , ONLY : LSCMEC
 USE YOMCST   , ONLY : RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV  
 USE YOETHF   , ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
  & R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
@@ -460,8 +459,6 @@ LOGICAL :: LLRAINLIQ(KLON)  ! True if majority of raindrops are liquid (no ice c
 !----------------------
 ! SCM budget statistics 
 !----------------------
-REAL(KIND=JPRB), ALLOCATABLE :: ZSUMQ0(:,:),  ZSUMQ1(:,:) , ZERRORQ(:,:), &
-                               &ZSUMH0(:,:),  ZSUMH1(:,:) , ZERRORH(:,:)
 REAL(KIND=JPRB) :: ZRAIN
 
 REAL(KIND=JPRB) :: Z_TMP1(KFDIA-KIDIA+1)
@@ -478,10 +475,6 @@ REAL(KIND=JPRB) :: ZTMPL,ZTMPI,ZTMPA
 
 REAL(KIND=JPRB) :: ZMM,ZRR
 REAL(KIND=JPRB) :: ZRG(KLON)
-
-LOGICAL :: LLCLDBUDCC    ! Cloud fraction budget
-LOGICAL :: LLCLDBUDL     ! Cloud liquid condensate budget
-LOGICAL :: LLCLDBUDI     ! Cloud ice condensate budget
 
 REAL(KIND=JPRB) :: ZBUDCC(KLON,KFLDX) ! extra fields
 REAL(KIND=JPRB) :: ZBUDL(KLON,KFLDX) ! extra fields
@@ -550,25 +543,6 @@ ASSOCIATE(LAERICEAUTO=>YRECLDP%LAERICEAUTO, LAERICESED=>YRECLDP%LAERICESED, &
 !######################################################################
 
 ZEPSILON=100._JPRB*EPSILON(ZEPSILON)
-
-! --------------------------------------------------------------
-! LCLDBUD logicals store enthalpy and total water budgets
-! Initialise PEXTRA if true.
-! --------------------------------------------------------------
-LLCLDBUDCC = .FALSE.
-LLCLDBUDL  = .FALSE.
-LLCLDBUDI  = .FALSE.
-IF (LLCLDBUDCC .OR. LLCLDBUDL .OR. LLCLDBUDI) PEXTRA(:,:,:)=0.0_JPRB
-
-IF (LLCLDBUDCC .AND. KFLDX <12) THEN
-  CALL ABOR1('CLOUDSC ERROR: Not enough PEXTRA variables for cloud fraction budget.')
-ENDIF
-IF (LLCLDBUDL .AND. KFLDX <20) THEN
-  CALL ABOR1('CLOUDSC ERROR: Not enough PEXTRA variables for cloud liquid budget.')
-ENDIF
-IF (LLCLDBUDI .AND. KFLDX <16) THEN
-  CALL ABOR1('CLOUDSC ERROR: Not enough PEXTRA variables for cloud ice budget.')
-ENDIF
 
 ! ---------------------------------------------------------------------
 ! Set version of warm-rain autoconversion/accretion
@@ -715,61 +689,6 @@ ZLNEG(:,:,:)   = 0.0_JPRB ! negative input check
 PRAINFRAC_TOPRFZ(:) =0.0_JPRB ! rain fraction at top of refreezing layer
 LLRAINLIQ(:) = .TRUE.  ! Assume all raindrops are liquid initially
 
-! -------------------------------------------
-! Total water and enthalpy budget diagnostics
-! -------------------------------------------
-IF (LSCMEC.OR.LCLDBUDGET) THEN
-
-  IF (.NOT. ALLOCATED(ZSUMQ0))   ALLOCATE(ZSUMQ0(KLON,KLEV))
-  IF (.NOT. ALLOCATED(ZSUMQ1))   ALLOCATE(ZSUMQ1(KLON,KLEV))
-  IF (.NOT. ALLOCATED(ZSUMH0))   ALLOCATE(ZSUMH0(KLON,KLEV))
-  IF (.NOT. ALLOCATED(ZSUMH1))   ALLOCATE(ZSUMH1(KLON,KLEV))
-  IF (.NOT. ALLOCATED(ZERRORQ))  ALLOCATE(ZERRORQ(KLON,KLEV))
-  IF (.NOT. ALLOCATED(ZERRORH))  ALLOCATE(ZERRORH(KLON,KLEV))
-
-  ! initialize the flux arrays
-  DO JK=1,KLEV
-    DO JL=KIDIA,KFDIA
-      ZTNEW=PT(JL,JK)+PTSPHY*(tendency_loc%T(JL,JK)+tendency_cml%T(JL,JK))
-      IF (JK==1) THEN
-        ZSUMQ0(JL,JK)=0.0_JPRB ! total water
-        ZSUMH0(JL,JK)=0.0_JPRB ! liquid water temperature
-      ELSE
-        ZSUMQ0(JL,JK)=ZSUMQ0(JL,JK-1)
-        ZSUMH0(JL,JK)=ZSUMH0(JL,JK-1)
-      ENDIF
-
-      ! Total for liquid
-      ZTMPL = (PCLV(JL,JK,NCLDQL)+PCLV(JL,JK,NCLDQR) &
-            &  +(tendency_loc%cld(JL,JK,NCLDQL)+ tendency_cml%cld(JL,JK,NCLDQL) &
-            &  + tendency_loc%cld(JL,JK,NCLDQR)+ tendency_cml%cld(JL,JK,NCLDQR))*PTSPHY)
-      ! Total for frozen
-      ZTMPI = (PCLV(JL,JK,NCLDQI)+PCLV(JL,JK,NCLDQS) &
-            &  +(tendency_loc%cld(JL,JK,NCLDQI)+ tendency_cml%cld(JL,JK,NCLDQI) &
-            &  + tendency_loc%cld(JL,JK,NCLDQS)+ tendency_cml%cld(JL,JK,NCLDQS))*PTSPHY)
-      ZTNEW = ZTNEW - RALVDCP*ZTMPL - RALSDCP*ZTMPI
-      ZSUMQ0(JL,JK)=ZSUMQ0(JL,JK)*(ZTMPL+ZTMPI)*(PAPH(JL,JK+1)-PAPH(JL,JK))*ZRG_R
-
-      ! detrained water treated here
-      ZQE=PLUDE(JL,JK)*PTSPHY*RG/(PAPH(JL,JK+1)-PAPH(JL,JK))
-      IF (ZQE>RLMIN) THEN
-        ZSUMQ0(JL,JK)=ZSUMQ0(JL,JK)+PLUDE(JL,JK)*PTSPHY
-        ZALFAW=FOEALFA(ZTP1(JL,JK))
-        ZTNEW=ZTNEW-(RALVDCP*ZALFAW+RALSDCP*(1.0_JPRB-ZALFAW))*ZQE
-      ENDIF
-
-      ZSUMH0(JL,JK)=ZSUMH0(JL,JK)+(PAPH(JL,JK+1)-PAPH(JL,JK))*ZTNEW 
-      ZSUMQ0(JL,JK)=ZSUMQ0(JL,JK)+(PQ(JL,JK)+(tendency_loc%q(JL,JK)+tendency_cml%q(JL,JK))* &
-                    & PTSPHY)*(PAPH(JL,JK+1)-PAPH(JL,JK))*ZRG_R
-    ENDDO
-  ENDDO
-  DO JK=1,KLEV
-    DO JL=KIDIA,KFDIA
-      ZSUMH0(JL,JK)=ZSUMH0(JL,JK)/PAPH(JL,JK+1)
-    ENDDO
-  ENDDO
-ENDIF
-
 ! ----------------------------------------------------
 ! Tidy up very small cloud cover or total cloud water
 ! ----------------------------------------------------
@@ -863,14 +782,6 @@ DO JK=1,KLEV
 !   ZQSICE(JL,JK)=ZQSICE(JL,JK)/(1.0_JPRB-RETV*ZQSICE(JL,JK))
   ENDDO
 
-! Calculation of relative humidity for diagnostics
-! Not used at present
-!  DO JL=KIDIA,KFDIA
-!    ZRHM(JL,JK)=ZQX(JL,JK,NCLDQV)/ZQSMIX(JL,JK)
-!    ZRHL(JL,JK)=ZQX(JL,JK,NCLDQV)/ZQSLIQ(JL,JK)
-!    ZRHI(JL,JK)=ZQX(JL,JK,NCLDQV)/ZQSICE(JL,JK)
-!  ENDDO
-
 ENDDO
 
 DO JK=1,KLEV
@@ -896,57 +807,6 @@ DO JK=1,KLEV
 
   ENDDO
 ENDDO
-
-!----------------------------------------------------------------------
-! This is test code. Instead of resetting cloud water or cloud cover
-! to zero if one of the two is zero, here we slave the cloud cover
-! to the cloud water variable. I.e. if cloud cover is zero it is 
-! set to an appropriate non-zero value.
-! It uses a Beta curve to get the variance and then derive cloud cover.
-! It is quite slow since it involves iteration, and should be left 
-! until a fully prognostic variance equation for total water is 
-! implemented
-!-----------------------------------------------------------------------
-!IF (.FALSE.) THEN
-!  CALL CLOUDVAR &
-!---input
-! & ( KIDIA, KFDIA, KLON  , KLEV  , 1    , KLEV, &
-! &   ZTP1, ZQP1, ZQSMIX, ZLI, PAP, &
-!---output
-! &   ZVAR, ZQTMIN, ZQTMAX ) !last two are dummy args  
-
-!  CALL COVER &
-!---input
-! & ( KIDIA, KFDIA , KLON, KLEV, 1, KLEV, &
-! &   ZA, ZTP1,  ZQP1, ZQSMIX, ZLI, PAP, ZVAR, &
-!---output
-! &   ZQTMAX, ZABETA )  
-
-!  DO JK=1,KLEV
-!    DO JL=KIDIA,KFDIA
-!      IF (ZLI(JL,JK)/MAX(ZA(JL,JK),ZEPSEC)>RCLDMAX) THEN
-!        ZA(JL,JK)=ZABETA(JL,JK) ! not part of tendency       
-!      ENDIF
-!    ENDDO
-!  ENDDO
-!ENDIF
-
-
-!--------------------------------------
-! NPM
-! Initialize liq water temperature T_L 
-! Not used at present
-!--------------------------------------
-!ZTL(:,:)=ZTP1(:,:)
-!DO JM=1,NCLV
-!  DO JK=1,KLEV
-!    DO JL=KIDIA,KFDIA
-!      IF (IPHASE(JM)==1) ZTL(JL,JK)=ZTL(JL,JK)-RALVDCP*ZQX(JL,JK,JM)
-!      IF (IPHASE(JM)==2) ZTL(JL,JK)=ZTL(JL,JK)-RALSDCP*ZQX(JL,JK,JM)
-!    ENDDO
-!  ENDDO
-!ENDDO
-
 
 !######################################################################
 !        2.       *** CONSTANTS AND PARAMETERS ***
@@ -1049,11 +909,6 @@ DO JK=NCLDTOP,KLEV
   ZPSUPSATSRCE(:,:) = 0.0_JPRB
   ZRATIO(:,:)    = 0.0_JPRB
   ZICETOT(:)     = 0.0_JPRB                            
-
-  ! Cloud budget arrays                                 
-  IF (LLCLDBUDCC) ZBUDCC(:,:) = 0.0_JPRB                
-  IF (LLCLDBUDL)  ZBUDL(:,:) = 0.0_JPRB                 
-  IF (LLCLDBUDI)  ZBUDI(:,:) = 0.0_JPRB                 
   
   DO JL=KIDIA,KFDIA
 
@@ -1202,13 +1057,8 @@ DO JK=NCLDTOP,KLEV
 
       ! Increase cloud amount using RKOOPTAU timescale
       ZSOLAC(JL) = (1.0_JPRB-ZA(JL,JK))*ZFACI
- 
-      ! Store cloud budget diagnostics if required
-      IF (LLCLDBUDL.AND. ZTP1(JL,JK)> RTHOMO) ZBUDL(JL,1)=ZSUPSAT(JL)*ZQTMST
-      IF (LLCLDBUDI.AND. ZTP1(JL,JK)<=RTHOMO) ZBUDI(JL,1)=ZSUPSAT(JL)*ZQTMST
-      IF (LLCLDBUDCC) ZBUDCC(JL,1)=ZSOLAC(JL)*ZQTMST
 
-    ENDIF
+   ENDIF
 
     !-------------------------------------------------------
     ! 3.1.3 Include supersaturation from previous timestep
@@ -1226,7 +1076,6 @@ DO JK=NCLDTOP,KLEV
           ! Add liquid to first guess for deposition term 
           ZQXFG(JL,NCLDQL)=ZQXFG(JL,NCLDQL)+PSUPSAT(JL,JK)
           ! Store cloud budget diagnostics if required
-          IF (LLCLDBUDL) ZBUDL(JL,2) = PSUPSAT(JL,JK)*ZQTMST
         ELSE
           ! Turn supersaturation into ice water
           ZSOLQA(JL,NCLDQI,NCLDQI) = ZSOLQA(JL,NCLDQI,NCLDQI)+PSUPSAT(JL,JK)
@@ -1234,14 +1083,11 @@ DO JK=NCLDTOP,KLEV
           ! Add ice to first guess for deposition term 
           ZQXFG(JL,NCLDQI)=ZQXFG(JL,NCLDQI)+PSUPSAT(JL,JK)
           ! Store cloud budget diagnostics if required
-          IF (LLCLDBUDI) ZBUDI(JL,2) = PSUPSAT(JL,JK)*ZQTMST
         ENDIF
 
         ! Increase cloud amount using RKOOPTAU timescale
         ZSOLAC(JL)=(1.0_JPRB-ZA(JL,JK))*ZFACI
         ! Store cloud budget diagnostics if required
-        IF (LLCLDBUDCC) ZBUDCC(JL,2)=ZSOLAC(JL)*ZQTMST
-
       ENDIF
     ENDIF
 
@@ -1278,11 +1124,6 @@ DO JK=NCLDTOP,KLEV
         ZSOLQA(JL,NCLDQL,NCLDQL) = ZSOLQA(JL,NCLDQL,NCLDQL)+ZCONVSRCE(JL,NCLDQL)
         ZSOLQA(JL,NCLDQI,NCLDQI) = ZSOLQA(JL,NCLDQI,NCLDQI)+ZCONVSRCE(JL,NCLDQI)
         
-        ! Store cloud budget diagnostics if required
-        IF (LLCLDBUDL) ZBUDL(JL,3)=ZCONVSRCE(JL,NCLDQL)*ZQTMST
-        IF (LLCLDBUDI) ZBUDI(JL,3)=ZCONVSRCE(JL,NCLDQI)*ZQTMST
-        IF (LLCLDBUDCC) ZBUDCC(JL,3)=ZQTMST*PLUDE(JL,JK)/PLU(JL,JK+1)
-
       ELSE
 
         PLUDE(JL,JK)=0.0_JPRB
@@ -1354,12 +1195,6 @@ DO JK=NCLDTOP,KLEV
           ZSOLQA(JL,JM,JM)     = ZSOLQA(JL,JM,JM)+ZLCUST(JL,JM) ! whole sum 
           ZSOLQA(JL,NCLDQV,JM) = ZSOLQA(JL,NCLDQV,JM)+ZEVAP
           ZSOLQA(JL,JM,NCLDQV) = ZSOLQA(JL,JM,NCLDQV)-ZEVAP
-          ! Store cloud liquid diagnostic if required
-          IF (LLCLDBUDL.AND.JM == NCLDQL) ZBUDL(JL,4)=ZLCUST(JL,JM)*ZQTMST
-          IF (LLCLDBUDI.AND.JM == NCLDQI) ZBUDI(JL,4)=ZLCUST(JL,JM)*ZQTMST
-          IF (LLCLDBUDL.AND.JM == NCLDQL) ZBUDL(JL,5)=-ZEVAP*ZQTMST
-          IF (LLCLDBUDI.AND.JM == NCLDQI) ZBUDI(JL,5)=-ZEVAP*ZQTMST
- 
         ENDDO
       ENDIF
     ENDDO
@@ -1368,9 +1203,6 @@ DO JK=NCLDTOP,KLEV
     DO JL=KIDIA,KFDIA
       IF (ZLFINALSUM(JL)<ZEPSEC) ZACUST(JL)=0.0_JPRB
       ZSOLAC(JL)=ZSOLAC(JL)+ZACUST(JL)
-      ! Store cloud fraction diagnostic if required
-      IF (LLCLDBUDCC) ZBUDCC(JL,4)=ZACUST(JL)*ZQTMST
-      !ZBUDCC(JL,5) isn't included as only reduced if cloud->zero
     ENDDO
 
   ENDIF ! on  JK>NCLDTOP
@@ -1442,11 +1274,6 @@ DO JK=NCLDTOP,KLEV
       ZSOLQA(JL,NCLDQL,NCLDQV) = ZSOLQA(JL,NCLDQL,NCLDQV)-ZLIQFRAC(JL,JK)*ZLEROS
       ZSOLQA(JL,NCLDQV,NCLDQI) = ZSOLQA(JL,NCLDQV,NCLDQI)+ZICEFRAC(JL,JK)*ZLEROS
       ZSOLQA(JL,NCLDQI,NCLDQV) = ZSOLQA(JL,NCLDQI,NCLDQV)-ZICEFRAC(JL,JK)*ZLEROS
-
-      ! Store cloud budget diagnostics if required
-      IF (LLCLDBUDL) ZBUDL(JL,7)=-ZLIQFRAC(JL,JK)*ZLEROS*ZQTMST
-      IF (LLCLDBUDI) ZBUDI(JL,7)=-ZICEFRAC(JL,JK)*ZLEROS*ZQTMST
-      IF (LLCLDBUDCC) ZBUDCC(JL,7)=-ZAEROS*ZQTMST
 
     ENDIF
   ENDDO
@@ -1544,10 +1371,6 @@ DO JK=NCLDTOP,KLEV
     ZSOLQA(JL,NCLDQV,NCLDQI) = ZSOLQA(JL,NCLDQV,NCLDQI)+ZICEFRAC(JL,JK)*ZLEVAP
     ZSOLQA(JL,NCLDQI,NCLDQV) = ZSOLQA(JL,NCLDQI,NCLDQV)-ZICEFRAC(JL,JK)*ZLEVAP
 
-    ! Store cloud budget diagnostics if required
-    IF (LLCLDBUDL) ZBUDL(JL,8)=-ZLIQFRAC(JL,JK)*ZLEVAP*ZQTMST
-    IF (LLCLDBUDI) ZBUDI(JL,8)=-ZICEFRAC(JL,JK)*ZLEVAP*ZQTMST
-
    ENDIF
 
   ENDDO
@@ -1584,14 +1407,10 @@ DO JK=NCLDTOP,KLEV
         ZSOLQA(JL,NCLDQL,NCLDQV)=ZSOLQA(JL,NCLDQL,NCLDQV)+ZLCOND1(JL)
         ZSOLQA(JL,NCLDQV,NCLDQL)=ZSOLQA(JL,NCLDQV,NCLDQL)-ZLCOND1(JL)
         ZQXFG(JL,NCLDQL)=ZQXFG(JL,NCLDQL)+ZLCOND1(JL)
-        ! Store cloud liquid diagnostic if required
-        IF (LLCLDBUDL) ZBUDL(JL,9)=ZLCOND1(JL)*ZQTMST
       ELSE
         ZSOLQA(JL,NCLDQI,NCLDQV)=ZSOLQA(JL,NCLDQI,NCLDQV)+ZLCOND1(JL)
         ZSOLQA(JL,NCLDQV,NCLDQI)=ZSOLQA(JL,NCLDQV,NCLDQI)-ZLCOND1(JL)
         ZQXFG(JL,NCLDQI)=ZQXFG(JL,NCLDQI)+ZLCOND1(JL)
-        ! Store cloud ice diagnostic if required
-        IF (LLCLDBUDI) ZBUDI(JL,9)=ZLCOND1(JL)*ZQTMST
       ENDIF
     ENDIF
   ENDDO
@@ -1680,9 +1499,6 @@ DO JK=NCLDTOP,KLEV
         ! Large-scale generation is LINEAR in A and LINEAR in L
         ZSOLAC(JL) = ZSOLAC(JL)+ZACOND !linear
         
-        ! Store cloud fraction diagnostic if required
-        IF (LLCLDBUDCC) ZBUDCC(JL,10)=ZACOND*ZQTMST
-
         !------------------------------------------------------------------------
         ! All increase goes into liquid unless so cold cloud homogeneously freezes
         ! Include new liquid formation in first guess value, otherwise liquid 
@@ -1692,14 +1508,10 @@ DO JK=NCLDTOP,KLEV
           ZSOLQA(JL,NCLDQL,NCLDQV)=ZSOLQA(JL,NCLDQL,NCLDQV)+ZLCOND2(JL)
           ZSOLQA(JL,NCLDQV,NCLDQL)=ZSOLQA(JL,NCLDQV,NCLDQL)-ZLCOND2(JL)
           ZQXFG(JL,NCLDQL)=ZQXFG(JL,NCLDQL)+ZLCOND2(JL)
-          ! Store cloud liquid diagnostic if required
-          IF (LLCLDBUDL) ZBUDL(JL,10)=ZLCOND2(JL)*ZQTMST
         ELSE ! homogeneous freezing
           ZSOLQA(JL,NCLDQI,NCLDQV)=ZSOLQA(JL,NCLDQI,NCLDQV)+ZLCOND2(JL)
           ZSOLQA(JL,NCLDQV,NCLDQI)=ZSOLQA(JL,NCLDQV,NCLDQI)-ZLCOND2(JL)
           ZQXFG(JL,NCLDQI)=ZQXFG(JL,NCLDQI)+ZLCOND2(JL)
-          ! Store cloud ice diagnostic if required
-          IF (LLCLDBUDI) ZBUDI(JL,10)=ZLCOND2(JL)*ZQTMST
         ENDIF
 
       ENDIF
@@ -1806,9 +1618,6 @@ DO JK=NCLDTOP,KLEV
       ZSOLQA(JL,NCLDQL,NCLDQI)=ZSOLQA(JL,NCLDQL,NCLDQI)-ZDEPOS
       ZQXFG(JL,NCLDQI)=ZQXFG(JL,NCLDQI)+ZDEPOS
       ZQXFG(JL,NCLDQL)=ZQXFG(JL,NCLDQL)-ZDEPOS
-      ! Store cloud budget diagnostics if required
-      IF (LLCLDBUDL) ZBUDL(JL,11)=-ZDEPOS*ZQTMST
-      IF (LLCLDBUDI) ZBUDI(JL,11)=ZDEPOS*ZQTMST
 
     ENDIF
   ENDDO
@@ -1898,10 +1707,6 @@ DO JK=NCLDTOP,KLEV
         ZSOLQA(JL,NCLDQL,NCLDQI) = ZSOLQA(JL,NCLDQL,NCLDQI)-ZDEPOS
         ZQXFG(JL,NCLDQI) = ZQXFG(JL,NCLDQI)+ZDEPOS
         ZQXFG(JL,NCLDQL) = ZQXFG(JL,NCLDQL)-ZDEPOS
-        ! Store cloud budget diagnostics if required
-        IF (LLCLDBUDL) ZBUDL(JL,11) = -ZDEPOS*ZQTMST
-        IF (LLCLDBUDI) ZBUDI(JL,11) = ZDEPOS*ZQTMST
-
       ENDIF
     ENDDO
 
@@ -1944,9 +1749,6 @@ DO JK=NCLDTOP,KLEV
           ZQXFG(JL,JM)     = ZQXFG(JL,JM)+ZFALLSRCE(JL,JM)
           ! use first guess precip----------V
           ZQPRETOT(JL)     = ZQPRETOT(JL)+ZQXFG(JL,JM) 
-          IF (LLCLDBUDI .AND. JM == NCLDQI) THEN
-            ZBUDI(JL,12)=ZFALLSRCE(JL,JM)*ZQTMST
-          ENDIF
         ENDIF
         !-------------------------------------------------
         ! sink to next layer, constant fall speed
@@ -2257,9 +2059,6 @@ DO JK=NCLDTOP,KLEV
         ZQXFG(JL,JN)     = ZQXFG(JL,JN)+ZMELT
         ZSOLQA(JL,JN,JM) = ZSOLQA(JL,JN,JM)+ZMELT
         ZSOLQA(JL,JM,JN) = ZSOLQA(JL,JM,JN)-ZMELT
-        IF (LLCLDBUDI.AND.JM==NCLDQI) ZBUDI(JL,15)=-ZMELT*ZQTMST
-        IF (LLCLDBUDI.AND.JM==NCLDQS) ZBUDI(JL,16)=-ZMELT*ZQTMST
-        IF (LLCLDBUDL.AND.JM==NCLDQI) ZBUDL(JL,17)=ZMELT*ZQTMST
       ENDIF
     ENDDO
    ENDIF
@@ -2318,7 +2117,6 @@ DO JK=NCLDTOP,KLEV
           ZFRZ = MIN(ZQX(JL,JK,NCLDQR),ZFRZMAX(JL))
           ZSOLQA(JL,NCLDQS,NCLDQR) = ZSOLQA(JL,NCLDQS,NCLDQR)+ZFRZ
           ZSOLQA(JL,NCLDQR,NCLDQS) = ZSOLQA(JL,NCLDQR,NCLDQS)-ZFRZ
-          IF (LLCLDBUDL) ZBUDL(JL,18)=ZFRZ*ZQTMST
         ENDIF
       ENDIF
 
@@ -2341,7 +2139,6 @@ DO JK=NCLDTOP,KLEV
       ZFRZ = MIN(ZQXFG(JL,JM),ZFRZMAX(JL))
       ZSOLQA(JL,JN,JM) = ZSOLQA(JL,JN,JM)+ZFRZ
       ZSOLQA(JL,JM,JN) = ZSOLQA(JL,JM,JN)-ZFRZ
-      IF (LLCLDBUDL) ZBUDL(JL,19)=ZFRZ*ZQTMST
     ENDIF
   ENDDO
 
@@ -2402,7 +2199,6 @@ DO JK=NCLDTOP,KLEV
 
       ZSOLQA(JL,NCLDQV,NCLDQR) = ZSOLQA(JL,NCLDQV,NCLDQR)+ZEVAP
       ZSOLQA(JL,NCLDQR,NCLDQV) = ZSOLQA(JL,NCLDQR,NCLDQV)-ZEVAP
-      !IF (LLCLDBUDL) ZBUDL(JL,19)=-ZEVAP*ZQTMST
 
       !-------------------------------------------------------------
       ! Reduce the total precip coverage proportional to evaporation
@@ -2499,8 +2295,6 @@ DO JK=NCLDTOP,KLEV
       ZSOLQA(JL,NCLDQV,NCLDQR) = ZSOLQA(JL,NCLDQV,NCLDQR)+ZEVAP
       ZSOLQA(JL,NCLDQR,NCLDQV) = ZSOLQA(JL,NCLDQR,NCLDQV)-ZEVAP
 
-      !IF (LLCLDBUDL) ZBUDL(JL,19)=-ZEVAP*ZQTMST
-
       !-------------------------------------------------------------
       ! Reduce the total precip coverage proportional to evaporation
       ! to mimic the previous scheme which had a diagnostic
@@ -2568,7 +2362,6 @@ ENDIF ! on IEVAPRAIN
 
       ZSOLQA(JL,NCLDQV,NCLDQS) = ZSOLQA(JL,NCLDQV,NCLDQS)+ZEVAP
       ZSOLQA(JL,NCLDQS,NCLDQV) = ZSOLQA(JL,NCLDQS,NCLDQV)-ZEVAP
-      !IF (LLCLDBUDL) ZBUDi(JL,17)=-ZEVAP*ZQTMST
       
       !-------------------------------------------------------------
       ! Reduce the total precip coverage proportional to evaporation
@@ -2641,7 +2434,6 @@ ENDIF ! on IEVAPRAIN
             
       ZSOLQA(JL,NCLDQV,NCLDQS) = ZSOLQA(JL,NCLDQV,NCLDQS)+ZEVAP
       ZSOLQA(JL,NCLDQS,NCLDQV) = ZSOLQA(JL,NCLDQS,NCLDQV)-ZEVAP
-      !IF (LLCLDBUDL) ZBUDi(JL,17)=-ZEVAP*ZQTMST
       
       !-------------------------------------------------------------
       ! Reduce the total precip coverage proportional to evaporation
@@ -2950,23 +2742,6 @@ ENDIF ! on IEVAPSNOW
     ENDIF
   ENDDO
   
-  DO JL=KIDIA,KFDIA
-    IF(ZTP1(JL,JK) <= RTT) THEN
-      ! Store liq->snow autoconversion diagnostic if required
-      IF (LLCLDBUDL) ZBUDL(JL,15) = -ZRAINAUT(JL)*ZQXN(JL,NCLDQL)*ZQTMST
-    ELSE
-      ! Store liq->rain autoconversion diagnostic if required
-      IF (LLCLDBUDL) ZBUDL(JL,16) = -ZRAINAUT(JL)*ZQXN(JL,NCLDQL)*ZQTMST
-    ENDIF
-  ENDDO
-
-  DO JL=KIDIA,KFDIA
-    IF (LLCLDBUDL) ZBUDL(JL,6)=-ZCONVSINK(JL,NCLDQL)*ZQXN(JL,NCLDQL)*ZQTMST
-    IF (LLCLDBUDI) ZBUDI(JL,6)=-ZCONVSINK(JL,NCLDQI)*ZQXN(JL,NCLDQI)*ZQTMST
-    IF (LLCLDBUDI) ZBUDI(JL,13)=-ZFALLSINK(JL,NCLDQI)*ZQXN(JL,NCLDQI)*ZQTMST
-    IF (LLCLDBUDI) ZBUDI(JL,14)=-ZSNOWAUT(JL)*ZQXN(JL,NCLDQI)*ZQTMST
-  ENDDO
-
   !######################################################################
   !              6  *** UPDATE TENDANCIES ***
   !######################################################################
@@ -3094,94 +2869,6 @@ ENDIF ! on IEVAPSNOW
   ENDDO
 
  ENDIF
-
-!-----------------------------------------------------------------
-! Cloud fraction budget 
-!-----------------------------------------------------------------
-  IF (LLCLDBUDCC) THEN
-  
-    DO JL=KIDIA,KFDIA
-      IS = 0
-      PEXTRA(JL,JK,IS+1)  = PA(JL,JK) ! Initial total cloud fraction
-      PEXTRA(JL,JK,IS+2)  = ZBUDCC(JL,1)  ! Supersat clipping
-      PEXTRA(JL,JK,IS+3)  = ZBUDCC(JL,2)  ! Supersat clipping from t-1 sltend
-      PEXTRA(JL,JK,IS+4)  = ZBUDCC(JL,3)  ! Convective detrainment
-      PEXTRA(JL,JK,IS+5)  = ZBUDCC(JL,4)+ZBUDCC(JL,6)  ! Convective mass flux
-      PEXTRA(JL,JK,IS+6)  = ZBUDCC(JL,7)  ! Turbulent erosion
-      PEXTRA(JL,JK,IS+7)  = ZBUDCC(JL,10) ! Condensation of new cloud
-      PEXTRA(JL,JK,IS+8)  = ZBUDCC(JL,11) ! Small value tidy up
-      PEXTRA(JL,JK,IS+9)  = PVFA(JL,JK)   ! Vertical diffusion
-      PEXTRA(JL,JK,IS+10) = PDYNA(JL,JK)  ! Advection from dynamics
-      PEXTRA(JL,JK,IS+11) = PA(JL,JK)+ZDA(JL) ! Final cloud frac
-    ENDDO
-
-  ENDIF
-
-
-  IF (LLCLDBUDL) THEN
-  
-    DO JL=KIDIA,KFDIA
-      IS = 0
-      PEXTRA(JL,JK,IS+1)  = ZQX0(JL,JK,NCLDQL) ! Initial condensate
-      PEXTRA(JL,JK,IS+2)  = ZBUDL(JL,1) ! + Supersat clipping so far this timestep                          
-      PEXTRA(JL,JK,IS+3)  = ZBUDL(JL,2) ! + Supersat clipping from t-1 sltend (PSUPSAT)                     
-      PEXTRA(JL,JK,IS+4)  = ZBUDL(JL,3) ! + Convective detrainment                                          
-      PEXTRA(JL,JK,IS+5)  = ZBUDL(JL,4)+ZBUDL(JL,5)+ZBUDL(JL,6) ! +- Convective subsidence
-       ! ZBUDL(JL,4) + Convective subsidence source from layer above
-       ! ZBUDL(JL,5) - Convective subsidence source evaporation in layer               
-       ! ZBUDL(JL,6) - Convective subsidence sink to layer below (IMPLICIT) (ZCONVSINK)
-      PEXTRA(JL,JK,IS+6)  = ZBUDL(JL,7) ! - Turbulent erosion                                               
-      PEXTRA(JL,JK,IS+7)  = ZBUDL(JL,8) ! - Evaporation of existing cloud (dqs increasing = subsat)         
-      PEXTRA(JL,JK,IS+8)  = ZBUDL(JL,9)  ! + Condensation of existing cloud (dqs decreasing = supersat)      
-      PEXTRA(JL,JK,IS+9)  = ZBUDL(JL,10) ! + Condensation of new cloud (dqs decreasing = supersat)           
-      PEXTRA(JL,JK,IS+10) = ZBUDL(JL,11)! - Deposition of liquid to ice                                     
-      PEXTRA(JL,JK,IS+11) = ZBUDL(JL,15)! - Autoconversion to rain (IMPLICIT)(ZRAINAUT)                     
-      PEXTRA(JL,JK,IS+12) = ZBUDL(JL,16)! - Autoconversion to rain+freezing->snow (IMPLICIT)(ZRAINAUT)      
-      PEXTRA(JL,JK,IS+13) = ZBUDL(JL,17)! + Melting of ice to liquid                                        
-      PEXTRA(JL,JK,IS+14) = ZBUDL(JL,18)+ZBUDL(JL,19) ! - Freezing of rain/liq                                        
-       ! ZBUDL(JL,18) - Freezing of rain to snow  
-       ! ZBUDL(JL,19) - Freezing of liquid to ice                                       
-      PEXTRA(JL,JK,IS+15) = ZBUDL(JL,20) ! - Evaporation of rain
-      PEXTRA(JL,JK,IS+16) = PVFL(JL,JK)  ! +- Vertical diffusion
-      PEXTRA(JL,JK,IS+17) = PDYNL(JL,JK) ! +- Advection from dynamics
-      PEXTRA(JL,JK,IS+18) = ZQXN(JL,NCLDQL)  ! Final condensate
-    ENDDO
-
-  ENDIF
-  IF (LLCLDBUDI) THEN
-    IF (LLCLDBUDL) THEN
-      IS = 20
-    ELSE
-      IS = 0
-    ENDIF
-    DO JL=KIDIA,KFDIA
-      PEXTRA(JL,JK,IS+1)  = ZQX0(JL,JK,NCLDQI) ! Initial condensate
-      PEXTRA(JL,JK,IS+2)  = ZBUDI(JL,1)  ! + Supersat clipping so far this timestep 
-      PEXTRA(JL,JK,IS+3)  = ZBUDI(JL,2)  ! + Supersat clipping from t-1 sltend (PSUPSAT)
-      PEXTRA(JL,JK,IS+4)  = ZBUDI(JL,3)  ! + Convective detrainment
-      PEXTRA(JL,JK,IS+5)  = ZBUDI(JL,4)+ZBUDI(JL,5)+ZBUDI(JL,6)! +- Convective subsidence
-       ! ZBUDI(JL,4) + Convective subsidence source from layer above
-       ! ZBUDI(JL,5) - Convective subsidence source evaporation in layer
-       ! ZBUDI(JL,6) - Convective subsidence sink to layer below (IMPLICIT) (ZCONVSINK)
-      PEXTRA(JL,JK,IS+6)  = ZBUDI(JL,7)  ! - Turbulent erosion
-      PEXTRA(JL,JK,IS+7)  = ZBUDI(JL,8)  ! - Evaporation of existing cloud (dqs increasing = subsat)
-      PEXTRA(JL,JK,IS+8)  = ZBUDI(JL,9)  ! + Condensation of existing cloud (dqs decreasing = supersat)
-      PEXTRA(JL,JK,IS+9)  = ZBUDI(JL,10) ! + Condensation of new cloud (dqs decreasing = supersat)
-      PEXTRA(JL,JK,IS+10) = ZBUDI(JL,11)! + Deposition of liquid to ice
-      PEXTRA(JL,JK,IS+11) = ZBUDI(JL,12)+ZBUDI(JL,13)! + Ice sedimentation
-       ! ZBUDI(JL,12) + Ice sedimentation source from above
-       ! ZBUDI(JL,13) - Ice sedimentation sink to below (IMPLICIT)(ZFALLSINK)
-      PEXTRA(JL,JK,IS+12) = ZBUDI(JL,14) ! - Autoconversion to snow (IMPLICIT) (ZSNOWAUT)
-      PEXTRA(JL,JK,IS+13) = ZBUDI(JL,15)+ZBUDI(JL,16) ! - Melting of ice/snow to rain
-       ! ZBUDI(JL,15)! - Melting of ice to rain
-       ! ZBUDI(JL,16)! - Melting of snow to rain
-      PEXTRA(JL,JK,IS+14) = ZBUDI(JL,17)! - Evaporation of snow
-      PEXTRA(JL,JK,IS+15) = PVFI(JL,JK) ! Vertical diffusion
-      PEXTRA(JL,JK,IS+16) = PDYNI(JL,JK)! Advection from dynamics
-      PEXTRA(JL,JK,IS+17) = ZQXN(JL,NCLDQI)  ! Final condensate
-    ENDDO
-
-  ENDIF
  
 !--------------------------------------------------
 ! Copy precipitation fraction into output variable
@@ -3202,77 +2889,6 @@ IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
 !######################################################################
 !              8  *** FLUX/DIAGNOSTICS COMPUTATIONS ***
 !######################################################################
-
-!-------------------------------------
-! Enthalpy and total water diagnostics (LSCMEC and LCLDBUDGET normally false)
-!-------------------------------------
-IF (LSCMEC.OR.LCLDBUDGET) THEN
-
-  DO JK=1,KLEV
-    DO JL=KIDIA,KFDIA
-      ZTNEW=PT(JL,JK)+PTSPHY*(tendency_loc%T(JL,JK)+tendency_cml%T(JL,JK))
-      IF (JK==1) THEN
-        ZSUMQ1(JL,JK)=0.0_JPRB
-        ZSUMH1(JL,JK)=0.0_JPRB
-      ELSE
-        ZSUMQ1(JL,JK)=ZSUMQ1(JL,JK-1)
-        ZSUMH1(JL,JK)=ZSUMH1(JL,JK-1)
-      ENDIF
-
-      ! cld vars
-      DO JM=1,NCLV-1
-        IF (IPHASE(JM)==1) ZTNEW=ZTNEW-RALVDCP*(PCLV(JL,JK,JM)+ &
-          & (tendency_loc%cld(JL,JK,JM)+tendency_cml%cld(JL,JK,JM))*PTSPHY)
-        IF (IPHASE(JM)==2) ZTNEW=ZTNEW-RALSDCP*(PCLV(JL,JK,JM)+ &
-          & (tendency_loc%cld(JL,JK,JM)+tendency_cml%cld(JL,JK,JM))*PTSPHY)
-        ZSUMQ1(JL,JK)=ZSUMQ1(JL,JK)+ &
-        & (PCLV(JL,JK,JM)+(tendency_loc%cld(JL,JK,JM)+tendency_cml%cld(JL,JK,JM))*PTSPHY)* &
-        & (PAPH(JL,JK+1)-PAPH(JL,JK))*ZRG_R
-      ENDDO
-      ZSUMH1(JL,JK)=ZSUMH1(JL,JK)+(PAPH(JL,JK+1)-PAPH(JL,JK))*ZTNEW 
-
-      ! humidity
-      ZSUMQ1(JL,JK)=ZSUMQ1(JL,JK)+ &
-        &(PQ(JL,JK)+(tendency_loc%q(JL,JK)+tendency_cml%q(JL,JK))*PTSPHY)*(PAPH(JL,JK+1)-PAPH(JL,JK))*ZRG_R
-
-      ZRAIN=0.0_JPRB
-      DO JM=1,NCLV
-        ZRAIN=ZRAIN+PTSPHY*ZPFPLSX(JL,JK+1,JM)
-      ENDDO
-      ZERRORQ(JL,JK)=ZSUMQ1(JL,JK)+ZRAIN-ZSUMQ0(JL,JK)
-    ENDDO
-  ENDDO
-
-  DO JK=1,KLEV
-    DO JL=KIDIA,KFDIA
-      ZDTGDP(JL)=PTSPHY*RG/(PAPH(JL,JK+1)-PAPH(JL,JK))
-      ZRAIN=0.0_JPRB
-      DO JM=1,NCLV
-        IF (IPHASE(JM)==1) ZRAIN=ZRAIN+RALVDCP*ZDTGDP(JL)*ZPFPLSX(JL,JK+1,JM)* &
-                           & (PAPH(JL,JK+1)-PAPH(JL,JK))
-        IF (IPHASE(JM)==2) ZRAIN=ZRAIN+RALSDCP*ZDTGDP(JL)*ZPFPLSX(JL,JK+1,JM)* &
-                           & (PAPH(JL,JK+1)-PAPH(JL,JK))
-      ENDDO
-      ZSUMH1(JL,JK)=(ZSUMH1(JL,JK)-ZRAIN)/PAPH(JL,JK+1)
-      ZERRORH(JL,JK)=ZSUMH1(JL,JK)-ZSUMH0(JL,JK)
-    ENDDO
-  ENDDO
-
-  DO JL=KIDIA,KFDIA
-    IF (ABS(ZERRORQ(JL,KLEV))>1.e-13_JPRB.OR.ABS(ZERRORH(JL,KLEV))>1.e-13_JPRB) THEN
-      ZQADJ=0.0_JPRB ! dummy statement
-                     ! place totalview break here to catch non-conservation
-    ENDIF
-  ENDDO
-
-  IF (ALLOCATED(ZSUMQ0))  DEALLOCATE(ZSUMQ0)
-  IF (ALLOCATED(ZSUMQ1))  DEALLOCATE(ZSUMQ1)
-  IF (ALLOCATED(ZSUMH0))  DEALLOCATE(ZSUMH0)
-  IF (ALLOCATED(ZSUMH1))  DEALLOCATE(ZSUMH1)
-  IF (ALLOCATED(ZERRORQ)) DEALLOCATE(ZERRORQ)
-  IF (ALLOCATED(ZERRORH)) DEALLOCATE(ZERRORH)
-
-ENDIF
 
 !--------------------------------------------------------------------
 ! Copy general precip arrays back into PFP arrays for GRIB archiving

@@ -4,7 +4,6 @@ module load_state_mod
 
   ! Argh....
   USE YOECLDP  , ONLY : YRECLDP, TECLDP, NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
-  USE YOMMP0   , ONLY : LSCMEC
   USE YOMCST   , ONLY : RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
   USE YOETHF   , ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
    & R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
@@ -303,7 +302,6 @@ contains
     real(kind=JPRB), intent(inout) :: PTSPHY
     
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'PTSPHY', PTSPHY)
-    call fs_get_serializer_metainfo(ppser_serializer_ref, 'LSCMEC', LSCMEC)
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'RG', RG)
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'RD', RD)
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'RCPD', RCPD)

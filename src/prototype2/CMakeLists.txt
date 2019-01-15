@@ -9,7 +9,6 @@ ecbuild_add_library(
     SOURCES 
         modules/parkind1.F90
         modules/yoecldp.F90
-        modules/yommp0.F90
         modules/yomcst.F90
         modules/yoethf.F90
         modules/yoephli.F90
