@@ -13,7 +13,6 @@ ecbuild_add_library(
         modules/yomcst.F90
         modules/yoethf.F90
         modules/yoephli.F90
-        modules/yomjfh.F90
         modules/routines.F90
         modules/abor1.F90
         modules/timer_mod.F90

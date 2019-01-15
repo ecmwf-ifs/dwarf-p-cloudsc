@@ -1,7 +1,3 @@
-!OPTIONS XOPT(HSFUN)
-#ifdef RS6K
-@PROCESS HOT(NOVECTOR) NOSTRICT
-#endif
 SUBROUTINE CLOUDSC &
  !---input
  & (KIDIA,    KFDIA,    KLON,    KLEV,&
@@ -133,7 +129,6 @@ USE YOETHF   , ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
  & RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
 USE YOECLDP  , ONLY : YRECLDP, NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
 USE YOMPHYDER ,ONLY : STATE_TYPE
-USE YOMJFH   , ONLY : N_VMASS
 
 IMPLICIT NONE
 
@@ -834,98 +829,40 @@ ENDIF ! on LDMAINCALL ***Above only executed in main cloud scheme call***
 ! ------------------------------
 ! Define saturation values
 ! ------------------------------
-IF(N_VMASS > 1) THEN
-  JLEN=KFDIA-KIDIA+1
-ENDIF
-
 DO JK=1,KLEV
-  IF(N_VMASS > 0) THEN ! Using Vector VMASS
+  DO JL=KIDIA,KFDIA
+    !----------------------------------------
+    ! old *diagnostic* mixed phase saturation
+    !---------------------------------------- 
+    ZFOEALFA(JL,JK)=FOEALFA(ZTP1(JL,JK))
+    ZFOEEWMT(JL,JK)=MIN(FOEEWM(ZTP1(JL,JK))/PAP(JL,JK),0.5_JPRB)
+    ZQSMIX(JL,JK)=ZFOEEWMT(JL,JK)
+    ZQSMIX(JL,JK)=ZQSMIX(JL,JK)/(1.0_JPRB-RETV*ZQSMIX(JL,JK))
 
-    !------------------------------------------------------------------------
-    ! Calculate Koop supersaturation limit function using Vector VMass
-    !  FOEELIQ(PTARE) = R2ES*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES))
-    !  FOEEICE(PTARE) = R2ES*EXP(R3IES*(PTARE-RTT)/(PTARE-R4IES))
-    !  Z_TMPK = FOEELIQ(PTARE)/FOEEICE(PTARE)
-    !  Used in function: 
-    !  FOKOOP(PTARE) = MIN(RKOOP1-RKOOP2*PTARE,FOEELIQ(PTARE)/FOEEICE(PTARE))
-    !------------------------------------------------------------------------
-    DO JL=KIDIA,KFDIA
-      Z_TMP1(JL-KIDIA+1)=R3LES*(ZTP1(JL,JK)-RTT)
-      Z_TMP2(JL-KIDIA+1)=R3IES*(ZTP1(JL,JK)-RTT)
-      Z_TMP3(JL-KIDIA+1)=ZTP1(JL,JK)-R4LES
-      Z_TMP4(JL-KIDIA+1)=ZTP1(JL,JK)-R4IES
-    ENDDO
-    CALL VDIV(Z_TMP6,Z_TMP1,Z_TMP3,JLEN)
-    CALL VDIV(Z_TMP7,Z_TMP2,Z_TMP4,JLEN)
-    CALL VEXP(Z_TMP1,Z_TMP6,JLEN)
-    CALL VEXP(Z_TMP2,Z_TMP7,JLEN)
-    CALL VREC(Z_TMP3,PAP(KIDIA,JK),JLEN)
-    CALL VDIV(Z_TMPK(1,JK),Z_TMP1,Z_TMP2,JLEN)
+    !---------------------------------------------
+    ! ice saturation T<273K
+    ! liquid water saturation for T>273K 
+    !---------------------------------------------
+    ZALFA=FOEDELTA(ZTP1(JL,JK))
+    ZFOEEW(JL,JK)=MIN((ZALFA*FOEELIQ(ZTP1(JL,JK))+ &
+         &  (1.0_JPRB-ZALFA)*FOEEICE(ZTP1(JL,JK)))/PAP(JL,JK),0.5_JPRB)
+    ZFOEEW(JL,JK)=MIN(0.5_JPRB,ZFOEEW(JL,JK))
+    ZQSICE(JL,JK)=ZFOEEW(JL,JK)/(1.0_JPRB-RETV*ZFOEEW(JL,JK))
 
-    DO JL=KIDIA,KFDIA
-      !----------------------------------------
-      ! old *diagnostic* mixed phase saturation
-      !---------------------------------------- 
-      ZFOEALFA(JL,JK)=FOEALFA(ZTP1(JL,JK))
-      ZFOEEWMT(JL,JK)=R2ES*(ZFOEALFA(JL,JK)*Z_TMP1(JL-KIDIA+1)+&
-       & (1.0_JPRB-ZFOEALFA(JL,JK))*Z_TMP2(JL-KIDIA+1))*Z_TMP3(JL-KIDIA+1)  
-      ZFOEEWMT(JL,JK)=MIN(0.5_JPRB,ZFOEEWMT(JL,JK))
-      ZQSMIX(JL,JK)=ZFOEEWMT(JL,JK)/(1.0_JPRB-RETV*ZFOEEWMT(JL,JK))
-      !---------------------------------------------
-      ! binary qsat - liq for T>273K, ice for T<273K 
-      !---------------------------------------------
-      ZALFA = FOEDELTA(ZTP1(JL,JK))
-      ZFOEEW(JL,JK)=R2ES*(ZALFA*Z_TMP1(JL-KIDIA+1)+&
-       & (1.0_JPRB-ZALFA)*Z_TMP2(JL-KIDIA+1))*Z_TMP3(JL-KIDIA+1)  
-      ZFOEEW(JL,JK)=MIN(0.5_JPRB,ZFOEEW(JL,JK))
-      ZQSICE(JL,JK)=ZFOEEW(JL,JK)/(1.0_JPRB-RETV*ZFOEEW(JL,JK))
-      !----------------------------------
-      ! liquid water saturation
-      !---------------------------------- 
-      ZFOEELIQT(JL,JK)=MIN(R2ES*Z_TMP1(JL-KIDIA+1)*Z_TMP3(JL-KIDIA+1),0.5_JPRB)
-      ZQSLIQ(JL,JK)=ZFOEELIQT(JL,JK)/(1.0_JPRB-RETV*ZFOEELIQT(JL,JK))
+    !----------------------------------
+    ! liquid water saturation
+    !---------------------------------- 
+    ZFOEELIQT(JL,JK)=MIN(FOEELIQ(ZTP1(JL,JK))/PAP(JL,JK),0.5_JPRB)
+    ZQSLIQ(JL,JK)=ZFOEELIQT(JL,JK)
+    ZQSLIQ(JL,JK)=ZQSLIQ(JL,JK)/(1.0_JPRB-RETV*ZQSLIQ(JL,JK))
 
-!      !----------------------------------
-!      ! ice water saturation
-!      !---------------------------------- 
-!      ZFOEEICET(JL,JK)=MIN(R2ES*Z_TMP2(JL-KIDIA+1)*Z_TMP3(JL-KIDIA+1),0.5_JPRB)
-!      ZQSICE(JL,JK)=ZFOEEICET(JL,JK)/(1.0_JPRB-RETV*ZFOEEICET(JL,JK))
-    ENDDO
-  ELSE
-    DO JL=KIDIA,KFDIA
-      !----------------------------------------
-      ! old *diagnostic* mixed phase saturation
-      !---------------------------------------- 
-      ZFOEALFA(JL,JK)=FOEALFA(ZTP1(JL,JK))
-      ZFOEEWMT(JL,JK)=MIN(FOEEWM(ZTP1(JL,JK))/PAP(JL,JK),0.5_JPRB)
-      ZQSMIX(JL,JK)=ZFOEEWMT(JL,JK)
-      ZQSMIX(JL,JK)=ZQSMIX(JL,JK)/(1.0_JPRB-RETV*ZQSMIX(JL,JK))
-
-      !---------------------------------------------
-      ! ice saturation T<273K
-      ! liquid water saturation for T>273K 
-      !---------------------------------------------
-      ZALFA=FOEDELTA(ZTP1(JL,JK))
-      ZFOEEW(JL,JK)=MIN((ZALFA*FOEELIQ(ZTP1(JL,JK))+ &
-        &  (1.0_JPRB-ZALFA)*FOEEICE(ZTP1(JL,JK)))/PAP(JL,JK),0.5_JPRB)
-      ZFOEEW(JL,JK)=MIN(0.5_JPRB,ZFOEEW(JL,JK))
-      ZQSICE(JL,JK)=ZFOEEW(JL,JK)/(1.0_JPRB-RETV*ZFOEEW(JL,JK))
-
-      !----------------------------------
-      ! liquid water saturation
-      !---------------------------------- 
-      ZFOEELIQT(JL,JK)=MIN(FOEELIQ(ZTP1(JL,JK))/PAP(JL,JK),0.5_JPRB)
-      ZQSLIQ(JL,JK)=ZFOEELIQT(JL,JK)
-      ZQSLIQ(JL,JK)=ZQSLIQ(JL,JK)/(1.0_JPRB-RETV*ZQSLIQ(JL,JK))
-
-!      !----------------------------------
-!      ! ice water saturation
-!      !---------------------------------- 
-!      ZFOEEICET(JL,JK)=MIN(FOEEICE(ZTP1(JL,JK))/PAP(JL,JK),0.5_JPRB)
-!      ZQSICE(JL,JK)=ZFOEEICET(JL,JK)
-!      ZQSICE(JL,JK)=ZQSICE(JL,JK)/(1.0_JPRB-RETV*ZQSICE(JL,JK))
-    ENDDO
-  ENDIF
+!   !----------------------------------
+!   ! ice water saturation
+!   !---------------------------------- 
+!   ZFOEEICET(JL,JK)=MIN(FOEEICE(ZTP1(JL,JK))/PAP(JL,JK),0.5_JPRB)
+!   ZQSICE(JL,JK)=ZFOEEICET(JL,JK)
+!   ZQSICE(JL,JK)=ZQSICE(JL,JK)/(1.0_JPRB-RETV*ZQSICE(JL,JK))
+  ENDDO
 
 ! Calculation of relative humidity for diagnostics
 ! Not used at present
@@ -1047,13 +984,6 @@ ZCOVPMAX(:) = 0.0_JPRB
 ZCOVPTOT(:) = 0.0_JPRB
 ZCLDTOPDIST(:) = 0.0_JPRB
 
-IF( N_VMASS > 0 )THEN
-  DO JL=KIDIA,KFDIA
-    ZTMP1(JL-KIDIA+1)=(-0.178)
-    ZTMP2(JL-KIDIA+1)=(-0.394)
-  ENDDO
-ENDIF
-
 !######################################################################
 !           3.       *** PHYSICS ***
 !######################################################################
@@ -1062,10 +992,6 @@ ENDIF
 !----------------------------------------------------------------------
 !                       START OF VERTICAL LOOP
 !----------------------------------------------------------------------
-
-IF(N_VMASS >0 ) THEN ! Using Vector MASS
-  ZRG(:)=RG
-ENDIF
 
 DO JK=NCLDTOP,KLEV
 
@@ -1130,26 +1056,15 @@ DO JK=NCLDTOP,KLEV
   IF (LLCLDBUDL)  ZBUDL(:,:) = 0.0_JPRB                 
   IF (LLCLDBUDI)  ZBUDI(:,:) = 0.0_JPRB                 
   
-  IF(N_VMASS > 1) THEN
-    DO JL=KIDIA,KFDIA
-      ZDP(JL)  = PAPH(JL,JK+1)-PAPH(JL,JK)     ! dp
-      ZRHO(JL) = RD*ZTP1(JL,JK)
-    ENDDO
-    CALL VDIV(ZGDP(KIDIA),ZRG(KIDIA),ZDP(KIDIA),KFDIA-KIDIA+1)
-    CALL VDIV(ZRHO(KIDIA),PAP(KIDIA,JK),ZRHO(KIDIA),KFDIA-KIDIA+1)
-  ENDIF
-
   DO JL=KIDIA,KFDIA
 
     !-------------------------
     ! derived variables needed
     !-------------------------
 
-    IF(N_VMASS <= 1) THEN
-      ZDP(JL)     = PAPH(JL,JK+1)-PAPH(JL,JK)     ! dp
-      ZGDP(JL)    = RG/ZDP(JL)                    ! g/dp
-      ZRHO(JL)    = PAP(JL,JK)/(RD*ZTP1(JL,JK))   ! p/RT air density
-    ENDIF
+    ZDP(JL)     = PAPH(JL,JK+1)-PAPH(JL,JK)     ! dp
+    ZGDP(JL)    = RG/ZDP(JL)                    ! g/dp
+    ZRHO(JL)    = PAP(JL,JK)/(RD*ZTP1(JL,JK))   ! p/RT air density
 
     ZDTGDP(JL)  = PTSPHY*ZGDP(JL)               ! dt g/dp
     ZRDTGDP(JL) = ZDP(JL)*(1.0_JPRB/(PTSPHY*RG))  ! 1/(dt g/dp)
@@ -1233,11 +1148,7 @@ DO JK=NCLDTOP,KLEV
     ! 3.1.1 Supersaturation limit (from Koop)
     !-----------------------------------
     ! Needs to be set for all temperatures
-    IF(N_VMASS >0 ) THEN ! Using Vector MASS
-      ZFOKOOP(JL) = MIN(RKOOP1-RKOOP2*ZTP1(JL,JK), Z_TMPK(JL-KIDIA+1,JK))
-    ELSE
-      ZFOKOOP(JL)=FOKOOP(ZTP1(JL,JK))
-    ENDIF
+    ZFOKOOP(JL)=FOKOOP(ZTP1(JL,JK))
   ENDDO
   DO JL=KIDIA,KFDIA
 
@@ -2000,20 +1911,6 @@ DO JK=NCLDTOP,KLEV
     ZLICLD(JL)  = ZLIQCLD(JL)+ZICECLD(JL)
   ENDDO
 
-  IF( N_VMASS > 0 )THEN
-    DO JL = KIDIA,KFDIA
-      ZTMP3(JL-KIDIA+1) = PAP(JL,JK)*RICEHI1
-      ZTMP4(JL-KIDIA+1) = ZTP1(JL,JK)*RICEHI2
-    ENDDO
-    CALL VPOW(ZTMP5,ZTMP3,ZTMP1,KFDIA-KIDIA+1)
-    CALL VPOW(ZTMP6,ZTMP4,ZTMP2,KFDIA-KIDIA+1)
-    DO JL = KIDIA,KFDIA
-      ZTMP7(JL-KIDIA+1) = ZTMP5(JL-KIDIA+1)*ZTMP6(JL-KIDIA+1)
-    ENDDO
-  ENDIF
-
-
-
   !----------------------------------------------------------------------
   ! 4.2 SEDIMENTATION/FALLING OF *ALL* MICROPHYSICAL SPECIES
   !     now that rain, snow, graupel species are prognostic
@@ -2054,12 +1951,8 @@ DO JK=NCLDTOP,KLEV
         !-------------------------------------------------
         ! modified by Heymsfield and Iaquinta JAS 2000
         !-------------------------------------------------
-        !IF( N_VMASS > 0 )THEN
-        !  ZFALL = ZFALL*ZTMP7(JL-KIDIA+1)
-        !ELSE
-        !  ZFALL = ZFALL*((PAP(JL,JK)*RICEHI1)**(-0.178_JPRB)) &
-        !             &*((ZTP1(JL,JK)*RICEHI2)**(-0.394_JPRB))
-        !ENDIF
+        ! ZFALL = ZFALL*((PAP(JL,JK)*RICEHI1)**(-0.178_JPRB)) &
+        !            &*((ZTP1(JL,JK)*RICEHI2)**(-0.394_JPRB))
 
         ZFALLSINK(JL,JM)=ZDTGDP(JL)*ZFALL
         ! Cloud budget diagnostic stored at end as implicit
