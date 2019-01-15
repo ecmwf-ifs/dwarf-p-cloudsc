@@ -320,7 +320,8 @@ call serialize_reference( KLON, KLEV, KFLDX, &
      & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
      & PFSQLTUR, PFSQITUR , &
-     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN)
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+     & TENDENCY_LOC)
 
 CALL saveref('PLUDE',PLUDE_tmp)
 DEALLOCATE(PLUDE_tmp)

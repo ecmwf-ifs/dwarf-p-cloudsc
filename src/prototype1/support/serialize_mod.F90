@@ -621,7 +621,8 @@ contains
        & PLUDE,    PCOVPTOT, PRAINFRAC_TOPRFZ,&
        & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
        & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
-       & PFSQLTUR, PFSQITUR, PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN)
+       & PFSQLTUR, PFSQITUR, PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+       & TENDENCY_LOC)
     ! Serialize reference data for offline validation
     INTEGER(KIND=JPIM), INTENT(IN) :: KLON, KLEV, KFLDX
     REAL(KIND=JPRB), INTENT(INOUT) :: PLUDE(KLON,KLEV)
@@ -641,6 +642,7 @@ contains
     REAL(KIND=JPRB), INTENT(INOUT) :: PFPLSN(KLON,KLEV+1)
     REAL(KIND=JPRB), INTENT(INOUT) :: PFHPSL(KLON,KLEV+1)
     REAL(KIND=JPRB), INTENT(INOUT) :: PFHPSN(KLON,KLEV+1)
+    TYPE(STATE_TYPE),INTENT(INOUT) :: TENDENCY_LOC
 
     ! Initialize serializer for storing reference input
     call ppser_initialize(directory='data', prefix='reference')
@@ -670,6 +672,10 @@ contains
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PFPLSN', PFPLSN)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PFHPSL', PFHPSL)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PFHPSN', PFHPSN)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'TENDENCY_LOC_A', TENDENCY_LOC%A)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'TENDENCY_LOC_Q', TENDENCY_LOC%Q)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'TENDENCY_LOC_T', TENDENCY_LOC%T)
+    call fs_write_field(ppser_serializer, ppser_savepoint, 'TENDENCY_LOC_CLD', TENDENCY_LOC%CLD)
 
     call ppser_finalize
   end subroutine serialize_reference
