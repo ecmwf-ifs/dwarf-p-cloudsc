@@ -1,3 +1,5 @@
+ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
+
 list(APPEND dwarf_P_cloudMicrophysics_IFSScheme_srcs
 cloudsc/cloud_layer.F90
 cloudsc/cloudsc.F90
@@ -45,32 +47,31 @@ if(${EC_OS_NAME} MATCHES "macosx")
 endif()
 
 
-# Default install dir if not given by the user
-if(NOT SERIALBOX_ROOT)
-  set(SERIALBOX_ROOT "/home/rd/naml/apps/serialbox2/install")
-  message(STATUS "Set serialbox2 install directory to: ${SERIALBOX_ROOT}")
-endif()
-set( SERIALBOX_USE_SHARED_LIBS ON )
-# Find installed version of serialbox
-find_package(Serialbox REQUIRED COMPONENTS Fortran HINTS
-  "${SERIALBOX_ROOT}/cmake/"
-)
-
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+# Note, that we link statically here, since Serialbox only exposes static Fortran libs.
+# Serailbox is used to generate the off-line input and reference data for alternative
+# versions of this dwarf, eg. prototype2.
+#
+# We should return to dynamic linking once Serialbox::SerialboxFortranShared is available.
 
 ecbuild_add_library(TARGET dwarf-P-cloudMicrophysics-IFSScheme-libs
+                    TYPE STATIC
+                    LINKER_LANGUAGE CXX
                     DEFINITIONS
                         ${CLOUDSC_DEFINITIONS}
-		    INCLUDES
-		        ${SERIALBOX_INCLUDE_DIRS}
                     SOURCES
                         ${dwarf_P_cloudMicrophysics_IFSScheme_srcs}
                         ${dwarf_P_cloudMicrophysics_IFSScheme_support_srcs}
-                    LIBS
-		        ${SERIALBOX_FORTRAN_LIBRARIES}
 )
+
+if( Serialbox_FOUND )
+  target_compile_definitions( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE HAVE_SERIALBOX )
+  target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE
+                         Serialbox::SerialboxFortranStatic )
+endif()
+
+target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE  OpenMP::OpenMP_Fortran )
 
 ecbuild_add_executable(TARGET  dwarf-P-cloudMicrophysics-IFSScheme
                        SOURCES cloudsc_dwarf.F90 
