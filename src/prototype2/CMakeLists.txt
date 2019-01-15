@@ -21,7 +21,6 @@ ecbuild_add_library(
         cloudsc/cloudsc_global_state_mod.F90
         cloudsc/cloudsc_driver_mod.F90
         cloudsc/cloudsc.F90
-        cloudsc/cuadjtq.F90
     LIBS
         ${SERIALBOX_FORTRAN_LIBRARIES}
 )
