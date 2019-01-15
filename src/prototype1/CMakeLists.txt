@@ -36,45 +36,22 @@ support/yomphy2.F90
 support/yomphyder.F90
 )
 
-list(APPEND CLOUDSC_DEFINITIONS ECMWF)
-list(APPEND CLOUDSC_DEFINITIONS )
-if(${EC_OS_NAME} MATCHES "linux" )
-  list( APPEND CLOUDSC_DEFINITIONS LINUX)
-endif()
-
-if(${EC_OS_NAME} MATCHES "macosx")
-  list( APPEND CLOUDSC_DEFINITIONS DARWIN)
-endif()
-
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Note, that we link statically here, since Serialbox only exposes static Fortran libs.
-# Serailbox is used to generate the off-line input and reference data for alternative
-# versions of this dwarf, eg. prototype2.
-#
-# We should return to dynamic linking once Serialbox::SerialboxFortranShared is available.
-
 ecbuild_add_library(TARGET dwarf-P-cloudMicrophysics-IFSScheme-libs
-                    TYPE STATIC
-                    LINKER_LANGUAGE CXX
-                    DEFINITIONS
-                        ${CLOUDSC_DEFINITIONS}
                     SOURCES
                         ${dwarf_P_cloudMicrophysics_IFSScheme_srcs}
                         ${dwarf_P_cloudMicrophysics_IFSScheme_support_srcs}
 )
 
-if( Serialbox_FOUND )
+if( HAVE_SERIALBOX )
   target_compile_definitions( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE HAVE_SERIALBOX )
   target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE
-                         Serialbox::SerialboxFortranStatic )
+                         Serialbox::SerialboxFortranShared )
 endif()
 
 target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE  OpenMP::OpenMP_Fortran )
 
 ecbuild_add_executable(TARGET  dwarf-P-cloudMicrophysics-IFSScheme
-                       SOURCES cloudsc_dwarf.F90 
-                       LIBS
-		           dwarf-P-cloudMicrophysics-IFSScheme-libs
-)
+                       SOURCES cloudsc_dwarf.F90 )
+target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme dwarf-P-cloudMicrophysics-IFSScheme-libs )
