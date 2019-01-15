@@ -16,6 +16,8 @@ ecbuild_add_library(
         modules/yomjfh.F90
         modules/routines.F90
         modules/abor1.F90
+        modules/timer_mod.F90
+        modules/mycpu.c
         cloudsc/load_state_mod.F90
         cloudsc/cloudsc_global_state_mod.F90
         cloudsc/cloudsc_driver_mod.F90

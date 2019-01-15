@@ -2,11 +2,23 @@ MODULE CLOUDSC_DRIVER_MOD
 
   USE PARKIND1, ONLY: JPIM, JPRB
   USE YOMPHYDER, ONLY: STATE_TYPE
+  USE YOECLDP, ONLY : NCLV
+  USE TIMER_MOD, ONLY : FTIMER
+
+#ifdef _OPENMP
+use omp_lib
+#else
+#define omp_get_num_threads() 1
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#endif
+
+IMPLICIT NONE
 
 
 CONTAINS
   SUBROUTINE CLOUDSC_DRIVER( &
-     & NPROMA, NLEV, NGPTOT, KFLDX, PTSPHY, &
+     & NUMOMP, NPROMA, NLEV, NGPTOT, KFLDX, PTSPHY, &
      & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
      & PHRSW,    PHRLW, &
@@ -26,7 +38,7 @@ CONTAINS
     ! Driver routine that performans the parallel NPROMA-blocking and
     ! invokes the CLOUDSC kernel
 
-    INTEGER(KIND=JPIM)                                    :: NPROMA, NLEV, NGPTOT
+    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT
     INTEGER(KIND=JPIM)                                    :: KFLDX 
     REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PT(:,:,:)    ! T at start of callpar
@@ -83,6 +95,35 @@ CONTAINS
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(OUT)   :: PFHPSL(:,:,:) ! Enthalpy flux for liq
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(OUT)   :: PFHPSN(:,:,:) ! Enthalp flux for ice
 
+    INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND,NGPBLKS
+
+    REAL(KIND=JPRB) :: t1, t2, tloc, tdiff
+    REAL(KIND=JPRB), parameter :: zhpm = 12482329.0_JPRB ! IBM P7 HPM flop count for 100 points at L137
+    REAL(KIND=JPRB) :: zmflops ! MFlops/s rate
+    REAL(KIND=JPRB) :: zfrac ! fraction of gp columns handled by thread
+
+    INTEGER(KIND=JPIM) :: tid ! thread id from 0 .. NUMOMP - 1
+    INTEGER(KIND=JPIM) :: coreid ! core id thread belongs to
+    INTEGER(KIND=JPIM) :: icalls ! number of calls to CLOUDSC == number of blocks handled by particular thread
+    INTEGER(KIND=JPIM) :: igpc ! number of gp columns handled by particular thread
+    REAL(KIND=JPRB) :: zinfo(4,0:NUMOMP - 1)
+
+#include "mycpu.intfb.h"
+
+    NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
+1003 format(5x,'NUMOMP=',i0,', NGPTOT=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
+    write(0,1003) NUMOMP,NGPTOT,NPROMA,NGPBLKS
+
+    t1 = ftimer()
+
+    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,tloc,tid,coreid,icalls,igpc) &
+    !$omp& num_threads(NUMOMP)
+    tloc = ftimer()
+    tid = omp_get_thread_num()
+    coreid = mycpu()
+    icalls = 0
+    igpc = 0
+
     !$omp do schedule(runtime)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
@@ -119,7 +160,50 @@ CONTAINS
               & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
               & PEXTRA(:,:,:,IBL),   KFLDX)
 
-      END DO
+         icalls = icalls + 1
+         igpc = igpc + ICEND
+      ENDDO
+
+      !-- The "nowait" is here to get correct local timings (tloc) per thread
+      !   i.e. we should not wait for slowest thread to finish before measuring tloc
+      !$omp end do nowait
+
+      tloc = ftimer() - tloc
+      zinfo(1,tid) = tloc
+      zinfo(2,tid) = coreid
+      zinfo(3,tid) = icalls
+      zinfo(4,tid) = igpc
+      !$omp end parallel
+
+      t2 = ftimer()
+
+1000  format(1x,5a10,1x,a4,' : ',2a10)
+1001  format(1x,5i10,1x,i4,' : ',2i10,:,' @ core#',i0)
+1002  format(1x,5i10,1x,i4,' : ',2i10,  ' : TOTAL')
+      write(0,1000) 'NUMOMP','NGPTOT','#GP-cols','#BLKS','NPROMA','tid#','Time(msec)','MFlops/s'
+      do tid=0,NUMOMP-1
+         tloc = zinfo(1,tid)
+         coreid = int(zinfo(2,tid))
+         icalls = int(zinfo(3,tid))
+         igpc = int(zinfo(4,tid))
+         zfrac = real(igpc,JPRB)/real(NGPTOT,JPRB)
+         if (tloc > 0.0_JPRB) then
+            zmflops = 1.0e-06_JPRB * zfrac * zhpm * (real(NGPTOT,JPRB)/real(100,JPRB))/tloc
+         else
+            zmflops = 0.0_JPRB
+         endif
+         write(0,1001) numomp,ngptot,igpc,icalls,nproma,tid,&
+              & int(tloc*1000.0_JPRB),int(zmflops),coreid
+      enddo
+      tdiff = t2-t1
+      zfrac = 1.0_JPRB
+      if (tdiff > 0.0_JPRB) then
+         zmflops = 1.0e-06_JPRB * zfrac * zhpm * (real(NGPTOT,JPRB)/real(100,JPRB))/tdiff
+      else
+         zmflops = 0.0_JPRB
+      endif
+      write(0,1002) numomp,ngptot,int(sum(zinfo(4,:))),ngpblks,nproma,-1,&
+           & int(tdiff*1000.0_JPRB),int(zmflops)
     
   END SUBROUTINE CLOUDSC_DRIVER
 
