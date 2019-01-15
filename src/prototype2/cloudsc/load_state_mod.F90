@@ -296,12 +296,16 @@ contains
   end subroutine expand_r3
 
 
-  subroutine initialise_parameters(PTSPHY)
+  subroutine initialise_parameters(PTSPHY, LDSLPHY, LDMAINCALL)
     ! Retrieve parametersand timestep size from the serializer
     ! Note that we use `ppser_serializer_ref` to get the previously stored data
     real(kind=JPRB), intent(inout) :: PTSPHY
+    logical, intent(inout) :: LDSLPHY, LDMAINCALL
     
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'PTSPHY', PTSPHY)
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'LDSLPHY', LDSLPHY)
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'LDMAINCALL', LDMAINCALL)
+
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'RG', RG)
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'RD', RD)
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'RCPD', RCPD)
