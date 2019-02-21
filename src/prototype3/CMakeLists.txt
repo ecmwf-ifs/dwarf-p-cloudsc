@@ -11,9 +11,11 @@ if( HAVE_SERIALBOX )
             cloudsc/cloudsc_driver.c
 	    cloudsc/cloudsc_c.h
             cloudsc/cloudsc_c.c
+	    cloudsc/load_state.h
+	    cloudsc/load_state.c
     )
     target_link_libraries( dwarf-cloudsc-v3-lib PRIVATE
-                           Serialbox::SerialboxFortranShared
+                           Serialbox::SerialboxCShared
                            OpenMP::OpenMP_Fortran )
     target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<INSTALL_INTERFACE:include> )
     target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc> )

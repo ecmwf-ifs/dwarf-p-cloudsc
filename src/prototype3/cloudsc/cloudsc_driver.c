@@ -77,13 +77,13 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     double *pfhpsl, *zpfhpsl;       //! Enthalpy flux for liq
     double *pfhpsn, *zpfhpsn;       //! Enthalpy flux for ice
 
-    int klon,kfldx;
+    /* Define or query data dimensions from input file */
+    const int nclv = 5;
+    int klon, nlev;
     int kidia, kfdia;
     int jkglo,ibl,icend;
 
-    const int nlev = 137;
-    const int nclv = 5;
-    kfldx = 0;
+    query_state(&klon, &nlev);
 
     tend_loc_u   = (double*) malloc( sizeof(double) * numcols*nlev ); 
     tend_loc_v   = (double*) malloc( sizeof(double) * numcols*nlev );
@@ -158,19 +158,18 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     pfhpsl    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
     pfhpsn    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
 
-    read_from_file( numcols, nlev, nclv, &ptsphy, plcrit_aer,  picrit_aer,  pre_ice,  pccn,  pnice,  pt,  pq, 
-                    tend_cml_u,  tend_cml_v,  tend_cml_t,  tend_cml_o3,  tend_cml_q,  tend_cml_a, 
-                    tend_cml_cld,  tend_tmp_u,  tend_tmp_v,  tend_tmp_t,  tend_tmp_o3,  tend_tmp_q,
-                    tend_tmp_a,  tend_tmp_cld,  pvfa,  pvfl,  pvfi,  pdyna,  pdynl,  pdyni, 
-                    phrsw,  phrlw,  pvervel,  pap,  paph,  plsm,  ldcum,  ktype,  plu, 
-                    plude,  psnde,  pmfu,  pmfd,  pa,  pclv,  psupsat );
-
-    printf("read in all values from file, will now call cloudsc\n");
+    load_state(klon, nlev, nclv, numcols, nproma, &ptsphy, plcrit_aer, picrit_aer,
+	       pre_ice, pccn, pnice, pt, pq,
+	       tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
+	       tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
+	       pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
+	       phrsw, phrlw, pvervel, pap, paph, plsm, ldcum, ktype, plu,
+	       plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
 
     cloudsc_c(1, numcols, numcols, nlev, ptsphy,  pt, pq,  
-              tend_cml_t, tend_cml_q, tend_cml_a,  tend_cml_cld, 
-              tend_tmp_t, tend_tmp_q, tend_tmp_a,  tend_tmp_cld, 
-              tend_loc_t, tend_loc_q,  tend_loc_a, tend_loc_cld, 
+              tend_cml_t, tend_cml_q, tend_cml_cld,
+              tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
+              tend_loc_t, tend_loc_q, tend_loc_a, tend_loc_cld,
               pvfa,  pvfl,  pvfi, 
               pdyna,  pdynl,  pdyni,  
               phrsw, phrlw,  pvervel, 
@@ -182,15 +181,14 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
               pfsqif, pfcqnng,  pfcqlng,
               pfsqrf,  pfsqsf,  pfcqrng,  
               pfcqsng, pfsqltur, pfsqitur,
-              pfplsl,  pfplsn,  pfhpsl,  pfhpsn, kfldx);
+              pfplsl,  pfplsn,  pfhpsl,  pfhpsn);
 
     printf("finished cloudsc, now checking results\n");
 
-    check_results(numcols, nlev, nclv,    plude ,  pcovptot ,  prainfrac_toprfz ,  pfsqlf ,  pfsqif ,
-              pfcqlng ,  pfcqnng ,  pfsqrf ,  pfsqsf ,  pfcqrng ,  pfcqsng ,
-              pfsqltur ,  pfsqitur ,  pfplsl ,  pfplsn ,  pfhpsl ,  pfhpsn ,
-              tend_loc_a ,  tend_loc_q ,  tend_loc_t ,  tend_loc_cld ) ;
-
+    /* check_results(numcols, nlev, nclv,    plude ,  pcovptot ,  prainfrac_toprfz ,  pfsqlf ,  pfsqif , */
+    /*           pfcqlng ,  pfcqnng ,  pfsqrf ,  pfsqsf ,  pfcqrng ,  pfcqsng , */
+    /*           pfsqltur ,  pfsqitur ,  pfplsl ,  pfplsn ,  pfhpsl ,  pfhpsn , */
+    /*           tend_loc_a ,  tend_loc_q ,  tend_loc_t ,  tend_loc_cld ) ; */
 
     free(plcrit_aer); // ALLOCATE(PLCRIT_AER(KLON,KLEV)) 
     free(picrit_aer); // ALLOCATE(PICRIT_AER(KLON,KLEV)) 
