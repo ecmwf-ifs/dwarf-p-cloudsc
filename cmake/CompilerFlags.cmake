@@ -13,6 +13,8 @@ elseif ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
     ecbuild_add_fortran_flags("-ffree-form"                      )
     ecbuild_add_fortran_flags("-ffast-math"                      )
     ecbuild_add_fortran_flags("-fno-unsafe-math-optimizations"   )
+    ecbuild_add_c_flags("-O2"                                    )
+    ecbuild_add_c_flags("-g"                                     )
 
 elseif ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel")
     ecbuild_add_fortran_flags("-O2"                           )

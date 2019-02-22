@@ -189,7 +189,6 @@ void load_and_expand_3d(serialboxSerializer_t *serializer, serialboxSavepoint_t*
   expand_3d((double *)buffer, field, nlon, nlev, nclv, nproma, ngptot, nblocks);
 }
 
-
 /* Read input state into memory */
 void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma, 
     double* ptsphy, double* plcrit_aer, double* picrit_aer,
@@ -202,6 +201,7 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
     double* pmfd, double* pa, double* pclv, double* psupsat)
 {
   serialboxSerializer_t* serializer = serialboxSerializerCreate(Read, "./data", "input", "Binary");
+  serialboxMetainfo_t* metainfo = serialboxSerializerGetGlobalMetainfo(serializer);
   serialboxSavepoint_t** savepoints = serialboxSerializerGetSavepointVector(serializer);
   serialboxSavepoint_t* savepoint = savepoints[0];
 
@@ -247,13 +247,162 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
   load_and_expand_3d(serializer, savepoint, "PCLV", nlon, nlev, nclv, nproma, ngptot, nblocks, pclv);
   load_and_expand_2d(serializer, savepoint, "PSUPSAT", nlon, nlev, nproma, ngptot, nblocks, psupsat);
 
+  *ptsphy = serialboxMetainfoGetFloat64(metainfo, "PTSPHY");
+
+  /* Populate global parameter values from meta-data */
+  rg = serialboxMetainfoGetFloat64(metainfo, "RG");
+  rd = serialboxMetainfoGetFloat64(metainfo, "RD");
+  rcpd = serialboxMetainfoGetFloat64(metainfo, "RCPD");
+  retv = serialboxMetainfoGetFloat64(metainfo, "RETV");
+  rlvtt = serialboxMetainfoGetFloat64(metainfo, "RLVTT");
+  rlstt = serialboxMetainfoGetFloat64(metainfo, "RLSTT");
+  rlmlt = serialboxMetainfoGetFloat64(metainfo, "RLMLT");
+  rtt = serialboxMetainfoGetFloat64(metainfo, "RTT");
+  rv = serialboxMetainfoGetFloat64(metainfo, "RV");
+  r2es = serialboxMetainfoGetFloat64(metainfo, "R2ES");
+  r3les = serialboxMetainfoGetFloat64(metainfo, "R3LES");
+  r3ies = serialboxMetainfoGetFloat64(metainfo, "R3IES");
+  r4les = serialboxMetainfoGetFloat64(metainfo, "R4LES");
+  r4ies = serialboxMetainfoGetFloat64(metainfo, "R4IES");
+  r5les = serialboxMetainfoGetFloat64(metainfo, "R5LES");
+  r5ies = serialboxMetainfoGetFloat64(metainfo, "R5IES");
+  r5alvcp = serialboxMetainfoGetFloat64(metainfo, "R5ALVCP");
+  r5alscp = serialboxMetainfoGetFloat64(metainfo, "R5ALSCP");
+  ralvdcp = serialboxMetainfoGetFloat64(metainfo, "RALVDCP");
+  ralsdcp = serialboxMetainfoGetFloat64(metainfo, "RALSDCP");
+  ralfdcp = serialboxMetainfoGetFloat64(metainfo, "RALFDCP");
+  rtwat = serialboxMetainfoGetFloat64(metainfo, "RTWAT");
+  rtice = serialboxMetainfoGetFloat64(metainfo, "RTICE");
+  rticecu = serialboxMetainfoGetFloat64(metainfo, "RTICECU");
+  rtwat_rtice_r = serialboxMetainfoGetFloat64(metainfo, "RTWAT_RTICE_R");
+  rtwat_rticecu_r = serialboxMetainfoGetFloat64(metainfo, "RTWAT_RTICECU_R");
+  rkoop1 = serialboxMetainfoGetFloat64(metainfo, "RKOOP1");
+  rkoop2 = serialboxMetainfoGetFloat64(metainfo, "RKOOP2");
+
+  yrecldp->ramid = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RAMID");
+  yrecldp->rcldiff = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLDIFF");
+  yrecldp->rcldiff_convi = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLDIFF_CONVI");
+  yrecldp->rclcrit = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLCRIT");
+  yrecldp->rclcrit_sea = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLCRIT_SEA");
+  yrecldp->rclcrit_land = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLCRIT_LAND");
+  yrecldp->rkconv = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RKCONV");
+  yrecldp->rprc1 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RPRC1");
+  yrecldp->rprc2 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RPRC2");
+  yrecldp->rcldmax = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLDMAX");
+  yrecldp->rpecons = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RPECONS");
+  yrecldp->rvrfactor = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RVRFACTOR");
+  yrecldp->rprecrhmax = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RPRECRHMAX");
+  yrecldp->rtaumel = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RTAUMEL");
+  yrecldp->ramin = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RAMIN");
+  yrecldp->rlmin = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RLMIN");
+  yrecldp->rkooptau = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RKOOPTAU");
+
+  yrecldp->rcldtopp = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLDTOPP");
+  yrecldp->rlcritsnow = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RLCRITSNOW");
+  yrecldp->rsnowlin1 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RSNOWLIN1");
+  yrecldp->rsnowlin2 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RSNOWLIN2");
+  yrecldp->ricehi1 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RICEHI1");
+  yrecldp->ricehi2 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RICEHI2");
+  yrecldp->riceinit = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RICEINIT");
+  yrecldp->rvice = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RVICE");
+  yrecldp->rvrain = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RVRAIN");
+  yrecldp->rvsnow = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RVSNOW");
+  yrecldp->rthomo = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RTHOMO");
+  yrecldp->rcovpmin = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCOVPMIN");
+  yrecldp->rccn = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCCN");
+  yrecldp->rnice = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RNICE");
+  yrecldp->rccnom = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCCNOM");
+  yrecldp->rccnss = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCCNSS");
+  yrecldp->rccnsu = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCCNSU");
+  yrecldp->rcldtopcf = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLDTOPCF");
+  yrecldp->rdepliqrefrate = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RDEPLIQREFRATE");
+  yrecldp->rdepliqrefdepth = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RDEPLIQREFDEPTH");
+  yrecldp->rcl_kkaac = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KKAac");
+  yrecldp->rcl_kkbac = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KKBac");
+  yrecldp->rcl_kkaau = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KKAau");
+  yrecldp->rcl_kkbauq = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KKBauq");
+  yrecldp->rcl_kkbaun = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KKBaun");
+  yrecldp->rcl_kk_cloud_num_sea = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KK_cloud_num_sea");
+  yrecldp->rcl_kk_cloud_num_land = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KK_cloud_num_land");
+  yrecldp->rcl_ai = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_AI");
+  yrecldp->rcl_bi = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_BI");
+  yrecldp->rcl_ci = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CI");
+  yrecldp->rcl_di = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_DI");
+  yrecldp->rcl_x1i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X1I");
+  yrecldp->rcl_x2i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X2I");
+  yrecldp->rcl_x3i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X3I");
+  yrecldp->rcl_x4i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X4I");
+  yrecldp->rcl_const1i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST1I");
+  yrecldp->rcl_const2i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST2I");
+  yrecldp->rcl_const3i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST3I");
+  yrecldp->rcl_const4i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST4I");
+  yrecldp->rcl_const5i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST5I");
+  yrecldp->rcl_const6i = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST6I");
+  yrecldp->rcl_apb1 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_APB1");
+  yrecldp->rcl_apb2 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_APB2");
+  yrecldp->rcl_apb3 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_APB3");
+  yrecldp->rcl_as = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_AS");
+  yrecldp->rcl_bs = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_BS");
+  yrecldp->rcl_cs = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CS");
+  yrecldp->rcl_ds = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_DS");
+  yrecldp->rcl_x1s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X1S");
+  yrecldp->rcl_x2s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X2S");
+  yrecldp->rcl_x3s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X3S");
+  yrecldp->rcl_x4s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X4S");
+  yrecldp->rcl_const1s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST1S");
+  yrecldp->rcl_const2s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST2S");
+  yrecldp->rcl_const3s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST3S");
+  yrecldp->rcl_const4s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST4S");
+  yrecldp->rcl_const5s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST5S");
+  yrecldp->rcl_const6s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST6S");
+  yrecldp->rcl_const7s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST7S");
+  yrecldp->rcl_const8s = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST8S");
+  yrecldp->rdenswat = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RDENSWAT");
+  yrecldp->rdensref = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RDENSREF");
+  yrecldp->rcl_ar = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_AR");
+  yrecldp->rcl_br = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_BR");
+  yrecldp->rcl_cr = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CR");
+  yrecldp->rcl_dr = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_DR");
+  yrecldp->rcl_x1r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X1R");
+  yrecldp->rcl_x2r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X2R");
+  yrecldp->rcl_x4r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_X4R");
+  yrecldp->rcl_ka273 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_KA273");
+  yrecldp->rcl_cdenom1 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CDENOM1");
+  yrecldp->rcl_cdenom2 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CDENOM2");
+  yrecldp->rcl_cdenom3 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CDENOM3");
+  yrecldp->rcl_schmidt = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_SCHMIDT");
+  yrecldp->rcl_dynvisc = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_DYNVISC");
+  yrecldp->rcl_const1r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST1R");
+  yrecldp->rcl_const2r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST2R");
+  yrecldp->rcl_const3r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST3R");
+  yrecldp->rcl_const4r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST4R");
+  yrecldp->rcl_fac1 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_FAC1");
+  yrecldp->rcl_fac2 = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_FAC2");
+  yrecldp->rcl_const5r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST5R");
+  yrecldp->rcl_const6r = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_CONST6R");
+  yrecldp->rcl_fzrab = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_FZRAB");
+  yrecldp->rcl_fzrbb = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCL_FZRBB");
+  yrecldp->lcldextra = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LCLDEXTRA");
+  yrecldp->lcldbudget = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LCLDBUDGET");
+  yrecldp->nssopt = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NSSOPT");
+  yrecldp->ncldtop = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NCLDTOP");
+  yrecldp->naeclbc = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NAECLBC");
+  yrecldp->naecldu = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NAECLDU");
+  yrecldp->naeclom = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NAECLOM");
+  yrecldp->naeclss = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NAECLSS");
+  yrecldp->naeclsu = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NAECLSU");
+  yrecldp->nclddiag = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NCLDDIAG");
+  yrecldp->naercld = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NAERCLD");
+  yrecldp->laerliqautolsp = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LAERLIQAUTOLSP");
+  yrecldp->laerliqautocp = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LAERLIQAUTOCP");
+  yrecldp->laerliqautocpb = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LAERLIQAUTOCPB");
+  yrecldp->laerliqcoll = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LAERLIQCOLL");
+  yrecldp->laericesed = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LAERICESED");
+  yrecldp->laericeauto = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_LAERICEAUTO");
+  yrecldp->nshapep = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NSHAPEP");
+  yrecldp->nshapeq = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NSHAPEQ");
+  yrecldp->nbeta = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_NBETA");
+
   serialboxSerializerDestroySavepointVector(savepoints, 1);
   serialboxSerializerDestroy(serializer);
-}
-
-/*
- * Retrieve parametersand timestep size from the serializer
- */
-void initialise_parameters(double ptsphy)
-{
 }

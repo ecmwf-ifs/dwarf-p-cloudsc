@@ -1,26 +1,29 @@
+#include "cloudsc_c.h"
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <float.h>
 #include <math.h>
-#include "yommp0_c.h"
-#include "yomcst_c.h"
-#include "yoethf_c.h"
-#include "yoecldp_c.h"
-#include "yomphyder_c.h"
 
-int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * restrict v_pt,
-  double * restrict v_pq, double * restrict v_tendency_cml_t, double * restrict v_tendency_cml_q, double * restrict v_tendency_cml_a, double * restrict v_tendency_cml_cld, double * restrict v_tendency_tmp_t,
-  double * restrict v_tendency_tmp_q, double * restrict v_tendency_tmp_a, double * restrict v_tendency_tmp_cld, double * restrict v_tendency_loc_t, double * restrict v_tendency_loc_q, double * restrict v_tendency_loc_a,
-  double * restrict v_tendency_loc_cld, double * restrict v_pvfa, double * restrict v_pvfl, double * restrict v_pvfi, double * restrict v_pdyna, double * restrict v_pdynl,
-  double * restrict v_pdyni, double * restrict v_phrsw, double * restrict v_phrlw, double * restrict v_pvervel, double * restrict v_pap, double * restrict v_paph,
-  double * restrict v_plsm, int * restrict v_ldcum, int * restrict v_ktype, double * restrict v_plu, double * restrict v_plude, double * restrict v_psnde,
-  double * restrict v_pmfu, double * restrict v_pmfd, int ldslphy, int ldmaincall, double * restrict v_pa, double * restrict v_pclv,
-  double * restrict v_psupsat, double * restrict v_plcrit_aer, double * restrict v_picrit_aer, double * restrict v_pre_ice, double * restrict v_pccn, double * restrict v_pnice,
-  double * restrict v_pcovptot, double * restrict v_prainfrac_toprfz, double * restrict v_pfsqlf, double * restrict v_pfsqif, double * restrict v_pfcqnng, double * restrict v_pfcqlng,
-  double * restrict v_pfsqrf, double * restrict v_pfsqsf, double * restrict v_pfcqrng, double * restrict v_pfcqsng, double * restrict v_pfsqltur, double * restrict v_pfsqitur,
-  double * restrict v_pfplsl, double * restrict v_pfplsn, double * restrict v_pfhpsl, double * restrict v_pfhpsn, double * restrict v_pextra, int kfldx,
-  struct TECLDP *yrecldp)
+
+int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * restrict v_pt, double * restrict v_pq,
+	      double * restrict v_tendency_cml_t, double * restrict v_tendency_cml_q, double * restrict v_tendency_cml_a, double * restrict v_tendency_cml_cld,
+	      double * restrict v_tendency_tmp_t, double * restrict v_tendency_tmp_q, double * restrict v_tendency_tmp_a, double * restrict v_tendency_tmp_cld,
+	      double * restrict v_tendency_loc_t, double * restrict v_tendency_loc_q, double * restrict v_tendency_loc_a, double * restrict v_tendency_loc_cld,
+	      double * restrict v_pvfa, double * restrict v_pvfl, double * restrict v_pvfi, double * restrict v_pdyna, double * restrict v_pdynl, double * restrict v_pdyni,
+	      double * restrict v_phrsw, double * restrict v_phrlw, double * restrict v_pvervel, double * restrict v_pap, double * restrict v_paph, double * restrict v_plsm,
+	      int * restrict v_ldcum, int * restrict v_ktype, double * restrict v_plu, double * restrict v_plude, double * restrict v_psnde, double * restrict v_pmfu,
+	      double * restrict v_pmfd, double * restrict v_pa, double * restrict v_pclv, double * restrict v_psupsat, double * restrict v_plcrit_aer, double * restrict v_picrit_aer,
+	      double * restrict v_pre_ice, double * restrict v_pccn, double * restrict v_pnice, double * restrict v_pcovptot, double * restrict v_prainfrac_toprfz, double * restrict v_pfsqlf,
+	      double * restrict v_pfsqif, double * restrict v_pfcqnng, double * restrict v_pfcqlng, double * restrict v_pfsqrf, double * restrict v_pfsqsf, double * restrict v_pfcqrng,
+	      double * restrict v_pfcqsng, double * restrict v_pfsqltur, double * restrict v_pfsqitur, double * restrict v_pfplsl, double * restrict v_pfplsn, double * restrict v_pfhpsl,
+	      double * restrict v_pfhpsn)
 {
+  const int ldmaincall = 0;
+  const int ldslphy = 0;
+  const int kfldx = 0;
+  const int lscmec = 0;
+
   /* Array casts for pointer arguments */
   double (*pt)[klon] = (double (*)[klon]) v_pt;
   double (*pq)[klon] = (double (*)[klon]) v_pq;
@@ -79,12 +82,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   double (*pfplsn)[klon] = (double (*)[klon]) v_pfplsn;
   double (*pfhpsl)[klon] = (double (*)[klon]) v_pfhpsl;
   double (*pfhpsn)[klon] = (double (*)[klon]) v_pfhpsn;
-  double (*pextra)[klev][klon] = (double (*)[klev][klon]) v_pextra;
-#include "yommp0_c.h"
-#include "yomcst_c.h"
-#include "yoethf_c.h"
-#include "yoecldp_c.h"
-#include "yomphyder_c.h"
   double zlcond1[klon];
   double zlcond2[klon];
   double zlevap;
@@ -334,76 +331,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   int i_5;
   int i_klon;
 
-  int lscmec;
-  lscmec = yommp0__get__lscmec();
-  double rg;
-  rg = yomcst__get__rg();
-  double rd;
-  rd = yomcst__get__rd();
-  double rcpd;
-  rcpd = yomcst__get__rcpd();
-  double retv;
-  retv = yomcst__get__retv();
-  double rlvtt;
-  rlvtt = yomcst__get__rlvtt();
-  double rlstt;
-  rlstt = yomcst__get__rlstt();
-  double rlmlt;
-  rlmlt = yomcst__get__rlmlt();
-  double rtt;
-  rtt = yomcst__get__rtt();
-  double rv;
-  rv = yomcst__get__rv();
-  double r2es;
-  r2es = yoethf__get__r2es();
-  double r3les;
-  r3les = yoethf__get__r3les();
-  double r3ies;
-  r3ies = yoethf__get__r3ies();
-  double r4les;
-  r4les = yoethf__get__r4les();
-  double r4ies;
-  r4ies = yoethf__get__r4ies();
-  double r5les;
-  r5les = yoethf__get__r5les();
-  double r5ies;
-  r5ies = yoethf__get__r5ies();
-  double r5alvcp;
-  r5alvcp = yoethf__get__r5alvcp();
-  double r5alscp;
-  r5alscp = yoethf__get__r5alscp();
-  double ralvdcp;
-  ralvdcp = yoethf__get__ralvdcp();
-  double ralsdcp;
-  ralsdcp = yoethf__get__ralsdcp();
-  double ralfdcp;
-  ralfdcp = yoethf__get__ralfdcp();
-  double rtwat;
-  rtwat = yoethf__get__rtwat();
-  double rtice;
-  rtice = yoethf__get__rtice();
-  double rticecu;
-  rticecu = yoethf__get__rticecu();
-  double rtwat_rtice_r;
-  rtwat_rtice_r = yoethf__get__rtwat_rtice_r();
-  double rtwat_rticecu_r;
-  rtwat_rticecu_r = yoethf__get__rtwat_rticecu_r();
-  double rkoop1;
-  rkoop1 = yoethf__get__rkoop1();
-  double rkoop2;
-  rkoop2 = yoethf__get__rkoop2();
-  int ncldqv = 5;
-  ncldqv = yoecldp__get__ncldqv();
-  int ncldql = 1;
-  ncldql = yoecldp__get__ncldql();
-  int ncldqr = 3;
-  ncldqr = yoecldp__get__ncldqr();
-  int ncldqi = 2;
-  ncldqi = yoecldp__get__ncldqi();
-  int ncldqs = 4;
-  ncldqs = yoecldp__get__ncldqs();
-  int nclv = 5;
-  nclv = yoecldp__get__nclv();
   // REAL(KIND=JPRB) :: FOEDELTA
   // REAL(KIND=JPRB) :: PTARE
   // FOEDELTA (PTARE) = MAX (0.0_JPRB,SIGN(1.0_JPRB,PTARE-RTT))
@@ -441,15 +368,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   llcldbudi = false;
   if (llcldbudcc || llcldbudi || llcldbudl)
   {
-    for (i_kfldx=1; i_kfldx<=kfldx; i_kfldx++) {
-      for (i_klev=1; i_klev<=klev; i_klev++) {
-        for (i_klon=1; i_klon<=klon; i_klon++) {
-          pextra[i_kfldx-1][i_klev-1][i_klon-1] = 0.0;
-        }
-
-      }
-
-    }
 
   }
 
@@ -3015,92 +2933,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
         tendency_loc_cld[1-1][jk-1][jl-1] = tendency_loc_cld[1-1][jk-1][jl-1] - zlevapl[jl-1]*zqtmst;
         tendency_loc_cld[2-1][jk-1][jl-1] = tendency_loc_cld[2-1][jk-1][jl-1] - zlevapi[jl-1]*zqtmst;
-      }
-
-    }
-
-    //-----------------------------------------------------------------
-    // Cloud fraction budget 
-    //-----------------------------------------------------------------
-    if (llcldbudcc)
-    {
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        is = 0;
-        pextra[is+1-1][jk-1][jl-1] = pa[jk-1][jl-1];
-        pextra[is+2-1][jk-1][jl-1] = zbudcc[1-1][jl-1];
-        pextra[is+3-1][jk-1][jl-1] = zbudcc[2-1][jl-1];
-        pextra[is+4-1][jk-1][jl-1] = zbudcc[3-1][jl-1];
-        pextra[is+5-1][jk-1][jl-1] = zbudcc[4-1][jl-1] + zbudcc[6-1][jl-1];
-        pextra[is+6-1][jk-1][jl-1] = zbudcc[7-1][jl-1];
-        pextra[is+7-1][jk-1][jl-1] = zbudcc[10-1][jl-1];
-        pextra[is+8-1][jk-1][jl-1] = zbudcc[11-1][jl-1];
-        pextra[is+9-1][jk-1][jl-1] = pvfa[jk-1][jl-1];
-        pextra[is+10-1][jk-1][jl-1] = pdyna[jk-1][jl-1];
-        pextra[is+11-1][jk-1][jl-1] = pa[jk-1][jl-1] + zda[jl-1];
-      }
-
-    }
-
-    if (llcldbudl)
-    {
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        is = 0;
-        pextra[is+1-1][jk-1][jl-1] = zqx0[1-1][jk-1][jl-1];
-        pextra[is+2-1][jk-1][jl-1] = zbudl[1-1][jl-1];
-        pextra[is+3-1][jk-1][jl-1] = zbudl[2-1][jl-1];
-        pextra[is+4-1][jk-1][jl-1] = zbudl[3-1][jl-1];
-        pextra[is+5-1][jk-1][jl-1] = zbudl[4-1][jl-1] + zbudl[5-1][jl-1] + zbudl[6-1][jl-1];          // ZBUDL(JL,4) + Convective subsidence source from layer above
-        // ZBUDL(JL,5) - Convective subsidence source evaporation in layer               
-        // ZBUDL(JL,6) - Convective subsidence sink to layer below (IMPLICIT) (ZCONVSINK)
-        pextra[is+6-1][jk-1][jl-1] = zbudl[7-1][jl-1];
-        pextra[is+7-1][jk-1][jl-1] = zbudl[8-1][jl-1];
-        pextra[is+8-1][jk-1][jl-1] = zbudl[9-1][jl-1];
-        pextra[is+9-1][jk-1][jl-1] = zbudl[10-1][jl-1];
-        pextra[is+10-1][jk-1][jl-1] = zbudl[11-1][jl-1];
-        pextra[is+11-1][jk-1][jl-1] = zbudl[15-1][jl-1];
-        pextra[is+12-1][jk-1][jl-1] = zbudl[16-1][jl-1];
-        pextra[is+13-1][jk-1][jl-1] = zbudl[17-1][jl-1];
-        pextra[is+14-1][jk-1][jl-1] = zbudl[18-1][jl-1] + zbudl[19-1][jl-1];          // ZBUDL(JL,18) - Freezing of rain to snow  
-        // ZBUDL(JL,19) - Freezing of liquid to ice                                       
-        pextra[is+15-1][jk-1][jl-1] = zbudl[20-1][jl-1];
-        pextra[is+16-1][jk-1][jl-1] = pvfl[jk-1][jl-1];
-        pextra[is+17-1][jk-1][jl-1] = pdynl[jk-1][jl-1];
-        pextra[is+18-1][jk-1][jl-1] = zqxn[1-1][jl-1];
-      }
-
-    }
-
-    if (llcldbudi)
-    {
-      if (llcldbudl)
-      {
-        is = 20;
-      } else {
-        is = 0;
-      }
-
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        pextra[is+1-1][jk-1][jl-1] = zqx0[2-1][jk-1][jl-1];
-        pextra[is+2-1][jk-1][jl-1] = zbudi[1-1][jl-1];
-        pextra[is+3-1][jk-1][jl-1] = zbudi[2-1][jl-1];
-        pextra[is+4-1][jk-1][jl-1] = zbudi[3-1][jl-1];
-        pextra[is+5-1][jk-1][jl-1] = zbudi[4-1][jl-1] + zbudi[5-1][jl-1] + zbudi[6-1][jl-1];          // ZBUDI(JL,4) + Convective subsidence source from layer above
-        // ZBUDI(JL,5) - Convective subsidence source evaporation in layer
-        // ZBUDI(JL,6) - Convective subsidence sink to layer below (IMPLICIT) (ZCONVSINK)
-        pextra[is+6-1][jk-1][jl-1] = zbudi[7-1][jl-1];
-        pextra[is+7-1][jk-1][jl-1] = zbudi[8-1][jl-1];
-        pextra[is+8-1][jk-1][jl-1] = zbudi[9-1][jl-1];
-        pextra[is+9-1][jk-1][jl-1] = zbudi[10-1][jl-1];
-        pextra[is+10-1][jk-1][jl-1] = zbudi[11-1][jl-1];
-        pextra[is+11-1][jk-1][jl-1] = zbudi[12-1][jl-1] + zbudi[13-1][jl-1];          // ZBUDI(JL,12) + Ice sedimentation source from above
-        // ZBUDI(JL,13) - Ice sedimentation sink to below (IMPLICIT)(ZFALLSINK)
-        pextra[is+12-1][jk-1][jl-1] = zbudi[14-1][jl-1];
-        pextra[is+13-1][jk-1][jl-1] = zbudi[15-1][jl-1] + zbudi[16-1][jl-1];          // ZBUDI(JL,15)// - Melting of ice to rain
-        // ZBUDI(JL,16)// - Melting of snow to rain
-        pextra[is+14-1][jk-1][jl-1] = zbudi[17-1][jl-1];
-        pextra[is+15-1][jk-1][jl-1] = pvfi[jk-1][jl-1];
-        pextra[is+16-1][jk-1][jl-1] = pdyni[jk-1][jl-1];
-        pextra[is+17-1][jk-1][jl-1] = zqxn[2-1][jl-1];
       }
 
     }

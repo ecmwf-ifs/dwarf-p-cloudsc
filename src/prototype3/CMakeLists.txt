@@ -7,12 +7,15 @@ if( HAVE_SERIALBOX )
         TARGET dwarf-cloudsc-v3-lib
 	INSTALL_HEADERS LISTED
         SOURCES
-	    cloudsc/cloudsc_driver.h
-            cloudsc/cloudsc_driver.c
-	    cloudsc/cloudsc_c.h
-            cloudsc/cloudsc_c.c
+	    cloudsc/yoecldp_c.h
+	    cloudsc/yoethf_c.h
+	    cloudsc/yomcst_c.h
 	    cloudsc/load_state.h
 	    cloudsc/load_state.c
+	    cloudsc/cloudsc_c.h
+	    cloudsc/cloudsc_c.c
+	    cloudsc/cloudsc_driver.h
+	    cloudsc/cloudsc_driver.c
     )
     target_link_libraries( dwarf-cloudsc-v3-lib PRIVATE
                            Serialbox::SerialboxCShared

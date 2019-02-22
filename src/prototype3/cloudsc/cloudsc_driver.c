@@ -78,10 +78,18 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     double *pfhpsn, *zpfhpsn;       //! Enthalpy flux for ice
 
     /* Define or query data dimensions from input file */
-    const int nclv = 5;
     int klon, nlev;
     int kidia, kfdia;
     int jkglo,ibl,icend;
+
+    nclv = 5;      // number of microphysics variables
+    ncldql = 1;    // liquid cloud water
+    ncldqi = 2;    // ice cloud water
+    ncldqr = 3;    // rain water
+    ncldqs = 4;    // snow
+    ncldqv = 5;    // vapour
+
+    yrecldp = malloc(sizeof(struct TECLDP));
 
     query_state(&klon, &nlev);
 
@@ -167,7 +175,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 	       plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
 
     cloudsc_c(1, numcols, numcols, nlev, ptsphy,  pt, pq,  
-              tend_cml_t, tend_cml_q, tend_cml_cld,
+              tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
               tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
               tend_loc_t, tend_loc_q, tend_loc_a, tend_loc_cld,
               pvfa,  pvfl,  pvfi, 
@@ -258,4 +266,5 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     free(pfhpsl);
     free(pfhpsn);
 
+    free(yrecldp);
 }

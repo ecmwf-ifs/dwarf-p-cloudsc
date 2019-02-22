@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "yomcst_c.h"
+#include "yoethf_c.h"
+#include "yoecldp_c.h"
+
+
 void query_state(int *klon, int *klev);
 
 void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma, 
