@@ -19,11 +19,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	      double * restrict v_pfcqsng, double * restrict v_pfsqltur, double * restrict v_pfsqitur, double * restrict v_pfplsl, double * restrict v_pfplsn, double * restrict v_pfhpsl,
 	      double * restrict v_pfhpsn)
 {
-  const int ldmaincall = 0;
-  const int ldslphy = 0;
-  const int kfldx = 0;
-  const int lscmec = 0;
-
   /* Array casts for pointer arguments */
   double (*pt)[klon] = (double (*)[klon]) v_pt;
   double (*pq)[klon] = (double (*)[klon]) v_pq;
@@ -314,12 +309,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   double zmm;
   double zrr;
   double zrg[klon];
-  int llcldbudcc;
-  int llcldbudl;
-  int llcldbudi;
-  double zbudcc[kfldx][klon];
-  double zbudl[kfldx][klon];
-  double zbudi[kfldx][klon];
   double zzsum;
   double zzratio;
   double zepsilon;
@@ -360,31 +349,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   //             0.  *** SET UP CONSTANTS ***
   //######################################################################
   zepsilon = 100.0*DBL_EPSILON;    // --------------------------------------------------------------
-  // LCLDBUD logicals store enthalpy and total water budgets
-  // Initialise PEXTRA if true.
-  // --------------------------------------------------------------
-  llcldbudcc = false;
-  llcldbudl = false;
-  llcldbudi = false;
-  if (llcldbudcc || llcldbudi || llcldbudl)
-  {
-
-  }
-
-  if (llcldbudcc && kfldx < 12)
-  {
-    // <Call>
-  }
-
-  if (llcldbudl && kfldx < 20)
-  {
-    // <Call>
-  }
-
-  if (llcldbudi && kfldx < 16)
-  {
-    // <Call>
-  }
 
   // ---------------------------------------------------------------------
   // Set version of warm-rain autoconversion/accretion
@@ -497,17 +461,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
   }
 
-  if (!ldslphy)
-  {
-    for (jk=1; jk<=klev; jk+=1) {
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        zli[jk-1][jl-1] = pclv[1-1][jk-1][jl-1] + pclv[2-1][jk-1][jl-1] + ptsphy*(tendency_tmp_cld[1-1][jk-1][jl-1] + tendency_tmp_cld[2-1][jk-1][jl-1]);
-      }
-
-    }
-
-  }
-
   // -------------------------------------
   // initialization for CLV family
   // -------------------------------------
@@ -522,138 +475,89 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
   }
 
-  if (ldmaincall)
-  {
-    //-------------
-    // zero arrays
-    //-------------
-    for (jm=1; jm<=5; jm+=1) {
-      for (jk=1; jk<=klev + 1; jk+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zpfplsx[jm-1][jk-1][jl-1] = 0.0;
-        }
-
+  //-------------
+  // zero arrays
+  //-------------
+  for (jm=1; jm<=5; jm+=1) {
+    for (jk=1; jk<=klev + 1; jk+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zpfplsx[jm-1][jk-1][jl-1] = 0.0;
       }
 
     }
 
-    for (jm=1; jm<=5; jm+=1) {
-      for (jk=1; jk<=klev; jk+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zqxn2d[jm-1][jk-1][jl-1] = 0.0;
-          zlneg[jm-1][jk-1][jl-1] = 0.0;
-        }
+  }
 
-      }
-
-    }
-
-    for (jl=kidia; jl<=kfdia; jl+=1) {
-      prainfrac_toprfz[jl-1] = 0.0;
-    }
-
-    // -------------------------------------------
-    // Total water and enthalpy budget diagnostics
-    // -------------------------------------------
-    if (lscmec || yrecldp->lcldbudget)
-    {
-      // initialize the flux arrays
-      for (jk=1; jk<=klev; jk+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          ztnew = pt[jk-1][jl-1] + ptsphy*(tendency_loc_t[jk-1][jl-1] + tendency_cml_t[jk-1][jl-1]);
-          if (jk == 1)
-          {
-            zsumq0[jk-1][jl-1] = 0.0;
-            zsumh0[jk-1][jl-1] = 0.0;
-          } else {
-            zsumq0[jk-1][jl-1] = zsumq0[jk-1-1][jl-1];
-            zsumh0[jk-1][jl-1] = zsumh0[jk-1-1][jl-1];
-          }
-
-          // Total for liquid
-          ztmpl = pclv[1-1][jk-1][jl-1] + pclv[3-1][jk-1][jl-1] + (tendency_loc_cld[1-1][jk-1][jl-1] + tendency_cml_cld[1-1][jk-1][jl-1] + tendency_loc_cld[3-1][jk-1][jl-1] + tendency_cml_cld[3-1][jk-1][jl-1])*ptsphy;            // Total for frozen
-          ztmpi = pclv[2-1][jk-1][jl-1] + pclv[4-1][jk-1][jl-1] + (tendency_loc_cld[2-1][jk-1][jl-1] + tendency_cml_cld[2-1][jk-1][jl-1] + tendency_loc_cld[4-1][jk-1][jl-1] + tendency_cml_cld[4-1][jk-1][jl-1])*ptsphy;
-          ztnew = ztnew - ralvdcp*ztmpl - ralsdcp*ztmpi;
-          zsumq0[jk-1][jl-1] = ((zsumq0[jk-1][jl-1]*(ztmpl + ztmpi))*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]))*zrg_r;            // detrained water treated here
-          zqe = ((plude[jk-1][jl-1]*ptsphy)*rg)/(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]);
-          if (zqe > yrecldp->rlmin)
-          {
-            zsumq0[jk-1][jl-1] = zsumq0[jk-1][jl-1] + plude[jk-1][jl-1]*ptsphy;
-            zalfaw = (double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztp1[jk-1][jl-1])) - rtice)*rtwat_rtice_r, 2)));
-            ztnew = ztnew - (ralvdcp*zalfaw + ralsdcp*(1.0 - zalfaw))*zqe;
-          }
-
-          zsumh0[jk-1][jl-1] = zsumh0[jk-1][jl-1] + (paph[jk+1-1][jl-1] - paph[jk-1][jl-1])*ztnew;
-          zsumq0[jk-1][jl-1] = zsumq0[jk-1][jl-1] + ((pq[jk-1][jl-1] + (tendency_loc_q[jk-1][jl-1] + tendency_cml_q[jk-1][jl-1])*ptsphy)*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]))*zrg_r;
-        }
-
-      }
-
-      for (jk=1; jk<=klev; jk+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zsumh0[jk-1][jl-1] = zsumh0[jk-1][jl-1]/paph[jk+1-1][jl-1];
-        }
-
-      }
-
-    }
-
-    // ----------------------------------------------------
-    // Tidy up very small cloud cover or total cloud water
-    // ----------------------------------------------------
+  for (jm=1; jm<=5; jm+=1) {
     for (jk=1; jk<=klev; jk+=1) {
       for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (zqx[1-1][jk-1][jl-1] + zqx[2-1][jk-1][jl-1] < yrecldp->rlmin || za[jk-1][jl-1] < yrecldp->ramin)
-        {
-          // Evaporate small cloud liquid water amounts
-          zlneg[1-1][jk-1][jl-1] = zlneg[1-1][jk-1][jl-1] + zqx[1-1][jk-1][jl-1];
-          zqadj = zqx[1-1][jk-1][jl-1]*zqtmst;
-          tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + zqadj;
-          tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralvdcp*zqadj;
-          zqx[5-1][jk-1][jl-1] = zqx[5-1][jk-1][jl-1] + zqx[1-1][jk-1][jl-1];
-          zqx[1-1][jk-1][jl-1] = 0.0;            // Evaporate small cloud ice water amounts
-          zlneg[2-1][jk-1][jl-1] = zlneg[2-1][jk-1][jl-1] + zqx[2-1][jk-1][jl-1];
-          zqadj = zqx[2-1][jk-1][jl-1]*zqtmst;
-          tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + zqadj;
-          tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralsdcp*zqadj;
-          zqx[5-1][jk-1][jl-1] = zqx[5-1][jk-1][jl-1] + zqx[2-1][jk-1][jl-1];
-          zqx[2-1][jk-1][jl-1] = 0.0;            // Set cloud cover to zero
-          za[jk-1][jl-1] = 0.0;
-        }
-
+	zqxn2d[jm-1][jk-1][jl-1] = 0.0;
+	zlneg[jm-1][jk-1][jl-1] = 0.0;
       }
 
     }
 
-    // ---------------------------------
-    // Tidy up small CLV variables
-    // ---------------------------------
+  }
+
+  for (jl=kidia; jl<=kfdia; jl+=1) {
+    prainfrac_toprfz[jl-1] = 0.0;
+  }
+
+
+  // ----------------------------------------------------
+  // Tidy up very small cloud cover or total cloud water
+  // ----------------------------------------------------
+  for (jk=1; jk<=klev; jk+=1) {
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      if (zqx[1-1][jk-1][jl-1] + zqx[2-1][jk-1][jl-1] < yrecldp->rlmin || za[jk-1][jl-1] < yrecldp->ramin)
+      {
+	// Evaporate small cloud liquid water amounts
+	zlneg[1-1][jk-1][jl-1] = zlneg[1-1][jk-1][jl-1] + zqx[1-1][jk-1][jl-1];
+	zqadj = zqx[1-1][jk-1][jl-1]*zqtmst;
+	tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + zqadj;
+	tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralvdcp*zqadj;
+	zqx[5-1][jk-1][jl-1] = zqx[5-1][jk-1][jl-1] + zqx[1-1][jk-1][jl-1];
+	zqx[1-1][jk-1][jl-1] = 0.0;            // Evaporate small cloud ice water amounts
+	zlneg[2-1][jk-1][jl-1] = zlneg[2-1][jk-1][jl-1] + zqx[2-1][jk-1][jl-1];
+	zqadj = zqx[2-1][jk-1][jl-1]*zqtmst;
+	tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + zqadj;
+	tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralsdcp*zqadj;
+	zqx[5-1][jk-1][jl-1] = zqx[5-1][jk-1][jl-1] + zqx[2-1][jk-1][jl-1];
+	zqx[2-1][jk-1][jl-1] = 0.0;            // Set cloud cover to zero
+	za[jk-1][jl-1] = 0.0;
+      }
+
+    }
+
+  }
+
+  // ---------------------------------
+  // Tidy up small CLV variables
+  // ---------------------------------
+  //DIR$ IVDEP
+  for (jm=1; jm<=4; jm+=1) {
     //DIR$ IVDEP
-    for (jm=1; jm<=4; jm+=1) {
+    for (jk=1; jk<=klev; jk+=1) {
       //DIR$ IVDEP
-      for (jk=1; jk<=klev; jk+=1) {
-        //DIR$ IVDEP
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          if (zqx[jm-1][jk-1][jl-1] < yrecldp->rlmin)
-          {
-            zlneg[jm-1][jk-1][jl-1] = zlneg[jm-1][jk-1][jl-1] + zqx[jm-1][jk-1][jl-1];
-            zqadj = zqx[jm-1][jk-1][jl-1]*zqtmst;
-            tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + zqadj;
-            if (iphase[jm-1] == 1)
-            {
-              tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralvdcp*zqadj;
-            }
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	if (zqx[jm-1][jk-1][jl-1] < yrecldp->rlmin)
+	{
+	  zlneg[jm-1][jk-1][jl-1] = zlneg[jm-1][jk-1][jl-1] + zqx[jm-1][jk-1][jl-1];
+	  zqadj = zqx[jm-1][jk-1][jl-1]*zqtmst;
+	  tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + zqadj;
+	  if (iphase[jm-1] == 1)
+	  {
+	    tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralvdcp*zqadj;
+	  }
 
-            if (iphase[jm-1] == 2)
-            {
-              tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralsdcp*zqadj;
-            }
+	  if (iphase[jm-1] == 2)
+	  {
+	    tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - ralsdcp*zqadj;
+	  }
 
-            zqx[5-1][jk-1][jl-1] = zqx[5-1][jk-1][jl-1] + zqx[jm-1][jk-1][jl-1];
-            zqx[jm-1][jk-1][jl-1] = 0.0;
-          }
-
-        }
+	  zqx[5-1][jk-1][jl-1] = zqx[5-1][jk-1][jl-1] + zqx[jm-1][jk-1][jl-1];
+	  zqx[jm-1][jk-1][jl-1] = 0.0;
+	}
 
       }
 
@@ -883,40 +787,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
     }
 
-    // Cloud budget arrays                                 
-    if (llcldbudcc)
-    {
-      for (i_kfldx=1; i_kfldx<=kfldx; i_kfldx++) {
-        for (i_klon=1; i_klon<=klon; i_klon++) {
-          zbudcc[i_kfldx-1][i_klon-1] = 0.0;
-        }
-
-      }
-
-    }
-
-    if (llcldbudl)
-    {
-      for (i_kfldx=1; i_kfldx<=kfldx; i_kfldx++) {
-        for (i_klon=1; i_klon<=klon; i_klon++) {
-          zbudl[i_kfldx-1][i_klon-1] = 0.0;
-        }
-
-      }
-
-    }
-
-    if (llcldbudi)
-    {
-      for (i_kfldx=1; i_kfldx<=kfldx; i_kfldx++) {
-        for (i_klon=1; i_klon<=klon; i_klon++) {
-          zbudi[i_kfldx-1][i_klon-1] = 0.0;
-        }
-
-      }
-
-    }
-
     for (jl=kidia; jl<=kfdia; jl+=1) {
       //-------------------------
       // derived variables needed
@@ -1047,67 +917,29 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
         // Increase cloud amount using RKOOPTAU timescale
         zsolac[jl-1] = (1.0 - za[jk-1][jl-1])*zfaci;          // Store cloud budget diagnostics if required
-        if (llcldbudl && ztp1[jk-1][jl-1] > yrecldp->rthomo)
-        {
-          zbudl[1-1][jl-1] = zsupsat[jl-1]*zqtmst;
-        }
-
-        if (llcldbudi && ztp1[jk-1][jl-1] <= yrecldp->rthomo)
-        {
-          zbudi[1-1][jl-1] = zsupsat[jl-1]*zqtmst;
-        }
-
-        if (llcldbudcc)
-        {
-          zbudcc[1-1][jl-1] = zsolac[jl-1]*zqtmst;
-        }
-
       }
 
       //-------------------------------------------------------
       // 3.1.3 Include supersaturation from previous timestep
       // (Calculated in sltENDIF semi-lagrangian LDSLPHY=T)
       //-------------------------------------------------------
-      if (ldmaincall)
+      if (psupsat[jk-1][jl-1] > zepsec)
       {
-        if (ldslphy)
-        {
-          if (psupsat[jk-1][jl-1] > zepsec)
-          {
-            if (ztp1[jk-1][jl-1] > yrecldp->rthomo)
-            {
-              // Turn supersaturation into liquid water
-              zsolqa[1-1][1-1][jl-1] = zsolqa[1-1][1-1][jl-1] + psupsat[jk-1][jl-1];
-              zpsupsatsrce[1-1][jl-1] = psupsat[jk-1][jl-1];                // Add liquid to first guess for deposition term 
-              zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] + psupsat[jk-1][jl-1];                // Store cloud budget diagnostics if required
-              if (llcldbudl)
-              {
-                zbudl[2-1][jl-1] = psupsat[jk-1][jl-1]*zqtmst;
-              }
+	if (ztp1[jk-1][jl-1] > yrecldp->rthomo)
+	{
+	  // Turn supersaturation into liquid water
+	  zsolqa[1-1][1-1][jl-1] = zsolqa[1-1][1-1][jl-1] + psupsat[jk-1][jl-1];
+	  zpsupsatsrce[1-1][jl-1] = psupsat[jk-1][jl-1];                // Add liquid to first guess for deposition term 
+	  zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] + psupsat[jk-1][jl-1];                // Store cloud budget diagnostics if required
+	} else {
+	  // Turn supersaturation into ice water
+	  zsolqa[2-1][2-1][jl-1] = zsolqa[2-1][2-1][jl-1] + psupsat[jk-1][jl-1];
+	  zpsupsatsrce[2-1][jl-1] = psupsat[jk-1][jl-1];                // Add ice to first guess for deposition term 
+	  zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + psupsat[jk-1][jl-1];                // Store cloud budget diagnostics if required
+	}
 
-            } else {
-              // Turn supersaturation into ice water
-              zsolqa[2-1][2-1][jl-1] = zsolqa[2-1][2-1][jl-1] + psupsat[jk-1][jl-1];
-              zpsupsatsrce[2-1][jl-1] = psupsat[jk-1][jl-1];                // Add ice to first guess for deposition term 
-              zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + psupsat[jk-1][jl-1];                // Store cloud budget diagnostics if required
-              if (llcldbudi)
-              {
-                zbudi[2-1][jl-1] = psupsat[jk-1][jl-1]*zqtmst;
-              }
-
-            }
-
-            // Increase cloud amount using RKOOPTAU timescale
-            zsolac[jl-1] = (1.0 - za[jk-1][jl-1])*zfaci;              // Store cloud budget diagnostics if required
-            if (llcldbudcc)
-            {
-              zbudcc[2-1][jl-1] = zsolac[jl-1]*zqtmst;
-            }
-
-          }
-
-        }
-
+	// Increase cloud amount using RKOOPTAU timescale
+	zsolac[jl-1] = (1.0 - za[jk-1][jl-1])*zfaci;              // Store cloud budget diagnostics if required
       }
 
     }
@@ -1123,46 +955,27 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //    term, since is now written in mass-flux terms  
     // [#Note: Should use ZFOEALFACU used in convection rather than ZFOEALFA]
     //---------------------------------------------------------------------
-    if (ldmaincall)
+    if (jk >= yrecldp->ncldtop && jk < klev)
     {
-      if (jk >= yrecldp->ncldtop && jk < klev)
-      {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          plude[jk-1][jl-1] = plude[jk-1][jl-1]*zdtgdp[jl-1];
-          if (ldcum[jl-1] && plu[jk+1-1][jl-1] > zepsec && plude[jk-1][jl-1] > yrecldp->rlmin)
-          {
-            zsolac[jl-1] = zsolac[jl-1] + plude[jk-1][jl-1]/plu[jk+1-1][jl-1];              // *diagnostic temperature split*
-            zalfaw = zfoealfa[jk-1][jl-1];
-            zconvsrce[1-1][jl-1] = zalfaw*plude[jk-1][jl-1];
-            zconvsrce[2-1][jl-1] = (1.0 - zalfaw)*plude[jk-1][jl-1];
-            zsolqa[1-1][1-1][jl-1] = zsolqa[1-1][1-1][jl-1] + zconvsrce[1-1][jl-1];
-            zsolqa[2-1][2-1][jl-1] = zsolqa[2-1][2-1][jl-1] + zconvsrce[2-1][jl-1];              // Store cloud budget diagnostics if required
-            if (llcldbudl)
-            {
-              zbudl[3-1][jl-1] = zconvsrce[1-1][jl-1]*zqtmst;
-            }
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	plude[jk-1][jl-1] = plude[jk-1][jl-1]*zdtgdp[jl-1];
+	if (ldcum[jl-1] && plu[jk+1-1][jl-1] > zepsec && plude[jk-1][jl-1] > yrecldp->rlmin)
+	{
+	  zsolac[jl-1] = zsolac[jl-1] + plude[jk-1][jl-1]/plu[jk+1-1][jl-1];              // *diagnostic temperature split*
+	  zalfaw = zfoealfa[jk-1][jl-1];
+	  zconvsrce[1-1][jl-1] = zalfaw*plude[jk-1][jl-1];
+	  zconvsrce[2-1][jl-1] = (1.0 - zalfaw)*plude[jk-1][jl-1];
+	  zsolqa[1-1][1-1][jl-1] = zsolqa[1-1][1-1][jl-1] + zconvsrce[1-1][jl-1];
+	  zsolqa[2-1][2-1][jl-1] = zsolqa[2-1][2-1][jl-1] + zconvsrce[2-1][jl-1];              // Store cloud budget diagnostics if required
+	} else {
+	  plude[jk-1][jl-1] = 0.0;
+	}
 
-            if (llcldbudi)
-            {
-              zbudi[3-1][jl-1] = zconvsrce[2-1][jl-1]*zqtmst;
-            }
-
-            if (llcldbudcc)
-            {
-              zbudcc[3-1][jl-1] = (zqtmst*plude[jk-1][jl-1])/plu[jk+1-1][jl-1];
-            }
-
-          } else {
-            plude[jk-1][jl-1] = 0.0;
-          }
-
-          // *convective snow detrainment source
-          if (ldcum[jl-1])
-          {
-            zsolqa[4-1][4-1][jl-1] = zsolqa[4-1][4-1][jl-1] + psnde[jk-1][jl-1]*zdtgdp[jl-1];
-          }
-
-        }
+	// *convective snow detrainment source
+	if (ldcum[jl-1])
+	{
+	  zsolqa[4-1][4-1][jl-1] = zsolqa[4-1][4-1][jl-1] + psnde[jk-1][jl-1]*zdtgdp[jl-1];
+	}
 
       }
 
@@ -1176,111 +989,82 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     // * Evaporation of cloud within the layer
     // * Subsidence sink of cloud to the layer below (Implicit solution)
     //---------------------------------------------------------------------
-    if (ldmaincall)
+    //-----------------------------------------------
+    // Subsidence source from layer above
+    //               and 
+    // Evaporation of cloud within the layer
+    //-----------------------------------------------
+    if (jk > yrecldp->ncldtop)
     {
-      //-----------------------------------------------
-      // Subsidence source from layer above
-      //               and 
-      // Evaporation of cloud within the layer
-      //-----------------------------------------------
-      if (jk > yrecldp->ncldtop)
-      {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zmf[jl-1] = fmax(0.0, (pmfu[jk-1][jl-1] + pmfd[jk-1][jl-1])*zdtgdp[jl-1]);
-          zacust[jl-1] = zmf[jl-1]*zanewm1[jl-1];
-        }
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zmf[jl-1] = fmax(0.0, (pmfu[jk-1][jl-1] + pmfd[jk-1][jl-1])*zdtgdp[jl-1]);
+	zacust[jl-1] = zmf[jl-1]*zanewm1[jl-1];
+      }
 
-        for (jm=1; jm<=5; jm+=1) {
-          if (!llfall[jm-1] && iphase[jm-1] > 0)
-          {
-            for (jl=kidia; jl<=kfdia; jl+=1) {
-              zlcust[jm-1][jl-1] = zmf[jl-1]*zqxnm1[jm-1][jl-1];                // record total flux for enthalpy budget:
-              zconvsrce[jm-1][jl-1] = zconvsrce[jm-1][jl-1] + zlcust[jm-1][jl-1];
-            }
+      for (jm=1; jm<=5; jm+=1) {
+	if (!llfall[jm-1] && iphase[jm-1] > 0)
+	{
+	  for (jl=kidia; jl<=kfdia; jl+=1) {
+	    zlcust[jm-1][jl-1] = zmf[jl-1]*zqxnm1[jm-1][jl-1];                // record total flux for enthalpy budget:
+	    zconvsrce[jm-1][jl-1] = zconvsrce[jm-1][jl-1] + zlcust[jm-1][jl-1];
+	  }
 
-          }
-
-        }
-
-        // Now have to work out how much liquid evaporates at arrival point 
-        // since there is no prognostic memory for in-cloud humidity, i.e. 
-        // we always assume cloud is saturated. 
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zdtdp = ((zrdcp*0.5)*(ztp1[jk-1-1][jl-1] + ztp1[jk-1][jl-1]))/paph[jk-1][jl-1];
-          zdtforc = zdtdp*(pap[jk-1][jl-1] - pap[jk-1-1][jl-1]);            //[#Note: Diagnostic mixed phase should be replaced below]
-          zdqs[jl-1] = (zanewm1[jl-1]*zdtforc)*zdqsmixdt[jl-1];
-        }
-
-        for (jm=1; jm<=5; jm+=1) {
-          if (!llfall[jm-1] && iphase[jm-1] > 0)
-          {
-            for (jl=kidia; jl<=kfdia; jl+=1) {
-              zlfinal = fmax(0.0, zlcust[jm-1][jl-1] - zdqs[jl-1]);                // no supersaturation allowed incloud ---V
-              zevap = fmin(zlcust[jm-1][jl-1] - zlfinal, zevaplimmix[jl-1]);                //          ZEVAP=0.0_JPRB
-              zlfinal = zlcust[jm-1][jl-1] - zevap;
-              zlfinalsum[jl-1] = zlfinalsum[jl-1] + zlfinal;
-              zsolqa[jm-1][jm-1][jl-1] = zsolqa[jm-1][jm-1][jl-1] + zlcust[jm-1][jl-1];
-              zsolqa[jm-1][5-1][jl-1] = zsolqa[jm-1][5-1][jl-1] + zevap;
-              zsolqa[5-1][jm-1][jl-1] = zsolqa[5-1][jm-1][jl-1] - zevap;                // Store cloud liquid diagnostic if required
-              if (llcldbudl && jm == 1)
-              {
-                zbudl[4-1][jl-1] = zlcust[jm-1][jl-1]*zqtmst;
-              }
-
-              if (llcldbudi && jm == 2)
-              {
-                zbudi[4-1][jl-1] = zlcust[jm-1][jl-1]*zqtmst;
-              }
-
-              if (llcldbudl && jm == 1)
-              {
-                zbudl[5-1][jl-1] = -zevap*zqtmst;
-              }
-
-              if (llcldbudi && jm == 2)
-              {
-                zbudi[5-1][jl-1] = -zevap*zqtmst;
-              }
-
-            }
-
-          }
-
-        }
-
-        //  Reset the cloud contribution if no cloud water survives to this level:
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          if (zlfinalsum[jl-1] < zepsec)
-          {
-            zacust[jl-1] = 0.0;
-          }
-
-          zsolac[jl-1] = zsolac[jl-1] + zacust[jl-1];            // Store cloud fraction diagnostic if required
-          if (llcldbudcc)
-          {
-            zbudcc[4-1][jl-1] = zacust[jl-1]*zqtmst;
-          }
-
-          //ZBUDCC(JL,5) isn't included as only reduced if cloud->zero
-        }
+	}
 
       }
 
-      //---------------------------------------------------------------------
-      // Subsidence sink of cloud to the layer below 
-      // (Implicit - re. CFL limit on convective mass flux)
-      //---------------------------------------------------------------------
+      // Now have to work out how much liquid evaporates at arrival point 
+      // since there is no prognostic memory for in-cloud humidity, i.e. 
+      // we always assume cloud is saturated. 
       for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (jk < klev)
-        {
-          zmfdn = fmax(0.0, (pmfu[jk+1-1][jl-1] + pmfd[jk+1-1][jl-1])*zdtgdp[jl-1]);
-          zsolab[jl-1] = zsolab[jl-1] + zmfdn;
-          zsolqb[1-1][1-1][jl-1] = zsolqb[1-1][1-1][jl-1] + zmfdn;
-          zsolqb[2-1][2-1][jl-1] = zsolqb[2-1][2-1][jl-1] + zmfdn;            // Record sink for cloud budget and enthalpy budget diagnostics
-          zconvsink[1-1][jl-1] = zmfdn;
-          zconvsink[2-1][jl-1] = zmfdn;
-        }
+	zdtdp = ((zrdcp*0.5)*(ztp1[jk-1-1][jl-1] + ztp1[jk-1][jl-1]))/paph[jk-1][jl-1];
+	zdtforc = zdtdp*(pap[jk-1][jl-1] - pap[jk-1-1][jl-1]);            //[#Note: Diagnostic mixed phase should be replaced below]
+	zdqs[jl-1] = (zanewm1[jl-1]*zdtforc)*zdqsmixdt[jl-1];
+      }
 
+      for (jm=1; jm<=5; jm+=1) {
+	if (!llfall[jm-1] && iphase[jm-1] > 0)
+	{
+	  for (jl=kidia; jl<=kfdia; jl+=1) {
+	    zlfinal = fmax(0.0, zlcust[jm-1][jl-1] - zdqs[jl-1]);                // no supersaturation allowed incloud ---V
+	    zevap = fmin(zlcust[jm-1][jl-1] - zlfinal, zevaplimmix[jl-1]);                //          ZEVAP=0.0_JPRB
+	    zlfinal = zlcust[jm-1][jl-1] - zevap;
+	    zlfinalsum[jl-1] = zlfinalsum[jl-1] + zlfinal;
+	    zsolqa[jm-1][jm-1][jl-1] = zsolqa[jm-1][jm-1][jl-1] + zlcust[jm-1][jl-1];
+	    zsolqa[jm-1][5-1][jl-1] = zsolqa[jm-1][5-1][jl-1] + zevap;
+	    zsolqa[5-1][jm-1][jl-1] = zsolqa[5-1][jm-1][jl-1] - zevap;                // Store cloud liquid diagnostic if required
+	  }
+
+	}
+
+      }
+
+      //  Reset the cloud contribution if no cloud water survives to this level:
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	if (zlfinalsum[jl-1] < zepsec)
+	{
+	  zacust[jl-1] = 0.0;
+	}
+
+	zsolac[jl-1] = zsolac[jl-1] + zacust[jl-1];            // Store cloud fraction diagnostic if required
+	//ZBUDCC(JL,5) isn't included as only reduced if cloud->zero
+      }
+
+    }
+
+    //---------------------------------------------------------------------
+    // Subsidence sink of cloud to the layer below 
+    // (Implicit - re. CFL limit on convective mass flux)
+    //---------------------------------------------------------------------
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      if (jk < klev)
+      {
+	zmfdn = fmax(0.0, (pmfu[jk+1-1][jl-1] + pmfd[jk+1-1][jl-1])*zdtgdp[jl-1]);
+	zsolab[jl-1] = zsolab[jl-1] + zmfdn;
+	zsolqb[1-1][1-1][jl-1] = zsolqb[1-1][1-1][jl-1] + zmfdn;
+	zsolqb[2-1][2-1][jl-1] = zsolqb[2-1][2-1][jl-1] + zmfdn;            // Record sink for cloud budget and enthalpy budget diagnostics
+	zconvsink[1-1][jl-1] = zmfdn;
+	zconvsink[2-1][jl-1] = zmfdn;
       }
 
     }
@@ -1292,57 +1076,38 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //       area but leaves the specific cloud water content
     //       within clouds unchanged
     //----------------------------------------------------------------------
-    if (ldmaincall)
-    {
-      // ------------------------------
-      // Define turbulent erosion rate
-      // ------------------------------
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        zldifdt[jl-1] = yrecldp->rcldiff*ptsphy;          //Increase by factor of 5 for convective points
-        if (ktype[jl-1] > 0 && plude[jk-1][jl-1] > zepsec)
-        {
-          zldifdt[jl-1] = yrecldp->rcldiff_convi*zldifdt[jl-1];
-        }
-
+    // ------------------------------
+    // Define turbulent erosion rate
+    // ------------------------------
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      zldifdt[jl-1] = yrecldp->rcldiff*ptsphy;          //Increase by factor of 5 for convective points
+      if (ktype[jl-1] > 0 && plude[jk-1][jl-1] > zepsec)
+      {
+	zldifdt[jl-1] = yrecldp->rcldiff_convi*zldifdt[jl-1];
       }
 
-      // At the moment, works on mixed RH profile and partitioned ice/liq fraction
-      // so that it is similar to previous scheme
-      // Should apply RHw for liquid cloud and RHi for ice cloud separately 
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (zli[jk-1][jl-1] > zepsec)
-        {
-          // Calculate environmental humidity
-          //      ZQE=(ZQX(JL,JK,NCLDQV)-ZA(JL,JK)*ZQSMIX(JL,JK))/&
-          //    &      MAX(ZEPSEC,1.0_JPRB-ZA(JL,JK))  
-          //      ZE=ZLDIFDT(JL)*MAX(ZQSMIX(JL,JK)-ZQE,0.0_JPRB)
-          ze = zldifdt[jl-1]*fmax(zqsmix[jk-1][jl-1] - zqx[5-1][jk-1][jl-1], 0.0);
-          zleros = za[jk-1][jl-1]*ze;
-          zleros = fmin(zleros, zevaplimmix[jl-1]);
-          zleros = fmin(zleros, zli[jk-1][jl-1]);
-          zaeros = zleros/zlicld[jl-1];            // Erosion is -ve LINEAR in L,A
-          zsolac[jl-1] = zsolac[jl-1] - zaeros;
-          zsolqa[1-1][5-1][jl-1] = zsolqa[1-1][5-1][jl-1] + zliqfrac[jk-1][jl-1]*zleros;
-          zsolqa[5-1][1-1][jl-1] = zsolqa[5-1][1-1][jl-1] - zliqfrac[jk-1][jl-1]*zleros;
-          zsolqa[2-1][5-1][jl-1] = zsolqa[2-1][5-1][jl-1] + zicefrac[jk-1][jl-1]*zleros;
-          zsolqa[5-1][2-1][jl-1] = zsolqa[5-1][2-1][jl-1] - zicefrac[jk-1][jl-1]*zleros;            // Store cloud budget diagnostics if required
-          if (llcldbudl)
-          {
-            zbudl[7-1][jl-1] = -zliqfrac[jk-1][jl-1]*zleros*zqtmst;
-          }
+    }
 
-          if (llcldbudi)
-          {
-            zbudi[7-1][jl-1] = -zicefrac[jk-1][jl-1]*zleros*zqtmst;
-          }
-
-          if (llcldbudcc)
-          {
-            zbudcc[7-1][jl-1] = -zaeros*zqtmst;
-          }
-
-        }
-
+    // At the moment, works on mixed RH profile and partitioned ice/liq fraction
+    // so that it is similar to previous scheme
+    // Should apply RHw for liquid cloud and RHi for ice cloud separately 
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      if (zli[jk-1][jl-1] > zepsec)
+      {
+	// Calculate environmental humidity
+	//      ZQE=(ZQX(JL,JK,NCLDQV)-ZA(JL,JK)*ZQSMIX(JL,JK))/&
+	//    &      MAX(ZEPSEC,1.0_JPRB-ZA(JL,JK))  
+	//      ZE=ZLDIFDT(JL)*MAX(ZQSMIX(JL,JK)-ZQE,0.0_JPRB)
+	ze = zldifdt[jl-1]*fmax(zqsmix[jk-1][jl-1] - zqx[5-1][jk-1][jl-1], 0.0);
+	zleros = za[jk-1][jl-1]*ze;
+	zleros = fmin(zleros, zevaplimmix[jl-1]);
+	zleros = fmin(zleros, zli[jk-1][jl-1]);
+	zaeros = zleros/zlicld[jl-1];            // Erosion is -ve LINEAR in L,A
+	zsolac[jl-1] = zsolac[jl-1] - zaeros;
+	zsolqa[1-1][5-1][jl-1] = zsolqa[1-1][5-1][jl-1] + zliqfrac[jk-1][jl-1]*zleros;
+	zsolqa[5-1][1-1][jl-1] = zsolqa[5-1][1-1][jl-1] - zliqfrac[jk-1][jl-1]*zleros;
+	zsolqa[2-1][5-1][jl-1] = zsolqa[2-1][5-1][jl-1] + zicefrac[jk-1][jl-1]*zleros;
+	zsolqa[5-1][2-1][jl-1] = zsolqa[5-1][2-1][jl-1] - zicefrac[jk-1][jl-1]*zleros;            // Store cloud budget diagnostics if required
       }
 
     }
@@ -1432,16 +1197,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
         zsolqa[5-1][1-1][jl-1] = zsolqa[5-1][1-1][jl-1] - zliqfrac[jk-1][jl-1]*zlevap;
         zsolqa[2-1][5-1][jl-1] = zsolqa[2-1][5-1][jl-1] + zicefrac[jk-1][jl-1]*zlevap;
         zsolqa[5-1][2-1][jl-1] = zsolqa[5-1][2-1][jl-1] - zicefrac[jk-1][jl-1]*zlevap;          // Store cloud budget diagnostics if required
-        if (llcldbudl)
-        {
-          zbudl[8-1][jl-1] = -zliqfrac[jk-1][jl-1]*zlevap*zqtmst;
-        }
-
-        if (llcldbudi)
-        {
-          zbudi[8-1][jl-1] = -zicefrac[jk-1][jl-1]*zlevap*zqtmst;
-        }
-
       }
 
     }
@@ -1479,20 +1234,10 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
           zsolqa[5-1][1-1][jl-1] = zsolqa[5-1][1-1][jl-1] + zlcond1[jl-1];
           zsolqa[1-1][5-1][jl-1] = zsolqa[1-1][5-1][jl-1] - zlcond1[jl-1];
           zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] + zlcond1[jl-1];            // Store cloud liquid diagnostic if required
-          if (llcldbudl)
-          {
-            zbudl[9-1][jl-1] = zlcond1[jl-1]*zqtmst;
-          }
-
         } else {
           zsolqa[5-1][2-1][jl-1] = zsolqa[5-1][2-1][jl-1] + zlcond1[jl-1];
           zsolqa[2-1][5-1][jl-1] = zsolqa[2-1][5-1][jl-1] - zlcond1[jl-1];
           zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + zlcond1[jl-1];            // Store cloud ice diagnostic if required
-          if (llcldbudi)
-          {
-            zbudi[9-1][jl-1] = zlcond1[jl-1]*zqtmst;
-          }
-
         }
 
       }
@@ -1590,11 +1335,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
           // Large-scale generation is LINEAR in A and LINEAR in L
           zsolac[jl-1] = zsolac[jl-1] + zacond;            // Store cloud fraction diagnostic if required
-          if (llcldbudcc)
-          {
-            zbudcc[10-1][jl-1] = zacond*zqtmst;
-          }
-
           //------------------------------------------------------------------------
           // All increase goes into liquid unless so cold cloud homogeneously freezes
           // Include new liquid formation in first guess value, otherwise liquid 
@@ -1605,20 +1345,10 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
             zsolqa[5-1][1-1][jl-1] = zsolqa[5-1][1-1][jl-1] + zlcond2[jl-1];
             zsolqa[1-1][5-1][jl-1] = zsolqa[1-1][5-1][jl-1] - zlcond2[jl-1];
             zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] + zlcond2[jl-1];              // Store cloud liquid diagnostic if required
-            if (llcldbudl)
-            {
-              zbudl[10-1][jl-1] = zlcond2[jl-1]*zqtmst;
-            }
-
           } else {
             zsolqa[5-1][2-1][jl-1] = zsolqa[5-1][2-1][jl-1] + zlcond2[jl-1];
             zsolqa[2-1][5-1][jl-1] = zsolqa[2-1][5-1][jl-1] - zlcond2[jl-1];
             zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + zlcond2[jl-1];              // Store cloud ice diagnostic if required
-            if (llcldbudi)
-            {
-              zbudi[10-1][jl-1] = zlcond2[jl-1]*zqtmst;
-            }
-
           }
 
         }
@@ -1638,171 +1368,147 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     // Growth considered as sink of liquid water if present so 
     // Bergeron-Findeisen adjustment in autoconversion term no longer needed
     //----------------------------------------------------------------------
-    if (ldmaincall)
+    //--------------------------------------------------------
+    //-
+    //- Ice deposition following Rotstayn et al. (2001)
+    //-  (monodisperse ice particle size distribution)
+    //-
+    //--------------------------------------------------------
+    if (idepice == 1)
     {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	//--------------------------------------------------------------
+	// Calculate distance from cloud top 
+	// defined by cloudy layer below a layer with cloud frac <0.01
+	// ZDZ = ZDP(JL)/(ZRHO(JL)*RG)
+	//--------------------------------------------------------------
+	if (za[jk-1][jl-1] >= yrecldp->rcldtopcf && za[jk-1-1][jl-1] < yrecldp->rcldtopcf)
+	{
+	  zcldtopdist[jl-1] = 0.0;
+	} else {
+	  zcldtopdist[jl-1] = zcldtopdist[jl-1] + zdp[jl-1]/((zrho[jl-1]*rg));
+	}
+
+	//--------------------------------------------------------------
+	// only treat depositional growth if liquid present. due to fact 
+	// that can not model ice growth from vapour without additional 
+	// in-cloud water vapour variable
+	//--------------------------------------------------------------
+	if (zqxfg[1-1][jl-1] > yrecldp->rlmin && ztp1[jk-1][jl-1] < rtt)
+	{
+	  zvpice = ((double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies)))*rv)/rd;
+	  zvpliq = zvpice*zfokoop[jl-1];
+	  zicenuclei[jl-1] = 1000.0*exp((12.96*(zvpliq - zvpice))/zvpliq - 0.639);              //------------------------------------------------
+	  //   2.4e-2 is conductivity of air
+	  //   8.8 = 700**1/3 = density of ice to the third
+	  //------------------------------------------------
+	  zadd = (rlstt*(rlstt/((rv*ztp1[jk-1][jl-1])) - 1.0))/((0.024*ztp1[jk-1][jl-1]));
+	  zbdd = ((rv*ztp1[jk-1][jl-1])*pap[jk-1][jl-1])/((2.21*zvpice));
+	  zcvds = ((7.8*pow(zicenuclei[jl-1]/zrho[jl-1], 0.666))*(zvpliq - zvpice))/(((8.87*(zadd + zbdd))*zvpice));              //-----------------------------------------------------
+	  // RICEINIT=1.E-12_JPRB is initial mass of ice particle
+	  //-----------------------------------------------------
+	  zice0 = fmax(zicecld[jl-1], (zicenuclei[jl-1]*yrecldp->riceinit)/zrho[jl-1]);              //------------------
+	  // new value of ice:
+	  //------------------
+	  zinew = pow((0.666*zcvds)*ptsphy + pow(zice0, 0.666), 1.5);              //---------------------------
+	  // grid-mean deposition rate:
+	  //--------------------------- 
+	  zdepos = fmax(za[jk-1][jl-1]*(zinew - zice0), 0.0);              //--------------------------------------------------------------------
+	  // Limit deposition to liquid water amount
+	  // If liquid is all frozen, ice would use up reservoir of water 
+	  // vapour in excess of ice saturation mixing ratio - However this 
+	  // can not be represented without a in-cloud humidity variable. Using 
+	  // the grid-mean humidity would imply a large artificial horizontal 
+	  // flux from the clear sky to the cloudy area. We thus rely on the 
+	  // supersaturation check to clean up any remaining supersaturation
+	  //--------------------------------------------------------------------
+	  zdepos = fmin(zdepos, zqxfg[1-1][jl-1]);              //--------------------------------------------------------------------
+	  // At top of cloud, reduce deposition rate near cloud top to account for
+	  // small scale turbulent processes, limited ice nucleation and ice fallout 
+	  //--------------------------------------------------------------------
+	  //      ZDEPOS = ZDEPOS*MIN(RDEPLIQREFRATE+ZCLDTOPDIST(JL)/RDEPLIQREFDEPTH,1.0_JPRB)
+	  // Change to include dependence on ice nuclei concentration
+	  // to increase deposition rate with decreasing temperatures 
+	  zinfactor = fmin(zicenuclei[jl-1]/15000.0, 1.0);
+	  zdepos = zdepos*fmin(zinfactor + (1.0 - zinfactor)*(yrecldp->rdepliqrefrate + zcldtopdist[jl-1]/yrecldp->rdepliqrefdepth), 1.0);              //--------------
+	  // add to matrix 
+	  //--------------
+	  zsolqa[1-1][2-1][jl-1] = zsolqa[1-1][2-1][jl-1] + zdepos;
+	  zsolqa[2-1][1-1][jl-1] = zsolqa[2-1][1-1][jl-1] - zdepos;
+	  zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + zdepos;
+	  zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] - zdepos;              // Store cloud budget diagnostics if required
+	}
+
+      }
+
       //--------------------------------------------------------
       //-
-      //- Ice deposition following Rotstayn et al. (2001)
-      //-  (monodisperse ice particle size distribution)
+      //- Ice deposition assuming ice PSD
       //-
       //--------------------------------------------------------
-      if (idepice == 1)
+    } else {
+      if (idepice == 2)
       {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          //--------------------------------------------------------------
-          // Calculate distance from cloud top 
-          // defined by cloudy layer below a layer with cloud frac <0.01
-          // ZDZ = ZDP(JL)/(ZRHO(JL)*RG)
-          //--------------------------------------------------------------
-          if (za[jk-1][jl-1] >= yrecldp->rcldtopcf && za[jk-1-1][jl-1] < yrecldp->rcldtopcf)
-          {
-            zcldtopdist[jl-1] = 0.0;
-          } else {
-            zcldtopdist[jl-1] = zcldtopdist[jl-1] + zdp[jl-1]/((zrho[jl-1]*rg));
-          }
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  //--------------------------------------------------------------
+	  // Calculate distance from cloud top 
+	  // defined by cloudy layer below a layer with cloud frac <0.01
+	  // ZDZ = ZDP(JL)/(ZRHO(JL)*RG)
+	  //--------------------------------------------------------------
+	  if (za[jk-1][jl-1] >= yrecldp->rcldtopcf && za[jk-1-1][jl-1] < yrecldp->rcldtopcf)
+	  {
+	    zcldtopdist[jl-1] = 0.0;
+	  } else {
+	    zcldtopdist[jl-1] = zcldtopdist[jl-1] + zdp[jl-1]/((zrho[jl-1]*rg));
+	  }
 
-          //--------------------------------------------------------------
-          // only treat depositional growth if liquid present. due to fact 
-          // that can not model ice growth from vapour without additional 
-          // in-cloud water vapour variable
-          //--------------------------------------------------------------
-          if (zqxfg[1-1][jl-1] > yrecldp->rlmin && ztp1[jk-1][jl-1] < rtt)
-          {
-            zvpice = ((double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies)))*rv)/rd;
-            zvpliq = zvpice*zfokoop[jl-1];
-            zicenuclei[jl-1] = 1000.0*exp((12.96*(zvpliq - zvpice))/zvpliq - 0.639);              //------------------------------------------------
-            //   2.4e-2 is conductivity of air
-            //   8.8 = 700**1/3 = density of ice to the third
-            //------------------------------------------------
-            zadd = (rlstt*(rlstt/((rv*ztp1[jk-1][jl-1])) - 1.0))/((0.024*ztp1[jk-1][jl-1]));
-            zbdd = ((rv*ztp1[jk-1][jl-1])*pap[jk-1][jl-1])/((2.21*zvpice));
-            zcvds = ((7.8*pow(zicenuclei[jl-1]/zrho[jl-1], 0.666))*(zvpliq - zvpice))/(((8.87*(zadd + zbdd))*zvpice));              //-----------------------------------------------------
-            // RICEINIT=1.E-12_JPRB is initial mass of ice particle
-            //-----------------------------------------------------
-            zice0 = fmax(zicecld[jl-1], (zicenuclei[jl-1]*yrecldp->riceinit)/zrho[jl-1]);              //------------------
-            // new value of ice:
-            //------------------
-            zinew = pow((0.666*zcvds)*ptsphy + pow(zice0, 0.666), 1.5);              //---------------------------
-            // grid-mean deposition rate:
-            //--------------------------- 
-            zdepos = fmax(za[jk-1][jl-1]*(zinew - zice0), 0.0);              //--------------------------------------------------------------------
-            // Limit deposition to liquid water amount
-            // If liquid is all frozen, ice would use up reservoir of water 
-            // vapour in excess of ice saturation mixing ratio - However this 
-            // can not be represented without a in-cloud humidity variable. Using 
-            // the grid-mean humidity would imply a large artificial horizontal 
-            // flux from the clear sky to the cloudy area. We thus rely on the 
-            // supersaturation check to clean up any remaining supersaturation
-            //--------------------------------------------------------------------
-            zdepos = fmin(zdepos, zqxfg[1-1][jl-1]);              //--------------------------------------------------------------------
-            // At top of cloud, reduce deposition rate near cloud top to account for
-            // small scale turbulent processes, limited ice nucleation and ice fallout 
-            //--------------------------------------------------------------------
-            //      ZDEPOS = ZDEPOS*MIN(RDEPLIQREFRATE+ZCLDTOPDIST(JL)/RDEPLIQREFDEPTH,1.0_JPRB)
-            // Change to include dependence on ice nuclei concentration
-            // to increase deposition rate with decreasing temperatures 
-            zinfactor = fmin(zicenuclei[jl-1]/15000.0, 1.0);
-            zdepos = zdepos*fmin(zinfactor + (1.0 - zinfactor)*(yrecldp->rdepliqrefrate + zcldtopdist[jl-1]/yrecldp->rdepliqrefdepth), 1.0);              //--------------
-            // add to matrix 
-            //--------------
-            zsolqa[1-1][2-1][jl-1] = zsolqa[1-1][2-1][jl-1] + zdepos;
-            zsolqa[2-1][1-1][jl-1] = zsolqa[2-1][1-1][jl-1] - zdepos;
-            zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + zdepos;
-            zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] - zdepos;              // Store cloud budget diagnostics if required
-            if (llcldbudl)
-            {
-              zbudl[11-1][jl-1] = -zdepos*zqtmst;
-            }
+	  //--------------------------------------------------------------
+	  // only treat depositional growth if liquid present. due to fact 
+	  // that can not model ice growth from vapour without additional 
+	  // in-cloud water vapour variable
+	  //--------------------------------------------------------------
+	  if (zqxfg[1-1][jl-1] > yrecldp->rlmin && ztp1[jk-1][jl-1] < rtt)
+	  {
+	    zvpice = ((double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies)))*rv)/rd;
+	    zvpliq = zvpice*zfokoop[jl-1];
+	    zicenuclei[jl-1] = 1000.0*exp((12.96*(zvpliq - zvpice))/zvpliq - 0.639);                //-----------------------------------------------------
+	    // RICEINIT=1.E-12_JPRB is initial mass of ice particle
+	    //-----------------------------------------------------
+	    zice0 = fmax(zicecld[jl-1], (zicenuclei[jl-1]*yrecldp->riceinit)/zrho[jl-1]);                // Particle size distribution
+	    ztcg = 1.0;
+	    zfacx1i = 1.0;
+	    zaplusb = yrecldp->rcl_apb1*zvpice - yrecldp->rcl_apb2*zvpice*ztp1[jk-1][jl-1] + (pap[jk-1][jl-1]*yrecldp->rcl_apb3)*pow(ztp1[jk-1][jl-1], 3.0);
+	    zcorrfac = sqrt(1.0/zrho[jl-1]);
+	    zcorrfac2 = pow(ztp1[jk-1][jl-1]/273.0, 1.5)*(393.0/(ztp1[jk-1][jl-1] + 120.0));
+	    zpr02 = ((zrho[jl-1]*zice0)*yrecldp->rcl_const1i)/((ztcg*zfacx1i));
+	    zterm1 = (((((((zvpliq - zvpice)*pow(ztp1[jk-1][jl-1], 2.0))*zvpice)*zcorrfac2)*ztcg)*yrecldp->rcl_const2i)*zfacx1i)/(((zrho[jl-1]*zaplusb)*zvpice));
+	    zterm2 = (0.65*yrecldp->rcl_const6i)*pow(zpr02, yrecldp->rcl_const4i) + (((yrecldp->rcl_const3i*sqrt(zcorrfac))*sqrt(zrho[jl-1]))*pow(zpr02, yrecldp->rcl_const5i))/sqrt(zcorrfac2);
+	    zdepos = fmax(((za[jk-1][jl-1]*zterm1)*zterm2)*ptsphy, 0.0);                //--------------------------------------------------------------------
+	    // Limit deposition to liquid water amount
+	    // If liquid is all frozen, ice would use up reservoir of water 
+	    // vapour in excess of ice saturation mixing ratio - However this 
+	    // can not be represented without a in-cloud humidity variable. Using 
+	    // the grid-mean humidity would imply a large artificial horizontal 
+	    // flux from the clear sky to the cloudy area. We thus rely on the 
+	    // supersaturation check to clean up any remaining supersaturation
+	    //--------------------------------------------------------------------
+	    zdepos = fmin(zdepos, zqxfg[1-1][jl-1]);                //--------------------------------------------------------------------
+	    // At top of cloud, reduce deposition rate near cloud top to account for
+	    // small scale turbulent processes, limited ice nucleation and ice fallout 
+	    //--------------------------------------------------------------------
+	    // Change to include dependence on ice nuclei concentration
+	    // to increase deposition rate with decreasing temperatures 
+	    zinfactor = fmin(zicenuclei[jl-1]/15000.0, 1.0);
+	    zdepos = zdepos*fmin(zinfactor + (1.0 - zinfactor)*(yrecldp->rdepliqrefrate + zcldtopdist[jl-1]/yrecldp->rdepliqrefdepth), 1.0);                //--------------
+	    // add to matrix 
+	    //--------------
+	    zsolqa[1-1][2-1][jl-1] = zsolqa[1-1][2-1][jl-1] + zdepos;
+	    zsolqa[2-1][1-1][jl-1] = zsolqa[2-1][1-1][jl-1] - zdepos;
+	    zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + zdepos;
+	    zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] - zdepos;                // Store cloud budget diagnostics if required
+	  }
 
-            if (llcldbudi)
-            {
-              zbudi[11-1][jl-1] = zdepos*zqtmst;
-            }
-
-          }
-
-        }
-
-        //--------------------------------------------------------
-        //-
-        //- Ice deposition assuming ice PSD
-        //-
-        //--------------------------------------------------------
-      } else {
-        if (idepice == 2)
-        {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            //--------------------------------------------------------------
-            // Calculate distance from cloud top 
-            // defined by cloudy layer below a layer with cloud frac <0.01
-            // ZDZ = ZDP(JL)/(ZRHO(JL)*RG)
-            //--------------------------------------------------------------
-            if (za[jk-1][jl-1] >= yrecldp->rcldtopcf && za[jk-1-1][jl-1] < yrecldp->rcldtopcf)
-            {
-              zcldtopdist[jl-1] = 0.0;
-            } else {
-              zcldtopdist[jl-1] = zcldtopdist[jl-1] + zdp[jl-1]/((zrho[jl-1]*rg));
-            }
-
-            //--------------------------------------------------------------
-            // only treat depositional growth if liquid present. due to fact 
-            // that can not model ice growth from vapour without additional 
-            // in-cloud water vapour variable
-            //--------------------------------------------------------------
-            if (zqxfg[1-1][jl-1] > yrecldp->rlmin && ztp1[jk-1][jl-1] < rtt)
-            {
-              zvpice = ((double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies)))*rv)/rd;
-              zvpliq = zvpice*zfokoop[jl-1];
-              zicenuclei[jl-1] = 1000.0*exp((12.96*(zvpliq - zvpice))/zvpliq - 0.639);                //-----------------------------------------------------
-              // RICEINIT=1.E-12_JPRB is initial mass of ice particle
-              //-----------------------------------------------------
-              zice0 = fmax(zicecld[jl-1], (zicenuclei[jl-1]*yrecldp->riceinit)/zrho[jl-1]);                // Particle size distribution
-              ztcg = 1.0;
-              zfacx1i = 1.0;
-              zaplusb = yrecldp->rcl_apb1*zvpice - yrecldp->rcl_apb2*zvpice*ztp1[jk-1][jl-1] + (pap[jk-1][jl-1]*yrecldp->rcl_apb3)*pow(ztp1[jk-1][jl-1], 3.0);
-              zcorrfac = sqrt(1.0/zrho[jl-1]);
-              zcorrfac2 = pow(ztp1[jk-1][jl-1]/273.0, 1.5)*(393.0/(ztp1[jk-1][jl-1] + 120.0));
-              zpr02 = ((zrho[jl-1]*zice0)*yrecldp->rcl_const1i)/((ztcg*zfacx1i));
-              zterm1 = (((((((zvpliq - zvpice)*pow(ztp1[jk-1][jl-1], 2.0))*zvpice)*zcorrfac2)*ztcg)*yrecldp->rcl_const2i)*zfacx1i)/(((zrho[jl-1]*zaplusb)*zvpice));
-              zterm2 = (0.65*yrecldp->rcl_const6i)*pow(zpr02, yrecldp->rcl_const4i) + (((yrecldp->rcl_const3i*sqrt(zcorrfac))*sqrt(zrho[jl-1]))*pow(zpr02, yrecldp->rcl_const5i))/sqrt(zcorrfac2);
-              zdepos = fmax(((za[jk-1][jl-1]*zterm1)*zterm2)*ptsphy, 0.0);                //--------------------------------------------------------------------
-              // Limit deposition to liquid water amount
-              // If liquid is all frozen, ice would use up reservoir of water 
-              // vapour in excess of ice saturation mixing ratio - However this 
-              // can not be represented without a in-cloud humidity variable. Using 
-              // the grid-mean humidity would imply a large artificial horizontal 
-              // flux from the clear sky to the cloudy area. We thus rely on the 
-              // supersaturation check to clean up any remaining supersaturation
-              //--------------------------------------------------------------------
-              zdepos = fmin(zdepos, zqxfg[1-1][jl-1]);                //--------------------------------------------------------------------
-              // At top of cloud, reduce deposition rate near cloud top to account for
-              // small scale turbulent processes, limited ice nucleation and ice fallout 
-              //--------------------------------------------------------------------
-              // Change to include dependence on ice nuclei concentration
-              // to increase deposition rate with decreasing temperatures 
-              zinfactor = fmin(zicenuclei[jl-1]/15000.0, 1.0);
-              zdepos = zdepos*fmin(zinfactor + (1.0 - zinfactor)*(yrecldp->rdepliqrefrate + zcldtopdist[jl-1]/yrecldp->rdepliqrefdepth), 1.0);                //--------------
-              // add to matrix 
-              //--------------
-              zsolqa[1-1][2-1][jl-1] = zsolqa[1-1][2-1][jl-1] + zdepos;
-              zsolqa[2-1][1-1][jl-1] = zsolqa[2-1][1-1][jl-1] - zdepos;
-              zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + zdepos;
-              zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] - zdepos;                // Store cloud budget diagnostics if required
-              if (llcldbudl)
-              {
-                zbudl[11-1][jl-1] = -zdepos*zqtmst;
-              }
-
-              if (llcldbudi)
-              {
-                zbudi[11-1][jl-1] = zdepos*zqtmst;
-              }
-
-            }
-
-          }
-
-        }
+	}
 
       }
 
@@ -1827,47 +1533,38 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //     the precipitation flux can be defined directly level by level
     //     There is no vertical memory required from the flux variable
     //----------------------------------------------------------------------
-    if (ldmaincall)
-    {
-      for (jm=1; jm<=5; jm+=1) {
-        if (llfall[jm-1] || jm == 2)
-        {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            //------------------------
-            // source from layer above 
-            //------------------------
-            if (jk > yrecldp->ncldtop)
-            {
-              zfallsrce[jm-1][jl-1] = zpfplsx[jm-1][jk-1][jl-1]*zdtgdp[jl-1];
-              zsolqa[jm-1][jm-1][jl-1] = zsolqa[jm-1][jm-1][jl-1] + zfallsrce[jm-1][jl-1];
-              zqxfg[jm-1][jl-1] = zqxfg[jm-1][jl-1] + zfallsrce[jm-1][jl-1];                // use first guess precip----------V
-              zqpretot[jl-1] = zqpretot[jl-1] + zqxfg[jm-1][jl-1];
-              if (llcldbudi && jm == 2)
-              {
-                zbudi[12-1][jl-1] = zfallsrce[jm-1][jl-1]*zqtmst;
-              }
+    for (jm=1; jm<=5; jm+=1) {
+      if (llfall[jm-1] || jm == 2)
+      {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  //------------------------
+	  // source from layer above 
+	  //------------------------
+	  if (jk > yrecldp->ncldtop)
+	  {
+	    zfallsrce[jm-1][jl-1] = zpfplsx[jm-1][jk-1][jl-1]*zdtgdp[jl-1];
+	    zsolqa[jm-1][jm-1][jl-1] = zsolqa[jm-1][jm-1][jl-1] + zfallsrce[jm-1][jl-1];
+	    zqxfg[jm-1][jl-1] = zqxfg[jm-1][jl-1] + zfallsrce[jm-1][jl-1];                // use first guess precip----------V
+	    zqpretot[jl-1] = zqpretot[jl-1] + zqxfg[jm-1][jl-1];
+	  }
 
-            }
+	  //-------------------------------------------------
+	  // sink to next layer, constant fall speed
+	  //-------------------------------------------------
+	  // if aerosol effect then override 
+	  //  note that for T>233K this is the same as above.
+	  if (yrecldp->laericesed && jm == 2)
+	  {
+	    zre_ice = pre_ice[jk-1][jl-1];                // The exponent value is from 
+	    // Morrison et al. JAS 2005 Appendix
+	    zvqx[2-1] = 0.002*pow(zre_ice, 1.0);
+	  }
 
-            //-------------------------------------------------
-            // sink to next layer, constant fall speed
-            //-------------------------------------------------
-            // if aerosol effect then override 
-            //  note that for T>233K this is the same as above.
-            if (yrecldp->laericesed && jm == 2)
-            {
-              zre_ice = pre_ice[jk-1][jl-1];                // The exponent value is from 
-              // Morrison et al. JAS 2005 Appendix
-              zvqx[2-1] = 0.002*pow(zre_ice, 1.0);
-            }
-
-            zfall = zvqx[jm-1]*zrho[jl-1];              //-------------------------------------------------
-            // modified by Heymsfield and Iaquinta JAS 2000
-            //-------------------------------------------------
-            zfallsink[jm-1][jl-1] = zdtgdp[jl-1]*zfall;              // Cloud budget diagnostic stored at end as implicit
-          }
-
-        }
+	  zfall = zvqx[jm-1]*zrho[jl-1];              //-------------------------------------------------
+	  // modified by Heymsfield and Iaquinta JAS 2000
+	  //-------------------------------------------------
+	  zfallsink[jm-1][jl-1] = zdtgdp[jl-1]*zfall;              // Cloud budget diagnostic stored at end as implicit
+	}
 
       }
 
@@ -1908,1033 +1605,891 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
     }
 
-    if (ldmaincall)
-    {
-      //----------------------------------------------------------------------
-      // 4.3a AUTOCONVERSION TO SNOW
-      //----------------------------------------------------------------------
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (ztp1[jk-1][jl-1] <= rtt)
-        {
-          //-----------------------------------------------------
-          //     Snow Autoconversion rate follow Lin et al. 1983
-          //-----------------------------------------------------
-          if (zicecld[jl-1] > zepsec)
-          {
-            zzco = (ptsphy*yrecldp->rsnowlin1)*exp(yrecldp->rsnowlin2*(ztp1[jk-1][jl-1] - rtt));
-            if (yrecldp->laericeauto)
-            {
-              zlcrit = picrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=0.027 
-              zzco = zzco*pow(yrecldp->rnice/pnice[jk-1][jl-1], 0.333);
-            } else {
-              zlcrit = yrecldp->rlcritsnow;
-            }
-
-            zsnowaut[jl-1] = zzco*(1.0 - exp(-pow(zicecld[jl-1]/zlcrit, 2)));
-            zsolqb[2-1][4-1][jl-1] = zsolqb[2-1][4-1][jl-1] + zsnowaut[jl-1];
-          }
-
-        }
-
-        //----------------------------------------------------------------------
-        // 4.3b AUTOCONVERSION WARM CLOUDS
-        //   Collection and accretion will require separate treatment
-        //   but for now we keep this simple treatment
-        //----------------------------------------------------------------------
-        if (zliqcld[jl-1] > zepsec)
-        {
-          //--------------------------------------------------------
-          //-
-          //- Warm-rain process follow Sundqvist (1989)
-          //-
-          //--------------------------------------------------------
-          if (iwarmrain == 1)
-          {
-            zzco = yrecldp->rkconv*ptsphy;
-            if (yrecldp->laerliqautolsp)
-            {
-              zlcrit = plcrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=125 cm-3 
-              zzco = zzco*pow(yrecldp->rccn/pccn[jk-1][jl-1], 0.333);
-            } else {
-              // Modify autoconversion threshold dependent on: 
-              //  land (polluted, high CCN, smaller droplets, higher threshold)
-              //  sea  (clean, low CCN, larger droplets, lower threshold)
-              if (plsm[jl-1] > 0.5)
-              {
-                zlcrit = yrecldp->rclcrit_land;
-              } else {
-                zlcrit = yrecldp->rclcrit_sea;
-              }
-
-            }
-
-            //------------------------------------------------------------------
-            // Parameters for cloud collection by rain and snow.
-            // Note that with new prognostic variable it is now possible 
-            // to REPLACE this with an explicit collection parametrization
-            //------------------------------------------------------------------   
-            zprecip = (zpfplsx[4-1][jk-1][jl-1] + zpfplsx[3-1][jk-1][jl-1])*1.0/fmax(zepsec, zcovptot[jl-1]);
-            zcfpr = 1.0 + yrecldp->rprc1*sqrt(fmax(zprecip, 0.0));              //      ZCFPR=1.0_JPRB + RPRC1*SQRT(MAX(ZPRECIP,0.0_JPRB))*&
-            //       &ZCOVPTOT(JL)/(MAX(ZA(JL,JK),ZEPSEC))
-            if (yrecldp->laerliqcoll)
-            {
-              // 5.0 = N**0.333 with N=125 cm-3 
-              zcfpr = zcfpr*pow(yrecldp->rccn/pccn[jk-1][jl-1], 0.333);
-            }
-
-            zzco = zzco*zcfpr;
-            zlcrit = zlcrit*1.0/fmax(zcfpr, zepsec);
-            if (zliqcld[jl-1]/zlcrit < 20.0)
-            {
-              zrainaut[jl-1] = zzco*(1.0 - exp(-pow(zliqcld[jl-1]/zlcrit, 2)));
-            } else {
-              zrainaut[jl-1] = zzco;
-            }
-
-            // rain freezes instantly
-            if (ztp1[jk-1][jl-1] <= rtt)
-            {
-              zsolqb[1-1][4-1][jl-1] = zsolqb[1-1][4-1][jl-1] + zrainaut[jl-1];
-            } else {
-              zsolqb[1-1][3-1][jl-1] = zsolqb[1-1][3-1][jl-1] + zrainaut[jl-1];
-            }
-
-            //--------------------------------------------------------
-            //-
-            //- Warm-rain process follow Khairoutdinov and Kogan (2000)
-            //-
-            //--------------------------------------------------------
-          } else {
-            if (iwarmrain == 2)
-            {
-              if (plsm[jl-1] > 0.5)
-              {
-                zconst = yrecldp->rcl_kk_cloud_num_land;
-                zlcrit = yrecldp->rclcrit_land;
-              } else {
-                zconst = yrecldp->rcl_kk_cloud_num_sea;
-                zlcrit = yrecldp->rclcrit_sea;
-              }
-
-              if (zliqcld[jl-1] > zlcrit)
-              {
-                zrainaut[jl-1] = ((((1.5*za[jk-1][jl-1])*ptsphy)*yrecldp->rcl_kkaau)*pow(zliqcld[jl-1], yrecldp->rcl_kkbauq))*pow(zconst, yrecldp->rcl_kkbaun);
-                zrainaut[jl-1] = fmin(zrainaut[jl-1], zqxfg[1-1][jl-1]);
-                if (zrainaut[jl-1] < zepsec)
-                {
-                  zrainaut[jl-1] = 0.0;
-                }
-
-                zrainacc[jl-1] = (((2.0*za[jk-1][jl-1])*ptsphy)*yrecldp->rcl_kkaac)*pow(zliqcld[jl-1]*zraincld[jl-1], yrecldp->rcl_kkbac);
-                zrainacc[jl-1] = fmin(zrainacc[jl-1], zqxfg[1-1][jl-1]);
-                if (zrainacc[jl-1] < zepsec)
-                {
-                  zrainacc[jl-1] = 0.0;
-                }
-
-              } else {
-                zrainaut[jl-1] = 0.0;
-                zrainacc[jl-1] = 0.0;
-              }
-
-              // If temperature < 0, then autoconversion produces snow rather than rain
-              // Explicit
-              if (ztp1[jk-1][jl-1] <= rtt)
-              {
-                zsolqa[1-1][4-1][jl-1] = zsolqa[1-1][4-1][jl-1] + zrainaut[jl-1];
-                zsolqa[1-1][4-1][jl-1] = zsolqa[1-1][4-1][jl-1] + zrainacc[jl-1];
-                zsolqa[4-1][1-1][jl-1] = zsolqa[4-1][1-1][jl-1] - zrainaut[jl-1];
-                zsolqa[4-1][1-1][jl-1] = zsolqa[4-1][1-1][jl-1] - zrainacc[jl-1];
-              } else {
-                zsolqa[1-1][3-1][jl-1] = zsolqa[1-1][3-1][jl-1] + zrainaut[jl-1];
-                zsolqa[1-1][3-1][jl-1] = zsolqa[1-1][3-1][jl-1] + zrainacc[jl-1];
-                zsolqa[3-1][1-1][jl-1] = zsolqa[3-1][1-1][jl-1] - zrainaut[jl-1];
-                zsolqa[3-1][1-1][jl-1] = zsolqa[3-1][1-1][jl-1] - zrainacc[jl-1];
-              }
-
-            }
-
-          }
-
-        }
-
-      }
-
-      //----------------------------------------------------------------------
-      // RIMING - COLLECTION OF CLOUD LIQUID DROPS BY SNOW AND ICE
-      //      only active if T<0degC and supercooled liquid water is present
-      //      AND if not Sundquist autoconversion (as this includes riming)
-      //----------------------------------------------------------------------
-      if (iwarmrain > 1)
+    //----------------------------------------------------------------------
+    // 4.3a AUTOCONVERSION TO SNOW
+    //----------------------------------------------------------------------
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      if (ztp1[jk-1][jl-1] <= rtt)
       {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          if (ztp1[jk-1][jl-1] <= rtt && zliqcld[jl-1] > zepsec)
-          {
-            // Fallspeed air density correction 
-            zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], 0.4);              //------------------------------------------------------------------
-            // Riming of snow by cloud water - implicit in lwc
-            //------------------------------------------------------------------
-            if (zcovptot[jl-1] > 0.01 && zsnowcld[jl-1] > zepsec)
-            {
-              // Calculate riming term
-              // Factor of liq water taken out because implicit
-              zsnowrime[jl-1] = ((((0.3*zcovptot[jl-1])*ptsphy)*yrecldp->rcl_const7s)*zfallcorr)*pow((zrho[jl-1]*zsnowcld[jl-1])*yrecldp->rcl_const1s, yrecldp->rcl_const8s);                // Limit snow riming term
-              zsnowrime[jl-1] = fmin(zsnowrime[jl-1], 1.0);
-              zsolqb[1-1][4-1][jl-1] = zsolqb[1-1][4-1][jl-1] + zsnowrime[jl-1];
-            }
+	//-----------------------------------------------------
+	//     Snow Autoconversion rate follow Lin et al. 1983
+	//-----------------------------------------------------
+	if (zicecld[jl-1] > zepsec)
+	{
+	  zzco = (ptsphy*yrecldp->rsnowlin1)*exp(yrecldp->rsnowlin2*(ztp1[jk-1][jl-1] - rtt));
+	  if (yrecldp->laericeauto)
+	  {
+	    zlcrit = picrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=0.027 
+	    zzco = zzco*pow(yrecldp->rnice/pnice[jk-1][jl-1], 0.333);
+	  } else {
+	    zlcrit = yrecldp->rlcritsnow;
+	  }
 
-            //------------------------------------------------------------------
-            // Riming of ice by cloud water - implicit in lwc
-            // NOT YET ACTIVE
-            //------------------------------------------------------------------
-            //      IF (ZICECLD(JL)>ZEPSEC .AND. ZA(JL,JK)>0.01_JPRB) THEN
-            //
-            //        // Calculate riming term
-            //        // Factor of liq water taken out because implicit
-            //        ZSNOWRIME(JL) = ZA(JL,JK)*PTSPHY*RCL_CONST7S*ZFALLCORR &
-            //     &                  *(ZRHO(JL)*ZICECLD(JL)*RCL_CONST1S)**RCL_CONST8S
-            //
-            //        // Limit ice riming term
-            //        ZSNOWRIME(JL)=MIN(ZSNOWRIME(JL),1.0_JPRB)
-            //
-            //        ZSOLQB(JL,NCLDQI,NCLDQL) = ZSOLQB(JL,NCLDQI,NCLDQL) + ZSNOWRIME(JL)
-            //
-            //      ENDIF
-          }
-
-        }
+	  zsnowaut[jl-1] = zzco*(1.0 - exp(-pow(zicecld[jl-1]/zlcrit, 2)));
+	  zsolqb[2-1][4-1][jl-1] = zsolqb[2-1][4-1][jl-1] + zsnowaut[jl-1];
+	}
 
       }
 
       //----------------------------------------------------------------------
-      // 4.4a  MELTING OF SNOW and ICE
-      //       with new implicit solver this also has to treat snow or ice
-      //       precipitating from the level above... i.e. local ice AND flux.
-      //       in situ ice and snow: could arise from LS advection or warming
-      //       falling ice and snow: arrives by precipitation process
+      // 4.3b AUTOCONVERSION WARM CLOUDS
+      //   Collection and accretion will require separate treatment
+      //   but for now we keep this simple treatment
       //----------------------------------------------------------------------
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        zicetot[jl-1] = zqxfg[2-1][jl-1] + zqxfg[4-1][jl-1];
-        zmeltmax[jl-1] = 0.0;          // If there are frozen hydrometeors present and dry-bulb temperature > 0degC
-        if (zicetot[jl-1] > zepsec && ztp1[jk-1][jl-1] > rtt)
-        {
-          // Calculate subsaturation
-          zsubsat = fmax(zqsice[jk-1][jl-1] - zqx[5-1][jk-1][jl-1], 0.0);            // Calculate difference between dry-bulb (ZTP1) and the temperature 
-          // at which the wet-bulb=0degC (RTT-ZSUBSAT*....) using an approx.
-          // Melting only occurs if the wet-bulb temperature >0
-          // i.e. warming of ice particle due to melting > cooling 
-          // due to evaporation.
-          ztdmtw0 = ztp1[jk-1][jl-1] - rtt - zsubsat*(ztw1 + ztw2*(pap[jk-1][jl-1] - ztw3) - ztw4*(ztp1[jk-1][jl-1] - ztw5));            // Not implicit yet... 
-          // Ensure ZCONS1 is positive so that ZMELTMAX=0 if ZTDMTW0<0
-          zcons1 = fabs((ptsphy*(1.0 + 0.5*ztdmtw0))/yrecldp->rtaumel);
-          zmeltmax[jl-1] = fmax((ztdmtw0*zcons1)*zrldcp, 0.0);
-        }
-
-      }
-
-      // Loop over frozen hydrometeors (ice, snow)
-      for (jm=1; jm<=5; jm+=1) {
-        if (iphase[jm-1] == 2)
-        {
-          jn = imelt[jm-1];
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            if (zicetot[jl-1] > zepsec && zmeltmax[jl-1] > zepsec)
-            {
-              // Apply melting in same proportion as frozen hydrometeor fractions 
-              zalfa = zqxfg[jm-1][jl-1]/zicetot[jl-1];
-              zmelt = fmin(zqxfg[jm-1][jl-1], zalfa*zmeltmax[jl-1]);                // needed in first guess
-              // This implies that zqpretot has to be recalculated below
-              // since is not conserved here if ice falls and liquid doesn't
-              zqxfg[jm-1][jl-1] = zqxfg[jm-1][jl-1] - zmelt;
-              zqxfg[jn-1][jl-1] = zqxfg[jn-1][jl-1] + zmelt;
-              zsolqa[jm-1][jn-1][jl-1] = zsolqa[jm-1][jn-1][jl-1] + zmelt;
-              zsolqa[jn-1][jm-1][jl-1] = zsolqa[jn-1][jm-1][jl-1] - zmelt;
-              if (llcldbudi && jm == 2)
-              {
-                zbudi[15-1][jl-1] = -zmelt*zqtmst;
-              }
-
-              if (llcldbudi && jm == 4)
-              {
-                zbudi[16-1][jl-1] = -zmelt*zqtmst;
-              }
-
-              if (llcldbudl && jm == 2)
-              {
-                zbudl[17-1][jl-1] = zmelt*zqtmst;
-              }
-
-            }
-
-          }
-
-        }
-
-      }
-
-      //----------------------------------------------------------------------
-      // 4.4b  FREEZING of RAIN
-      //----------------------------------------------------------------------
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        // If rain present
-        if (zqx[3-1][jk-1][jl-1] > zepsec)
-        {
-          if (ztp1[jk-1][jl-1] <= rtt && ztp1[jk-1-1][jl-1] > rtt)
-          {
-            // Base of melting layer/top of refreezing layer so
-            // store rain/snow fraction for precip type diagnosis
-            // If mostly rain, then supercooled rain slow to freeze
-            // otherwise faster to freeze (snow or ice pellets)
-            zqpretot[jl-1] = fmax(zqx[4-1][jk-1][jl-1] + zqx[3-1][jk-1][jl-1], zepsec);
-            prainfrac_toprfz[jl-1] = zqx[3-1][jk-1][jl-1]/zqpretot[jl-1];
-          }
-
-          // If temperature less than zero
-          if (ztp1[jk-1][jl-1] < rtt)
-          {
-            if (prainfrac_toprfz[jl-1] > 0.8)
-            {
-              // Majority of raindrops completely melted
-              // Refreezing is by slow heterogeneous freezing
-              // Slope of rain particle size distribution
-              zlambda = pow(yrecldp->rcl_fac1/((zrho[jl-1]*zqx[3-1][jk-1][jl-1])), yrecldp->rcl_fac2);                // Calculate freezing rate based on Bigg(1953) and Wisner(1972)
-              ztemp = yrecldp->rcl_fzrab*(ztp1[jk-1][jl-1] - rtt);
-              zfrz = ((ptsphy*(yrecldp->rcl_const5r/zrho[jl-1]))*(exp(ztemp) - 1.0))*pow(zlambda, yrecldp->rcl_const6r);
-              zfrzmax[jl-1] = fmax(zfrz, 0.0);
-            } else {
-              // Majority of raindrops only partially melted 
-              // Refreeze with a shorter timescale (reverse of melting...for now)
-              zcons1 = fabs((ptsphy*(1.0 + 0.5*(rtt - ztp1[jk-1][jl-1])))/yrecldp->rtaumel);
-              zfrzmax[jl-1] = fmax(((rtt - ztp1[jk-1][jl-1])*zcons1)*zrldcp, 0.0);
-            }
-
-            if (zfrzmax[jl-1] > zepsec)
-            {
-              zfrz = fmin(zqx[3-1][jk-1][jl-1], zfrzmax[jl-1]);
-              zsolqa[3-1][4-1][jl-1] = zsolqa[3-1][4-1][jl-1] + zfrz;
-              zsolqa[4-1][3-1][jl-1] = zsolqa[4-1][3-1][jl-1] - zfrz;
-              if (llcldbudl)
-              {
-                zbudl[18-1][jl-1] = zfrz*zqtmst;
-              }
-
-            }
-
-          }
-
-        }
-
-      }
-
-      //----------------------------------------------------------------------
-      // 4.4c  FREEZING of LIQUID 
-      //----------------------------------------------------------------------
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        // not implicit yet... 
-        zfrzmax[jl-1] = fmax((yrecldp->rthomo - ztp1[jk-1][jl-1])*zrldcp, 0.0);
-      }
-
-      jm = 1;
-      jn = imelt[jm-1];
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (zfrzmax[jl-1] > zepsec && zqxfg[jm-1][jl-1] > zepsec)
-        {
-          zfrz = fmin(zqxfg[jm-1][jl-1], zfrzmax[jl-1]);
-          zsolqa[jm-1][jn-1][jl-1] = zsolqa[jm-1][jn-1][jl-1] + zfrz;
-          zsolqa[jn-1][jm-1][jl-1] = zsolqa[jn-1][jm-1][jl-1] - zfrz;
-          if (llcldbudl)
-          {
-            zbudl[19-1][jl-1] = zfrz*zqtmst;
-          }
-
-        }
-
-      }
-
-      //----------------------------------------------------------------------
-      // 4.5   EVAPORATION OF RAIN/SNOW
-      //----------------------------------------------------------------------
-      //----------------------------------------
-      // Rain evaporation scheme from Sundquist
-      //----------------------------------------
-      if (ievaprain == 1)
+      if (zliqcld[jl-1] > zepsec)
       {
-        // Rain
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
-          zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);
-          zqe = (zqx[5-1][jk-1][jl-1] - za[jk-1][jl-1]*zqsliq[jk-1][jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);            //---------------------------------------------
-          // humidity in moistest ZCOVPCLR part of domain
-          //---------------------------------------------
-          zqe = fmax(0.0, fmin(zqe, zqsliq[jk-1][jl-1]));
-          llo1 = zcovpclr[jl-1] > zepsec && zqxfg[3-1][jl-1] > zepsec && zqe < zzrh*zqsliq[jk-1][jl-1];
-          if (llo1)
-          {
-            // note: zpreclr is a rain flux
-            zpreclr = (zqxfg[3-1][jl-1]*zcovpclr[jl-1])*1.0/copysign(fmax(fabs(zcovptot[jl-1]*zdtgdp[jl-1]), zepsilon), zcovptot[jl-1]*zdtgdp[jl-1]);              //--------------------------------------
-            // actual microphysics formula in zbeta
-            //--------------------------------------
-            zbeta1 = ((sqrt(pap[jk-1][jl-1]/paph[klev+1-1][jl-1])/yrecldp->rvrfactor)*zpreclr)*1.0/fmax(zcovpclr[jl-1], zepsec);
-            zbeta = ((rg*yrecldp->rpecons)*0.5)*pow(zbeta1, 0.5777);
-            zdenom = 1.0 + (zbeta*ptsphy)*zcorqsliq[jl-1];
-            zdpr = ((((zcovpclr[jl-1]*zbeta)*(zqsliq[jk-1][jl-1] - zqe))/zdenom)*zdp[jl-1])*zrg_r;
-            zdpevap = zdpr*zdtgdp[jl-1];              //---------------------------------------------------------
-            // add evaporation term to explicit sink.
-            // this has to be explicit since if treated in the implicit
-            // term evaporation can not reduce rain to zero and model
-            // produces small amounts of rainfall everywhere. 
-            //---------------------------------------------------------
-            // Evaporate rain
-            zevap = fmin(zdpevap, zqxfg[3-1][jl-1]);
-            zsolqa[3-1][5-1][jl-1] = zsolqa[3-1][5-1][jl-1] + zevap;
-            zsolqa[5-1][3-1][jl-1] = zsolqa[5-1][3-1][jl-1] - zevap;              //IF (LLCLDBUDL) ZBUDL(JL,19)=-ZEVAP*ZQTMST
-            //-------------------------------------------------------------
-            // Reduce the total precip coverage proportional to evaporation
-            // to mimic the previous scheme which had a diagnostic
-            // 2-flux treatment, abandoned due to the new prognostic precip
-            //-------------------------------------------------------------
-            zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[3-1][jl-1]));              // Update fg field
-            zqxfg[3-1][jl-1] = zqxfg[3-1][jl-1] - zevap;
-          }
-
-        }
-
-        //---------------------------------------------------------
-        // Rain evaporation scheme based on Abel and Boutle (2013)
-        //---------------------------------------------------------
-      } else {
-        if (ievaprain == 2)
-        {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            //-----------------------------------------------------------------------
-            // Calculate relative humidity limit for rain evaporation 
-            // to avoid cloud formation and saturation of the grid box
-            //-----------------------------------------------------------------------
-            // Limit RH for rain evaporation dependent on precipitation fraction 
-            zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
-            zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);              // Critical relative humidity
-            //ZRHC=RAMID
-            //ZSIGK=PAP(JL,JK)/PAPH(JL,KLEV+1)
-            // Increase RHcrit to 1.0 towards the surface (eta>0.8)
-            //IF(ZSIGK > 0.8_JPRB) THEN
-            //  ZRHC=RAMID+(1.0_JPRB-RAMID)*((ZSIGK-0.8_JPRB)/0.2_JPRB)**2
-            //ENDIF
-            //ZZRH = MIN(ZRHC,ZZRH)
-            // Further limit RH for rain evaporation to 80% (RHcrit in free troposphere)
-            zzrh = fmin(0.8, zzrh);
-            zqe = fmax(0.0, fmin(zqx[5-1][jk-1][jl-1], zqsliq[jk-1][jl-1]));
-            llo1 = zcovpclr[jl-1] > zepsec && zqxfg[3-1][jl-1] > zepsec && zqe < zzrh*zqsliq[jk-1][jl-1];
-            if (llo1)
-            {
-              //-------------------------------------------
-              // Abel and Boutle (2012) evaporation
-              //-------------------------------------------
-              // Calculate local precipitation (kg/kg)
-              zpreclr = zqxfg[3-1][jl-1]/zcovptot[jl-1];                // Fallspeed air density correction 
-              zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], 0.4);                // Saturation vapour pressure with respect to liquid phase
-              zesatliq = (rv/rd)*(double)(r2es*exp((r3les*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4les)));                // Slope of particle size distribution
-              zlambda = pow(yrecldp->rcl_fac1/((zrho[jl-1]*zpreclr)), yrecldp->rcl_fac2);
-              zevap_denom = yrecldp->rcl_cdenom1*zesatliq - yrecldp->rcl_cdenom2*ztp1[jk-1][jl-1]*zesatliq + (yrecldp->rcl_cdenom3*pow(ztp1[jk-1][jl-1], 3.0))*pap[jk-1][jl-1];                // Temperature dependent conductivity
-              zcorr2 = (pow(ztp1[jk-1][jl-1]/273.0, 1.5)*393.0)/(ztp1[jk-1][jl-1] + 120.0);
-              zka = yrecldp->rcl_ka273*zcorr2;
-              zsubsat = fmax(zzrh*zqsliq[jk-1][jl-1] - zqe, 0.0);
-              zbeta = (((((0.5/zqsliq[jk-1][jl-1])*pow(ztp1[jk-1][jl-1], 2.0))*zesatliq)*yrecldp->rcl_const1r)*(zcorr2/zevap_denom))*(0.78/pow(zlambda, yrecldp->rcl_const4r) + (yrecldp->rcl_const2r*sqrt(zrho[jl-1]*zfallcorr))/((sqrt(zcorr2)*pow(zlambda, yrecldp->rcl_const3r))));
-              zdenom = 1.0 + zbeta*ptsphy;
-              zdpevap = (((zcovpclr[jl-1]*zbeta)*ptsphy)*zsubsat)/zdenom;                //---------------------------------------------------------
-              // Add evaporation term to explicit sink.
-              // this has to be explicit since if treated in the implicit
-              // term evaporation can not reduce rain to zero and model
-              // produces small amounts of rainfall everywhere. 
-              //---------------------------------------------------------
-              // Limit rain evaporation
-              zevap = fmin(zdpevap, zqxfg[3-1][jl-1]);
-              zsolqa[3-1][5-1][jl-1] = zsolqa[3-1][5-1][jl-1] + zevap;
-              zsolqa[5-1][3-1][jl-1] = zsolqa[5-1][3-1][jl-1] - zevap;                //IF (LLCLDBUDL) ZBUDL(JL,19)=-ZEVAP*ZQTMST
-              //-------------------------------------------------------------
-              // Reduce the total precip coverage proportional to evaporation
-              // to mimic the previous scheme which had a diagnostic
-              // 2-flux treatment, abandoned due to the new prognostic precip
-              //-------------------------------------------------------------
-              zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[3-1][jl-1]));                // Update fg field 
-              zqxfg[3-1][jl-1] = zqxfg[3-1][jl-1] - zevap;
-            }
-
-          }
-
-        }
-
-      }
-
-      //----------------------------------------------------------------------
-      // 4.5   EVAPORATION OF SNOW
-      //----------------------------------------------------------------------
-      // Snow
-      if (ievapsnow == 1)
-      {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
-          zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);
-          zqe = (zqx[5-1][jk-1][jl-1] - za[jk-1][jl-1]*zqsice[jk-1][jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);            //---------------------------------------------
-          // humidity in moistest ZCOVPCLR part of domain
-          //---------------------------------------------
-          zqe = fmax(0.0, fmin(zqe, zqsice[jk-1][jl-1]));
-          llo1 = zcovpclr[jl-1] > zepsec && zqxfg[4-1][jl-1] > zepsec && zqe < zzrh*zqsice[jk-1][jl-1];
-          if (llo1)
-          {
-            // note: zpreclr is a rain flux a
-            zpreclr = (zqxfg[4-1][jl-1]*zcovpclr[jl-1])*1.0/copysign(fmax(fabs(zcovptot[jl-1]*zdtgdp[jl-1]), zepsilon), zcovptot[jl-1]*zdtgdp[jl-1]);              //--------------------------------------
-            // actual microphysics formula in zbeta
-            //--------------------------------------
-            zbeta1 = ((sqrt(pap[jk-1][jl-1]/paph[klev+1-1][jl-1])/yrecldp->rvrfactor)*zpreclr)*1.0/fmax(zcovpclr[jl-1], zepsec);
-            zbeta = (rg*yrecldp->rpecons)*pow(zbeta1, 0.5777);
-            zdenom = 1.0 + (zbeta*ptsphy)*zcorqsice[jl-1];
-            zdpr = ((((zcovpclr[jl-1]*zbeta)*(zqsice[jk-1][jl-1] - zqe))/zdenom)*zdp[jl-1])*zrg_r;
-            zdpevap = zdpr*zdtgdp[jl-1];              //---------------------------------------------------------
-            // add evaporation term to explicit sink.
-            // this has to be explicit since if treated in the implicit
-            // term evaporation can not reduce snow to zero and model
-            // produces small amounts of snowfall everywhere. 
-            //---------------------------------------------------------
-            // Evaporate snow
-            zevap = fmin(zdpevap, zqxfg[4-1][jl-1]);
-            zsolqa[4-1][5-1][jl-1] = zsolqa[4-1][5-1][jl-1] + zevap;
-            zsolqa[5-1][4-1][jl-1] = zsolqa[5-1][4-1][jl-1] - zevap;              //IF (LLCLDBUDL) ZBUDi(JL,17)=-ZEVAP*ZQTMST
-            //-------------------------------------------------------------
-            // Reduce the total precip coverage proportional to evaporation
-            // to mimic the previous scheme which had a diagnostic
-            // 2-flux treatment, abandoned due to the new prognostic precip
-            //-------------------------------------------------------------
-            zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[4-1][jl-1]));              //Update first guess field
-            zqxfg[4-1][jl-1] = zqxfg[4-1][jl-1] - zevap;
-          }
-
-        }
-
-        //---------------------------------------------------------
-      } else {
-        if (ievapsnow == 2)
-        {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            //-----------------------------------------------------------------------
-            // Calculate relative humidity limit for snow evaporation 
-            //-----------------------------------------------------------------------
-            zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
-            zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);
-            zqe = (zqx[5-1][jk-1][jl-1] - za[jk-1][jl-1]*zqsice[jk-1][jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);              //---------------------------------------------
-            // humidity in moistest ZCOVPCLR part of domain
-            //---------------------------------------------
-            zqe = fmax(0.0, fmin(zqe, zqsice[jk-1][jl-1]));
-            llo1 = zcovpclr[jl-1] > zepsec && zqx[4-1][jk-1][jl-1] > zepsec && zqe < zzrh*zqsice[jk-1][jl-1];
-            if (llo1)
-            {
-              // Calculate local precipitation (kg/kg)
-              zpreclr = zqx[4-1][jk-1][jl-1]/zcovptot[jl-1];
-              zvpice = ((double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies)))*rv)/rd;                // Particle size distribution
-              // ZTCG increases Ni with colder temperatures - essentially a 
-              // Fletcher or Meyers scheme? 
-              ztcg = 1.0;                // ZFACX1I modification is based on Andrew Barrett's results
-              zfacx1s = 1.0;
-              zaplusb = yrecldp->rcl_apb1*zvpice - yrecldp->rcl_apb2*zvpice*ztp1[jk-1][jl-1] + (pap[jk-1][jl-1]*yrecldp->rcl_apb3)*pow(ztp1[jk-1][jl-1], 3);
-              zcorrfac = sqrt(1.0/zrho[jl-1]);
-              zcorrfac2 = pow(ztp1[jk-1][jl-1]/273.0, 1.5)*(393.0/(ztp1[jk-1][jl-1] + 120.0));
-              zpr02 = ((zrho[jl-1]*zpreclr)*yrecldp->rcl_const1s)/((ztcg*zfacx1s));
-              zterm1 = (((((((zqsice[jk-1][jl-1] - zqe)*pow(ztp1[jk-1][jl-1], 2))*zvpice)*zcorrfac2)*ztcg)*yrecldp->rcl_const2s)*zfacx1s)/(((zrho[jl-1]*zaplusb)*zqsice[jk-1][jl-1]));
-              zterm2 = (0.65*yrecldp->rcl_const6s)*pow(zpr02, yrecldp->rcl_const4s) + (((yrecldp->rcl_const3s*sqrt(zcorrfac))*sqrt(zrho[jl-1]))*pow(zpr02, yrecldp->rcl_const5s))/sqrt(zcorrfac2);
-              zdpevap = fmax(((zcovpclr[jl-1]*zterm1)*zterm2)*ptsphy, 0.0);                //--------------------------------------------------------------------
-              // Limit evaporation to snow amount
-              //--------------------------------------------------------------------
-              zevap = fmin(zdpevap, zevaplimice[jl-1]);
-              zevap = fmin(zevap, zqx[4-1][jk-1][jl-1]);
-              zsolqa[4-1][5-1][jl-1] = zsolqa[4-1][5-1][jl-1] + zevap;
-              zsolqa[5-1][4-1][jl-1] = zsolqa[5-1][4-1][jl-1] - zevap;                //IF (LLCLDBUDL) ZBUDi(JL,17)=-ZEVAP*ZQTMST
-              //-------------------------------------------------------------
-              // Reduce the total precip coverage proportional to evaporation
-              // to mimic the previous scheme which had a diagnostic
-              // 2-flux treatment, abandoned due to the new prognostic precip
-              //-------------------------------------------------------------
-              zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqx[4-1][jk-1][jl-1]));                //Update first guess field
-              zqxfg[4-1][jl-1] = zqxfg[4-1][jl-1] - zevap;
-            }
-
-          }
-
-        }
-
-      }
-
-      //--------------------------------------
-      // Evaporate small precipitation amounts
-      //--------------------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        if (llfall[jm-1])
-        {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            if (zqxfg[jm-1][jl-1] < yrecldp->rlmin)
-            {
-              zsolqa[jm-1][5-1][jl-1] = zsolqa[jm-1][5-1][jl-1] + zqxfg[jm-1][jl-1];
-              zsolqa[5-1][jm-1][jl-1] = zsolqa[5-1][jm-1][jl-1] - zqxfg[jm-1][jl-1];
-            }
-
-          }
-
-        }
-
-      }
-
-      //######################################################################
-      //            5.0  *** SOLVERS FOR A AND L ***
-      // now use an implicit solution rather than exact solution
-      // solver is forward in time, upstream difference for advection
-      //######################################################################
-      //---------------------------
-      // 5.1 solver for cloud cover
-      //---------------------------
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        zanew = (za[jk-1][jl-1] + zsolac[jl-1])/(1.0 + zsolab[jl-1]);
-        zanew = fmin(zanew, 1.0);
-        if (zanew < yrecldp->ramin)
-        {
-          zanew = 0.0;
-        }
-
-        zda[jl-1] = zanew - zaorig[jk-1][jl-1];          //---------------------------------
-        // variables needed for next level
-        //---------------------------------
-        zanewm1[jl-1] = zanew;
-      }
-
-      //--------------------------------
-      // 5.2 solver for the microphysics
-      //--------------------------------
-      //--------------------------------------------------------------
-      // Truncate explicit sinks to avoid negatives 
-      // Note: Species are treated in the order in which they run out
-      // since the clipping will alter the balance for the other vars
-      //--------------------------------------------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jn=1; jn<=5; jn+=1) {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            llindex3[jm-1][jn-1][jl-1] = false;
-          }
-
-        }
-
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zsinksum[jm-1][jl-1] = 0.0;
-        }
-
-      }
-
-      //----------------------------
-      // collect sink terms and mark
-      //----------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jn=1; jn<=5; jn+=1) {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            zsinksum[jm-1][jl-1] = zsinksum[jm-1][jl-1] - zsolqa[jn-1][jm-1][jl-1];
-          }
-
-        }
-
-      }
-
-      //---------------------------------------
-      // calculate overshoot and scaling factor
-      //---------------------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zmax = fmax(zqx[jm-1][jk-1][jl-1], zepsec);
-          zrat = fmax(zsinksum[jm-1][jl-1], zmax);
-          zratio[jm-1][jl-1] = zmax/zrat;
-        }
-
-      }
-
-      //--------------------------------------------
-      // scale the sink terms, in the correct order, 
-      // recalculating the scale factor each time
-      //--------------------------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zsinksum[jm-1][jl-1] = 0.0;
-        }
-
-      }
-
-      //----------------
-      // recalculate sum
-      //----------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (i_klon=1; i_klon<=klon; i_klon++) {
-          psum_solqa[i_klon-1] = 0.0;
-        }
-
-        for (jn=1; jn<=5; jn+=1) {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            psum_solqa[jl-1] = psum_solqa[jl-1] + zsolqa[jn-1][jm-1][jl-1];
-          }
-
-        }
-
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          // ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-SUM(ZSOLQA(JL,JM,1:NCLV))
-          zsinksum[jm-1][jl-1] = zsinksum[jm-1][jl-1] - psum_solqa[jl-1];
-        }
-
-        //---------------------------
-        // recalculate scaling factor
-        //---------------------------
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zmm = fmax(zqx[jm-1][jk-1][jl-1], zepsec);
-          zrr = fmax(zsinksum[jm-1][jl-1], zmm);
-          zratio[jm-1][jl-1] = zmm/zrr;
-        }
-
-        //------
-        // scale
-        //------
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zzratio = zratio[jm-1][jl-1];            //DIR$ IVDEP
-          //DIR$ PREFERVECTOR
-          for (jn=1; jn<=5; jn+=1) {
-            if (zsolqa[jn-1][jm-1][jl-1] < 0.0)
-            {
-              zsolqa[jn-1][jm-1][jl-1] = zsolqa[jn-1][jm-1][jl-1]*zzratio;
-              zsolqa[jm-1][jn-1][jl-1] = zsolqa[jm-1][jn-1][jl-1]*zzratio;
-            }
-
-          }
-
-        }
-
-      }
-
-      //--------------------------------------------------------------
-      // 5.2.2 Solver
-      //------------------------
-      //------------------------
-      // set the LHS of equation  
-      //------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jn=1; jn<=5; jn+=1) {
-          //----------------------------------------------
-          // diagonals: microphysical sink terms+transport
-          //----------------------------------------------
-          if (jn == jm)
-          {
-            for (jl=kidia; jl<=kfdia; jl+=1) {
-              zqlhs[jm-1][jn-1][jl-1] = 1.0 + zfallsink[jm-1][jl-1];
-              for (jo=1; jo<=5; jo+=1) {
-                zqlhs[jm-1][jn-1][jl-1] = zqlhs[jm-1][jn-1][jl-1] + zsolqb[jn-1][jo-1][jl-1];
-              }
-
-            }
-
-            //------------------------------------------
-            // non-diagonals: microphysical source terms
-            //------------------------------------------
-          } else {
-            for (jl=kidia; jl<=kfdia; jl+=1) {
-              zqlhs[jm-1][jn-1][jl-1] = -zsolqb[jm-1][jn-1][jl-1];
-            }
-
-          }
-
-        }
-
-      }
-
-      //------------------------
-      // set the RHS of equation  
-      //------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          //---------------------------------
-          // sum the explicit source and sink
-          //---------------------------------
-          zexplicit = 0.0;
-          for (jn=1; jn<=5; jn+=1) {
-            zexplicit = zexplicit + zsolqa[jn-1][jm-1][jl-1];
-          }
-
-          zqxn[jm-1][jl-1] = zqx[jm-1][jk-1][jl-1] + zexplicit;
-        }
-
-      }
-
-      //-----------------------------------
-      // *** solve by LU decomposition: ***
-      //-----------------------------------
-      // Note: This fast way of solving NCLVxNCLV system
-      //       assumes a good behaviour (i.e. non-zero diagonal
-      //       terms with comparable orders) of the matrix stored
-      //       in ZQLHS. For the moment this is the case but
-      //       be aware to preserve it when doing eventual 
-      //       modifications.
-      // Non pivoting recursive factorization 
-      for (jn=1; jn<=4; jn+=1) {
-        for (jm=jn + 1; jm<=5; jm+=1) {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            zqlhs[jn-1][jm-1][jl-1] = zqlhs[jn-1][jm-1][jl-1]/zqlhs[jn-1][jn-1][jl-1];
-          }
-
-          for (ik=jn + 1; ik<=5; ik+=1) {
-            for (jl=kidia; jl<=kfdia; jl+=1) {
-              zqlhs[ik-1][jm-1][jl-1] = zqlhs[ik-1][jm-1][jl-1] - zqlhs[jn-1][jm-1][jl-1]*zqlhs[ik-1][jn-1][jl-1];
-            }
-
-          }
-
-        }
-
-      }
-
-      // Backsubstitution 
-      //  step 1 
-      for (jn=2; jn<=5; jn+=1) {
-        for (jm=1; jm<=jn - 1; jm+=1) {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            zqxn[jn-1][jl-1] = zqxn[jn-1][jl-1] - zqlhs[jm-1][jn-1][jl-1]*zqxn[jm-1][jl-1];
-          }
-
-        }
-
-      }
-
-      //  step 2
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        zqxn[5-1][jl-1] = zqxn[5-1][jl-1]/zqlhs[5-1][5-1][jl-1];
-      }
-
-      for (jn=4; jn>=1; jn+=-1) {
-        for (jm=jn + 1; jm<=5; jm+=1) {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            zqxn[jn-1][jl-1] = zqxn[jn-1][jl-1] - zqlhs[jm-1][jn-1][jl-1]*zqxn[jm-1][jl-1];
-          }
-
-        }
-
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zqxn[jn-1][jl-1] = zqxn[jn-1][jl-1]/zqlhs[jn-1][jn-1][jl-1];
-        }
-
-      }
-
-      // Ensure no small values (including negatives) remain in cloud variables nor
-      // precipitation rates.
-      // Evaporate l,i,r,s to water vapour. Latent heating taken into account below
-      for (jn=1; jn<=4; jn+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          if (zqxn[jn-1][jl-1] < zepsec)
-          {
-            zqxn[5-1][jl-1] = zqxn[5-1][jl-1] + zqxn[jn-1][jl-1];
-            zqxn[jn-1][jl-1] = 0.0;
-          }
-
-        }
-
-      }
-
-      //--------------------------------
-      // variables needed for next level
-      //--------------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zqxnm1[jm-1][jl-1] = zqxn[jm-1][jl-1];
-          zqxn2d[jm-1][jk-1][jl-1] = zqxn[jm-1][jl-1];
-        }
-
-      }
-
-      //------------------------------------------------------------------------
-      // 5.3 Precipitation/sedimentation fluxes to next level
-      //     diagnostic precipitation fluxes
-      //     It is this scaled flux that must be used for source to next layer
-      //------------------------------------------------------------------------
-      for (jm=1; jm<=5; jm+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zpfplsx[jm-1][jk+1-1][jl-1] = (zfallsink[jm-1][jl-1]*zqxn[jm-1][jl-1])*zrdtgdp[jl-1];
-        }
-
-      }
-
-      // Ensure precipitation fraction is zero if no precipitation
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        zqpretot[jl-1] = zpfplsx[4-1][jk+1-1][jl-1] + zpfplsx[3-1][jk+1-1][jl-1];
-      }
-
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (zqpretot[jl-1] < zepsec)
-        {
-          zcovptot[jl-1] = 0.0;
-        }
-
-      }
-
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (ztp1[jk-1][jl-1] <= rtt)
-        {
-          // Store liq->snow autoconversion diagnostic if required
-          if (llcldbudl)
-          {
-            zbudl[15-1][jl-1] = -zrainaut[jl-1]*zqxn[1-1][jl-1]*zqtmst;
-          }
-
-        } else {
-          // Store liq->rain autoconversion diagnostic if required
-          if (llcldbudl)
-          {
-            zbudl[16-1][jl-1] = -zrainaut[jl-1]*zqxn[1-1][jl-1]*zqtmst;
-          }
-
-        }
-
-      }
-
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (llcldbudl)
-        {
-          zbudl[6-1][jl-1] = -zconvsink[1-1][jl-1]*zqxn[1-1][jl-1]*zqtmst;
-        }
-
-        if (llcldbudi)
-        {
-          zbudi[6-1][jl-1] = -zconvsink[2-1][jl-1]*zqxn[2-1][jl-1]*zqtmst;
-        }
-
-        if (llcldbudi)
-        {
-          zbudi[13-1][jl-1] = -zfallsink[2-1][jl-1]*zqxn[2-1][jl-1]*zqtmst;
-        }
-
-        if (llcldbudi)
-        {
-          zbudi[14-1][jl-1] = -zsnowaut[jl-1]*zqxn[2-1][jl-1]*zqtmst;
-        }
-
-      }
-
-      //######################################################################
-      //              6  *** UPDATE TENDANCIES ***
-      //######################################################################
-      //--------------------------------
-      // 6.1 Temperature and CLV budgets 
-      //--------------------------------
-      for (jm=1; jm<=4; jm+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          // calculate fluxes in and out of box for conservation of TL
-          zfluxq[jm-1][jl-1] = zpsupsatsrce[jm-1][jl-1] + zconvsrce[jm-1][jl-1] + zfallsrce[jm-1][jl-1] - (zfallsink[jm-1][jl-1] + zconvsink[jm-1][jl-1])*zqxn[jm-1][jl-1];
-        }
-
-        if (iphase[jm-1] == 1)
-        {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] + (ralvdcp*(zqxn[jm-1][jl-1] - zqx[jm-1][jk-1][jl-1] - zfluxq[jm-1][jl-1]))*zqtmst;
-          }
-
-        }
-
-        if (iphase[jm-1] == 2)
-        {
-          for (jl=kidia; jl<=kfdia; jl+=1) {
-            tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] + (ralsdcp*(zqxn[jm-1][jl-1] - zqx[jm-1][jk-1][jl-1] - zfluxq[jm-1][jl-1]))*zqtmst;
-          }
-
-        }
-
-        //----------------------------------------------------------------------
-        // New prognostic tendencies - ice,liquid rain,snow 
-        // Note: CLV arrays use PCLV in calculation of tendency while humidity
-        //       uses ZQX. This is due to clipping at start of cloudsc which
-        //       include the tendency already in tendency_loc%T and tendency_loc%q. ZQX was reset
-        //----------------------------------------------------------------------
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          tendency_loc_cld[jm-1][jk-1][jl-1] = tendency_loc_cld[jm-1][jk-1][jl-1] + (zqxn[jm-1][jl-1] - zqx0[jm-1][jk-1][jl-1])*zqtmst;
-        }
-
-      }
-
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        //----------------------
-        // 6.2 Humidity budget
-        //----------------------
-        tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + (zqxn[5-1][jl-1] - zqx[5-1][jk-1][jl-1])*zqtmst;          //-------------------
-        // 6.3 cloud cover 
-        //-----------------------
-        tendency_loc_a[jk-1][jl-1] = tendency_loc_a[jk-1][jl-1] + zda[jl-1]*zqtmst;          //------------------------------------------------------------------
-        // check for supersaturation when Semi-Langrangian advection is off
-        //------------------------------------------------------------------
-        if (!ldslphy)
-        {
-          zqnew = pq[jk-1][jl-1] + ptsphy*(tendency_loc_q[jk-1][jl-1] + tendency_cml_q[jk-1][jl-1]);
-          ztnew = pt[jk-1][jl-1] + ptsphy*(tendency_loc_t[jk-1][jl-1] + tendency_cml_t[jk-1][jl-1]);
-          zanew = pa[jk-1][jl-1] + ptsphy*(tendency_loc_a[jk-1][jl-1] + tendency_cml_a[jk-1][jl-1]);
-          zalfaw = (double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztnew)) - rtice)*rtwat_rtice_r, 2)));
-          if (yrecldp->nssopt == 0 || ztnew >= rtt)
-          {
-            zfac = 1.0;
-            zfaci = zqtmst;
-          } else {
-            zfac = zanew + (double)(fmin(rkoop1 - rkoop2*ztnew, (double)(r2es*exp((r3les*(ztnew - rtt))/(ztnew - r4les)))*1.0/(double)(r2es*exp((r3ies*(ztnew - rtt))/(ztnew - r4ies)))))*(1.0 - zanew);
-            zfaci = 1.0/yrecldp->rkooptau;
-          }
-
-          zqsat = (double)(r2es*((double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztnew)) - rtice)*rtwat_rtice_r, 2)))*exp((r3les*(ztnew - rtt))/(ztnew - r4les)) + (1.0 - (double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztnew)) - rtice)*rtwat_rtice_r, 2))))*exp((r3ies*(ztnew - rtt))/(ztnew - r4ies))))/pap[jk-1][jl-1];
-          zqsat = fmin(0.5, zqsat);
-          zqsat = zqsat/(1.0 - retv*zqsat);
-          if (zqnew > zfac*zqsat)
-          {
-            zcond = (zqnew - zfac*zqsat)/zcorqsmix[jl-1];
-            tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] - zcond*zqtmst;
-            tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] + ((double)((double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztp1[jk-1][jl-1])) - rtice)*rtwat_rtice_r, 2)))*ralvdcp + (1.0 - (double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztp1[jk-1][jl-1])) - rtice)*rtwat_rtice_r, 2))))*ralsdcp)*zcond)*zqtmst;
-            tendency_loc_a[jk-1][jl-1] = tendency_loc_a[jk-1][jl-1] + (1.0 - zanew)*zfaci;              //       ZQXN(JL,NCLDQL)=ZQXN(JL,NCLDQL)+ZCOND*ZALFAW
-            //       ZQXN(JL,NCLDQI)=ZQXN(JL,NCLDQI)+ZCOND*(1.0_JPRB-ZALFAW)
-            tendency_loc_cld[1-1][jk-1][jl-1] = tendency_loc_cld[1-1][jk-1][jl-1] + (zcond*zalfaw)*zqtmst;
-            tendency_loc_cld[2-1][jk-1][jl-1] = tendency_loc_cld[2-1][jk-1][jl-1] + (zcond*(1.0 - zalfaw))*zqtmst;
-          }
-
-        }
+	//--------------------------------------------------------
+	//-
+	//- Warm-rain process follow Sundqvist (1989)
+	//-
+	//--------------------------------------------------------
+	if (iwarmrain == 1)
+	{
+	  zzco = yrecldp->rkconv*ptsphy;
+	  if (yrecldp->laerliqautolsp)
+	  {
+	    zlcrit = plcrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=125 cm-3 
+	    zzco = zzco*pow(yrecldp->rccn/pccn[jk-1][jl-1], 0.333);
+	  } else {
+	    // Modify autoconversion threshold dependent on: 
+	    //  land (polluted, high CCN, smaller droplets, higher threshold)
+	    //  sea  (clean, low CCN, larger droplets, lower threshold)
+	    if (plsm[jl-1] > 0.5)
+	    {
+	      zlcrit = yrecldp->rclcrit_land;
+	    } else {
+	      zlcrit = yrecldp->rclcrit_sea;
+	    }
+
+	  }
+
+	  //------------------------------------------------------------------
+	  // Parameters for cloud collection by rain and snow.
+	  // Note that with new prognostic variable it is now possible 
+	  // to REPLACE this with an explicit collection parametrization
+	  //------------------------------------------------------------------   
+	  zprecip = (zpfplsx[4-1][jk-1][jl-1] + zpfplsx[3-1][jk-1][jl-1])*1.0/fmax(zepsec, zcovptot[jl-1]);
+	  zcfpr = 1.0 + yrecldp->rprc1*sqrt(fmax(zprecip, 0.0));              //      ZCFPR=1.0_JPRB + RPRC1*SQRT(MAX(ZPRECIP,0.0_JPRB))*&
+	  //       &ZCOVPTOT(JL)/(MAX(ZA(JL,JK),ZEPSEC))
+	  if (yrecldp->laerliqcoll)
+	  {
+	    // 5.0 = N**0.333 with N=125 cm-3 
+	    zcfpr = zcfpr*pow(yrecldp->rccn/pccn[jk-1][jl-1], 0.333);
+	  }
+
+	  zzco = zzco*zcfpr;
+	  zlcrit = zlcrit*1.0/fmax(zcfpr, zepsec);
+	  if (zliqcld[jl-1]/zlcrit < 20.0)
+	  {
+	    zrainaut[jl-1] = zzco*(1.0 - exp(-pow(zliqcld[jl-1]/zlcrit, 2)));
+	  } else {
+	    zrainaut[jl-1] = zzco;
+	  }
+
+	  // rain freezes instantly
+	  if (ztp1[jk-1][jl-1] <= rtt)
+	  {
+	    zsolqb[1-1][4-1][jl-1] = zsolqb[1-1][4-1][jl-1] + zrainaut[jl-1];
+	  } else {
+	    zsolqb[1-1][3-1][jl-1] = zsolqb[1-1][3-1][jl-1] + zrainaut[jl-1];
+	  }
+
+	  //--------------------------------------------------------
+	  //-
+	  //- Warm-rain process follow Khairoutdinov and Kogan (2000)
+	  //-
+	  //--------------------------------------------------------
+	} else {
+	  if (iwarmrain == 2)
+	  {
+	    if (plsm[jl-1] > 0.5)
+	    {
+	      zconst = yrecldp->rcl_kk_cloud_num_land;
+	      zlcrit = yrecldp->rclcrit_land;
+	    } else {
+	      zconst = yrecldp->rcl_kk_cloud_num_sea;
+	      zlcrit = yrecldp->rclcrit_sea;
+	    }
+
+	    if (zliqcld[jl-1] > zlcrit)
+	    {
+	      zrainaut[jl-1] = ((((1.5*za[jk-1][jl-1])*ptsphy)*yrecldp->rcl_kkaau)*pow(zliqcld[jl-1], yrecldp->rcl_kkbauq))*pow(zconst, yrecldp->rcl_kkbaun);
+	      zrainaut[jl-1] = fmin(zrainaut[jl-1], zqxfg[1-1][jl-1]);
+	      if (zrainaut[jl-1] < zepsec)
+	      {
+		zrainaut[jl-1] = 0.0;
+	      }
+
+	      zrainacc[jl-1] = (((2.0*za[jk-1][jl-1])*ptsphy)*yrecldp->rcl_kkaac)*pow(zliqcld[jl-1]*zraincld[jl-1], yrecldp->rcl_kkbac);
+	      zrainacc[jl-1] = fmin(zrainacc[jl-1], zqxfg[1-1][jl-1]);
+	      if (zrainacc[jl-1] < zepsec)
+	      {
+		zrainacc[jl-1] = 0.0;
+	      }
+
+	    } else {
+	      zrainaut[jl-1] = 0.0;
+	      zrainacc[jl-1] = 0.0;
+	    }
+
+	    // If temperature < 0, then autoconversion produces snow rather than rain
+	    // Explicit
+	    if (ztp1[jk-1][jl-1] <= rtt)
+	    {
+	      zsolqa[1-1][4-1][jl-1] = zsolqa[1-1][4-1][jl-1] + zrainaut[jl-1];
+	      zsolqa[1-1][4-1][jl-1] = zsolqa[1-1][4-1][jl-1] + zrainacc[jl-1];
+	      zsolqa[4-1][1-1][jl-1] = zsolqa[4-1][1-1][jl-1] - zrainaut[jl-1];
+	      zsolqa[4-1][1-1][jl-1] = zsolqa[4-1][1-1][jl-1] - zrainacc[jl-1];
+	    } else {
+	      zsolqa[1-1][3-1][jl-1] = zsolqa[1-1][3-1][jl-1] + zrainaut[jl-1];
+	      zsolqa[1-1][3-1][jl-1] = zsolqa[1-1][3-1][jl-1] + zrainacc[jl-1];
+	      zsolqa[3-1][1-1][jl-1] = zsolqa[3-1][1-1][jl-1] - zrainaut[jl-1];
+	      zsolqa[3-1][1-1][jl-1] = zsolqa[3-1][1-1][jl-1] - zrainacc[jl-1];
+	    }
+
+	  }
+
+	}
 
       }
 
     }
 
-    //------------------------------------------------------------------
-    // Add tendencies for first guess call of cloud scheme only
-    //------------------------------------------------------------------
-    if (!ldmaincall)
+    //----------------------------------------------------------------------
+    // RIMING - COLLECTION OF CLOUD LIQUID DROPS BY SNOW AND ICE
+    //      only active if T<0degC and supercooled liquid water is present
+    //      AND if not Sundquist autoconversion (as this includes riming)
+    //----------------------------------------------------------------------
+    if (iwarmrain > 1)
     {
       for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (ztp1[jk-1][jl-1] > yrecldp->rthomo)
-        {
-          tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] + (ralvdcp*(zlcond1[jl-1] + zlcond2[jl-1] + zsupsat[jl-1]))*zqtmst;
-        } else {
-          tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] + (ralsdcp*(zlcond1[jl-1] + zlcond2[jl-1] + zsupsat[jl-1]))*zqtmst;
-        }
+	if (ztp1[jk-1][jl-1] <= rtt && zliqcld[jl-1] > zepsec)
+	{
+	  // Fallspeed air density correction 
+	  zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], 0.4);              //------------------------------------------------------------------
+	  // Riming of snow by cloud water - implicit in lwc
+	  //------------------------------------------------------------------
+	  if (zcovptot[jl-1] > 0.01 && zsnowcld[jl-1] > zepsec)
+	  {
+	    // Calculate riming term
+	    // Factor of liq water taken out because implicit
+	    zsnowrime[jl-1] = ((((0.3*zcovptot[jl-1])*ptsphy)*yrecldp->rcl_const7s)*zfallcorr)*pow((zrho[jl-1]*zsnowcld[jl-1])*yrecldp->rcl_const1s, yrecldp->rcl_const8s);                // Limit snow riming term
+	    zsnowrime[jl-1] = fmin(zsnowrime[jl-1], 1.0);
+	    zsolqb[1-1][4-1][jl-1] = zsolqb[1-1][4-1][jl-1] + zsnowrime[jl-1];
+	  }
 
-        // Add evaporation
-        tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] - (ralvdcp*zlevapl[jl-1] + ralsdcp*zlevapi[jl-1])*zqtmst;
-        tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] - (zlcond1[jl-1] + zlcond2[jl-1] + zsupsat[jl-1] - zlevapl[jl-1] - zlevapi[jl-1])*zqtmst;          // cloud cover
-        zanew = (za[jk-1][jl-1] + zsolac[jl-1])/(1.0 + zsolab[jl-1]);
-        zanew = fmin(zanew, 1.0);
-        if (zanew < yrecldp->ramin)
-        {
-          zanew = 0.0;
-        }
+	  //------------------------------------------------------------------
+	  // Riming of ice by cloud water - implicit in lwc
+	  // NOT YET ACTIVE
+	  //------------------------------------------------------------------
+	  //      IF (ZICECLD(JL)>ZEPSEC .AND. ZA(JL,JK)>0.01_JPRB) THEN
+	  //
+	  //        // Calculate riming term
+	  //        // Factor of liq water taken out because implicit
+	  //        ZSNOWRIME(JL) = ZA(JL,JK)*PTSPHY*RCL_CONST7S*ZFALLCORR &
+	  //     &                  *(ZRHO(JL)*ZICECLD(JL)*RCL_CONST1S)**RCL_CONST8S
+	  //
+	  //        // Limit ice riming term
+	  //        ZSNOWRIME(JL)=MIN(ZSNOWRIME(JL),1.0_JPRB)
+	  //
+	  //        ZSOLQB(JL,NCLDQI,NCLDQL) = ZSOLQB(JL,NCLDQI,NCLDQL) + ZSNOWRIME(JL)
+	  //
+	  //      ENDIF
+	}
 
-        zda[jl-1] = zanew - zaorig[jk-1][jl-1];
-        tendency_loc_a[jk-1][jl-1] = tendency_loc_a[jk-1][jl-1] + zda[jl-1]*zqtmst;          // sustained cloud liquid and ice phase
-        if (ztp1[jk-1][jl-1] > yrecldp->rthomo)
-        {
-          tendency_loc_cld[1-1][jk-1][jl-1] = tendency_loc_cld[1-1][jk-1][jl-1] + (zlcond1[jl-1] + zlcond2[jl-1] + zsupsat[jl-1])*zqtmst;
-        } else {
-          tendency_loc_cld[2-1][jk-1][jl-1] = tendency_loc_cld[2-1][jk-1][jl-1] + (zlcond1[jl-1] + zlcond2[jl-1] + zsupsat[jl-1])*zqtmst;
-        }
-
-        tendency_loc_cld[1-1][jk-1][jl-1] = tendency_loc_cld[1-1][jk-1][jl-1] - zlevapl[jl-1]*zqtmst;
-        tendency_loc_cld[2-1][jk-1][jl-1] = tendency_loc_cld[2-1][jk-1][jl-1] - zlevapi[jl-1]*zqtmst;
       }
 
+    }
+
+    //----------------------------------------------------------------------
+    // 4.4a  MELTING OF SNOW and ICE
+    //       with new implicit solver this also has to treat snow or ice
+    //       precipitating from the level above... i.e. local ice AND flux.
+    //       in situ ice and snow: could arise from LS advection or warming
+    //       falling ice and snow: arrives by precipitation process
+    //----------------------------------------------------------------------
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      zicetot[jl-1] = zqxfg[2-1][jl-1] + zqxfg[4-1][jl-1];
+      zmeltmax[jl-1] = 0.0;          // If there are frozen hydrometeors present and dry-bulb temperature > 0degC
+      if (zicetot[jl-1] > zepsec && ztp1[jk-1][jl-1] > rtt)
+      {
+	// Calculate subsaturation
+	zsubsat = fmax(zqsice[jk-1][jl-1] - zqx[5-1][jk-1][jl-1], 0.0);            // Calculate difference between dry-bulb (ZTP1) and the temperature 
+	// at which the wet-bulb=0degC (RTT-ZSUBSAT*....) using an approx.
+	// Melting only occurs if the wet-bulb temperature >0
+	// i.e. warming of ice particle due to melting > cooling 
+	// due to evaporation.
+	ztdmtw0 = ztp1[jk-1][jl-1] - rtt - zsubsat*(ztw1 + ztw2*(pap[jk-1][jl-1] - ztw3) - ztw4*(ztp1[jk-1][jl-1] - ztw5));            // Not implicit yet... 
+	// Ensure ZCONS1 is positive so that ZMELTMAX=0 if ZTDMTW0<0
+	zcons1 = fabs((ptsphy*(1.0 + 0.5*ztdmtw0))/yrecldp->rtaumel);
+	zmeltmax[jl-1] = fmax((ztdmtw0*zcons1)*zrldcp, 0.0);
+      }
+
+    }
+
+    // Loop over frozen hydrometeors (ice, snow)
+    for (jm=1; jm<=5; jm+=1) {
+      if (iphase[jm-1] == 2)
+      {
+	jn = imelt[jm-1];
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  if (zicetot[jl-1] > zepsec && zmeltmax[jl-1] > zepsec)
+	  {
+	    // Apply melting in same proportion as frozen hydrometeor fractions 
+	    zalfa = zqxfg[jm-1][jl-1]/zicetot[jl-1];
+	    zmelt = fmin(zqxfg[jm-1][jl-1], zalfa*zmeltmax[jl-1]);                // needed in first guess
+	    // This implies that zqpretot has to be recalculated below
+	    // since is not conserved here if ice falls and liquid doesn't
+	    zqxfg[jm-1][jl-1] = zqxfg[jm-1][jl-1] - zmelt;
+	    zqxfg[jn-1][jl-1] = zqxfg[jn-1][jl-1] + zmelt;
+	    zsolqa[jm-1][jn-1][jl-1] = zsolqa[jm-1][jn-1][jl-1] + zmelt;
+	    zsolqa[jn-1][jm-1][jl-1] = zsolqa[jn-1][jm-1][jl-1] - zmelt;
+	  }
+
+	}
+
+      }
+
+    }
+
+    //----------------------------------------------------------------------
+    // 4.4b  FREEZING of RAIN
+    //----------------------------------------------------------------------
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      // If rain present
+      if (zqx[3-1][jk-1][jl-1] > zepsec)
+      {
+	if (ztp1[jk-1][jl-1] <= rtt && ztp1[jk-1-1][jl-1] > rtt)
+	{
+	  // Base of melting layer/top of refreezing layer so
+	  // store rain/snow fraction for precip type diagnosis
+	  // If mostly rain, then supercooled rain slow to freeze
+	  // otherwise faster to freeze (snow or ice pellets)
+	  zqpretot[jl-1] = fmax(zqx[4-1][jk-1][jl-1] + zqx[3-1][jk-1][jl-1], zepsec);
+	  prainfrac_toprfz[jl-1] = zqx[3-1][jk-1][jl-1]/zqpretot[jl-1];
+	}
+
+	// If temperature less than zero
+	if (ztp1[jk-1][jl-1] < rtt)
+	{
+	  if (prainfrac_toprfz[jl-1] > 0.8)
+	  {
+	    // Majority of raindrops completely melted
+	    // Refreezing is by slow heterogeneous freezing
+	    // Slope of rain particle size distribution
+	    zlambda = pow(yrecldp->rcl_fac1/((zrho[jl-1]*zqx[3-1][jk-1][jl-1])), yrecldp->rcl_fac2);                // Calculate freezing rate based on Bigg(1953) and Wisner(1972)
+	    ztemp = yrecldp->rcl_fzrab*(ztp1[jk-1][jl-1] - rtt);
+	    zfrz = ((ptsphy*(yrecldp->rcl_const5r/zrho[jl-1]))*(exp(ztemp) - 1.0))*pow(zlambda, yrecldp->rcl_const6r);
+	    zfrzmax[jl-1] = fmax(zfrz, 0.0);
+	  } else {
+	    // Majority of raindrops only partially melted 
+	    // Refreeze with a shorter timescale (reverse of melting...for now)
+	    zcons1 = fabs((ptsphy*(1.0 + 0.5*(rtt - ztp1[jk-1][jl-1])))/yrecldp->rtaumel);
+	    zfrzmax[jl-1] = fmax(((rtt - ztp1[jk-1][jl-1])*zcons1)*zrldcp, 0.0);
+	  }
+
+	  if (zfrzmax[jl-1] > zepsec)
+	  {
+	    zfrz = fmin(zqx[3-1][jk-1][jl-1], zfrzmax[jl-1]);
+	    zsolqa[3-1][4-1][jl-1] = zsolqa[3-1][4-1][jl-1] + zfrz;
+	    zsolqa[4-1][3-1][jl-1] = zsolqa[4-1][3-1][jl-1] - zfrz;
+	  }
+
+	}
+
+      }
+
+    }
+
+    //----------------------------------------------------------------------
+    // 4.4c  FREEZING of LIQUID 
+    //----------------------------------------------------------------------
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      // not implicit yet... 
+      zfrzmax[jl-1] = fmax((yrecldp->rthomo - ztp1[jk-1][jl-1])*zrldcp, 0.0);
+    }
+
+    jm = 1;
+    jn = imelt[jm-1];
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      if (zfrzmax[jl-1] > zepsec && zqxfg[jm-1][jl-1] > zepsec)
+      {
+	zfrz = fmin(zqxfg[jm-1][jl-1], zfrzmax[jl-1]);
+	zsolqa[jm-1][jn-1][jl-1] = zsolqa[jm-1][jn-1][jl-1] + zfrz;
+	zsolqa[jn-1][jm-1][jl-1] = zsolqa[jn-1][jm-1][jl-1] - zfrz;
+      }
+
+    }
+
+    //----------------------------------------------------------------------
+    // 4.5   EVAPORATION OF RAIN/SNOW
+    //----------------------------------------------------------------------
+    //----------------------------------------
+    // Rain evaporation scheme from Sundquist
+    //----------------------------------------
+    if (ievaprain == 1)
+    {
+      // Rain
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
+	zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);
+	zqe = (zqx[5-1][jk-1][jl-1] - za[jk-1][jl-1]*zqsliq[jk-1][jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);            //---------------------------------------------
+	// humidity in moistest ZCOVPCLR part of domain
+	//---------------------------------------------
+	zqe = fmax(0.0, fmin(zqe, zqsliq[jk-1][jl-1]));
+	llo1 = zcovpclr[jl-1] > zepsec && zqxfg[3-1][jl-1] > zepsec && zqe < zzrh*zqsliq[jk-1][jl-1];
+	if (llo1)
+	{
+	  // note: zpreclr is a rain flux
+	  zpreclr = (zqxfg[3-1][jl-1]*zcovpclr[jl-1])*1.0/copysign(fmax(fabs(zcovptot[jl-1]*zdtgdp[jl-1]), zepsilon), zcovptot[jl-1]*zdtgdp[jl-1]);              //--------------------------------------
+	  // actual microphysics formula in zbeta
+	  //--------------------------------------
+	  zbeta1 = ((sqrt(pap[jk-1][jl-1]/paph[klev+1-1][jl-1])/yrecldp->rvrfactor)*zpreclr)*1.0/fmax(zcovpclr[jl-1], zepsec);
+	  zbeta = ((rg*yrecldp->rpecons)*0.5)*pow(zbeta1, 0.5777);
+	  zdenom = 1.0 + (zbeta*ptsphy)*zcorqsliq[jl-1];
+	  zdpr = ((((zcovpclr[jl-1]*zbeta)*(zqsliq[jk-1][jl-1] - zqe))/zdenom)*zdp[jl-1])*zrg_r;
+	  zdpevap = zdpr*zdtgdp[jl-1];              //---------------------------------------------------------
+	  // add evaporation term to explicit sink.
+	  // this has to be explicit since if treated in the implicit
+	  // term evaporation can not reduce rain to zero and model
+	  // produces small amounts of rainfall everywhere. 
+	  //---------------------------------------------------------
+	  // Evaporate rain
+	  zevap = fmin(zdpevap, zqxfg[3-1][jl-1]);
+	  zsolqa[3-1][5-1][jl-1] = zsolqa[3-1][5-1][jl-1] + zevap;
+	  zsolqa[5-1][3-1][jl-1] = zsolqa[5-1][3-1][jl-1] - zevap;              //IF (LLCLDBUDL) ZBUDL(JL,19)=-ZEVAP*ZQTMST
+	  //-------------------------------------------------------------
+	  // Reduce the total precip coverage proportional to evaporation
+	  // to mimic the previous scheme which had a diagnostic
+	  // 2-flux treatment, abandoned due to the new prognostic precip
+	  //-------------------------------------------------------------
+	  zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[3-1][jl-1]));              // Update fg field
+	  zqxfg[3-1][jl-1] = zqxfg[3-1][jl-1] - zevap;
+	}
+
+      }
+
+      //---------------------------------------------------------
+      // Rain evaporation scheme based on Abel and Boutle (2013)
+      //---------------------------------------------------------
+    } else {
+      if (ievaprain == 2)
+      {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  //-----------------------------------------------------------------------
+	  // Calculate relative humidity limit for rain evaporation 
+	  // to avoid cloud formation and saturation of the grid box
+	  //-----------------------------------------------------------------------
+	  // Limit RH for rain evaporation dependent on precipitation fraction 
+	  zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
+	  zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);              // Critical relative humidity
+	  //ZRHC=RAMID
+	  //ZSIGK=PAP(JL,JK)/PAPH(JL,KLEV+1)
+	  // Increase RHcrit to 1.0 towards the surface (eta>0.8)
+	  //IF(ZSIGK > 0.8_JPRB) THEN
+	  //  ZRHC=RAMID+(1.0_JPRB-RAMID)*((ZSIGK-0.8_JPRB)/0.2_JPRB)**2
+	  //ENDIF
+	  //ZZRH = MIN(ZRHC,ZZRH)
+	  // Further limit RH for rain evaporation to 80% (RHcrit in free troposphere)
+	  zzrh = fmin(0.8, zzrh);
+	  zqe = fmax(0.0, fmin(zqx[5-1][jk-1][jl-1], zqsliq[jk-1][jl-1]));
+	  llo1 = zcovpclr[jl-1] > zepsec && zqxfg[3-1][jl-1] > zepsec && zqe < zzrh*zqsliq[jk-1][jl-1];
+	  if (llo1)
+	  {
+	    //-------------------------------------------
+	    // Abel and Boutle (2012) evaporation
+	    //-------------------------------------------
+	    // Calculate local precipitation (kg/kg)
+	    zpreclr = zqxfg[3-1][jl-1]/zcovptot[jl-1];                // Fallspeed air density correction 
+	    zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], 0.4);                // Saturation vapour pressure with respect to liquid phase
+	    zesatliq = (rv/rd)*(double)(r2es*exp((r3les*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4les)));                // Slope of particle size distribution
+	    zlambda = pow(yrecldp->rcl_fac1/((zrho[jl-1]*zpreclr)), yrecldp->rcl_fac2);
+	    zevap_denom = yrecldp->rcl_cdenom1*zesatliq - yrecldp->rcl_cdenom2*ztp1[jk-1][jl-1]*zesatliq + (yrecldp->rcl_cdenom3*pow(ztp1[jk-1][jl-1], 3.0))*pap[jk-1][jl-1];                // Temperature dependent conductivity
+	    zcorr2 = (pow(ztp1[jk-1][jl-1]/273.0, 1.5)*393.0)/(ztp1[jk-1][jl-1] + 120.0);
+	    zka = yrecldp->rcl_ka273*zcorr2;
+	    zsubsat = fmax(zzrh*zqsliq[jk-1][jl-1] - zqe, 0.0);
+	    zbeta = (((((0.5/zqsliq[jk-1][jl-1])*pow(ztp1[jk-1][jl-1], 2.0))*zesatliq)*yrecldp->rcl_const1r)*(zcorr2/zevap_denom))*(0.78/pow(zlambda, yrecldp->rcl_const4r) + (yrecldp->rcl_const2r*sqrt(zrho[jl-1]*zfallcorr))/((sqrt(zcorr2)*pow(zlambda, yrecldp->rcl_const3r))));
+	    zdenom = 1.0 + zbeta*ptsphy;
+	    zdpevap = (((zcovpclr[jl-1]*zbeta)*ptsphy)*zsubsat)/zdenom;                //---------------------------------------------------------
+	    // Add evaporation term to explicit sink.
+	    // this has to be explicit since if treated in the implicit
+	    // term evaporation can not reduce rain to zero and model
+	    // produces small amounts of rainfall everywhere. 
+	    //---------------------------------------------------------
+	    // Limit rain evaporation
+	    zevap = fmin(zdpevap, zqxfg[3-1][jl-1]);
+	    zsolqa[3-1][5-1][jl-1] = zsolqa[3-1][5-1][jl-1] + zevap;
+	    zsolqa[5-1][3-1][jl-1] = zsolqa[5-1][3-1][jl-1] - zevap;                //IF (LLCLDBUDL) ZBUDL(JL,19)=-ZEVAP*ZQTMST
+	    //-------------------------------------------------------------
+	    // Reduce the total precip coverage proportional to evaporation
+	    // to mimic the previous scheme which had a diagnostic
+	    // 2-flux treatment, abandoned due to the new prognostic precip
+	    //-------------------------------------------------------------
+	    zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[3-1][jl-1]));                // Update fg field 
+	    zqxfg[3-1][jl-1] = zqxfg[3-1][jl-1] - zevap;
+	  }
+
+	}
+
+      }
+
+    }
+
+    //----------------------------------------------------------------------
+    // 4.5   EVAPORATION OF SNOW
+    //----------------------------------------------------------------------
+    // Snow
+    if (ievapsnow == 1)
+    {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
+	zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);
+	zqe = (zqx[5-1][jk-1][jl-1] - za[jk-1][jl-1]*zqsice[jk-1][jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);            //---------------------------------------------
+	// humidity in moistest ZCOVPCLR part of domain
+	//---------------------------------------------
+	zqe = fmax(0.0, fmin(zqe, zqsice[jk-1][jl-1]));
+	llo1 = zcovpclr[jl-1] > zepsec && zqxfg[4-1][jl-1] > zepsec && zqe < zzrh*zqsice[jk-1][jl-1];
+	if (llo1)
+	{
+	  // note: zpreclr is a rain flux a
+	  zpreclr = (zqxfg[4-1][jl-1]*zcovpclr[jl-1])*1.0/copysign(fmax(fabs(zcovptot[jl-1]*zdtgdp[jl-1]), zepsilon), zcovptot[jl-1]*zdtgdp[jl-1]);              //--------------------------------------
+	  // actual microphysics formula in zbeta
+	  //--------------------------------------
+	  zbeta1 = ((sqrt(pap[jk-1][jl-1]/paph[klev+1-1][jl-1])/yrecldp->rvrfactor)*zpreclr)*1.0/fmax(zcovpclr[jl-1], zepsec);
+	  zbeta = (rg*yrecldp->rpecons)*pow(zbeta1, 0.5777);
+	  zdenom = 1.0 + (zbeta*ptsphy)*zcorqsice[jl-1];
+	  zdpr = ((((zcovpclr[jl-1]*zbeta)*(zqsice[jk-1][jl-1] - zqe))/zdenom)*zdp[jl-1])*zrg_r;
+	  zdpevap = zdpr*zdtgdp[jl-1];              //---------------------------------------------------------
+	  // add evaporation term to explicit sink.
+	  // this has to be explicit since if treated in the implicit
+	  // term evaporation can not reduce snow to zero and model
+	  // produces small amounts of snowfall everywhere. 
+	  //---------------------------------------------------------
+	  // Evaporate snow
+	  zevap = fmin(zdpevap, zqxfg[4-1][jl-1]);
+	  zsolqa[4-1][5-1][jl-1] = zsolqa[4-1][5-1][jl-1] + zevap;
+	  zsolqa[5-1][4-1][jl-1] = zsolqa[5-1][4-1][jl-1] - zevap;              //IF (LLCLDBUDL) ZBUDi(JL,17)=-ZEVAP*ZQTMST
+	  //-------------------------------------------------------------
+	  // Reduce the total precip coverage proportional to evaporation
+	  // to mimic the previous scheme which had a diagnostic
+	  // 2-flux treatment, abandoned due to the new prognostic precip
+	  //-------------------------------------------------------------
+	  zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[4-1][jl-1]));              //Update first guess field
+	  zqxfg[4-1][jl-1] = zqxfg[4-1][jl-1] - zevap;
+	}
+
+      }
+
+      //---------------------------------------------------------
+    } else {
+      if (ievapsnow == 2)
+      {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  //-----------------------------------------------------------------------
+	  // Calculate relative humidity limit for snow evaporation 
+	  //-----------------------------------------------------------------------
+	  zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
+	  zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);
+	  zqe = (zqx[5-1][jk-1][jl-1] - za[jk-1][jl-1]*zqsice[jk-1][jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);              //---------------------------------------------
+	  // humidity in moistest ZCOVPCLR part of domain
+	  //---------------------------------------------
+	  zqe = fmax(0.0, fmin(zqe, zqsice[jk-1][jl-1]));
+	  llo1 = zcovpclr[jl-1] > zepsec && zqx[4-1][jk-1][jl-1] > zepsec && zqe < zzrh*zqsice[jk-1][jl-1];
+	  if (llo1)
+	  {
+	    // Calculate local precipitation (kg/kg)
+	    zpreclr = zqx[4-1][jk-1][jl-1]/zcovptot[jl-1];
+	    zvpice = ((double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies)))*rv)/rd;                // Particle size distribution
+	    // ZTCG increases Ni with colder temperatures - essentially a 
+	    // Fletcher or Meyers scheme? 
+	    ztcg = 1.0;                // ZFACX1I modification is based on Andrew Barrett's results
+	    zfacx1s = 1.0;
+	    zaplusb = yrecldp->rcl_apb1*zvpice - yrecldp->rcl_apb2*zvpice*ztp1[jk-1][jl-1] + (pap[jk-1][jl-1]*yrecldp->rcl_apb3)*pow(ztp1[jk-1][jl-1], 3);
+	    zcorrfac = sqrt(1.0/zrho[jl-1]);
+	    zcorrfac2 = pow(ztp1[jk-1][jl-1]/273.0, 1.5)*(393.0/(ztp1[jk-1][jl-1] + 120.0));
+	    zpr02 = ((zrho[jl-1]*zpreclr)*yrecldp->rcl_const1s)/((ztcg*zfacx1s));
+	    zterm1 = (((((((zqsice[jk-1][jl-1] - zqe)*pow(ztp1[jk-1][jl-1], 2))*zvpice)*zcorrfac2)*ztcg)*yrecldp->rcl_const2s)*zfacx1s)/(((zrho[jl-1]*zaplusb)*zqsice[jk-1][jl-1]));
+	    zterm2 = (0.65*yrecldp->rcl_const6s)*pow(zpr02, yrecldp->rcl_const4s) + (((yrecldp->rcl_const3s*sqrt(zcorrfac))*sqrt(zrho[jl-1]))*pow(zpr02, yrecldp->rcl_const5s))/sqrt(zcorrfac2);
+	    zdpevap = fmax(((zcovpclr[jl-1]*zterm1)*zterm2)*ptsphy, 0.0);                //--------------------------------------------------------------------
+	    // Limit evaporation to snow amount
+	    //--------------------------------------------------------------------
+	    zevap = fmin(zdpevap, zevaplimice[jl-1]);
+	    zevap = fmin(zevap, zqx[4-1][jk-1][jl-1]);
+	    zsolqa[4-1][5-1][jl-1] = zsolqa[4-1][5-1][jl-1] + zevap;
+	    zsolqa[5-1][4-1][jl-1] = zsolqa[5-1][4-1][jl-1] - zevap;                //IF (LLCLDBUDL) ZBUDi(JL,17)=-ZEVAP*ZQTMST
+	    //-------------------------------------------------------------
+	    // Reduce the total precip coverage proportional to evaporation
+	    // to mimic the previous scheme which had a diagnostic
+	    // 2-flux treatment, abandoned due to the new prognostic precip
+	    //-------------------------------------------------------------
+	    zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqx[4-1][jk-1][jl-1]));                //Update first guess field
+	    zqxfg[4-1][jl-1] = zqxfg[4-1][jl-1] - zevap;
+	  }
+
+	}
+
+      }
+
+    }
+
+    //--------------------------------------
+    // Evaporate small precipitation amounts
+    //--------------------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      if (llfall[jm-1])
+      {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  if (zqxfg[jm-1][jl-1] < yrecldp->rlmin)
+	  {
+	    zsolqa[jm-1][5-1][jl-1] = zsolqa[jm-1][5-1][jl-1] + zqxfg[jm-1][jl-1];
+	    zsolqa[5-1][jm-1][jl-1] = zsolqa[5-1][jm-1][jl-1] - zqxfg[jm-1][jl-1];
+	  }
+
+	}
+
+      }
+
+    }
+
+    //######################################################################
+    //            5.0  *** SOLVERS FOR A AND L ***
+    // now use an implicit solution rather than exact solution
+    // solver is forward in time, upstream difference for advection
+    //######################################################################
+    //---------------------------
+    // 5.1 solver for cloud cover
+    //---------------------------
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      zanew = (za[jk-1][jl-1] + zsolac[jl-1])/(1.0 + zsolab[jl-1]);
+      zanew = fmin(zanew, 1.0);
+      if (zanew < yrecldp->ramin)
+      {
+	zanew = 0.0;
+      }
+
+      zda[jl-1] = zanew - zaorig[jk-1][jl-1];          //---------------------------------
+      // variables needed for next level
+      //---------------------------------
+      zanewm1[jl-1] = zanew;
+    }
+
+    //--------------------------------
+    // 5.2 solver for the microphysics
+    //--------------------------------
+    //--------------------------------------------------------------
+    // Truncate explicit sinks to avoid negatives 
+    // Note: Species are treated in the order in which they run out
+    // since the clipping will alter the balance for the other vars
+    //--------------------------------------------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jn=1; jn<=5; jn+=1) {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  llindex3[jm-1][jn-1][jl-1] = false;
+	}
+
+      }
+
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zsinksum[jm-1][jl-1] = 0.0;
+      }
+
+    }
+
+    //----------------------------
+    // collect sink terms and mark
+    //----------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jn=1; jn<=5; jn+=1) {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  zsinksum[jm-1][jl-1] = zsinksum[jm-1][jl-1] - zsolqa[jn-1][jm-1][jl-1];
+	}
+
+      }
+
+    }
+
+    //---------------------------------------
+    // calculate overshoot and scaling factor
+    //---------------------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zmax = fmax(zqx[jm-1][jk-1][jl-1], zepsec);
+	zrat = fmax(zsinksum[jm-1][jl-1], zmax);
+	zratio[jm-1][jl-1] = zmax/zrat;
+      }
+
+    }
+
+    //--------------------------------------------
+    // scale the sink terms, in the correct order, 
+    // recalculating the scale factor each time
+    //--------------------------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zsinksum[jm-1][jl-1] = 0.0;
+      }
+
+    }
+
+    //----------------
+    // recalculate sum
+    //----------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (i_klon=1; i_klon<=klon; i_klon++) {
+	psum_solqa[i_klon-1] = 0.0;
+      }
+
+      for (jn=1; jn<=5; jn+=1) {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  psum_solqa[jl-1] = psum_solqa[jl-1] + zsolqa[jn-1][jm-1][jl-1];
+	}
+
+      }
+
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	// ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-SUM(ZSOLQA(JL,JM,1:NCLV))
+	zsinksum[jm-1][jl-1] = zsinksum[jm-1][jl-1] - psum_solqa[jl-1];
+      }
+
+      //---------------------------
+      // recalculate scaling factor
+      //---------------------------
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zmm = fmax(zqx[jm-1][jk-1][jl-1], zepsec);
+	zrr = fmax(zsinksum[jm-1][jl-1], zmm);
+	zratio[jm-1][jl-1] = zmm/zrr;
+      }
+
+      //------
+      // scale
+      //------
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zzratio = zratio[jm-1][jl-1];            //DIR$ IVDEP
+	//DIR$ PREFERVECTOR
+	for (jn=1; jn<=5; jn+=1) {
+	  if (zsolqa[jn-1][jm-1][jl-1] < 0.0)
+	  {
+	    zsolqa[jn-1][jm-1][jl-1] = zsolqa[jn-1][jm-1][jl-1]*zzratio;
+	    zsolqa[jm-1][jn-1][jl-1] = zsolqa[jm-1][jn-1][jl-1]*zzratio;
+	  }
+
+	}
+
+      }
+
+    }
+
+    //--------------------------------------------------------------
+    // 5.2.2 Solver
+    //------------------------
+    //------------------------
+    // set the LHS of equation  
+    //------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jn=1; jn<=5; jn+=1) {
+	//----------------------------------------------
+	// diagonals: microphysical sink terms+transport
+	//----------------------------------------------
+	if (jn == jm)
+	{
+	  for (jl=kidia; jl<=kfdia; jl+=1) {
+	    zqlhs[jm-1][jn-1][jl-1] = 1.0 + zfallsink[jm-1][jl-1];
+	    for (jo=1; jo<=5; jo+=1) {
+	      zqlhs[jm-1][jn-1][jl-1] = zqlhs[jm-1][jn-1][jl-1] + zsolqb[jn-1][jo-1][jl-1];
+	    }
+
+	  }
+
+	  //------------------------------------------
+	  // non-diagonals: microphysical source terms
+	  //------------------------------------------
+	} else {
+	  for (jl=kidia; jl<=kfdia; jl+=1) {
+	    zqlhs[jm-1][jn-1][jl-1] = -zsolqb[jm-1][jn-1][jl-1];
+	  }
+
+	}
+
+      }
+
+    }
+
+    //------------------------
+    // set the RHS of equation  
+    //------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	//---------------------------------
+	// sum the explicit source and sink
+	//---------------------------------
+	zexplicit = 0.0;
+	for (jn=1; jn<=5; jn+=1) {
+	  zexplicit = zexplicit + zsolqa[jn-1][jm-1][jl-1];
+	}
+
+	zqxn[jm-1][jl-1] = zqx[jm-1][jk-1][jl-1] + zexplicit;
+      }
+
+    }
+
+    //-----------------------------------
+    // *** solve by LU decomposition: ***
+    //-----------------------------------
+    // Note: This fast way of solving NCLVxNCLV system
+    //       assumes a good behaviour (i.e. non-zero diagonal
+    //       terms with comparable orders) of the matrix stored
+    //       in ZQLHS. For the moment this is the case but
+    //       be aware to preserve it when doing eventual 
+    //       modifications.
+    // Non pivoting recursive factorization 
+    for (jn=1; jn<=4; jn+=1) {
+      for (jm=jn + 1; jm<=5; jm+=1) {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  zqlhs[jn-1][jm-1][jl-1] = zqlhs[jn-1][jm-1][jl-1]/zqlhs[jn-1][jn-1][jl-1];
+	}
+
+	for (ik=jn + 1; ik<=5; ik+=1) {
+	  for (jl=kidia; jl<=kfdia; jl+=1) {
+	    zqlhs[ik-1][jm-1][jl-1] = zqlhs[ik-1][jm-1][jl-1] - zqlhs[jn-1][jm-1][jl-1]*zqlhs[ik-1][jn-1][jl-1];
+	  }
+
+	}
+
+      }
+
+    }
+
+    // Backsubstitution 
+    //  step 1 
+    for (jn=2; jn<=5; jn+=1) {
+      for (jm=1; jm<=jn - 1; jm+=1) {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  zqxn[jn-1][jl-1] = zqxn[jn-1][jl-1] - zqlhs[jm-1][jn-1][jl-1]*zqxn[jm-1][jl-1];
+	}
+
+      }
+
+    }
+
+    //  step 2
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      zqxn[5-1][jl-1] = zqxn[5-1][jl-1]/zqlhs[5-1][5-1][jl-1];
+    }
+
+    for (jn=4; jn>=1; jn+=-1) {
+      for (jm=jn + 1; jm<=5; jm+=1) {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  zqxn[jn-1][jl-1] = zqxn[jn-1][jl-1] - zqlhs[jm-1][jn-1][jl-1]*zqxn[jm-1][jl-1];
+	}
+
+      }
+
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zqxn[jn-1][jl-1] = zqxn[jn-1][jl-1]/zqlhs[jn-1][jn-1][jl-1];
+      }
+
+    }
+
+    // Ensure no small values (including negatives) remain in cloud variables nor
+    // precipitation rates.
+    // Evaporate l,i,r,s to water vapour. Latent heating taken into account below
+    for (jn=1; jn<=4; jn+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	if (zqxn[jn-1][jl-1] < zepsec)
+	{
+	  zqxn[5-1][jl-1] = zqxn[5-1][jl-1] + zqxn[jn-1][jl-1];
+	  zqxn[jn-1][jl-1] = 0.0;
+	}
+
+      }
+
+    }
+
+    //--------------------------------
+    // variables needed for next level
+    //--------------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zqxnm1[jm-1][jl-1] = zqxn[jm-1][jl-1];
+	zqxn2d[jm-1][jk-1][jl-1] = zqxn[jm-1][jl-1];
+      }
+
+    }
+
+    //------------------------------------------------------------------------
+    // 5.3 Precipitation/sedimentation fluxes to next level
+    //     diagnostic precipitation fluxes
+    //     It is this scaled flux that must be used for source to next layer
+    //------------------------------------------------------------------------
+    for (jm=1; jm<=5; jm+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	zpfplsx[jm-1][jk+1-1][jl-1] = (zfallsink[jm-1][jl-1]*zqxn[jm-1][jl-1])*zrdtgdp[jl-1];
+      }
+
+    }
+
+    // Ensure precipitation fraction is zero if no precipitation
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      zqpretot[jl-1] = zpfplsx[4-1][jk+1-1][jl-1] + zpfplsx[3-1][jk+1-1][jl-1];
+    }
+
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      if (zqpretot[jl-1] < zepsec)
+      {
+	zcovptot[jl-1] = 0.0;
+      }
+
+    }
+
+    //######################################################################
+    //              6  *** UPDATE TENDANCIES ***
+    //######################################################################
+    //--------------------------------
+    // 6.1 Temperature and CLV budgets 
+    //--------------------------------
+    for (jm=1; jm<=4; jm+=1) {
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	// calculate fluxes in and out of box for conservation of TL
+	zfluxq[jm-1][jl-1] = zpsupsatsrce[jm-1][jl-1] + zconvsrce[jm-1][jl-1] + zfallsrce[jm-1][jl-1] - (zfallsink[jm-1][jl-1] + zconvsink[jm-1][jl-1])*zqxn[jm-1][jl-1];
+      }
+
+      if (iphase[jm-1] == 1)
+      {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] + (ralvdcp*(zqxn[jm-1][jl-1] - zqx[jm-1][jk-1][jl-1] - zfluxq[jm-1][jl-1]))*zqtmst;
+	}
+
+      }
+
+      if (iphase[jm-1] == 2)
+      {
+	for (jl=kidia; jl<=kfdia; jl+=1) {
+	  tendency_loc_t[jk-1][jl-1] = tendency_loc_t[jk-1][jl-1] + (ralsdcp*(zqxn[jm-1][jl-1] - zqx[jm-1][jk-1][jl-1] - zfluxq[jm-1][jl-1]))*zqtmst;
+	}
+
+      }
+
+      //----------------------------------------------------------------------
+      // New prognostic tendencies - ice,liquid rain,snow 
+      // Note: CLV arrays use PCLV in calculation of tendency while humidity
+      //       uses ZQX. This is due to clipping at start of cloudsc which
+      //       include the tendency already in tendency_loc%T and tendency_loc%q. ZQX was reset
+      //----------------------------------------------------------------------
+      for (jl=kidia; jl<=kfdia; jl+=1) {
+	tendency_loc_cld[jm-1][jk-1][jl-1] = tendency_loc_cld[jm-1][jk-1][jl-1] + (zqxn[jm-1][jl-1] - zqx0[jm-1][jk-1][jl-1])*zqtmst;
+      }
+
+    }
+
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      //----------------------
+      // 6.2 Humidity budget
+      //----------------------
+      tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + (zqxn[5-1][jl-1] - zqx[5-1][jk-1][jl-1])*zqtmst;
+      //-------------------
+      // 6.3 cloud cover 
+      //-----------------------
+      tendency_loc_a[jk-1][jl-1] = tendency_loc_a[jk-1][jl-1] + zda[jl-1]*zqtmst;
     }
 
     //--------------------------------------------------
@@ -2949,153 +2504,73 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   //----------------------------------------------------------------------
   //                       END OF VERTICAL LOOP
   //----------------------------------------------------------------------
-  if (ldmaincall)
-  {
-    //######################################################################
-    //              8  *** FLUX/DIAGNOSTICS COMPUTATIONS ***
-    //######################################################################
-    //-------------------------------------
-    // Enthalpy and total water diagnostics (LSCMEC and LCLDBUDGET normally false)
-    //-------------------------------------
-    if (lscmec || yrecldp->lcldbudget)
-    {
-      for (jk=1; jk<=klev; jk+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          ztnew = pt[jk-1][jl-1] + ptsphy*(tendency_loc_t[jk-1][jl-1] + tendency_cml_t[jk-1][jl-1]);
-          if (jk == 1)
-          {
-            zsumq1[jk-1][jl-1] = 0.0;
-            zsumh1[jk-1][jl-1] = 0.0;
-          } else {
-            zsumq1[jk-1][jl-1] = zsumq1[jk-1-1][jl-1];
-            zsumh1[jk-1][jl-1] = zsumh1[jk-1-1][jl-1];
-          }
+  //######################################################################
+  //              8  *** FLUX/DIAGNOSTICS COMPUTATIONS ***
+  //######################################################################
 
-          // cld vars
-          for (jm=1; jm<=4; jm+=1) {
-            if (iphase[jm-1] == 1)
-            {
-              ztnew = ztnew - ralvdcp*(pclv[jm-1][jk-1][jl-1] + (tendency_loc_cld[jm-1][jk-1][jl-1] + tendency_cml_cld[jm-1][jk-1][jl-1])*ptsphy);
-            }
-
-            if (iphase[jm-1] == 2)
-            {
-              ztnew = ztnew - ralsdcp*(pclv[jm-1][jk-1][jl-1] + (tendency_loc_cld[jm-1][jk-1][jl-1] + tendency_cml_cld[jm-1][jk-1][jl-1])*ptsphy);
-            }
-
-            zsumq1[jk-1][jl-1] = zsumq1[jk-1][jl-1] + ((pclv[jm-1][jk-1][jl-1] + (tendency_loc_cld[jm-1][jk-1][jl-1] + tendency_cml_cld[jm-1][jk-1][jl-1])*ptsphy)*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]))*zrg_r;
-          }
-
-          zsumh1[jk-1][jl-1] = zsumh1[jk-1][jl-1] + (paph[jk+1-1][jl-1] - paph[jk-1][jl-1])*ztnew;            // humidity
-          zsumq1[jk-1][jl-1] = zsumq1[jk-1][jl-1] + ((pq[jk-1][jl-1] + (tendency_loc_q[jk-1][jl-1] + tendency_cml_q[jk-1][jl-1])*ptsphy)*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]))*zrg_r;
-          zrain = 0.0;
-          for (jm=1; jm<=5; jm+=1) {
-            zrain = zrain + ptsphy*zpfplsx[jm-1][jk+1-1][jl-1];
-          }
-
-          zerrorq[jk-1][jl-1] = zsumq1[jk-1][jl-1] + zrain - zsumq0[jk-1][jl-1];
-        }
-
-      }
-
-      for (jk=1; jk<=klev; jk+=1) {
-        for (jl=kidia; jl<=kfdia; jl+=1) {
-          zdtgdp[jl-1] = (ptsphy*rg)/(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]);
-          zrain = 0.0;
-          for (jm=1; jm<=5; jm+=1) {
-            if (iphase[jm-1] == 1)
-            {
-              zrain = zrain + ((ralvdcp*zdtgdp[jl-1])*zpfplsx[jm-1][jk+1-1][jl-1])*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]);
-            }
-
-            if (iphase[jm-1] == 2)
-            {
-              zrain = zrain + ((ralsdcp*zdtgdp[jl-1])*zpfplsx[jm-1][jk+1-1][jl-1])*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1]);
-            }
-
-          }
-
-          zsumh1[jk-1][jl-1] = (zsumh1[jk-1][jl-1] - zrain)/paph[jk+1-1][jl-1];
-          zerrorh[jk-1][jl-1] = zsumh1[jk-1][jl-1] - zsumh0[jk-1][jl-1];
-        }
-
-      }
-
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        if (fabs(zerrorh[klev-1][jl-1]) > 1.0e-13 || fabs(zerrorq[klev-1][jl-1]) > 1.0e-13)
-        {
-          zqadj = 0.0;            // place totalview break here to catch non-conservation
-        }
-
-      }
-
-    }
-
-    //--------------------------------------------------------------------
-    // Copy general precip arrays back into PFP arrays for GRIB archiving
-    // Add rain and liquid fluxes, ice and snow fluxes
-    //--------------------------------------------------------------------
-    for (jk=1; jk<=klev + 1; jk+=1) {
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        pfplsl[jk-1][jl-1] = zpfplsx[3-1][jk-1][jl-1] + zpfplsx[1-1][jk-1][jl-1];
-        pfplsn[jk-1][jl-1] = zpfplsx[4-1][jk-1][jl-1] + zpfplsx[2-1][jk-1][jl-1];
-      }
-
-    }
-
-    //--------
-    // Fluxes:
-    //--------
+  //--------------------------------------------------------------------
+  // Copy general precip arrays back into PFP arrays for GRIB archiving
+  // Add rain and liquid fluxes, ice and snow fluxes
+  //--------------------------------------------------------------------
+  for (jk=1; jk<=klev + 1; jk+=1) {
     for (jl=kidia; jl<=kfdia; jl+=1) {
-      pfsqlf[1-1][jl-1] = 0.0;
-      pfsqif[1-1][jl-1] = 0.0;
-      pfsqrf[1-1][jl-1] = 0.0;
-      pfsqsf[1-1][jl-1] = 0.0;
-      pfcqlng[1-1][jl-1] = 0.0;
-      pfcqnng[1-1][jl-1] = 0.0;
-      pfcqrng[1-1][jl-1] = 0.0;
-      pfcqsng[1-1][jl-1] = 0.0;        // fluxes due to turbulence
-      pfsqltur[1-1][jl-1] = 0.0;
-      pfsqitur[1-1][jl-1] = 0.0;
+      pfplsl[jk-1][jl-1] = zpfplsx[3-1][jk-1][jl-1] + zpfplsx[1-1][jk-1][jl-1];
+      pfplsn[jk-1][jl-1] = zpfplsx[4-1][jk-1][jl-1] + zpfplsx[2-1][jk-1][jl-1];
     }
 
-    for (jk=1; jk<=klev; jk+=1) {
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        zgdph_r = -zrg_r*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1])*zqtmst;
-        pfsqlf[jk+1-1][jl-1] = pfsqlf[jk-1][jl-1];
-        pfsqif[jk+1-1][jl-1] = pfsqif[jk-1][jl-1];
-        pfsqrf[jk+1-1][jl-1] = pfsqlf[jk-1][jl-1];
-        pfsqsf[jk+1-1][jl-1] = pfsqif[jk-1][jl-1];
-        pfcqlng[jk+1-1][jl-1] = pfcqlng[jk-1][jl-1];
-        pfcqnng[jk+1-1][jl-1] = pfcqnng[jk-1][jl-1];
-        pfcqrng[jk+1-1][jl-1] = pfcqlng[jk-1][jl-1];
-        pfcqsng[jk+1-1][jl-1] = pfcqnng[jk-1][jl-1];
-        pfsqltur[jk+1-1][jl-1] = pfsqltur[jk-1][jl-1];
-        pfsqitur[jk+1-1][jl-1] = pfsqitur[jk-1][jl-1];
-        zalfaw = zfoealfa[jk-1][jl-1];          // Liquid , LS scheme minus detrainment
-        pfsqlf[jk+1-1][jl-1] = pfsqlf[jk+1-1][jl-1] + (zqxn2d[1-1][jk-1][jl-1] - zqx0[1-1][jk-1][jl-1] + pvfl[jk-1][jl-1]*ptsphy - zalfaw*plude[jk-1][jl-1])*zgdph_r;          // liquid, negative numbers
-        pfcqlng[jk+1-1][jl-1] = pfcqlng[jk+1-1][jl-1] + zlneg[1-1][jk-1][jl-1]*zgdph_r;          // liquid, vertical diffusion
-        pfsqltur[jk+1-1][jl-1] = pfsqltur[jk+1-1][jl-1] + (pvfl[jk-1][jl-1]*ptsphy)*zgdph_r;          // Rain, LS scheme 
-        pfsqrf[jk+1-1][jl-1] = pfsqrf[jk+1-1][jl-1] + (zqxn2d[3-1][jk-1][jl-1] - zqx0[3-1][jk-1][jl-1])*zgdph_r;          // rain, negative numbers
-        pfcqrng[jk+1-1][jl-1] = pfcqrng[jk+1-1][jl-1] + zlneg[3-1][jk-1][jl-1]*zgdph_r;          // Ice , LS scheme minus detrainment
-        pfsqif[jk+1-1][jl-1] = pfsqif[jk+1-1][jl-1] + (zqxn2d[2-1][jk-1][jl-1] - zqx0[2-1][jk-1][jl-1] + pvfi[jk-1][jl-1]*ptsphy - (1.0 - zalfaw)*plude[jk-1][jl-1])*zgdph_r;          // ice, negative numbers
-        pfcqnng[jk+1-1][jl-1] = pfcqnng[jk+1-1][jl-1] + zlneg[2-1][jk-1][jl-1]*zgdph_r;          // ice, vertical diffusion
-        pfsqitur[jk+1-1][jl-1] = pfsqitur[jk+1-1][jl-1] + (pvfi[jk-1][jl-1]*ptsphy)*zgdph_r;          // snow, LS scheme
-        pfsqsf[jk+1-1][jl-1] = pfsqsf[jk+1-1][jl-1] + (zqxn2d[4-1][jk-1][jl-1] - zqx0[4-1][jk-1][jl-1])*zgdph_r;          // snow, negative numbers
-        pfcqsng[jk+1-1][jl-1] = pfcqsng[jk+1-1][jl-1] + zlneg[4-1][jk-1][jl-1]*zgdph_r;
-      }
+  }
 
+  //--------
+  // Fluxes:
+  //--------
+  for (jl=kidia; jl<=kfdia; jl+=1) {
+    pfsqlf[1-1][jl-1] = 0.0;
+    pfsqif[1-1][jl-1] = 0.0;
+    pfsqrf[1-1][jl-1] = 0.0;
+    pfsqsf[1-1][jl-1] = 0.0;
+    pfcqlng[1-1][jl-1] = 0.0;
+    pfcqnng[1-1][jl-1] = 0.0;
+    pfcqrng[1-1][jl-1] = 0.0;
+    pfcqsng[1-1][jl-1] = 0.0;        // fluxes due to turbulence
+    pfsqltur[1-1][jl-1] = 0.0;
+    pfsqitur[1-1][jl-1] = 0.0;
+  }
+
+  for (jk=1; jk<=klev; jk+=1) {
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      zgdph_r = -zrg_r*(paph[jk+1-1][jl-1] - paph[jk-1][jl-1])*zqtmst;
+      pfsqlf[jk+1-1][jl-1] = pfsqlf[jk-1][jl-1];
+      pfsqif[jk+1-1][jl-1] = pfsqif[jk-1][jl-1];
+      pfsqrf[jk+1-1][jl-1] = pfsqlf[jk-1][jl-1];
+      pfsqsf[jk+1-1][jl-1] = pfsqif[jk-1][jl-1];
+      pfcqlng[jk+1-1][jl-1] = pfcqlng[jk-1][jl-1];
+      pfcqnng[jk+1-1][jl-1] = pfcqnng[jk-1][jl-1];
+      pfcqrng[jk+1-1][jl-1] = pfcqlng[jk-1][jl-1];
+      pfcqsng[jk+1-1][jl-1] = pfcqnng[jk-1][jl-1];
+      pfsqltur[jk+1-1][jl-1] = pfsqltur[jk-1][jl-1];
+      pfsqitur[jk+1-1][jl-1] = pfsqitur[jk-1][jl-1];
+      zalfaw = zfoealfa[jk-1][jl-1];          // Liquid , LS scheme minus detrainment
+      pfsqlf[jk+1-1][jl-1] = pfsqlf[jk+1-1][jl-1] + (zqxn2d[1-1][jk-1][jl-1] - zqx0[1-1][jk-1][jl-1] + pvfl[jk-1][jl-1]*ptsphy - zalfaw*plude[jk-1][jl-1])*zgdph_r;          // liquid, negative numbers
+      pfcqlng[jk+1-1][jl-1] = pfcqlng[jk+1-1][jl-1] + zlneg[1-1][jk-1][jl-1]*zgdph_r;          // liquid, vertical diffusion
+      pfsqltur[jk+1-1][jl-1] = pfsqltur[jk+1-1][jl-1] + (pvfl[jk-1][jl-1]*ptsphy)*zgdph_r;          // Rain, LS scheme 
+      pfsqrf[jk+1-1][jl-1] = pfsqrf[jk+1-1][jl-1] + (zqxn2d[3-1][jk-1][jl-1] - zqx0[3-1][jk-1][jl-1])*zgdph_r;          // rain, negative numbers
+      pfcqrng[jk+1-1][jl-1] = pfcqrng[jk+1-1][jl-1] + zlneg[3-1][jk-1][jl-1]*zgdph_r;          // Ice , LS scheme minus detrainment
+      pfsqif[jk+1-1][jl-1] = pfsqif[jk+1-1][jl-1] + (zqxn2d[2-1][jk-1][jl-1] - zqx0[2-1][jk-1][jl-1] + pvfi[jk-1][jl-1]*ptsphy - (1.0 - zalfaw)*plude[jk-1][jl-1])*zgdph_r;          // ice, negative numbers
+      pfcqnng[jk+1-1][jl-1] = pfcqnng[jk+1-1][jl-1] + zlneg[2-1][jk-1][jl-1]*zgdph_r;          // ice, vertical diffusion
+      pfsqitur[jk+1-1][jl-1] = pfsqitur[jk+1-1][jl-1] + (pvfi[jk-1][jl-1]*ptsphy)*zgdph_r;          // snow, LS scheme
+      pfsqsf[jk+1-1][jl-1] = pfsqsf[jk+1-1][jl-1] + (zqxn2d[4-1][jk-1][jl-1] - zqx0[4-1][jk-1][jl-1])*zgdph_r;          // snow, negative numbers
+      pfcqsng[jk+1-1][jl-1] = pfcqsng[jk+1-1][jl-1] + zlneg[4-1][jk-1][jl-1]*zgdph_r;
     }
 
-    //-----------------------------------
-    // enthalpy flux due to precipitation
-    //-----------------------------------
-    for (jk=1; jk<=klev + 1; jk+=1) {
-      for (jl=kidia; jl<=kfdia; jl+=1) {
-        pfhpsl[jk-1][jl-1] = -rlvtt*pfplsl[jk-1][jl-1];
-        pfhpsn[jk-1][jl-1] = -rlstt*pfplsn[jk-1][jl-1];
-      }
+  }
 
+  //-----------------------------------
+  // enthalpy flux due to precipitation
+  //-----------------------------------
+  for (jk=1; jk<=klev + 1; jk+=1) {
+    for (jl=kidia; jl<=kfdia; jl+=1) {
+      pfhpsl[jk-1][jl-1] = -rlvtt*pfplsl[jk-1][jl-1];
+      pfhpsn[jk-1][jl-1] = -rlstt*pfplsn[jk-1][jl-1];
     }
 
   }
