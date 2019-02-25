@@ -1766,7 +1766,10 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	if (ztp1[jk-1][jl-1] <= rtt && zliqcld[jl-1] > zepsec)
 	{
 	  // Fallspeed air density correction 
-	  zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], 0.4);              //------------------------------------------------------------------
+	  // TODO: THIS IS A BUG! Due to a missing ``_JPRB`` in the original,
+	  // we need to cast the exponent down to single precision to re-create.
+	  zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], (float)0.4);
+	  //------------------------------------------------------------------
 	  // Riming of snow by cloud water - implicit in lwc
 	  //------------------------------------------------------------------
 	  if (zcovptot[jl-1] > 0.01 && zsnowcld[jl-1] > zepsec)
