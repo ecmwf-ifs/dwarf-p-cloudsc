@@ -174,6 +174,25 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 	       phrsw, phrlw, pvervel, pap, paph, plsm, ldcum, ktype, plu,
 	       plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
 
+    for (int i = 0; i < (nlev+1)*numcols; i++) { 
+      pfsqlf[i]    = 0.0;
+      pfsqif[i]    = 0.0;
+      pfcqnng[i]   = 0.0;
+      pfcqlng[i]   = 0.0;
+      pfsqrf[i]    = 0.0;
+      pfsqsf[i]    = 0.0;
+      pfcqrng[i]   = 0.0;
+      pfcqsng[i]   = 0.0;
+      pfsqltur[i]  = 0.0;
+      pfsqitur[i]  = 0.0;
+      pfplsl[i]    = 0.0;
+      pfplsn[i]    = 0.0;
+      pfhpsl[i]    = 0.0;
+      pfhpsn[i]    = 0.0;
+    }
+    for (int i = 0; i < nlev*numcols; i++) { pcovptot[i] = 0.0; }
+    for (int i = 0; i < nclv*nlev*numcols; i++) { tend_loc_cld[i] = 0.0; }
+
     cloudsc_c(1, numcols, numcols, nlev, ptsphy,  pt, pq,  
               tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
               tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
@@ -193,10 +212,11 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 
     printf("finished cloudsc, now checking results\n");
 
-    /* check_results(numcols, nlev, nclv,    plude ,  pcovptot ,  prainfrac_toprfz ,  pfsqlf ,  pfsqif , */
-    /*           pfcqlng ,  pfcqnng ,  pfsqrf ,  pfsqsf ,  pfcqrng ,  pfcqsng , */
-    /*           pfsqltur ,  pfsqitur ,  pfplsl ,  pfplsn ,  pfhpsl ,  pfhpsn , */
-    /*           tend_loc_a ,  tend_loc_q ,  tend_loc_t ,  tend_loc_cld ) ; */
+    cloudsc_validate(klon, nlev, nclv, numcols, nproma,
+		     plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,
+		     pfcqlng, pfcqnng, pfsqrf, pfsqsf, pfcqrng, pfcqsng,
+		     pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn,
+		     tend_loc_a, tend_loc_q, tend_loc_t, tend_loc_cld);
 
     free(plcrit_aer); // ALLOCATE(PLCRIT_AER(KLON,KLEV)) 
     free(picrit_aer); // ALLOCATE(PICRIT_AER(KLON,KLEV)) 
