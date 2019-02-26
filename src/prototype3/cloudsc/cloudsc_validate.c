@@ -49,8 +49,8 @@ void validate_1d(const char *name, double *v_ref, double *v_field, const int nlo
   zerrsum = 0.0;
   zsum = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize) \
-    reduction(min:zminval, max:zmaxval, max:zmaxerr, +:zerrsum, +:zsum)
+  #pragma omp parallel for default(shared) private(b, bsize, jk)		\
+    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jk = 0; jk < bsize; jk++) {
@@ -83,8 +83,8 @@ void validate_2d(const char *name, double *v_ref, double *v_field, const int nlo
   zerrsum = 0.0;
   zsum = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize) \
-    reduction(min:zminval, max:zmaxval, max:zmaxerr, +:zerrsum, +:zsum)
+  #pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
+    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jl = 0; jl < nlev; jl++) {
@@ -120,8 +120,8 @@ void validate_3d(const char *name, double *v_ref, double *v_field, const int nlo
   zerrsum = 0.0;
   zsum = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize) \
-    reduction(min:zminval, max:zmaxval, max:zmaxerr, +:zerrsum, +:zsum)
+  #pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
+    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jm = 0; jm < nclv; jm++) {
@@ -185,7 +185,7 @@ int cloudsc_validate(const int nlon, const int nlev, const int nclv, const int n
 
   validate_2d("PLUDE", ref_plude, plude, nproma, nlev, ngptot, nblocks);
   validate_2d("PCOVPTOT", ref_pcovptot, pcovptot, nproma, nlev, ngptot, nblocks);
-  validate_1d("PRAINFRAC_TOPRFZ", ref_prainfrac_toprfz, pcovptot, nproma, ngptot, nblocks);
+  validate_1d("PRAINFRAC_TOPRFZ", ref_prainfrac_toprfz, prainfrac_toprfz, nproma, ngptot, nblocks);
   validate_2d("PFSQLF", ref_pfsqlf, pfsqlf, nproma, nlev+1, ngptot, nblocks);
   validate_2d("PFSQIF", ref_pfsqif, pfsqif, nproma, nlev+1, ngptot, nblocks);
   validate_2d("PFCQLNG", ref_pfcqlng, pfcqlng, nproma, nlev+1, ngptot, nblocks);

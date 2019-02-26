@@ -1,287 +1,276 @@
 #include "cloudsc_driver.h"
 
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+
 void cloudsc_driver(int numthreads, int numcols, int nproma) {
 
-    double *tend_tmp_u;
-    double *tend_tmp_v;
-    double *tend_tmp_t;
-    double *tend_tmp_q;
-    double *tend_tmp_o3;
-    double *tend_tmp_a;
-    double *tend_tmp_cld;
+  double *tend_tmp_u;
+  double *tend_tmp_v;
+  double *tend_tmp_t;
+  double *tend_tmp_q;
+  double *tend_tmp_o3;
+  double *tend_tmp_a;
+  double *tend_tmp_cld;
 
-    double *tend_loc_u;
-    double *tend_loc_v;
-    double *tend_loc_t;
-    double *tend_loc_q;
-    double *tend_loc_o3;
-    double *tend_loc_a;
-    double *tend_loc_cld;
+  double *tend_loc_u;
+  double *tend_loc_v;
+  double *tend_loc_t;
+  double *tend_loc_q;
+  double *tend_loc_o3;
+  double *tend_loc_a;
+  double *tend_loc_cld;
 
-    double *tend_cml_u;
-    double *tend_cml_v;
-    double *tend_cml_t;
-    double *tend_cml_q;
-    double *tend_cml_o3;
-    double *tend_cml_a;
-    double *tend_cml_cld;
+  double *tend_cml_u;
+  double *tend_cml_v;
+  double *tend_cml_t;
+  double *tend_cml_q;
+  double *tend_cml_o3;
+  double *tend_cml_a;
+  double *tend_cml_cld;
 
-    double ptsphy;            //! Physics timestep
+  double ptsphy;            //! Physics timestep
 
-    double *plcrit_aer, *zplcrit_aer;
-    double *picrit_aer, *zpicrit_aer;
-    double *pre_ice, *zpre_ice;
-    double *pccn, *zpccn;       //! liquid cloud condensation nuclei
-    double *pnice, *zpnice;     //! ice number concentration (cf. CCN)
-    double *pt, *zpt;           //! T at start of callpar
-    double *pq, *zpq;           //! Q at start of callpar
-    double *pvfa, *zpvfa;       //! CC from VDF scheme
-    double *pvfl, *zpvfl;       //! Liq from VDF scheme
-    double *pvfi, *zpvfi;       //! Ice from VDF scheme
-    double *pdyna, *zpdyna;     //! CC from Dynamics
-    double *pdynl, *zpdynl;     //! Liq from Dynamics
-    double *pdyni, *zpdyni;     //! Liq from Dynamics
-    double *phrsw, *zphrsw;     //! Short-wave heating rate
-    double *phrlw, *zphrlw;     //! Long-wave heating rate
-    double *pvervel, *zpvervel; //! Vertical velocity
-    double *pap, *zpap;         //! Pressure on full levels
-    double *paph, *zpaph;       //! Pressure on half levels
-    double *plsm, *zplsm;           //! Land fraction (0-1) 
-    int    *ktype, *itype;          //! Convection type 0,1,2
-    double *plu, *zplu;         //! Conv. condensate
-    double *plude, *zplude;     //! Conv. detrained water 
-    double *plude_tmp;
-    double *psnde, *zpsnde;     //! Conv. detrained snow
-    double *pmfu, *zpmfu;       //! Conv. mass flux up
-    double *pmfd, *zpmfd;       //! Conv. mass flux down
-    double *pa, *zpa;           //! Original Cloud fraction (t)
+  double *plcrit_aer;
+  double *picrit_aer;
+  double *pre_ice;
+  double *pccn;       //! liquid cloud condensation nuclei
+  double *pnice;     //! ice number concentration (cf. CCN)
+  double *pt;           //! T at start of callpar
+  double *pq;           //! Q at start of callpar
+  double *pvfa;       //! CC from VDF scheme
+  double *pvfl;       //! Liq from VDF scheme
+  double *pvfi;       //! Ice from VDF scheme
+  double *pdyna;     //! CC from Dynamics
+  double *pdynl;     //! Liq from Dynamics
+  double *pdyni;     //! Liq from Dynamics
+  double *phrsw;     //! Short-wave heating rate
+  double *phrlw;     //! Long-wave heating rate
+  double *pvervel; //! Vertical velocity
+  double *pap;         //! Pressure on full levels
+  double *paph;       //! Pressure on half levels
+  double *plsm;           //! Land fraction (0-1) 
+  int    *ktype;          //! Convection type 0,1,2
+  double *plu;         //! Conv. condensate
+  double *plude;     //! Conv. detrained water 
+  double *plude_tmp;
+  double *psnde;     //! Conv. detrained snow
+  double *pmfu;       //! Conv. mass flux up
+  double *pmfd;       //! Conv. mass flux down
+  double *pa;           //! Original Cloud fraction (t)
 
-    double *pclv, zpclv;
-    double *psupsat, zpsupsat;
+  double *pclv;
+  double *psupsat;
 
-    double *pcovptot, *zpcovptot;   //! Precip fraction
-    double *prainfrac_toprfz, *zprainfrac_toprfz;
-    double *pfsqlf, *zpfsqlf;       //! Flux of liquid
-    double *pfsqif, *zpfsqif;       //! Flux of ice
-    double *pfcqlng, *zpfcqlng;     //! -ve corr for liq
-    double *pfcqnng, *zpfcqnng;     //! -ve corr for ice
-    double *pfsqrf, *zpfsqrf;       //! Flux diagnostics
-    double *pfsqsf, *zpfsqsf;       //!    for DDH, generic
-    double *pfcqrng, *zpfcqrng;     //! rain
-    double *pfcqsng, *zpfcqsng;     //! snow
-    double *pfsqltur, *zpfsqltur;   //! liquid flux due to VDF
-    double *pfsqitur, *zpfsqitur;   //! ice flux due to VDF
-    double *pfplsl, *zpfplsl;       //! liq+rain sedim flux
-    double *pfplsn, *zpfplsn;       //! ice+snow sedim flux
-    double *pfhpsl, *zpfhpsl;       //! Enthalpy flux for liq
-    double *pfhpsn, *zpfhpsn;       //! Enthalpy flux for ice
+  double *pcovptot;   //! Precip fraction
+  double *prainfrac_toprfz;
+  double *pfsqlf;       //! Flux of liquid
+  double *pfsqif;       //! Flux of ice
+  double *pfcqlng;     //! -ve corr for liq
+  double *pfcqnng;     //! -ve corr for ice
+  double *pfsqrf;       //! Flux diagnostics
+  double *pfsqsf;       //!    for DDH, generic
+  double *pfcqrng;     //! rain
+  double *pfcqsng;     //! snow
+  double *pfsqltur;   //! liquid flux due to VDF
+  double *pfsqitur;   //! ice flux due to VDF
+  double *pfplsl;       //! liq+rain sedim flux
+  double *pfplsn;       //! ice+snow sedim flux
+  double *pfhpsl;       //! Enthalpy flux for liq
+  double *pfhpsn;       //! Enthalpy flux for ice
 
-    /* Define or query data dimensions from input file */
-    int klon, nlev;
-    int kidia, kfdia;
-    int jkglo,ibl,icend;
+  /* Define or query data dimensions from input file */
+  int klon, nlev;
+  int nblocks = (numcols / nproma) + min(numcols % nproma, 1);
 
-    nclv = 5;      // number of microphysics variables
-    ncldql = 1;    // liquid cloud water
-    ncldqi = 2;    // ice cloud water
-    ncldqr = 3;    // rain water
-    ncldqs = 4;    // snow
-    ncldqv = 5;    // vapour
+  nclv = 5;      // number of microphysics variables
+  ncldql = 1;    // liquid cloud water
+  ncldqi = 2;    // ice cloud water
+  ncldqr = 3;    // rain water
+  ncldqs = 4;    // snow
+  ncldqv = 5;    // vapour
 
-    yrecldp = malloc(sizeof(struct TECLDP));
+  yrecldp = malloc(sizeof(struct TECLDP));
 
-    query_state(&klon, &nlev);
+  query_state(&klon, &nlev);
 
-    tend_loc_u   = (double*) malloc( sizeof(double) * numcols*nlev ); 
-    tend_loc_v   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_loc_t   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_loc_o3  = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_loc_q   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_loc_a   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_loc_cld = (double*) malloc( sizeof(double) * numcols*nlev*nclv ); 
+  tend_loc_t   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_loc_q   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_loc_a   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_loc_cld = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
+  tend_cml_t   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_cml_q   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_cml_a   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_cml_cld = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
+  tend_tmp_t   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_tmp_q   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_tmp_a   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  tend_tmp_cld = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
 
-    tend_cml_u   = (double*) malloc( sizeof(double) * numcols*nlev ); 
-    tend_cml_v   = (double*) malloc( sizeof(double) * numcols*nlev ); 
-    tend_cml_t   = (double*) malloc( sizeof(double) * numcols*nlev ); 
-    tend_cml_o3  = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_cml_q   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_cml_a   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_cml_cld = (double*) malloc( sizeof(double) * numcols*nlev*nclv );
+  plcrit_aer = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  picrit_aer = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pre_ice    = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pccn       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pnice      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pt         = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pq         = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pvfa       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pvfl       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pvfi       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pdyna      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pdynl      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pdyni      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  phrsw      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  phrlw      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pvervel    = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pap        = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  paph       = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  plsm       = (double*) malloc( sizeof(double) * nblocks*nproma );
+  ktype      = (int*) malloc( sizeof(int) * nblocks*nproma );
+  plu        = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  plude      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  psnde      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pmfu       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pmfd       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pa         = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pclv       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
+  psupsat    = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+  pcovptot   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
 
-    tend_tmp_u   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_tmp_v   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_tmp_t   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_tmp_o3  = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_tmp_q   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_tmp_a   = (double*) malloc( sizeof(double) * numcols*nlev );
-    tend_tmp_cld = (double*) malloc( sizeof(double) * numcols*nlev*nclv );
+  prainfrac_toprfz = (double*) malloc( sizeof(double) * nblocks*nproma );
+  pfsqlf    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfsqif    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfcqnng   = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfcqlng   = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfsqrf    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfsqsf    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfcqrng   = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfcqsng   = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfsqltur  = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfsqitur  = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfplsl    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfplsn    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfhpsl    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
+  pfhpsn    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
 
+  load_state(klon, nlev, nclv, numcols, nproma, &ptsphy, plcrit_aer, picrit_aer,
+	     pre_ice, pccn, pnice, pt, pq,
+	     tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
+	     tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
+	     pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
+	     phrsw, phrlw, pvervel, pap, paph, plsm,  ktype, plu,
+	     plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
 
-    plcrit_aer = (double*) malloc( sizeof(double) * numcols*nlev );
-    picrit_aer = (double*) malloc( sizeof(double) * numcols*nlev );
-    pre_ice    = (double*) malloc( sizeof(double) * numcols*nlev );
-    pccn       = (double*) malloc( sizeof(double) * numcols*nlev );
-    pnice      = (double*) malloc( sizeof(double) * numcols*nlev );
-    pt         = (double*) malloc( sizeof(double) * numcols*nlev );
-    pq         = (double*) malloc( sizeof(double) * numcols*nlev );
-    pvfa       = (double*) malloc( sizeof(double) * numcols*nlev );
-    pvfl       = (double*) malloc( sizeof(double) * numcols*nlev );
-    pvfi       = (double*) malloc( sizeof(double) * numcols*nlev );
-    pdyna      = (double*) malloc( sizeof(double) * numcols*nlev );
-    pdynl      = (double*) malloc( sizeof(double) * numcols*nlev );
-    pdyni      = (double*) malloc( sizeof(double) * numcols*nlev );
-    phrsw      = (double*) malloc( sizeof(double) * numcols*nlev );
-    phrlw      = (double*) malloc( sizeof(double) * numcols*nlev );
-    pvervel    = (double*) malloc( sizeof(double) * numcols*nlev );
-    pap        = (double*) malloc( sizeof(double) * numcols*nlev );
-    paph       = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    plsm       = (double*) malloc( sizeof(double) * numcols );
-    ktype      = (int*) malloc( sizeof(int) * numcols );
-    plu        = (double*) malloc( sizeof(double) * numcols*nlev );
-    plude      = (double*) malloc( sizeof(double) * numcols*nlev );
-    psnde      = (double*) malloc( sizeof(double) * numcols*nlev );
-    pmfu       = (double*) malloc( sizeof(double) * numcols*nlev );
-    pmfd       = (double*) malloc( sizeof(double) * numcols*nlev );
-    pa         = (double*) malloc( sizeof(double) * numcols*nlev );
-    pclv       = (double*) malloc( sizeof(double) * numcols*nlev*nclv );
-    psupsat    = (double*) malloc( sizeof(double) * numcols*nlev );
-    pcovptot   = (double*) malloc( sizeof(double) * numcols*nlev );
+  for (int i = 0; i < nblocks*(nlev+1)*nproma; i++) {
+    pfsqlf[i]    = 0.0;
+    pfsqif[i]    = 0.0;
+    pfcqnng[i]   = 0.0;
+    pfcqlng[i]   = 0.0;
+    pfsqrf[i]    = 0.0;
+    pfsqsf[i]    = 0.0;
+    pfcqrng[i]   = 0.0;
+    pfcqsng[i]   = 0.0;
+    pfsqltur[i]  = 0.0;
+    pfsqitur[i]  = 0.0;
+    pfplsl[i]    = 0.0;
+    pfplsn[i]    = 0.0;
+    pfhpsl[i]    = 0.0;
+    pfhpsn[i]    = 0.0;
+  }
+  for (int i = 0; i < nblocks*nlev*nproma; i++) { pcovptot[i] = 0.0; }
+  for (int i = 0; i < nblocks*nclv*nlev*nproma; i++) { tend_loc_cld[i] = 0.0; }
 
+  int b, bsize;
 
-    prainfrac_toprfz = (double*) malloc( sizeof(double) * numcols );
-    pfsqlf    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfsqif    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfcqnng   = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfcqlng   = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfsqrf    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfsqsf    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfcqrng   = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfcqsng   = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfsqltur  = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfsqitur  = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfplsl    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfplsn    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfhpsl    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
-    pfhpsn    = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
+  #pragma omp parallel for default(shared) private(b, bsize) num_threads(numthreads)
+  for (b = 0; b < nblocks; b++) {
+    const int idx = b*nlev*nproma;
+    const int idxp1 = b*(nlev+1)*nproma;
+    const int idx1d = b*nproma;
+    const int idx3d = b*nclv*nlev*nproma;
+    bsize = min(nproma, numcols - b*nproma);
 
-    load_state(klon, nlev, nclv, numcols, nproma, &ptsphy, plcrit_aer, picrit_aer,
-	       pre_ice, pccn, pnice, pt, pq,
-	       tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
-	       tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
-	       pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
-	       phrsw, phrlw, pvervel, pap, paph, plsm,  ktype, plu,
-	       plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
+    cloudsc_c(1, bsize, nproma, nlev, ptsphy, &pt[idx], &pq[idx],
+	      &tend_cml_t[idx], &tend_cml_q[idx], &tend_cml_a[idx], &tend_cml_cld[idx3d],
+	      &tend_tmp_t[idx], &tend_tmp_q[idx], &tend_tmp_a[idx], &tend_tmp_cld[idx3d],
+	      &tend_loc_t[idx], &tend_loc_q[idx], &tend_loc_a[idx], &tend_loc_cld[idx3d],
+	      &pvfa[idx], &pvfl[idx], &pvfi[idx],
+	      &pdyna[idx], &pdynl[idx], &pdyni[idx],
+	      &phrsw[idx], &phrlw[idx], &pvervel[idx],
+	      &pap[idx], &paph[idxp1], &plsm[idx1d], &ktype[idx1d],
+	      &plu[idx], &plude[idx], &psnde[idx], &pmfu[idx], &pmfd[idx],
+	      &pa[idx], &pclv[idx3d], &psupsat[idx],
+	      &plcrit_aer[idx], &picrit_aer[idx], &pre_ice[idx], &pccn[idx], &pnice[idx],
+	      &pcovptot[idx], &prainfrac_toprfz[idx1d], &pfsqlf[idxp1],
+	      &pfsqif[idxp1], &pfcqnng[idxp1], &pfcqlng[idxp1],
+	      &pfsqrf[idxp1], &pfsqsf[idxp1], &pfcqrng[idxp1],
+	      &pfcqsng[idxp1], &pfsqltur[idxp1], &pfsqitur[idxp1],
+	      &pfplsl[idxp1], &pfplsn[idxp1], &pfhpsl[idxp1], &pfhpsn[idxp1]);
+  }
 
-    for (int i = 0; i < (nlev+1)*numcols; i++) { 
-      pfsqlf[i]    = 0.0;
-      pfsqif[i]    = 0.0;
-      pfcqnng[i]   = 0.0;
-      pfcqlng[i]   = 0.0;
-      pfsqrf[i]    = 0.0;
-      pfsqsf[i]    = 0.0;
-      pfcqrng[i]   = 0.0;
-      pfcqsng[i]   = 0.0;
-      pfsqltur[i]  = 0.0;
-      pfsqitur[i]  = 0.0;
-      pfplsl[i]    = 0.0;
-      pfplsn[i]    = 0.0;
-      pfhpsl[i]    = 0.0;
-      pfhpsn[i]    = 0.0;
-    }
-    for (int i = 0; i < nlev*numcols; i++) { pcovptot[i] = 0.0; }
-    for (int i = 0; i < nclv*nlev*numcols; i++) { tend_loc_cld[i] = 0.0; }
+  cloudsc_validate(klon, nlev, nclv, numcols, nproma,
+		   plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,
+		   pfcqlng, pfcqnng, pfsqrf, pfsqsf, pfcqrng, pfcqsng,
+		   pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn,
+		   tend_loc_a, tend_loc_q, tend_loc_t, tend_loc_cld);
 
-    cloudsc_c(1, numcols, numcols, nlev, ptsphy,  pt, pq,  
-              tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
-              tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
-              tend_loc_t, tend_loc_q, tend_loc_a, tend_loc_cld,
-              pvfa,  pvfl,  pvfi, 
-              pdyna,  pdynl,  pdyni,  
-              phrsw, phrlw,  pvervel, 
-              pap,  paph,  plsm, ktype,
-              plu, plude, psnde,  pmfu,  pmfd,  
-              pa, pclv, psupsat,  
-              plcrit_aer,  picrit_aer,  pre_ice, pccn,  pnice,
-              pcovptot,  prainfrac_toprfz,  pfsqlf,  
-              pfsqif, pfcqnng,  pfcqlng,
-              pfsqrf,  pfsqsf,  pfcqrng,  
-              pfcqsng, pfsqltur, pfsqitur,
-              pfplsl,  pfplsn,  pfhpsl,  pfhpsn);
+  free(plcrit_aer); // ALLOCATE(PLCRIT_AER(KLON,KLEV)) 
+  free(picrit_aer); // ALLOCATE(PICRIT_AER(KLON,KLEV)) 
+  free(pre_ice);    // ALLOCATE(PRE_ICE(KLON,KLEV)) 
+  free(pccn);
+  free(pnice);
+  free(pt);
+  free(pq);
+  free(pvfa);
+  free(pvfl);
+  free(pvfi);
+  free(pdyna);
+  free(pdynl);
+  free(pdyni);
+  free(phrsw);
+  free(phrlw);
+  free(pvervel);
+  free(pap);
+  free(paph); // ALLOCATE(PAPH(KLON,KLEV+1))
+  free(plsm);
+  free(ktype);
+  free(plu);
+  free(plude);
+  free(psnde);
+  free(pmfu);
+  free(pmfd);
+  free(pa);
+  free(pclv);
+  free(psupsat);
+  free(pcovptot);
+  free(tend_loc_t);
+  free(tend_loc_q);
+  free(tend_loc_a);
+  free(tend_loc_cld);
+  free(tend_tmp_t);
+  free(tend_tmp_q);
+  free(tend_tmp_a);
+  free(tend_tmp_cld);
+  free(tend_cml_t);
+  free(tend_cml_q);
+  free(tend_cml_a);
+  free(tend_cml_cld);
 
-    printf("finished cloudsc, now checking results\n");
+  free(prainfrac_toprfz);
+  free(pfsqlf);
+  free(pfsqif);
+  free(pfcqnng);
+  free(pfcqlng);
+  free(pfsqrf);
+  free(pfsqsf);
+  free(pfcqrng);
+  free(pfcqsng);
+  free(pfsqltur);
+  free(pfsqitur);
+  free(pfplsl);
+  free(pfplsn);
+  free(pfhpsl);
+  free(pfhpsn);
 
-    cloudsc_validate(klon, nlev, nclv, numcols, nproma,
-		     plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,
-		     pfcqlng, pfcqnng, pfsqrf, pfsqsf, pfcqrng, pfcqsng,
-		     pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn,
-		     tend_loc_a, tend_loc_q, tend_loc_t, tend_loc_cld);
-
-    free(plcrit_aer); // ALLOCATE(PLCRIT_AER(KLON,KLEV)) 
-    free(picrit_aer); // ALLOCATE(PICRIT_AER(KLON,KLEV)) 
-    free(pre_ice);    // ALLOCATE(PRE_ICE(KLON,KLEV)) 
-    free(pccn);
-    free(pnice);
-    free(pt);
-    free(pq);
-    free(pvfa);
-    free(pvfl);
-    free(pvfi);
-    free(pdyna);
-    free(pdynl);
-    free(pdyni);
-    free(phrsw);
-    free(phrlw);
-    free(pvervel);
-    free(pap);
-    free(paph); // ALLOCATE(PAPH(KLON,KLEV+1))
-    free(plsm);
-    free(ktype);
-    free(plu);
-    free(plude);
-    free(psnde);
-    free(pmfu);
-    free(pmfd);
-    free(pa);
-    free(pclv);
-    free(psupsat);
-    free(pcovptot);
-    free(tend_loc_u);
-    free(tend_loc_v);
-    free(tend_loc_t);
-    free(tend_loc_o3);
-    free(tend_loc_q);
-    free(tend_loc_a);
-    free(tend_loc_cld);
-    free(tend_tmp_u);
-    free(tend_tmp_v);
-    free(tend_tmp_t);
-    free(tend_tmp_o3);
-    free(tend_tmp_q);
-    free(tend_tmp_a);
-    free(tend_tmp_cld);
-    free(tend_cml_u);
-    free(tend_cml_v);
-    free(tend_cml_t);
-    free(tend_cml_o3);
-    free(tend_cml_q);
-    free(tend_cml_a);
-    free(tend_cml_cld);
-
-    free(prainfrac_toprfz);
-    free(pfsqlf);
-    free(pfsqif);
-    free(pfcqnng);
-    free(pfcqlng);
-    free(pfsqrf);
-    free(pfsqsf);
-    free(pfcqrng);
-    free(pfcqsng);
-    free(pfsqltur);
-    free(pfsqitur);
-    free(pfplsl);
-    free(pfplsn);
-    free(pfhpsl);
-    free(pfhpsn);
-
-    free(yrecldp);
+  free(yrecldp);
 }
