@@ -47,7 +47,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     double *pap, *zpap;         //! Pressure on full levels
     double *paph, *zpaph;       //! Pressure on half levels
     double *plsm, *zplsm;           //! Land fraction (0-1) 
-    int    *ldcum, *llcum;          //! Convection active
     int    *ktype, *itype;          //! Convection type 0,1,2
     double *plu, *zplu;         //! Conv. condensate
     double *plude, *zplude;     //! Conv. detrained water 
@@ -137,7 +136,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     pap        = (double*) malloc( sizeof(double) * numcols*nlev );
     paph       = (double*) malloc( sizeof(double) * numcols*(nlev+1) );
     plsm       = (double*) malloc( sizeof(double) * numcols );
-    ldcum      = (int*) malloc( sizeof(int) * numcols );
     ktype      = (int*) malloc( sizeof(int) * numcols );
     plu        = (double*) malloc( sizeof(double) * numcols*nlev );
     plude      = (double*) malloc( sizeof(double) * numcols*nlev );
@@ -171,7 +169,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 	       tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
 	       tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
 	       pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
-	       phrsw, phrlw, pvervel, pap, paph, plsm, ldcum, ktype, plu,
+	       phrsw, phrlw, pvervel, pap, paph, plsm,  ktype, plu,
 	       plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
 
     for (int i = 0; i < (nlev+1)*numcols; i++) { 
@@ -200,7 +198,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
               pvfa,  pvfl,  pvfi, 
               pdyna,  pdynl,  pdyni,  
               phrsw, phrlw,  pvervel, 
-              pap,  paph,  plsm, ldcum, ktype, 
+              pap,  paph,  plsm, ktype,
               plu, plude, psnde,  pmfu,  pmfd,  
               pa, pclv, psupsat,  
               plcrit_aer,  picrit_aer,  pre_ice, pccn,  pnice,
@@ -237,7 +235,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     free(pap);
     free(paph); // ALLOCATE(PAPH(KLON,KLEV+1))
     free(plsm);
-    free(ldcum);
     free(ktype);
     free(plu);
     free(plude);

@@ -197,7 +197,7 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
     double* tend_tmp_t, double* tend_tmp_q, double* tend_tmp_a, double* tend_tmp_cld,
     double* pvfa, double* pvfl, double* pvfi, double* pdyna, double* pdynl, double* pdyni, 
     double* phrsw, double* phrlw, double* pvervel, double* pap, double* paph, double* plsm,
-    int* ldcum, int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
+    int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
     double* pmfd, double* pa, double* pclv, double* psupsat)
 {
   serialboxSerializer_t* serializer = serialboxSerializerCreate(Read, "./data", "input", "Binary");
@@ -236,7 +236,6 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
   load_and_expand_2d(serializer, savepoint, "PAP", nlon, nlev, nproma, ngptot, nblocks, pap);
   load_and_expand_2d(serializer, savepoint, "PAPH", nlon, nlev+1, nproma, ngptot, nblocks, paph);
   load_and_expand_1d(serializer, savepoint, "PLSM", nlon, nproma, ngptot, nblocks, plsm);
-  load_and_expand_1d_int(serializer, savepoint, "LDCUM", nlon, nproma, ngptot, nblocks, ldcum);
   load_and_expand_1d_int(serializer, savepoint, "KTYPE", nlon, nproma, ngptot, nblocks, ktype);
   load_and_expand_2d(serializer, savepoint, "PLU", nlon, nlev, nproma, ngptot, nblocks, plu);
   load_and_expand_2d(serializer, savepoint, "PLUDE", nlon, nlev, nproma, ngptot, nblocks, plude);

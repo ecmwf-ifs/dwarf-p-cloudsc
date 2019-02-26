@@ -12,7 +12,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	      double * restrict v_tendency_loc_t, double * restrict v_tendency_loc_q, double * restrict v_tendency_loc_a, double * restrict v_tendency_loc_cld,
 	      double * restrict v_pvfa, double * restrict v_pvfl, double * restrict v_pvfi, double * restrict v_pdyna, double * restrict v_pdynl, double * restrict v_pdyni,
 	      double * restrict v_phrsw, double * restrict v_phrlw, double * restrict v_pvervel, double * restrict v_pap, double * restrict v_paph, double * restrict v_plsm,
-	      int * restrict v_ldcum, int * restrict v_ktype, double * restrict v_plu, double * restrict v_plude, double * restrict v_psnde, double * restrict v_pmfu,
+	      int * restrict v_ktype, double * restrict v_plu, double * restrict v_plude, double * restrict v_psnde, double * restrict v_pmfu,
 	      double * restrict v_pmfd, double * restrict v_pa, double * restrict v_pclv, double * restrict v_psupsat, double * restrict v_plcrit_aer, double * restrict v_picrit_aer,
 	      double * restrict v_pre_ice, double * restrict v_pccn, double * restrict v_pnice, double * restrict v_pcovptot, double * restrict v_prainfrac_toprfz, double * restrict v_pfsqlf,
 	      double * restrict v_pfsqif, double * restrict v_pfcqnng, double * restrict v_pfcqlng, double * restrict v_pfsqrf, double * restrict v_pfsqsf, double * restrict v_pfcqrng,
@@ -46,7 +46,6 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   double (*pap)[klon] = (double (*)[klon]) v_pap;
   double (*paph)[klon] = (double (*)[klon]) v_paph;
   double (*plsm) = (double (*)) v_plsm;
-  int (*ldcum) = (int (*)) v_ldcum;
   int (*ktype) = (int (*)) v_ktype;
   double (*plu)[klon] = (double (*)[klon]) v_plu;
   double (*plude)[klon] = (double (*)[klon]) v_plude;
@@ -959,7 +958,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     {
       for (jl=kidia; jl<=kfdia; jl+=1) {
 	plude[jk-1][jl-1] = plude[jk-1][jl-1]*zdtgdp[jl-1];
-	if (ldcum[jl-1] && plu[jk+1-1][jl-1] > zepsec && plude[jk-1][jl-1] > yrecldp->rlmin)
+	if (plu[jk+1-1][jl-1] > zepsec && plude[jk-1][jl-1] > yrecldp->rlmin)
 	{
 	  zsolac[jl-1] = zsolac[jl-1] + plude[jk-1][jl-1]/plu[jk+1-1][jl-1];              // *diagnostic temperature split*
 	  zalfaw = zfoealfa[jk-1][jl-1];
@@ -972,11 +971,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	}
 
 	// *convective snow detrainment source
-	if (ldcum[jl-1])
-	{
-	  zsolqa[4-1][4-1][jl-1] = zsolqa[4-1][4-1][jl-1] + psnde[jk-1][jl-1]*zdtgdp[jl-1];
-	}
-
+	zsolqa[4-1][4-1][jl-1] = zsolqa[4-1][4-1][jl-1] + psnde[jk-1][jl-1]*zdtgdp[jl-1];
       }
 
     }

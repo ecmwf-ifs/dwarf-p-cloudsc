@@ -15,7 +15,7 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
 		double* tend_tmp_t, double* tend_tmp_q, double* tend_tmp_a, double* tend_tmp_cld,
 		double* pvfa, double* pvfl, double* pvfi, double* pdyna, double* pdynl, double* pdyni, 
 		double* phrsw, double* phrlw, double* pvervel, double* pap, double* paph, double* plsm,
-		int* ldcum, int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
+		int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
 		double* pmfd, double* pa, double* pclv, double* psupsat);
 
 
