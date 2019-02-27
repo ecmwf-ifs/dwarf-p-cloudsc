@@ -1,5 +1,9 @@
 #include "cloudsc_driver.h"
 
+#include <omp.h>
+#include "mycpu.h"
+
+
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
@@ -83,6 +87,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   int klon, nlev;
   int nblocks = (numcols / nproma) + min(numcols % nproma, 1);
 
+  double zinfo[4][numthreads];
+  const double zhpm = 12482329.0;  // IBM P7 HPM flop count for 100 points at L137
+
   nclv = 5;      // number of microphysics variables
   ncldql = 1;    // liquid cloud water
   ncldqi = 2;    // ice cloud water
@@ -161,52 +168,85 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 	     phrsw, phrlw, pvervel, pap, paph, plsm,  ktype, plu,
 	     plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
 
-  for (int i = 0; i < nblocks*(nlev+1)*nproma; i++) {
-    pfsqlf[i]    = 0.0;
-    pfsqif[i]    = 0.0;
-    pfcqnng[i]   = 0.0;
-    pfcqlng[i]   = 0.0;
-    pfsqrf[i]    = 0.0;
-    pfsqsf[i]    = 0.0;
-    pfcqrng[i]   = 0.0;
-    pfcqsng[i]   = 0.0;
-    pfsqltur[i]  = 0.0;
-    pfsqitur[i]  = 0.0;
-    pfplsl[i]    = 0.0;
-    pfplsn[i]    = 0.0;
-    pfhpsl[i]    = 0.0;
-    pfhpsn[i]    = 0.0;
+  double t1 = omp_get_wtime();
+
+#pragma omp parallel num_threads(numthreads) default(shared)
+  {
+    int b, bsize, icalls=0, igpc=0;
+    int coreid = mycpu();
+    int tid = omp_get_thread_num();
+    double start = omp_get_wtime();
+
+/* #pragma omp parallel for num_threads(numthreads) default(shared) private(b, bsize) */
+#pragma omp for schedule(runtime) nowait
+    for (b = 0; b < nblocks; b++) {
+      const int idx = b*nlev*nproma;
+      const int idxp1 = b*(nlev+1)*nproma;
+      const int idx1d = b*nproma;
+      const int idx3d = b*nclv*nlev*nproma;
+      bsize = min(nproma, numcols - b*nproma);
+
+      for (int i = 0; i < nlev*nproma; i++) { pcovptot[idx+i] = 0.0; }
+      for (int i = 0; i < nclv*nlev*nproma; i++) { tend_loc_cld[idx3d+i] = 0.0; }
+
+      cloudsc_c(1, bsize, nproma, nlev, ptsphy, &pt[idx], &pq[idx],
+		&tend_cml_t[idx], &tend_cml_q[idx], &tend_cml_a[idx], &tend_cml_cld[idx3d],
+		&tend_tmp_t[idx], &tend_tmp_q[idx], &tend_tmp_a[idx], &tend_tmp_cld[idx3d],
+		&tend_loc_t[idx], &tend_loc_q[idx], &tend_loc_a[idx], &tend_loc_cld[idx3d],
+		&pvfa[idx], &pvfl[idx], &pvfi[idx],
+		&pdyna[idx], &pdynl[idx], &pdyni[idx],
+		&phrsw[idx], &phrlw[idx], &pvervel[idx],
+		&pap[idx], &paph[idxp1], &plsm[idx1d], &ktype[idx1d],
+		&plu[idx], &plude[idx], &psnde[idx], &pmfu[idx], &pmfd[idx],
+		&pa[idx], &pclv[idx3d], &psupsat[idx],
+		&plcrit_aer[idx], &picrit_aer[idx], &pre_ice[idx], &pccn[idx], &pnice[idx],
+		&pcovptot[idx], &prainfrac_toprfz[idx1d], &pfsqlf[idxp1],
+		&pfsqif[idxp1], &pfcqnng[idxp1], &pfcqlng[idxp1],
+		&pfsqrf[idxp1], &pfsqsf[idxp1], &pfcqrng[idxp1],
+		&pfcqsng[idxp1], &pfsqltur[idxp1], &pfsqitur[idxp1],
+		&pfplsl[idxp1], &pfplsn[idxp1], &pfhpsl[idxp1], &pfhpsn[idxp1]);
+
+      icalls += 1;
+      igpc += bsize;
+    }
+
+    double end = omp_get_wtime();
+    /* int msec = diff * 1000 / CLOCKS_PER_SEC; */
+    zinfo[0][tid] = end - start;
+    zinfo[1][tid] = (double) coreid;
+    zinfo[2][tid] = (double) icalls;
+    zinfo[3][tid] = (double) igpc;
   }
-  for (int i = 0; i < nblocks*nlev*nproma; i++) { pcovptot[i] = 0.0; }
-  for (int i = 0; i < nblocks*nclv*nlev*nproma; i++) { tend_loc_cld[i] = 0.0; }
 
-  int b, bsize;
+  double t2 = omp_get_wtime();
 
-  #pragma omp parallel for default(shared) private(b, bsize) num_threads(numthreads)
-  for (b = 0; b < nblocks; b++) {
-    const int idx = b*nlev*nproma;
-    const int idxp1 = b*(nlev+1)*nproma;
-    const int idx1d = b*nproma;
-    const int idx3d = b*nclv*nlev*nproma;
-    bsize = min(nproma, numcols - b*nproma);
-
-    cloudsc_c(1, bsize, nproma, nlev, ptsphy, &pt[idx], &pq[idx],
-	      &tend_cml_t[idx], &tend_cml_q[idx], &tend_cml_a[idx], &tend_cml_cld[idx3d],
-	      &tend_tmp_t[idx], &tend_tmp_q[idx], &tend_tmp_a[idx], &tend_tmp_cld[idx3d],
-	      &tend_loc_t[idx], &tend_loc_q[idx], &tend_loc_a[idx], &tend_loc_cld[idx3d],
-	      &pvfa[idx], &pvfl[idx], &pvfi[idx],
-	      &pdyna[idx], &pdynl[idx], &pdyni[idx],
-	      &phrsw[idx], &phrlw[idx], &pvervel[idx],
-	      &pap[idx], &paph[idxp1], &plsm[idx1d], &ktype[idx1d],
-	      &plu[idx], &plude[idx], &psnde[idx], &pmfu[idx], &pmfd[idx],
-	      &pa[idx], &pclv[idx3d], &psupsat[idx],
-	      &plcrit_aer[idx], &picrit_aer[idx], &pre_ice[idx], &pccn[idx], &pnice[idx],
-	      &pcovptot[idx], &prainfrac_toprfz[idx1d], &pfsqlf[idxp1],
-	      &pfsqif[idxp1], &pfcqnng[idxp1], &pfcqlng[idxp1],
-	      &pfsqrf[idxp1], &pfsqsf[idxp1], &pfcqrng[idxp1],
-	      &pfcqsng[idxp1], &pfsqltur[idxp1], &pfsqitur[idxp1],
-	      &pfplsl[idxp1], &pfplsn[idxp1], &pfhpsl[idxp1], &pfhpsn[idxp1]);
+  printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
+  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s\n",
+    "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s");
+  double zfrac, zmflops;
+  for (int t = 0; t < numthreads; t++) {
+    const double tloc = zinfo[0][t];
+    const int coreid = (int) zinfo[1][t];
+    const int icalls = (int) zinfo[2][t];
+    const int igpc = (int) zinfo[3][t];
+    zfrac = (double)igpc / (double)numcols;
+    if (tloc > 0.0) {
+      zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tloc;
+    } else {
+      zmflops = 0.;
+    }
+    printf(" %10d%10d%10d%10d%10d %4d : %10d%10d @ core#\n",
+	   numthreads, numcols, igpc, icalls, nproma, t, (int)(tloc * 1000.), (int)zmflops);
   }
+  double tdiff = t2 - t1;
+  zfrac = 1.0;
+  if (tdiff > 0.0) {
+    zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tdiff;
+  } else {
+    zmflops = 0.0;
+  }
+  printf(" %10d%10d%10d%10d%10d %4d : %10d%10d TOTAL\n",
+	 numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops);
 
   cloudsc_validate(klon, nlev, nclv, numcols, nproma,
 		   plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,

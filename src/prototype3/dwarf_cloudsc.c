@@ -17,14 +17,12 @@ int main( int argc, char *argv[] ) {
   nproma = 4;
 
   if (argc == 1) {
-    printf("Calling c-cloudsc with default values : 1 thread, 160000 cols, nproma = 4 \n");
     cloudsc_driver(omp_threads, ngptot, nproma);
   }
   else if (argc == 4) {
     omp_threads = atoi( argv[1] );
     ngptot      = atoi( argv[2] );
     nproma      = atoi( argv[3] );
-    printf("Calling c-cloudsc with : %i thread, %i cols, nproma = %i \n", omp_threads,ngptot,nproma);
     cloudsc_driver(omp_threads, ngptot, nproma);
   }
   else {

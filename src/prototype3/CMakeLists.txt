@@ -18,6 +18,8 @@ if( HAVE_SERIALBOX )
 	    cloudsc/cloudsc_driver.c
 	    cloudsc/cloudsc_validate.h
 	    cloudsc/cloudsc_validate.c
+	    cloudsc/mycpu.h
+	    cloudsc/mycpu.c
     )
     target_link_libraries( dwarf-cloudsc-v3-lib PRIVATE
                            Serialbox::SerialboxCShared
