@@ -1,0 +1,4 @@
+INTERFACE
+   INTEGER FUNCTION mycpu() bind(c)
+   END FUNCTION mycpu
+END INTERFACE

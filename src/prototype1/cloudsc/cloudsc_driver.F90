@@ -1,11 +1,12 @@
 SUBROUTINE CLOUDSC_DRIVER
-USE PARKIND1 , ONLY : JPIM, JPRB
-USE YOMPHYDER ,ONLY : STATE_TYPE, DIMENSION_TYPE
-USE YOECLDP  , ONLY : NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
+USE PARKIND1, ONLY : JPIM, JPRB
+USE YOMPHYDER, ONLY : STATE_TYPE, DIMENSION_TYPE
+USE YOECLDP, ONLY : NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
 USE EXPAND_MOD, ONLY : loadjj, expand
-USE DIAG_MOD,   ONLY : NGPTOT, NPROMA, NGPBLKS, NPROMAS_IN, NUMOMP
+USE DIAG_MOD, ONLY : NGPTOT, NPROMA, NGPBLKS, NPROMAS_IN, NUMOMP
 USE timer_mod, ONLY : ftimer
 USE diff_mod, ONLY : errhead, errcalc, saveref
+USE serialize_mod, ONLY : query_dimensions, serialize, deserialize, serialize_reference
 
 #ifdef _OPENMP
 use omp_lib
@@ -231,6 +232,31 @@ CALL CLOUDSC_IN &
 
 close(iu)
 
+! Serialize the reference input (for debug and migration purposes)
+call serialize( &
+ & KLON, KLEV, PTSPHY,&
+ & PT, PQ, TENDENCY_CML, TENDENCY_TMP, &
+ & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
+ & PHRSW, PHRLW, PVERVEL, PAP, PAPH, &
+ & PLSM, LDCUM, KTYPE, PLU, PLUDE, PSNDE, PMFU, PMFD, &
+ & LDSLPHY,  LDMAINCALL, &
+ & PA, PCLV, PSUPSAT, PLCRIT_AER,PICRIT_AER, &
+ & PRE_ICE, PCCN, PNICE, PEXTRA, KFLDX)
+
+call query_dimensions(KLON, KLEV, KFLDX, name='input')
+write(0,*) 'KLON,KLEV,KFLDX,NCLV=',KLON,KLEV,KFLDX,NCLV
+
+call deserialize( &
+ & KLON, KLEV, PTSPHY,&
+ & PT, PQ, TENDENCY_CML, TENDENCY_TMP, &
+ & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
+ & PHRSW, PHRLW, PVERVEL, PAP, PAPH, &
+ & PLSM, LDCUM, KTYPE, PLU, PLUDE, PSNDE, PMFU, PMFD, &
+ & LDSLPHY, LDMAINCALL, &
+ & PA, PCLV, PSUPSAT, PLCRIT_AER,PICRIT_AER, &
+ & PRE_ICE, PCCN, PNICE, PEXTRA, KFLDX)
+
+
 ! Create reference results dataset based on input data & one sweep over CLOUDSC
 
 ! These guys are INTENT(INOUT) -- we do not want to destroy the original values
@@ -286,7 +312,16 @@ CALL CLOUDSC &
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
      & PFSQLTUR, PFSQITUR , &
      & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN,&
-     & PEXTRA_tmp,   KFLDX)  
+     & PEXTRA_tmp,   KFLDX)
+
+! Generate reference data if flag is set
+call serialize_reference( KLON, KLEV, KFLDX, &
+     & PLUDE_tmp,    PCOVPTOT, PRAINFRAC_TOPRFZ,&
+     & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
+     & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
+     & PFSQLTUR, PFSQITUR , &
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+     & TENDENCY_LOC)
 
 CALL saveref('PLUDE',PLUDE_tmp)
 DEALLOCATE(PLUDE_tmp)

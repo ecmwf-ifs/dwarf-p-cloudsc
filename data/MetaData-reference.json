@@ -1,0 +1,1588 @@
+{
+ "field_map": {
+  "PCOVPTOT": {
+   "dims": [
+    100,
+    137
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 137
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PCOVPTOT"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFCQLNG": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFCQLNG"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFCQNNG": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFCQNNG"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFCQRNG": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFCQRNG"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFCQSNG": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFCQSNG"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFHPSL": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFHPSL"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFHPSN": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFHPSN"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFPLSL": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFPLSL"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFPLSN": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFPLSN"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFSQIF": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFSQIF"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFSQITUR": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFSQITUR"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFSQLF": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFSQLF"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFSQLTUR": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFSQLTUR"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFSQRF": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFSQRF"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PFSQSF": {
+   "dims": [
+    100,
+    138
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 138
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PFSQSF"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PLUDE": {
+   "dims": [
+    100,
+    137
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 137
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PLUDE"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "PRAINFRAC_TOPRFZ": {
+   "dims": [
+    100
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "PRAINFRAC_TOPRFZ"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 1
+    }
+   },
+   "type_id": 5
+  },
+  "TENDENCY_LOC_A": {
+   "dims": [
+    100,
+    137
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 137
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "TENDENCY_LOC_A"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "TENDENCY_LOC_CLD": {
+   "dims": [
+    100,
+    137,
+    5
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 137
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 5
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "TENDENCY_LOC_CLD"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 3
+    }
+   },
+   "type_id": 5
+  },
+  "TENDENCY_LOC_Q": {
+   "dims": [
+    100,
+    137
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 137
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "TENDENCY_LOC_Q"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  },
+  "TENDENCY_LOC_T": {
+   "dims": [
+    100,
+    137
+   ],
+   "meta_info": {
+    "__bytesperelement": {
+     "type_id": 2,
+     "value": 8
+    },
+    "__elementtype": {
+     "type_id": 6,
+     "value": "double"
+    },
+    "__iminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__iplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__isize": {
+     "type_id": 2,
+     "value": 100
+    },
+    "__jminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__jsize": {
+     "type_id": 2,
+     "value": 137
+    },
+    "__kminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__kplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__ksize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lminushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lplushalosize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__lsize": {
+     "type_id": 2,
+     "value": 0
+    },
+    "__name": {
+     "type_id": 6,
+     "value": "TENDENCY_LOC_T"
+    },
+    "__rank": {
+     "type_id": 2,
+     "value": 2
+    }
+   },
+   "type_id": 5
+  }
+ },
+ "global_meta_info": {
+  "KFLDX": {
+   "type_id": 2,
+   "value": 0
+  },
+  "KLEV": {
+   "type_id": 2,
+   "value": 137
+  },
+  "KLON": {
+   "type_id": 2,
+   "value": 100
+  }
+ },
+ "prefix": "reference",
+ "savepoint_vector": {
+  "fields_per_savepoint": [
+   {
+    "reference": {
+     "PCOVPTOT": 0,
+     "PFCQLNG": 0,
+     "PFCQNNG": 0,
+     "PFCQRNG": 0,
+     "PFCQSNG": 0,
+     "PFHPSL": 0,
+     "PFHPSN": 0,
+     "PFPLSL": 0,
+     "PFPLSN": 0,
+     "PFSQIF": 0,
+     "PFSQITUR": 0,
+     "PFSQLF": 0,
+     "PFSQLTUR": 0,
+     "PFSQRF": 0,
+     "PFSQSF": 0,
+     "PLUDE": 0,
+     "PRAINFRAC_TOPRFZ": 0,
+     "TENDENCY_LOC_A": 0,
+     "TENDENCY_LOC_CLD": 0,
+     "TENDENCY_LOC_Q": 0,
+     "TENDENCY_LOC_T": 0
+    }
+   }
+  ],
+  "savepoints": [
+   {
+    "meta_info": null,
+    "name": "reference"
+   }
+  ]
+ },
+ "serialbox_version": 253
+}

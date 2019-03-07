@@ -1,3 +1,5 @@
+ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
+
 list(APPEND dwarf_P_cloudMicrophysics_IFSScheme_srcs
 cloudsc/cloud_layer.F90
 cloudsc/cloudsc.F90
@@ -12,6 +14,7 @@ support/abor1.F90
 support/diag_mod.F90
 support/diff_mod.F90
 support/expand_mod.F90
+support/serialize_mod.F90
 support/mycpu.c
 support/parkind1.F90
 support/routines.F90
@@ -33,30 +36,22 @@ support/yomphy2.F90
 support/yomphyder.F90
 )
 
-list(APPEND CLOUDSC_DEFINITIONS ECMWF)
-list(APPEND CLOUDSC_DEFINITIONS )
-if(${EC_OS_NAME} MATCHES "linux" )
-  list( APPEND CLOUDSC_DEFINITIONS LINUX)
-endif()
-
-if(${EC_OS_NAME} MATCHES "macosx")
-  list( APPEND CLOUDSC_DEFINITIONS DARWIN)
-endif()
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-
 ecbuild_add_library(TARGET dwarf-P-cloudMicrophysics-IFSScheme-libs
-                    DEFINITIONS
-                        ${CLOUDSC_DEFINITIONS}
                     SOURCES
                         ${dwarf_P_cloudMicrophysics_IFSScheme_srcs}
                         ${dwarf_P_cloudMicrophysics_IFSScheme_support_srcs}
 )
 
+if( HAVE_SERIALBOX )
+  target_compile_definitions( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE HAVE_SERIALBOX )
+  target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE
+                         Serialbox::SerialboxFortranShared )
+endif()
+
+target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE  OpenMP::OpenMP_Fortran )
 
 ecbuild_add_executable(TARGET  dwarf-P-cloudMicrophysics-IFSScheme
-                       SOURCES cloudsc_dwarf.F90 
-                       LIBS    dwarf-P-cloudMicrophysics-IFSScheme-libs                                
-)
-
+                       SOURCES cloudsc_dwarf.F90 )
+target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme dwarf-P-cloudMicrophysics-IFSScheme-libs )
