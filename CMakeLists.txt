@@ -24,7 +24,7 @@ project(dwarf-P-cloudMicrophysics-IFSScheme VERSION 1.1 LANGUAGES C Fortran )
 
 # include ecbuild required commands
 include(ecbuild_system NO_POLICY_SCOPE)
-ecbuild_requires_macro_version(2.99)
+ecbuild_requires_macro_version(2.10.1)
 ecbuild_declare_project()
 
 include(CompilerFlags)
