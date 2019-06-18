@@ -31,7 +31,10 @@ if( HAVE_SERIALBOX )
         SOURCES
             dwarf_cloudsc.F90 
     )
-    target_link_libraries( dwarf-cloudsc-v2 dwarf-cloudsc-v2-lib )
+    target_link_libraries( dwarf-cloudsc-v2 PRIVATE
+                           dwarf-cloudsc-v2-lib
+                           Serialbox::SerialboxFortranShared
+                           OpenMP::OpenMP_Fortran )
 
 
 else()
