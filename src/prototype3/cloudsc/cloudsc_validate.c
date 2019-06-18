@@ -35,7 +35,7 @@ void print_error(const char *name, double zminval, double zmaxval, double zmaxer
 }
 
 
-void validate_1d(const char *name, double *v_ref, double *v_field, const int nlon, int ngptot, int nblocks)
+void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jk;
@@ -69,7 +69,7 @@ void validate_1d(const char *name, double *v_ref, double *v_field, const int nlo
 }
 
 
-void validate_2d(const char *name, double *v_ref, double *v_field, const int nlon, const int nlev, int ngptot, int nblocks)
+void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int nlev, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk;
@@ -105,8 +105,8 @@ void validate_2d(const char *name, double *v_ref, double *v_field, const int nlo
 }
 
 
-void validate_3d(const char *name, double *v_ref, double *v_field, const int nlon,
-    const int nlev, const int nclv, int ngptot, int nblocks)
+void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
+    int nlev, int nclv, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk, jm;
