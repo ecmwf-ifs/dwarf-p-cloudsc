@@ -52,3 +52,9 @@ elseif ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Cray")
     ecbuild_add_fortran_flags("-Wl, --as-needed"       )
 
 endif()
+
+if ("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
+    ecbuild_add_c_flags("-O2"                                    )
+    ecbuild_add_c_flags("-g"                                     )
+    ecbuild_add_c_flags("-fopenmp"                               )
+endif()
