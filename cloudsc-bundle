@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# BOOTSTRAP ecbundle-build or ecbundle-create,
+# and pass arguments to it.
+
+# Check at least one argument was provided:
+if [[ $# -eq 0 ]]; then
+  echo "FAIL: At least one argument expected: 'build' or 'create'"
+  exit 1
+fi
+
+export ecbundle_VERSION=develop
+
+# Which script do we run?
+# Partial matches are accepted, e.g. "$0 cr"
+if [[ "build" == "$1"* ]]; then
+  BOOTSTRAPPED=${ECBUNDLE_DIR}ecbundle-build
+elif [[ "create" == "$1"* ]]; then
+  BOOTSTRAPPED=${ECBUNDLE_DIR}ecbundle-create
+else
+  echo "FAIL: Expected 'build' or 'create' as first argument"
+  exit 1
+fi
+shift
+
+BUNDLE_DIR="$( cd $( dirname "${BASH_SOURCE[0]}" ) && pwd -P )"
+
+if [[ -z "${BITBUCKET}" ]]; then
+   export BITBUCKET=ssh://git@git.ecmwf.int
+fi
+
+# Download ecbundle scripts if not already available
+command_exists () { type "$1" &> /dev/null ; }
+if ! command_exists ${BOOTSTRAPPED} ; then
+    if [[ ! -d ${BUNDLE_DIR}/ecbundle ]]; then
+        git clone ${BITBUCKET}/ecsdk/ecbundle.git ${BUNDLE_DIR}/ecbundle
+        ( cd ${BUNDLE_DIR}/ecbundle && git checkout ${ecbundle_VERSION} )
+    fi
+    export PATH=${BUNDLE_DIR}/ecbundle:${PATH}
+fi
+
+# Make sure python has version 2.7
+python_version_ok=$(python -c "import sys; print( sys.version_info[:3] >= tuple(map(int, '2.7'.split('.'))))")
+if [[ "${python_version_ok}" != "True" ]]; then
+    if [[ ${ARCH:-unset} == "cray" ]]; then
+        { module unload python; module load python; } 2>/dev/null
+    else
+        echo "ERROR: Installed python requires version \"2.7\" or greater"
+        exit 1
+    fi
+fi
+
+${BOOTSTRAPPED} "$@"

@@ -1,0 +1,22 @@
+---
+### Bundle
+
+name    : cloudsc-bundle
+version : 1.0.0-develop
+cmake : >
+        CMAKE_LINK_DEPENDS_NO_SHARED=ON
+
+projects :
+
+    - ecbuild :
+        git     : ${BITBUCKET}/escape/ecbuild
+        version : develop
+        bundle  : false
+
+    - cloudsc :
+        dir     : $PWD
+        subdir  : src/prototype1
+        version : develop
+        require : ecbuild
+
+...
