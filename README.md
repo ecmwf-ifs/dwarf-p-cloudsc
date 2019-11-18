@@ -27,7 +27,14 @@ Prototypes available
 - prototype1: includes the cloud scheme from IFS that is naturally 
 suited to host-type machines and optimized on the Cray system at 
 ECMWF.
-
+- Prototype 2: A cleaned up version of the CLOUDSC prototype that is
+  validates runs against platform and language agnostic off-line
+  reference data via serialbox. The kernel code also is slightly
+  cleaner than the one in prototype 1. Note: To run this prototype,
+  please install with serialbox enabled (default in bundle) and
+  run protoype1 once in the build directory.
+- Prototype 3: Standalone C version of the kernel that has been generated
+  by ECMWF tools. This requires the serialbox validation mechanism as above.
 
 Third Party Requirements
 ------------------------
