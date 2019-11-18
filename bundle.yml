@@ -13,10 +13,15 @@ projects :
         version : develop
         bundle  : false
 
+    - serialbox :
+        git     : https://github.com/GridTools/serialbox
+        version : master
+        cmake   : SERIALBOX_BUILD_SHARED=ON SERIALBOX_ENABLE_FORTRAN=ON Serialbox_TARGETS_EXPORTED=TRUE
+
     - cloudsc :
         dir     : $PWD
-        subdir  : src/prototype1
+        ## subdir  : src/prototype1
         version : develop
-        require : ecbuild
+        require : ecbuild serialbox
 
 ...

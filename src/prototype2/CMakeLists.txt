@@ -23,7 +23,7 @@ if( HAVE_SERIALBOX )
             cloudsc/cloudsc.F90
     )
     target_link_libraries( dwarf-cloudsc-v2-lib PRIVATE
-                           Serialbox::SerialboxFortranShared
+                           Serialbox::Serialbox_Fortran
                            OpenMP::OpenMP_Fortran )
 
     ecbuild_add_executable(
@@ -33,7 +33,6 @@ if( HAVE_SERIALBOX )
     )
     target_link_libraries( dwarf-cloudsc-v2 PRIVATE
                            dwarf-cloudsc-v2-lib
-                           Serialbox::SerialboxFortranShared
                            OpenMP::OpenMP_Fortran )
 
 

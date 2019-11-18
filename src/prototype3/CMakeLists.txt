@@ -22,7 +22,7 @@ if( HAVE_SERIALBOX )
 	    cloudsc/mycpu.c
     )
     target_link_libraries( dwarf-cloudsc-v3-lib PRIVATE
-                           Serialbox::SerialboxCShared
+                           Serialbox::Serialbox_C
                            OpenMP::OpenMP_Fortran )
     target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<INSTALL_INTERFACE:include> )
     target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc> )
@@ -32,7 +32,8 @@ if( HAVE_SERIALBOX )
         SOURCES
             dwarf_cloudsc.c
     )
-    target_link_libraries( dwarf-cloudsc-v3 dwarf-cloudsc-v3-lib )
+    target_link_libraries( dwarf-cloudsc-v3 PRIVATE
+                           dwarf-cloudsc-v3-lib )
 
 
 else()
