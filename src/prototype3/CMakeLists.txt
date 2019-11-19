@@ -37,6 +37,10 @@ if( Serialbox_FOUND )
     target_link_libraries( dwarf-cloudsc-v3 PRIVATE
                            dwarf-cloudsc-v3-lib )
 
+    # Create symlink for the input data
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+
 else()
     message(STATUS "Serialbox not found, disabling prototype3" )
 endif()

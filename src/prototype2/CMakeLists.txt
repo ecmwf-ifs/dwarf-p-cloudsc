@@ -37,6 +37,9 @@ if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
                            dwarf-cloudsc-v2-lib
                            OpenMP::OpenMP_Fortran )
 
+    # Create symlink for the input data
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
 
 else()
     message(STATUS "Serialbox not found, disabling prototype2" )
