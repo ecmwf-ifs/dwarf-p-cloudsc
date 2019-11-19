@@ -14,8 +14,8 @@ projects :
         bundle  : false
 
     - serialbox :
-        git     : https://github.com/GridTools/serialbox
-        version : master
+        git     : ${BITBUCKET}/escape/serialbox
+        version : v2.5.4/patched
         cmake   : SERIALBOX_BUILD_SHARED=ON SERIALBOX_ENABLE_FORTRAN=ON Serialbox_TARGETS_EXPORTED=TRUE
 
     - prototype1 :
@@ -26,7 +26,7 @@ projects :
         require : ecbuild
 
     - prototype2 :
-        # Cleaned up version of CLOUDSC that use input and reference data from Serialbox
+        # Cleaned up version of CLOUDSC that uses input and reference data from Serialbox
         dir     : $PWD
         subdir  : src/prototype2
         version : develop
