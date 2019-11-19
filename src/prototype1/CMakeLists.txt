@@ -1,5 +1,7 @@
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
+find_package( OpenMP COMPONENTS Fortran )
+
 list(APPEND dwarf_P_cloudMicrophysics_IFSScheme_srcs
 cloudsc/cloud_layer.F90
 cloudsc/cloudsc.F90
@@ -55,3 +57,7 @@ target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE  OpenMP:
 ecbuild_add_executable(TARGET  dwarf-P-cloudMicrophysics-IFSScheme
                        SOURCES cloudsc_dwarf.F90 )
 target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme dwarf-P-cloudMicrophysics-IFSScheme-libs )
+
+# Create symlink for the input data
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/cloudsc.bin ${CMAKE_CURRENT_BINARY_DIR}/../../../cloudsc.bin )

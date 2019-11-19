@@ -18,9 +18,11 @@ projects :
         version : master
         cmake   : SERIALBOX_BUILD_SHARED=ON SERIALBOX_ENABLE_FORTRAN=ON Serialbox_TARGETS_EXPORTED=TRUE
 
-    - cloudsc :
+    - prototype1 :
         dir     : $PWD
-        ## subdir  : src/prototype1
+        subdir  : src/prototype1
+        version : develop
+        require : ecbuild
         version : develop
         require : ecbuild serialbox
 
