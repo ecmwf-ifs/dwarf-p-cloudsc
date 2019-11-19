@@ -1,7 +1,9 @@
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
+find_package( OpenMP COMPONENTS C )
+find_package( Serialbox )
 
-if( HAVE_SERIALBOX )
+if( Serialbox_FOUND )
 
     ecbuild_add_library(
         TARGET dwarf-cloudsc-v3-lib
@@ -23,7 +25,7 @@ if( HAVE_SERIALBOX )
     )
     target_link_libraries( dwarf-cloudsc-v3-lib PRIVATE
                            Serialbox::Serialbox_C
-                           OpenMP::OpenMP_Fortran )
+                           OpenMP::OpenMP_C )
     target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<INSTALL_INTERFACE:include> )
     target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc> )
 
@@ -34,7 +36,6 @@ if( HAVE_SERIALBOX )
     )
     target_link_libraries( dwarf-cloudsc-v3 PRIVATE
                            dwarf-cloudsc-v3-lib )
-
 
 else()
     message(STATUS "Serialbox not found, disabling prototype3" )

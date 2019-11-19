@@ -29,19 +29,6 @@ ecbuild_declare_project()
 
 include(CompilerFlags)
 
-find_package( OpenMP COMPONENTS Fortran )
-
-# Find installed version of serialbox
-find_package( Serialbox )
-if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
-  if( NOT SERIALBOX_HAS_FORTRAN )
-    message( STATUS "Serialbox found has no Fortran support... Certain features or prototypes may not be compiled." )
-    set( HAVE_SERIALBOX FALSE )
-  else()
-    set( HAVE_SERIALBOX TRUE )
-  endif()
-endif()
-
 # build executables
 add_subdirectory(src)
 

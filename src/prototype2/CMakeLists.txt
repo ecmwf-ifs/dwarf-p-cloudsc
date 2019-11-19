@@ -1,8 +1,10 @@
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+find_package( OpenMP COMPONENTS Fortran )
+find_package( Serialbox )
 
-if( HAVE_SERIALBOX )
+if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
 
     ecbuild_add_library(
         TARGET  dwarf-cloudsc-v2-lib

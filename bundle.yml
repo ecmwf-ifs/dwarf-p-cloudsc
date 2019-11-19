@@ -19,11 +19,30 @@ projects :
         cmake   : SERIALBOX_BUILD_SHARED=ON SERIALBOX_ENABLE_FORTRAN=ON Serialbox_TARGETS_EXPORTED=TRUE
 
     - prototype1 :
+        # The original version of CLOUDSC, as extracted from the operational IFS
         dir     : $PWD
         subdir  : src/prototype1
         version : develop
         require : ecbuild
+
+    - prototype2 :
+        # Cleaned up version of CLOUDSC that use input and reference data from Serialbox
+        dir     : $PWD
+        subdir  : src/prototype2
         version : develop
         require : ecbuild serialbox
+
+    - prototype3 :
+        # Standalone C version of CLOUDSC (uses Serialbox data for input and reference)
+        dir     : $PWD
+        subdir  : src/prototype3
+        version : develop
+        require : ecbuild serialbox
+
+options :
+
+    - toolchain :
+        help  : Specify compiler options via supplied toolchain file
+        cmake : CMAKE_TOOLCHAIN_FILE={{value}}
 
 ...
