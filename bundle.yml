@@ -16,7 +16,11 @@ projects :
     - serialbox :
         git     : ${BITBUCKET}/escape/serialbox
         version : v2.5.4/patched
-        cmake   : SERIALBOX_BUILD_SHARED=ON SERIALBOX_ENABLE_FORTRAN=ON Serialbox_TARGETS_EXPORTED=TRUE
+        cmake   : >
+            SERIALBOX_BUILD_SHARED=ON
+            SERIALBOX_ENABLE_FORTRAN=ON
+            SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
+            Serialbox_TARGETS_EXPORTED=TRUE
 
     - prototype1 :
         # The original version of CLOUDSC, as extracted from the operational IFS
