@@ -1,6 +1,6 @@
 MODULE CLOUDSC_DRIVER_MOD
 
-  USE PARKIND1, ONLY: JPIM, JPRB
+  USE PARKIND1, ONLY: JPIM, JPRB, JPRD
   USE YOMPHYDER, ONLY: STATE_TYPE
   USE YOECLDP, ONLY : NCLV
   USE TIMER_MOD, ONLY : FTIMER
@@ -97,16 +97,16 @@ CONTAINS
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND,NGPBLKS
 
-    REAL(KIND=JPRB) :: t1, t2, tloc, tdiff
-    REAL(KIND=JPRB), parameter :: zhpm = 12482329.0_JPRB ! IBM P7 HPM flop count for 100 points at L137
-    REAL(KIND=JPRB) :: zmflops ! MFlops/s rate
-    REAL(KIND=JPRB) :: zfrac ! fraction of gp columns handled by thread
+    REAL(KIND=JPRD) :: t1, t2, tloc, tdiff
+    REAL(KIND=JPRD), parameter :: zhpm = 12482329.0_JPRD ! IBM P7 HPM flop count for 100 points at L137
+    REAL(KIND=JPRD) :: zmflops ! MFlops/s rate
+    REAL(KIND=JPRD) :: zfrac ! fraction of gp columns handled by thread
 
     INTEGER(KIND=JPIM) :: tid ! thread id from 0 .. NUMOMP - 1
     INTEGER(KIND=JPIM) :: coreid ! core id thread belongs to
     INTEGER(KIND=JPIM) :: icalls ! number of calls to CLOUDSC == number of blocks handled by particular thread
     INTEGER(KIND=JPIM) :: igpc ! number of gp columns handled by particular thread
-    REAL(KIND=JPRB) :: zinfo(4,0:NUMOMP - 1)
+    REAL(KIND=JPRD) :: zinfo(4,0:NUMOMP - 1)
 
 #include "mycpu.intfb.h"
 
