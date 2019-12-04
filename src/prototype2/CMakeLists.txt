@@ -4,10 +4,20 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 find_package( OpenMP COMPONENTS Fortran )
 find_package( Serialbox )
 
+# Add option for single-precision builds
+ecbuild_add_option(
+    FEATURE SINGLE_PRECISION
+    DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
+)
+if( HAVE_SINGLE_PRECISION )
+  list(APPEND CLOUDSC_DEFINITIONS SINGLE)
+endif()
+
+
 if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
 
     ecbuild_add_library(
-        TARGET  dwarf-cloudsc-v2-lib
+        TARGET dwarf-cloudsc-v2-lib
         SOURCES 
             modules/parkind1.F90
             modules/yoecldp.F90
@@ -23,19 +33,26 @@ if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
             cloudsc/cloudsc_global_state_mod.F90
             cloudsc/cloudsc_driver_mod.F90
             cloudsc/cloudsc.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    target_link_libraries( dwarf-cloudsc-v2-lib PRIVATE
-                           Serialbox::Serialbox_Fortran
-                           OpenMP::OpenMP_Fortran )
+    target_link_libraries(
+        dwarf-cloudsc-v2-lib
+        PRIVATE
+            Serialbox::Serialbox_Fortran
+            OpenMP::OpenMP_Fortran
+    )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-v2
-        SOURCES
-            dwarf_cloudsc.F90 
+        TARGET dwarf-cloudsc-v2
+        SOURCES dwarf_cloudsc.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    target_link_libraries( dwarf-cloudsc-v2 PRIVATE
-                           dwarf-cloudsc-v2-lib
-                           OpenMP::OpenMP_Fortran )
+    target_link_libraries(
+        dwarf-cloudsc-v2
+	PRIVATE
+            dwarf-cloudsc-v2-lib
+            OpenMP::OpenMP_Fortran
+    )
 
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
