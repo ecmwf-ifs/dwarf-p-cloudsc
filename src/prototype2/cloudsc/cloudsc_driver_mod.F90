@@ -1,9 +1,10 @@
 MODULE CLOUDSC_DRIVER_MOD
 
-  USE PARKIND1, ONLY: JPIM, JPRB, JPRD
+  USE PARKIND1, ONLY: JPIM, JPIB, JPRB, JPRD
   USE YOMPHYDER, ONLY: STATE_TYPE
   USE YOECLDP, ONLY : NCLV
   USE TIMER_MOD, ONLY : FTIMER
+  USE EC_PMON_MOD, ONLY: EC_PMON
 
 #ifdef _OPENMP
 use omp_lib
@@ -108,7 +109,17 @@ CONTAINS
     INTEGER(KIND=JPIM) :: igpc ! number of gp columns handled by particular thread
     REAL(KIND=JPRD) :: zinfo(4,0:NUMOMP - 1)
 
+    INTEGER(KIND=JPIB) :: ENERGY, POWER, POWER_TOTAL, POWER_COUNT
+    LOGICAL            :: LEC_PMON = .FALSE.
+    CHARACTER(LEN=1)   :: CLEC_PMON
+
 #include "mycpu.intfb.h"
+
+    CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
+    IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
+
+    POWER_TOTAL = 0_JPIB
+    POWER_COUNT = 0_JPIB
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 1003 format(5x,'NUMOMP=',i0,', NGPTOT=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -124,7 +135,7 @@ CONTAINS
     icalls = 0
     igpc = 0
 
-    !$omp do schedule(runtime)
+    !$omp do schedule(runtime) reduction(+:power_total,power_count)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -159,6 +170,15 @@ CONTAINS
               & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
               & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
               & PEXTRA(:,:,:,IBL),   KFLDX)
+
+         IF (LEC_PMON) THEN
+           ! Sample power consuption
+           IF (MOD(IBL, 100) == 0) THEN
+             CALL EC_PMON(ENERGY, POWER)
+             POWER_TOTAL = POWER_TOTAL + POWER
+             POWER_COUNT = POWER_COUNT + 1
+           END IF
+         END IF
 
          icalls = icalls + 1
          igpc = igpc + ICEND
@@ -204,6 +224,11 @@ CONTAINS
       endif
       write(0,1002) numomp,ngptot,int(sum(zinfo(4,:))),ngpblks,nproma,-1,&
            & int(tdiff*1000.0_JPRB),int(zmflops)
+
+      IF (LEC_PMON) THEN
+        print *, "Avg. power usage (sampled): ", (REAL(POWER_TOTAL, KIND=JPRD) / REAL(POWER_COUNT, KIND=JPRD))
+        print *, "Number of power measurements: ", POWER_COUNT
+      END IF
     
   END SUBROUTINE CLOUDSC_DRIVER
 

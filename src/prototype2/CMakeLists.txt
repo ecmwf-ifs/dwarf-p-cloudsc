@@ -29,6 +29,7 @@ if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
             modules/abor1.F90
             modules/timer_mod.F90
             modules/mycpu.c
+            modules/ec_pmon_mod.F90
             cloudsc/load_state_mod.F90
             cloudsc/cloudsc_global_state_mod.F90
             cloudsc/cloudsc_driver_mod.F90
