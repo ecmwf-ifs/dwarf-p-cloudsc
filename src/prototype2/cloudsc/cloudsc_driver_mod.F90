@@ -109,7 +109,7 @@ CONTAINS
     INTEGER(KIND=JPIM) :: igpc ! number of gp columns handled by particular thread
     REAL(KIND=JPRD) :: zinfo(4,0:NUMOMP - 1)
 
-    INTEGER(KIND=JPIB) :: ENERGY, POWER, POWER_TOTAL, POWER_COUNT
+    INTEGER(KIND=JPIB) :: ENERGY, POWER, POWER_TOTAL, POWER_MAX, POWER_COUNT
     LOGICAL            :: LEC_PMON = .FALSE.
     CHARACTER(LEN=1)   :: CLEC_PMON
 
@@ -118,6 +118,7 @@ CONTAINS
     CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
     IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
 
+    POWER_MAX = 0_JPIB
     POWER_TOTAL = 0_JPIB
     POWER_COUNT = 0_JPIB
 
@@ -127,7 +128,7 @@ CONTAINS
 
     t1 = ftimer()
 
-    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,tloc,tid,coreid,icalls,igpc) &
+    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,tloc,tid,coreid,icalls,igpc,energy,power) &
     !$omp& num_threads(NUMOMP)
     tloc = ftimer()
     tid = omp_get_thread_num()
@@ -135,7 +136,7 @@ CONTAINS
     icalls = 0
     igpc = 0
 
-    !$omp do schedule(runtime) reduction(+:power_total,power_count)
+    !$omp do schedule(runtime) reduction(+:power_total,power_count) reduction(max:power_max)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -175,6 +176,7 @@ CONTAINS
            ! Sample power consuption
            IF (MOD(IBL, 100) == 0) THEN
              CALL EC_PMON(ENERGY, POWER)
+             POWER_MAX = MAX(POWER_MAX, POWER)
              POWER_TOTAL = POWER_TOTAL + POWER
              POWER_COUNT = POWER_COUNT + 1
            END IF
@@ -226,8 +228,9 @@ CONTAINS
            & int(tdiff*1000.0_JPRB),int(zmflops)
 
       IF (LEC_PMON) THEN
-        print *, "Avg. power usage (sampled): ", (REAL(POWER_TOTAL, KIND=JPRD) / REAL(POWER_COUNT, KIND=JPRD))
-        print *, "Number of power measurements: ", POWER_COUNT
+        print *, "Power usage (sampled):: max: ", POWER_MAX, "avg:", &
+         & (REAL(POWER_TOTAL, KIND=JPRD) / REAL(POWER_COUNT, KIND=JPRD)), &
+         & "count:", POWER_COUNT
       END IF
     
   END SUBROUTINE CLOUDSC_DRIVER
