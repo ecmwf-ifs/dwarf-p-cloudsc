@@ -1,8 +1,7 @@
-module load_state_mod
+module load_array_mod
   USE PARKIND1 , ONLY : JPIM, JPRB, JPRD
   USE YOMPHYDER, ONLY : STATE_TYPE
 
-  ! Argh....
   USE YOECLDP  , ONLY : YRECLDP, TECLDP, NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
   USE YOMCST   , ONLY : RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
   USE YOETHF   , ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
@@ -547,4 +546,4 @@ contains
   subroutine finalize()
     call ppser_finalize()
   end subroutine finalize
-end module load_state_mod
+end module load_array_mod

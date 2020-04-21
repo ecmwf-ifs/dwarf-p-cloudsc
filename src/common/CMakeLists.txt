@@ -16,26 +16,30 @@ endif()
 
 if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
 
-    ecbuild_add_executable(
-        TARGET dwarf-cloudsc-v2
-        SOURCES
-            dwarf_cloudsc.F90
-            cloudsc/cloudsc_global_state_mod.F90
-            cloudsc/cloudsc_driver_mod.F90
-            cloudsc/cloudsc.F90
+    ecbuild_add_library(
+        TARGET cloudsc-common-lib
+        SOURCES 
+            module/parkind1.F90
+            module/yoecldp.F90
+            module/yomcst.F90
+            module/yoethf.F90
+            module/yoephli.F90
+            module/yomphyder.F90
+            module/routines.F90
+            module/abor1.F90
+            module/timer_mod.F90
+            module/mycpu.c
+            module/ec_pmon_mod.F90
+            module/load_array_mod.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries(
-        dwarf-cloudsc-v2
-	PRIVATE
-            cloudsc-common-lib
+        cloudsc-common-lib
+        PRIVATE
+            Serialbox::Serialbox_Fortran
             OpenMP::OpenMP_Fortran
     )
 
-    # Create symlink for the input data
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-
 else()
-    message(STATUS "Serialbox not found, disabling prototype2" )
+    message(STATUS "Serialbox not found, disabling cloudsc-common-lib" )
 endif()
