@@ -17,16 +17,16 @@ endif()
 if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
 
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-v2
+        TARGET dwarf-cloudsc-fortran
         SOURCES
             dwarf_cloudsc.F90
-            cloudsc/cloudsc_global_state_mod.F90
-            cloudsc/cloudsc_driver_mod.F90
-            cloudsc/cloudsc.F90
+            cloudsc_global_state_mod.F90
+            cloudsc_driver_mod.F90
+            cloudsc.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries(
-        dwarf-cloudsc-v2
+        dwarf-cloudsc-fortran
 	PRIVATE
             cloudsc-common-lib
             OpenMP::OpenMP_Fortran

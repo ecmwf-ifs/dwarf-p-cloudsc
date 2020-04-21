@@ -31,6 +31,7 @@ if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
             module/mycpu.c
             module/ec_pmon_mod.F90
             module/load_array_mod.F90
+            module/validate_mod.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries(
