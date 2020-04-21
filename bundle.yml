@@ -22,26 +22,11 @@ projects :
             SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
             Serialbox_TARGETS_EXPORTED=TRUE
 
-    - prototype1 :
-        # The original version of CLOUDSC, as extracted from the operational IFS
+    - cloudsc-dwarf :
+        # The CLOUDSC dwarf project with multiple implementations
         dir     : $PWD
-        subdir  : src/prototype1
         version : develop
         require : ecbuild
-
-    - prototype2 :
-        # Cleaned up version of CLOUDSC that uses input and reference data from Serialbox
-        dir     : $PWD
-        subdir  : src/prototype2
-        version : develop
-        require : ecbuild serialbox
-
-    - prototype3 :
-        # Standalone C version of CLOUDSC (uses Serialbox data for input and reference)
-        dir     : $PWD
-        subdir  : src/prototype3
-        version : develop
-        require : ecbuild serialbox
 
 options :
 
