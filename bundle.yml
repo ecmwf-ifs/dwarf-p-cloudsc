@@ -19,7 +19,7 @@ projects :
         cmake   : >
             SERIALBOX_BUILD_SHARED=ON
             SERIALBOX_ENABLE_FORTRAN=ON
-            SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
+            SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=ON
             Serialbox_TARGETS_EXPORTED=TRUE
 
     - cloudsc-dwarf :
@@ -34,4 +34,7 @@ options :
         help  : Specify compiler options via supplied toolchain file
         cmake : CMAKE_TOOLCHAIN_FILE={{value}}
 
+    - no-experimental :
+        help  : Turn off Serialbox experimental filesystem
+        cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
 ...
