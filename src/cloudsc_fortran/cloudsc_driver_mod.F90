@@ -17,16 +17,15 @@ CONTAINS
      & PVERVEL,  PAP,      PAPH, &
      & PLSM,     LDCUM,    KTYPE, &
      & PLU,      PLUDE,    PSNDE,    PMFU,     PMFD, &
-     & LDSLPHY,  LDMAINCALL, PA, &
-     & PCLV,     PSUPSAT,&
+     & PA,       PCLV,     PSUPSAT,&
      & PLCRIT_AER,PICRIT_AER, PRE_ICE, &
      & PCCN,     PNICE,&
      & PCOVPTOT, PRAINFRAC_TOPRFZ, &
      & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG, &
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG, &
      & PFSQLTUR, PFSQITUR, &
-     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
-     & PEXTRA    )
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN &
+     & )
     ! Driver routine that performans the parallel NPROMA-blocking and
     ! invokes the CLOUDSC kernel
 
@@ -57,10 +56,7 @@ CONTAINS
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PSNDE(:,:,:) ! Conv. detrained snow
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PMFU(:,:,:)  ! Conv. mass flux up
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PMFD(:,:,:)  ! Conv. mass flux down
-    LOGICAL                                               :: LDSLPHY 
-    LOGICAL                                               :: LDMAINCALL   ! T if main call to cloudsc
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PA(:,:,:)    ! Original Cloud fraction (t)
-    REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(INOUT) :: PEXTRA(:,:,:,:) ! extra fields
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PCLV(:,:,:,:) 
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PSUPSAT(:,:,:)
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PLCRIT_AER(:,:,:) 
@@ -134,11 +130,8 @@ CONTAINS
               & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
               & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
               & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
-              & LDSLPHY,  LDMAINCALL, &
               !---prognostic fields
-              & PA(:,:,IBL),&
-              & PCLV(:,:,:,IBL),  &
-              & PSUPSAT(:,:,IBL),&
+              & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
               !-- arrays for aerosol-cloud interactions
               & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
               & PRE_ICE(:,:,IBL),&
@@ -150,7 +143,7 @@ CONTAINS
               & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
               & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
               & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-              & PEXTRA(:,:,:,IBL),   KFLDX)
+              & KFLDX)
 
          IF (LEC_PMON) THEN
            ! Sample power consuption
