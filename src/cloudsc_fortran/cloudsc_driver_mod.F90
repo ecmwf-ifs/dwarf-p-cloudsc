@@ -1,23 +1,14 @@
 MODULE CLOUDSC_DRIVER_MOD
-
   USE PARKIND1, ONLY: JPIM, JPIB, JPRB, JPRD
   USE YOMPHYDER, ONLY: STATE_TYPE
   USE YOECLDP, ONLY : NCLV
-  USE TIMER_MOD, ONLY : FTIMER
+  USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE EC_PMON_MOD, ONLY: EC_PMON
 
-#ifdef _OPENMP
-use omp_lib
-#else
-#define omp_get_num_threads() 1
-#define omp_get_max_threads() 1
-#define omp_get_thread_num() 0
-#endif
-
-IMPLICIT NONE
-
+  IMPLICIT NONE
 
 CONTAINS
+
   SUBROUTINE CLOUDSC_DRIVER( &
      & NUMOMP, NPROMA, NLEV, NGPTOT, KFLDX, PTSPHY, &
      & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
@@ -98,22 +89,11 @@ CONTAINS
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND,NGPBLKS
 
-    REAL(KIND=JPRD) :: t1, t2, tloc, tdiff
-    REAL(KIND=JPRD), parameter :: zhpm = 12482329.0_JPRD ! IBM P7 HPM flop count for 100 points at L137
-    REAL(KIND=JPRD) :: zmflops ! MFlops/s rate
-    REAL(KIND=JPRD) :: zfrac ! fraction of gp columns handled by thread
-
-    INTEGER(KIND=JPIM) :: tid ! thread id from 0 .. NUMOMP - 1
-    INTEGER(KIND=JPIM) :: coreid ! core id thread belongs to
-    INTEGER(KIND=JPIM) :: icalls ! number of calls to CLOUDSC == number of blocks handled by particular thread
-    INTEGER(KIND=JPIM) :: igpc ! number of gp columns handled by particular thread
-    REAL(KIND=JPRD) :: zinfo(4,0:NUMOMP - 1)
-
+    TYPE(PERFORMANCE_TIMER) :: TIMER
+    INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
     INTEGER(KIND=JPIB) :: ENERGY, POWER, POWER_TOTAL, POWER_MAX, POWER_COUNT
     LOGICAL            :: LEC_PMON = .FALSE.
     CHARACTER(LEN=1)   :: CLEC_PMON
-
-#include "mycpu.intfb.h"
 
     CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
     IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
@@ -126,15 +106,15 @@ CONTAINS
 1003 format(5x,'NUMOMP=',i0,', NGPTOT=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
     write(0,1003) NUMOMP,NGPTOT,NPROMA,NGPBLKS
 
-    t1 = ftimer()
+    ! Global timer for the parallel region
+    CALL TIMER%START(NUMOMP)
 
-    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,tloc,tid,coreid,icalls,igpc,energy,power) &
+    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID,energy,power) &
     !$omp& num_threads(NUMOMP)
-    tloc = ftimer()
-    tid = omp_get_thread_num()
-    coreid = mycpu()
-    icalls = 0
-    igpc = 0
+
+    ! Local timer for each thread
+    TID = GET_THREAD_NUM()
+    CALL TIMER%THREAD_START(TID)
 
     !$omp do schedule(runtime) reduction(+:power_total,power_count) reduction(max:power_max)
     DO JKGLO=1,NGPTOT,NPROMA
@@ -182,50 +162,21 @@ CONTAINS
            END IF
          END IF
 
-         icalls = icalls + 1
-         igpc = igpc + ICEND
+         ! Log number of columns processed by this thread
+         CALL TIMER%THREAD_LOG(TID, IGPC=ICEND)
       ENDDO
 
       !-- The "nowait" is here to get correct local timings (tloc) per thread
       !   i.e. we should not wait for slowest thread to finish before measuring tloc
       !$omp end do nowait
 
-      tloc = ftimer() - tloc
-      zinfo(1,tid) = tloc
-      zinfo(2,tid) = coreid
-      zinfo(3,tid) = icalls
-      zinfo(4,tid) = igpc
+      CALL TIMER%THREAD_END(TID)
+
       !$omp end parallel
 
-      t2 = ftimer()
+      CALL TIMER%END()
 
-1000  format(1x,5a10,1x,a4,' : ',2a10)
-1001  format(1x,5i10,1x,i4,' : ',2i10,:,' @ core#',i0)
-1002  format(1x,5i10,1x,i4,' : ',2i10,  ' : TOTAL')
-      write(0,1000) 'NUMOMP','NGPTOT','#GP-cols','#BLKS','NPROMA','tid#','Time(msec)','MFlops/s'
-      do tid=0,NUMOMP-1
-         tloc = zinfo(1,tid)
-         coreid = int(zinfo(2,tid))
-         icalls = int(zinfo(3,tid))
-         igpc = int(zinfo(4,tid))
-         zfrac = real(igpc,JPRB)/real(NGPTOT,JPRB)
-         if (tloc > 0.0_JPRB) then
-            zmflops = 1.0e-06_JPRB * zfrac * zhpm * (real(NGPTOT,JPRB)/real(100,JPRB))/tloc
-         else
-            zmflops = 0.0_JPRB
-         endif
-         write(0,1001) numomp,ngptot,igpc,icalls,nproma,tid,&
-              & int(tloc*1000.0_JPRB),int(zmflops),coreid
-      enddo
-      tdiff = t2-t1
-      zfrac = 1.0_JPRB
-      if (tdiff > 0.0_JPRB) then
-         zmflops = 1.0e-06_JPRB * zfrac * zhpm * (real(NGPTOT,JPRB)/real(100,JPRB))/tdiff
-      else
-         zmflops = 0.0_JPRB
-      endif
-      write(0,1002) numomp,ngptot,int(sum(zinfo(4,:))),ngpblks,nproma,-1,&
-           & int(tdiff*1000.0_JPRB),int(zmflops)
+      CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
 
       IF (LEC_PMON) THEN
         print *, "Power usage (sampled):: max: ", POWER_MAX, "avg:", &
