@@ -6,7 +6,7 @@ find_package( Serialbox )
 if( Serialbox_FOUND )
 
     ecbuild_add_library(
-        TARGET dwarf-cloudsc-v3-lib
+        TARGET dwarf-cloudsc-c-lib
 	INSTALL_HEADERS LISTED
         SOURCES
 	    cloudsc/yoecldp_c.h
@@ -23,19 +23,20 @@ if( Serialbox_FOUND )
 	    cloudsc/mycpu.h
 	    cloudsc/mycpu.c
     )
-    target_link_libraries( dwarf-cloudsc-v3-lib PRIVATE
+    target_link_libraries( dwarf-cloudsc-c-lib PRIVATE
                            Serialbox::Serialbox_C
                            OpenMP::OpenMP_C )
-    target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<INSTALL_INTERFACE:include> )
-    target_include_directories( dwarf-cloudsc-v3-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc> )
+    target_include_directories( dwarf-cloudsc-c-lib PUBLIC $<INSTALL_INTERFACE:include> )
+    target_include_directories( dwarf-cloudsc-c-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc> )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-v3
-        SOURCES
-            dwarf_cloudsc.c
+        TARGET  dwarf-cloudsc-c
+        SOURCES dwarf_cloudsc.c
     )
-    target_link_libraries( dwarf-cloudsc-v3 PRIVATE
-                           dwarf-cloudsc-v3-lib )
+    target_link_libraries(
+        dwarf-cloudsc-c PRIVATE
+        dwarf-cloudsc-c-lib
+    )
 
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
