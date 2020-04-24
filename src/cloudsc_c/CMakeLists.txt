@@ -1,8 +1,5 @@
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
-find_package( OpenMP COMPONENTS C )
-find_package( Serialbox )
-
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_C
     DESCRIPTION "Build the C version CLOUDSC using Serialbox" DEFAULT ON

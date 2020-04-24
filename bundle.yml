@@ -34,9 +34,9 @@ options :
         help  : Specify compiler options via supplied toolchain file
         cmake : CMAKE_TOOLCHAIN_FILE={{value}}
 
-    - serialbox-experimental :
-        help  : Enable Serialbox experimental filesystem [ON|OFF]
-        cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM={{value}}
+    - single-precision :
+        help  : Enable single precision build of the dwarf
+        cmake : ENABLE_SINGLE_PRECISION=ON
 
     - cloudsc-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
@@ -49,5 +49,13 @@ options :
     - cloudsc-c :
         help  : Build the C version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_C={{value}}
+
+    - without-serialbox :
+        help  : Disable Serialbox utility for platform-agnostic file I/O [ON|OFF]
+        cmake : CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
+
+    - serialbox-experimental :
+        help  : Enable Serialbox experimental filesystem [ON|OFF]
+        cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM={{value}}
 
 ...

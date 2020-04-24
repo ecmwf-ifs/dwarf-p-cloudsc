@@ -9,7 +9,7 @@ module load_array_mod
    & RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
   USE YOEPHLI  , ONLY : YREPHLI, TEPHLI
 
-
+#ifdef HAVE_SERIALBOX
   USE m_serialize, ONLY: &
    fs_create_savepoint, &
    fs_add_serializer_metainfo, &
@@ -23,6 +23,7 @@ module load_array_mod
    ppser_serializer_ref, &
    ppser_set_mode, &
    ppser_savepoint
+#endif
 
   implicit none
 
@@ -50,6 +51,7 @@ contains
     INTEGER(KIND=JPIM),INTENT(OUT) :: KFLDX
     CHARACTER(*), INTENT(IN) :: NAME
 
+#ifdef HAVE_SERIALBOX
     ! Get dimensions information from stored metadata
     call ppser_initialize(directory='data', prefix='dummy', prefix_ref=NAME)
     call fs_create_savepoint(NAME, ppser_savepoint)
@@ -59,6 +61,9 @@ contains
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'KLEV', KLEV)
     ! call fs_get_serializer_metainfo(ppser_serializer_ref, 'NCLV', NCLV)
     call fs_get_serializer_metainfo(ppser_serializer_ref, 'KFLDX', KFLDX)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
 
   end subroutine query_dimensions
 
@@ -69,9 +74,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim) :: buffer(nlon)
 
+#ifdef HAVE_SERIALBOX
     allocate(field(nproma, nblocks))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
     call expand(buffer, field, nlon, nproma, ngptot, nblocks)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_and_expand_i1
 
   subroutine load_and_expand_l1(name, field, nlon, nproma, ngptot, nblocks)
@@ -81,9 +90,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     logical :: buffer(nlon)
 
+#ifdef HAVE_SERIALBOX
     allocate(field(nproma, nblocks))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
     call expand(buffer, field, nlon, nproma, ngptot, nblocks)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_and_expand_l1
 
   subroutine load_and_expand_r1(name, field, nlon, nproma, ngptot, nblocks)
@@ -93,9 +106,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     real(kind=JPRD) :: buffer(nlon)
 
+#ifdef HAVE_SERIALBOX
     allocate(field(nproma, nblocks))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
     call expand(buffer, field, nlon, nproma, ngptot, nblocks)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_and_expand_r1
 
   subroutine load_and_expand_r2(name, field, nlon, nlev, nproma, ngptot, nblocks)
@@ -105,9 +122,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     real(kind=JPRD) :: buffer(nlon, nlev)
 
+#ifdef HAVE_SERIALBOX
     allocate(field(nproma, nlev, nblocks))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
     call expand(buffer, field, nlon, nproma, nlev, ngptot, nblocks)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_and_expand_r2
 
   subroutine load_and_expand_r3(name, field, nlon, nlev, ndim, nproma, ngptot, nblocks)
@@ -117,9 +138,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     real(kind=JPRD) :: buffer(nlon, nlev, ndim)
 
+#ifdef HAVE_SERIALBOX
     allocate(field(nproma, nlev, ndim, nblocks))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
     call expand(buffer, field, nlon, nproma, nlev, ndim, ngptot, nblocks)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_and_expand_r3
 
   subroutine load_and_expand_state(name, state, field, nlon, nlev, ndim, nproma, ngptot, nblocks)
@@ -135,6 +160,7 @@ contains
     allocate(state(nblocks))
     allocate(field(nproma, nlev, 6+ndim, nblocks))
 
+#ifdef HAVE_SERIALBOX
     ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_U', buffer(:,:,1))
     ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_V', buffer(:,:,2))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_T', buffer(:,:,3))
@@ -142,6 +168,9 @@ contains
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_A', buffer(:,:,5))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_Q', buffer(:,:,6))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_CLD', buffer(:,:,7:))
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
 
     ! call expand(buffer(:,:,1), field(:,:,1,:), nlon, nproma, nlev, ngptot, nblocks)
     ! call expand(buffer(:,:,2), field(:,:,2,:), nlon, nproma, nlev, ngptot, nblocks)
@@ -326,22 +355,34 @@ contains
     real(kind=JPRB), intent(inout) :: variable
     real(kind=JPRD) :: buffer
 
+#ifdef HAVE_SERIALBOX
     call fs_get_serializer_metainfo(ppser_serializer_ref, name, buffer)
     variable = buffer
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_metainfo_scalar_real
 
   subroutine load_metainfo_scalar_int(name, variable)
     character(len=*), intent(in) :: name
     integer(kind=JPIM), intent(inout) :: variable
 
+#ifdef HAVE_SERIALBOX
     call fs_get_serializer_metainfo(ppser_serializer_ref, name, variable)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_metainfo_scalar_int
 
   subroutine load_metainfo_scalar_log(name, variable)
     character(len=*), intent(in) :: name
     logical, intent(inout) :: variable
 
+#ifdef HAVE_SERIALBOX
     call fs_get_serializer_metainfo(ppser_serializer_ref, name, variable)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_metainfo_scalar_log
 
   subroutine load_metainfo_field(name, variable)
@@ -349,10 +390,14 @@ contains
     real(kind=JPRB), intent(inout) :: variable(:)
     real(kind=JPRD), allocatable :: buffer(:)
 
+#ifdef HAVE_SERIALBOX
     allocate(buffer(size(variable)))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
     variable(:) = buffer(:)
     deallocate(buffer)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine load_metainfo_field
 
   subroutine initialise_parameters(PTSPHY, LDSLPHY, LDMAINCALL)
@@ -360,7 +405,8 @@ contains
     ! Note that we use `ppser_serializer_ref` to get the previously stored data
     real(kind=JPRB), intent(inout) :: PTSPHY
     logical, intent(inout) :: LDSLPHY, LDMAINCALL
-    
+
+#ifdef HAVE_SERIALBOX
     call load_metainfo('PTSPHY', PTSPHY)
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'LDSLPHY', LDSLPHY)
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'LDMAINCALL', LDMAINCALL)
@@ -541,9 +587,16 @@ contains
     call load_metainfo('YREPHLI_RLPDRAG', YREPHLI%RLPDRAG)
     call load_metainfo('YREPHLI_RLPEVAP', YREPHLI%RLPEVAP)
     call load_metainfo('YREPHLI_RLPP00', YREPHLI%RLPP00)
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine initialise_parameters
 
   subroutine finalize()
+#ifdef HAVE_SERIALBOX
     call ppser_finalize()
+#else
+    call abor1('ERROR: Serialbox not found.')
+#endif
   end subroutine finalize
 end module load_array_mod

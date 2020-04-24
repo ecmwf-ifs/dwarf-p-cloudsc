@@ -1,7 +1,5 @@
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
-find_package( OpenMP COMPONENTS Fortran )
-
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_PROTOTYPE1
     DESCRIPTION "Build the original operational Fortran prototype" DEFAULT ON

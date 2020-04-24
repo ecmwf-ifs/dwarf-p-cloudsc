@@ -29,6 +29,22 @@ ecbuild_declare_project()
 
 include(CompilerFlags)
 
+find_package( OpenMP COMPONENTS Fortran C )
+
+# Add Serialbox utility package for platform-agnostic file I/O
+find_package( Serialbox )
+if( Serialbox_FOUND )
+    list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
+endif()
+
+# Add option for single-precision builds
+ecbuild_add_option( FEATURE SINGLE_PRECISION
+    DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
+)
+if( HAVE_SINGLE_PRECISION )
+    list(APPEND CLOUDSC_DEFINITIONS SINGLE)
+endif()
+
 # build executables
 add_subdirectory(src)
 
