@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 find_package( OpenMP COMPONENTS Fortran )
 find_package( Serialbox )
 
+
 # Add option for single-precision builds
 ecbuild_add_option(
     FEATURE SINGLE_PRECISION

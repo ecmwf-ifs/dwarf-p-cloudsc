@@ -34,7 +34,20 @@ options :
         help  : Specify compiler options via supplied toolchain file
         cmake : CMAKE_TOOLCHAIN_FILE={{value}}
 
-    - no-experimental :
-        help  : Turn off Serialbox experimental filesystem
-        cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
+    - serialbox-experimental :
+        help  : Enable Serialbox experimental filesystem [ON|OFF]
+        cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM={{value}}
+
+    - cloudsc-prototype1 :
+        help  : Build the original operational Fortran prototype [ON|OFF]
+        cmake : ENABLE_CLOUDSC_PROTOTYPE1={{value}}
+
+    - cloudsc-fortran :
+        help  : Build the new Fortran version of CLOUDSC [ON|OFF]
+        cmake : ENABLE_CLOUDSC_FORTRAN={{value}}
+
+    - cloudsc-c :
+        help  : Build the C version of CLOUDSC [ON|OFF]
+        cmake : ENABLE_CLOUDSC_C={{value}}
+
 ...
