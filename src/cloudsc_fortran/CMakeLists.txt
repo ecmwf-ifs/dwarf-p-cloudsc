@@ -1,6 +1,3 @@
-ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN
     DESCRIPTION "Build the new Fortran version CLOUDSC using Serialbox" DEFAULT ON

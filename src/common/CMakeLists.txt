@@ -1,5 +1,4 @@
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 ecbuild_add_library( TARGET cloudsc-common-lib
     SOURCES
@@ -18,6 +17,8 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         module/validate_mod.F90
     DEFINITIONS ${CLOUDSC_DEFINITIONS}
 )
+target_include_directories( cloudsc-common-lib PUBLIC $<INSTALL_INTERFACE:include> )
+target_include_directories( cloudsc-common-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 if( OpenMP_Fortran_FOUND )
     target_link_libraries( cloudsc-common-lib PRIVATE OpenMP::OpenMP_Fortran )

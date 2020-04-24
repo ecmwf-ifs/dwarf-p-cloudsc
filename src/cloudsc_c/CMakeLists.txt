@@ -1,5 +1,3 @@
-ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
-
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_C
     DESCRIPTION "Build the C version CLOUDSC using Serialbox" DEFAULT ON
@@ -45,5 +43,5 @@ if( HAVE_CLOUDSC_C AND Serialbox_FOUND )
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
 
 else()
-    message(STATUS "Serialbox not found, disabling prototype3" )
+    message(STATUS "Serialbox not found, disabling C prototype" )
 endif()
