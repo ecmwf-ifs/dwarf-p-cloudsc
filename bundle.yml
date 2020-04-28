@@ -21,6 +21,7 @@ projects :
             SERIALBOX_ENABLE_FORTRAN=ON
             SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=ON
             Serialbox_TARGETS_EXPORTED=TRUE
+            CMAKE_CXX_EXTENSIONS=ON
 
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
