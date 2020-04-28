@@ -43,6 +43,10 @@ definition shipped in the main repository. For this please
 git clone ssh://git@git.ecmwf.int/escape/dwarf-p-cloudmicrophysics-ifsscheme.git cloudsc_bundle
 cd cloudsc_bundle
 <git checkout develop>  # For the latest version please use the `develop` branch
+
+# On ECMWF workstations load boost and cmake
+module load boost
+module load cmake
 ```
 
 The individual protoype variants of the dwarf can be enable or disabled in the `bundle.yml`
