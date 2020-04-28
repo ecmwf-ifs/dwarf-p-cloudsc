@@ -27,8 +27,6 @@ include(ecbuild_system NO_POLICY_SCOPE)
 ecbuild_requires_macro_version(2.10.1)
 ecbuild_declare_project()
 
-include(CompilerFlags)
-
 find_package( OpenMP COMPONENTS Fortran C )
 
 # Add Serialbox utility package for platform-agnostic file I/O
