@@ -51,6 +51,10 @@ options :
         help  : Build the C version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_C={{value}}
 
+    - cloudsc-gpu-naive :
+        help  : Build the naive GPU version CLOUDSC (!$acc kernels) [ON|OFF]
+        cmake : ENABLE_CLOUDSC_GPU_NAIVE={{value}}
+
     - without-serialbox :
         help  : Disable Serialbox utility for platform-agnostic file I/O
         cmake : CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
