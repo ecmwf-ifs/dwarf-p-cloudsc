@@ -21,122 +21,122 @@ CONTAINS
    END SUBROUTINE abor1
   END INTERFACE
 
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: plcrit_aer ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: picrit_aer ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pre_ice ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pccn ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pnice ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: plcrit_aer ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: picrit_aer ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pre_ice ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pccn ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pnice ( 1 : nproma , 1 : klev )
   INTEGER ( KIND= 4 ) , INTENT(IN) :: klev
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: ptsphy
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pt ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pq ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: tendency_cml_t ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: tendency_cml_q ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: tendency_cml_cld ( 1 : nproma , 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: tendency_tmp_t ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: tendency_tmp_q ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: tendency_tmp_a ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: tendency_tmp_cld ( 1 : nproma , 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: tendency_loc_t ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: tendency_loc_q ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: tendency_loc_a ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: tendency_loc_cld ( 1 : nproma , 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pvfa ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pvfl ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pvfi ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pdyna ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pdynl ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pdyni ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: phrsw ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: phrlw ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pvervel ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pap ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: paph ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: plsm ( 1 : nproma )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: ptsphy
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pt ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pq ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: tendency_cml_t ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: tendency_cml_q ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: tendency_cml_cld ( 1 : nproma , 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: tendency_tmp_t ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: tendency_tmp_q ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: tendency_tmp_a ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: tendency_tmp_cld ( 1 : nproma , 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: tendency_loc_t ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: tendency_loc_q ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: tendency_loc_a ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: tendency_loc_cld ( 1 : nproma , 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pvfa ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pvfl ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pvfi ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pdyna ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pdynl ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pdyni ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: phrsw ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: phrlw ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pvervel ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pap ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: paph ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: plsm ( 1 : nproma )
   LOGICAL , INTENT(IN) :: ldcum ( 1 : nproma )
   INTEGER ( KIND= 4 ) , INTENT(IN) :: ktype ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: plu ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(INOUT) :: plude ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: psnde ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pmfu ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pmfd ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pa ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: plu ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(INOUT) :: plude ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: psnde ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pmfu ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pmfd ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pa ( 1 : nproma , 1 : klev )
   INTEGER ( KIND= 4 ) , INTENT(IN) :: kfldx
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: pclv ( 1 : nproma , 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(IN) :: psupsat ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pcovptot ( 1 : nproma , 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: prainfrac_toprfz ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfsqlf ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfsqif ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfcqlng ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfcqnng ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfsqrf ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfsqsf ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfcqrng ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfcqsng ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfsqltur ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfsqitur ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfplsl ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfplsn ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfhpsl ( 1 : nproma , 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , INTENT(OUT) :: pfhpsn ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: pclv ( 1 : nproma , 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) , INTENT(IN) :: psupsat ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pcovptot ( 1 : nproma , 1 : klev )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: prainfrac_toprfz ( 1 : nproma )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfsqlf ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfsqif ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfcqlng ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfcqnng ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfsqrf ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfsqsf ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfcqrng ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfcqsng ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfsqltur ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfsqitur ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfplsl ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfplsn ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfhpsl ( 1 : nproma , 1 : klev + 1 )
+  REAL ( KIND=JPRB ) , INTENT(OUT) :: pfhpsn ( 1 : nproma , 1 : klev + 1 )
   TYPE ( tecldp ) , INTENT(INOUT) :: yrecldp
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlcond1 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlcond2 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlevap
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zleros
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlevapl ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlevapi ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrainaut ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsnowaut ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zliqcld ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zicecld ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfokoop ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfoealfa ( 1 : klev + 1 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zicenuclei ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlicld ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zacond
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zaeros
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlfinalsum ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdqs ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztold ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqold ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdtgdp ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrdtgdp ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztrpaus ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcovpclr ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zpreclr
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcovptot ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcovpmax ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqpretot ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdpevap
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdtforc
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdtdiab
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztp1 ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zldefr ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zldifdt ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdtgdpf ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlcust ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zacust ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zmf ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrho ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmp1 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmp2 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmp3 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmp4 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmp5 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmp6 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmp7 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zalfawm ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsolab ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsolac ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zanew
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zanewm1 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zgdp ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zda ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zli ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: za ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zaorig ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zlcond1 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zlcond2 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zlevap
+  REAL ( KIND=JPRB ) :: zleros
+  REAL ( KIND=JPRB ) :: zlevapl ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zlevapi ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zrainaut ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zsnowaut ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zliqcld ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zicecld ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zfokoop ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zfoealfa ( 1 : klev + 1 )
+  REAL ( KIND=JPRB ) :: zicenuclei ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zlicld ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zacond
+  REAL ( KIND=JPRB ) :: zaeros
+  REAL ( KIND=JPRB ) :: zlfinalsum ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zdqs ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztold ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zqold ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zdtgdp ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zrdtgdp ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztrpaus ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zcovpclr ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zpreclr
+  REAL ( KIND=JPRB ) :: zcovptot ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zcovpmax ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zqpretot ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zdpevap
+  REAL ( KIND=JPRB ) :: zdtforc
+  REAL ( KIND=JPRB ) :: zdtdiab
+  REAL ( KIND=JPRB ) :: ztp1 ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zldefr ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zldifdt ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zdtgdpf ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zlcust ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zacust ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zmf ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zrho ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztmp1 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztmp2 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztmp3 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztmp4 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztmp5 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztmp6 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: ztmp7 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zalfawm ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zsolab ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zsolac ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zanew
+  REAL ( KIND=JPRB ) :: zanewm1 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zgdp ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zda ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zli ( 1 : klev )
+  REAL ( KIND=JPRB ) :: za ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zaorig ( 1 : klev )
   LOGICAL :: llflag
   LOGICAL :: llo1
   INTEGER ( KIND= 4 ) :: icall
@@ -147,180 +147,180 @@ CONTAINS
   INTEGER ( KIND= 4 ) :: jo
   INTEGER ( KIND= 4 ) :: jlen
   INTEGER ( KIND= 4 ) :: is
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdp ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zpaphd ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zalfa
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zalfaw
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zbeta
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zbeta1
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcfpr
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcor
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcdmax
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zmin ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlcondlim
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdenom
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdpmxdt
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdpr
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdtdp
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ze
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zepsec
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfac
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfaci
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfacw
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zgdcp
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zinew
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlcrit
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zmfdn
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zprecip
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqe
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqsat
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqtmst
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrdcp
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrhc
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsig
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsigk
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zwtot
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zzco
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zzdl
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zzrh
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zzzdt
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqadj
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqnew
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztnew
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrg_r
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zgdph_r
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcons1
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcond
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcons1a
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlfinal
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zmelt
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zevap
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfrz
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zvpliq
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zvpice
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zadd
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zbdd
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcvds
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zice0
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdepos
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsupsat ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfall
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zre_ice
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrldcp
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqp1env
+  REAL ( KIND=JPRB ) :: zdp ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zpaphd ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zalfa
+  REAL ( KIND=JPRB ) :: zalfaw
+  REAL ( KIND=JPRB ) :: zbeta
+  REAL ( KIND=JPRB ) :: zbeta1
+  REAL ( KIND=JPRB ) :: zcfpr
+  REAL ( KIND=JPRB ) :: zcor
+  REAL ( KIND=JPRB ) :: zcdmax
+  REAL ( KIND=JPRB ) :: zmin ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zlcondlim
+  REAL ( KIND=JPRB ) :: zdenom
+  REAL ( KIND=JPRB ) :: zdpmxdt
+  REAL ( KIND=JPRB ) :: zdpr
+  REAL ( KIND=JPRB ) :: zdtdp
+  REAL ( KIND=JPRB ) :: ze
+  REAL ( KIND=JPRB ) :: zepsec
+  REAL ( KIND=JPRB ) :: zfac
+  REAL ( KIND=JPRB ) :: zfaci
+  REAL ( KIND=JPRB ) :: zfacw
+  REAL ( KIND=JPRB ) :: zgdcp
+  REAL ( KIND=JPRB ) :: zinew
+  REAL ( KIND=JPRB ) :: zlcrit
+  REAL ( KIND=JPRB ) :: zmfdn
+  REAL ( KIND=JPRB ) :: zprecip
+  REAL ( KIND=JPRB ) :: zqe
+  REAL ( KIND=JPRB ) :: zqsat
+  REAL ( KIND=JPRB ) :: zqtmst
+  REAL ( KIND=JPRB ) :: zrdcp
+  REAL ( KIND=JPRB ) :: zrhc
+  REAL ( KIND=JPRB ) :: zsig
+  REAL ( KIND=JPRB ) :: zsigk
+  REAL ( KIND=JPRB ) :: zwtot
+  REAL ( KIND=JPRB ) :: zzco
+  REAL ( KIND=JPRB ) :: zzdl
+  REAL ( KIND=JPRB ) :: zzrh
+  REAL ( KIND=JPRB ) :: zzzdt
+  REAL ( KIND=JPRB ) :: zqadj
+  REAL ( KIND=JPRB ) :: zqnew
+  REAL ( KIND=JPRB ) :: ztnew
+  REAL ( KIND=JPRB ) :: zrg_r
+  REAL ( KIND=JPRB ) :: zgdph_r
+  REAL ( KIND=JPRB ) :: zcons1
+  REAL ( KIND=JPRB ) :: zcond
+  REAL ( KIND=JPRB ) :: zcons1a
+  REAL ( KIND=JPRB ) :: zlfinal
+  REAL ( KIND=JPRB ) :: zmelt
+  REAL ( KIND=JPRB ) :: zevap
+  REAL ( KIND=JPRB ) :: zfrz
+  REAL ( KIND=JPRB ) :: zvpliq
+  REAL ( KIND=JPRB ) :: zvpice
+  REAL ( KIND=JPRB ) :: zadd
+  REAL ( KIND=JPRB ) :: zbdd
+  REAL ( KIND=JPRB ) :: zcvds
+  REAL ( KIND=JPRB ) :: zice0
+  REAL ( KIND=JPRB ) :: zdepos
+  REAL ( KIND=JPRB ) :: zsupsat ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zfall
+  REAL ( KIND=JPRB ) :: zre_ice
+  REAL ( KIND=JPRB ) :: zrldcp
+  REAL ( KIND=JPRB ) :: zqp1env
   INTEGER ( KIND= 4 ) :: iphase ( 1 : 5 )
   INTEGER ( KIND= 4 ) :: imelt ( 1 : 5 )
   LOGICAL :: llfall ( 1 : 5 )
   LOGICAL :: llindex1 ( 1 : 5 )
   LOGICAL :: llindex3 ( 1 : 5 , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zmax
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrat
+  REAL ( KIND=JPRB ) :: zmax
+  REAL ( KIND=JPRB ) :: zrat
   INTEGER ( KIND= 4 ) :: iorder ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zliqfrac ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zicefrac ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqx ( 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqx0 ( 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqxn ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqxfg ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqxnm1 ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfluxq ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zpfplsx ( 1 : klev + 1 , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlneg ( 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zmeltmax ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfrzmax ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zicetot ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqxn2d ( 1 : klev , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqsmix ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqsliq ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqsice ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfoeewmt ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfoeew ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfoeeliqt ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdqsliqdt ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdqsicedt ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zdqsmixdt ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcorqsliq ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcorqsice ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcorqsmix ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zevaplimliq ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zevaplimice ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zevaplimmix ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsolqa ( 1 : 5 , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsolqb ( 1 : 5 , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqlhs ( 1 : 5 , 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zvqx ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zexplicit
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zratio ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsinksum ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfallsink ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfallsrce ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zconvsrce ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zconvsink ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zpsupsatsrce ( 1 : 5 )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , PARAMETER :: ztw1 = 1329.31000000000_jprb
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , PARAMETER :: ztw2 = 0.00746150000000000_jprb
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , PARAMETER :: ztw3 = 85000.0000000000_jprb
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , PARAMETER :: ztw4 = 40.6370000000000_jprb
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) , PARAMETER :: ztw5 = 275.000000000000_jprb
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsubsat
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztdmtw0
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztcg
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfacx1i
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfacx1s
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zaplusb
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcorrfac
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcorrfac2
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zpr02
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zterm1
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zterm2
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcldtopdist ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zinfactor
+  REAL ( KIND=JPRB ) :: zliqfrac ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zicefrac ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zqx ( 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zqx0 ( 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zqxn ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zqxfg ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zqxnm1 ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zfluxq ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zpfplsx ( 1 : klev + 1 , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zlneg ( 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zmeltmax ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zfrzmax ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zicetot ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zqxn2d ( 1 : klev , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zqsmix ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zqsliq ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zqsice ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zfoeewmt ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zfoeew ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zfoeeliqt ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zdqsliqdt ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zdqsicedt ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zdqsmixdt ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zcorqsliq ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zcorqsice ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zcorqsmix ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zevaplimliq ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zevaplimice ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zevaplimmix ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zsolqa ( 1 : 5 , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zsolqb ( 1 : 5 , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zqlhs ( 1 : 5 , 1 : 5 )
+  REAL ( KIND=JPRB ) :: zvqx ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zexplicit
+  REAL ( KIND=JPRB ) :: zratio ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zsinksum ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zfallsink ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zfallsrce ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zconvsrce ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zconvsink ( 1 : 5 )
+  REAL ( KIND=JPRB ) :: zpsupsatsrce ( 1 : 5 )
+  REAL ( KIND=JPRB ) , PARAMETER :: ztw1 = 1329.31000000000_jprb
+  REAL ( KIND=JPRB ) , PARAMETER :: ztw2 = 0.00746150000000000_jprb
+  REAL ( KIND=JPRB ) , PARAMETER :: ztw3 = 85000.0000000000_jprb
+  REAL ( KIND=JPRB ) , PARAMETER :: ztw4 = 40.6370000000000_jprb
+  REAL ( KIND=JPRB ) , PARAMETER :: ztw5 = 275.000000000000_jprb
+  REAL ( KIND=JPRB ) :: zsubsat
+  REAL ( KIND=JPRB ) :: ztdmtw0
+  REAL ( KIND=JPRB ) :: ztcg
+  REAL ( KIND=JPRB ) :: zfacx1i
+  REAL ( KIND=JPRB ) :: zfacx1s
+  REAL ( KIND=JPRB ) :: zaplusb
+  REAL ( KIND=JPRB ) :: zcorrfac
+  REAL ( KIND=JPRB ) :: zcorrfac2
+  REAL ( KIND=JPRB ) :: zpr02
+  REAL ( KIND=JPRB ) :: zterm1
+  REAL ( KIND=JPRB ) :: zterm2
+  REAL ( KIND=JPRB ) :: zcldtopdist ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zinfactor
   INTEGER ( KIND= 4 ) :: iwarmrain
   INTEGER ( KIND= 4 ) :: ievaprain
   INTEGER ( KIND= 4 ) :: ievapsnow
   INTEGER ( KIND= 4 ) :: idepice
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrainacc ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zraincld ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsnowrime ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsnowcld ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zesatliq
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zfallcorr
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zlambda
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zevap_denom
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcorr2
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zka
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zconst
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztemp
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsumq0 ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsumq1 ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zerrorq ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsumh0 ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zsumh1 ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zerrorh ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrain
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: z_tmp1 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: z_tmp2 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: z_tmp3 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: z_tmp4 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: z_tmp6 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: z_tmp7 ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: z_tmpk ( 1 : klev )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zhook_handle
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmpl
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmpi
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: ztmpa
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zmm
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrr
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zrg ( 1 : nproma )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zbudcc ( 1 : kfldx )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zbudl ( 1 : kfldx )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zbudi ( 1 : kfldx )
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zzsum
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zzratio
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zepsilon
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zcond1
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: zqp
-  REAL ( KIND= selected_real_kind ( 13 , 300 ) ) :: psum_solqa ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zrainacc ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zraincld ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zsnowrime ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zsnowcld ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zesatliq
+  REAL ( KIND=JPRB ) :: zfallcorr
+  REAL ( KIND=JPRB ) :: zlambda
+  REAL ( KIND=JPRB ) :: zevap_denom
+  REAL ( KIND=JPRB ) :: zcorr2
+  REAL ( KIND=JPRB ) :: zka
+  REAL ( KIND=JPRB ) :: zconst
+  REAL ( KIND=JPRB ) :: ztemp
+  REAL ( KIND=JPRB ) :: zsumq0 ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zsumq1 ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zerrorq ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zsumh0 ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zsumh1 ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zerrorh ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zrain
+  REAL ( KIND=JPRB ) :: z_tmp1 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: z_tmp2 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: z_tmp3 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: z_tmp4 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: z_tmp6 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: z_tmp7 ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: z_tmpk ( 1 : klev )
+  REAL ( KIND=JPRB ) :: zhook_handle
+  REAL ( KIND=JPRB ) :: ztmpl
+  REAL ( KIND=JPRB ) :: ztmpi
+  REAL ( KIND=JPRB ) :: ztmpa
+  REAL ( KIND=JPRB ) :: zmm
+  REAL ( KIND=JPRB ) :: zrr
+  REAL ( KIND=JPRB ) :: zrg ( 1 : nproma )
+  REAL ( KIND=JPRB ) :: zbudcc ( 1 : kfldx )
+  REAL ( KIND=JPRB ) :: zbudl ( 1 : kfldx )
+  REAL ( KIND=JPRB ) :: zbudi ( 1 : kfldx )
+  REAL ( KIND=JPRB ) :: zzsum
+  REAL ( KIND=JPRB ) :: zzratio
+  REAL ( KIND=JPRB ) :: zepsilon
+  REAL ( KIND=JPRB ) :: zcond1
+  REAL ( KIND=JPRB ) :: zqp
+  REAL ( KIND=JPRB ) :: psum_solqa ( 1 : nproma )
   INTEGER :: jl, j, i
 
 !$acc data &
@@ -490,22 +490,22 @@ CONTAINS
 !$acc loop seq
     DO jk = 1 , klev , 1
      zfoealfa ( jk ) = real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2&
-      ) ) , kind = selected_real_kind ( 13 , 300 ) )
+      ) ) , kind =JPRB )
      zfoeewmt ( jk ) = min ( real ( r2es * ( real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) *&
-      rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk )&
+      rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk )&
       - r4les ) ) + ( 1.0_jprb - real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r&
-      ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) ) * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) )&
-      ) , kind = selected_real_kind ( 13 , 300 ) ) / pap ( jl , jk ) , 0.5_jprb )
+      ) ** ( 2 ) ) , kind =JPRB ) ) * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) )&
+      ) , kind =JPRB ) / pap ( jl , jk ) , 0.5_jprb )
      zqsmix ( jk ) = zfoeewmt ( jk )
      zqsmix ( jk ) = zqsmix ( jk ) / ( 1.0_jprb - retv * zqsmix ( jk ) )
-     zalfa = real ( max ( 0.0_jprb , sign ( 1.0_jprb , ztp1 ( jk ) - rtt ) ) , kind = selected_real_kind ( 13 , 300 ) )
+     zalfa = real ( max ( 0.0_jprb , sign ( 1.0_jprb , ztp1 ( jk ) - rtt ) ) , kind =JPRB )
      zfoeew ( jk ) = min ( ( zalfa * real ( r2es * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4les ) ) , kind =&
-      selected_real_kind ( 13 , 300 ) ) + ( 1.0_jprb - zalfa ) * real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk )&
-      - r4ies ) ) , kind = selected_real_kind ( 13 , 300 ) ) ) / pap ( jl , jk ) , 0.5_jprb )
+     JPRB ) + ( 1.0_jprb - zalfa ) * real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk )&
+      - r4ies ) ) , kind =JPRB ) ) / pap ( jl , jk ) , 0.5_jprb )
      zfoeew ( jk ) = min ( 0.5_jprb , zfoeew ( jk ) )
      zqsice ( jk ) = zfoeew ( jk ) / ( 1.0_jprb - retv * zfoeew ( jk ) )
      zfoeeliqt ( jk ) = min ( real ( r2es * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4les ) ) , kind =&
-      selected_real_kind ( 13 , 300 ) ) / pap ( jl , jk ) , 0.5_jprb )
+     JPRB ) / pap ( jl , jk ) , 0.5_jprb )
      zqsliq ( jk ) = zfoeeliqt ( jk )
      zqsliq ( jk ) = zqsliq ( jk ) / ( 1.0_jprb - retv * zqsliq ( jk ) )
     END DO
@@ -606,9 +606,9 @@ CONTAINS
      zcor = 1.0_jprb / ( 1.0_jprb - retv * zfoeewmt ( jk ) )
      zdqsmixdt ( jl ) = zfac * zcor * zqsmix ( jk )
      zcorqsmix ( jl ) = 1.0_jprb + real ( real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) *&
-      rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * ralvdcp + ( 1.0_jprb - real ( min ( 1.0_jprb , ( (&
-      max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 )&
-      ) ) * ralsdcp , kind = selected_real_kind ( 13 , 300 ) ) * zdqsmixdt ( jl )
+      rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) * ralvdcp + ( 1.0_jprb - real ( min ( 1.0_jprb , ( (&
+      max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = JPRB &
+      ) ) * ralsdcp , kind =JPRB ) * zdqsmixdt ( jl )
      zevaplimmix ( jl ) = max ( ( zqsmix ( jk ) - zqx ( jk , 5 ) ) / zcorqsmix ( jl ) , 0.0_jprb )
      zevaplimliq ( jl ) = max ( ( zqsliq ( jk ) - zqx ( jk , 5 ) ) / zcorqsliq ( jl ) , 0.0_jprb )
      zevaplimice ( jl ) = max ( ( zqsice ( jk ) - zqx ( jk , 5 ) ) / zcorqsice ( jl ) , 0.0_jprb )
@@ -625,8 +625,8 @@ CONTAINS
       zsolqa ( 2 , 5 ) = ( - zqx ( jk , 2 ) )
      END IF
      zfokoop ( jl ) = real ( min ( rkoop1 - rkoop2 * ztp1 ( jk ) , real ( r2es * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk&
-      ) - r4les ) ) , kind = selected_real_kind ( 13 , 300 ) ) * 1d0 / real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1&
-      ( jk ) - r4ies ) ) , kind = selected_real_kind ( 13 , 300 ) ) ) , kind = selected_real_kind ( 13 , 300 ) )
+      ) - r4les ) ) , kind =JPRB ) * 1_JPRB / real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1&
+      ( jk ) - r4ies ) ) , kind =JPRB ) ) , kind =JPRB )
      IF ( nssopt == 0 .OR. ztp1 ( jk ) >= rtt ) THEN
       zfac = 1.0_jprb
       zfaci = 1.0_jprb
@@ -803,40 +803,40 @@ CONTAINS
      llflag = .TRUE.
      zqp = 1.0_jprb / pap ( jl , jk )
      zqsat = real ( r2es * ( real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r )&
-      ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4les ) ) + (&
+      ** ( 2 ) ) , kind =JPRB ) * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4les ) ) + (&
       1.0_jprb - real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) ,&
-      kind = selected_real_kind ( 13 , 300 ) ) ) * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) ) , kind =&
-      selected_real_kind ( 13 , 300 ) ) * zqp
+      kind =JPRB ) ) * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) ) , kind =&
+     JPRB ) * zqp
      zqsat = min ( 0.5_jprb , zqsat )
      zcor = 1.0_jprb / ( 1.0_jprb - retv * zqsat )
      zqsat = zqsat * zcor
      zcond = ( zqsmix ( jk ) - zqsat ) * 1d0 / ( 1.0_jprb + zqsat * zcor * real ( real ( min ( 1.0_jprb , ( ( max ( rtice , min (&
-      rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * r5alvcp * (&
+      rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) * r5alvcp * (&
       1.0_jprb / ( ztp1 ( jk ) - r4les ) ** ( 2 ) ) + ( 1.0_jprb - real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 (&
-      jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) ) * r5alscp * ( 1.0_jprb / ( ztp1&
-      ( jk ) - r4ies ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) )
+      jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) ) * r5alscp * ( 1.0_jprb / ( ztp1&
+      ( jk ) - r4ies ) ** ( 2 ) ) , kind =JPRB ) )
      ztp1 ( jk ) = ztp1 ( jk ) + real ( real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) *&
-      rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * ralvdcp + ( 1.0_jprb - real ( min ( 1.0_jprb , ( (&
-      max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 )&
-      ) ) * ralsdcp , kind = selected_real_kind ( 13 , 300 ) ) * zcond
+      rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) * ralvdcp + ( 1.0_jprb - real ( min ( 1.0_jprb , ( (&
+      max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = JPRB &
+      ) ) * ralsdcp , kind =JPRB ) * zcond
      zqsmix ( jk ) = zqsmix ( jk ) - zcond
      zqsat = real ( r2es * ( real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r )&
-      ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4les ) ) + (&
+      ** ( 2 ) ) , kind =JPRB ) * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4les ) ) + (&
       1.0_jprb - real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) ,&
-      kind = selected_real_kind ( 13 , 300 ) ) ) * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) ) , kind =&
-      selected_real_kind ( 13 , 300 ) ) * zqp
+      kind =JPRB ) ) * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) ) , kind =&
+     JPRB ) * zqp
      zqsat = min ( 0.5_jprb , zqsat )
      zcor = 1.0_jprb / ( 1.0_jprb - retv * zqsat )
      zqsat = zqsat * zcor
      zcond1 = ( zqsmix ( jk ) - zqsat ) * 1d0 / ( 1.0_jprb + zqsat * zcor * real ( real ( min ( 1.0_jprb , ( ( max ( rtice , min (&
-      rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * r5alvcp * (&
+      rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) * r5alvcp * (&
       1.0_jprb / ( ztp1 ( jk ) - r4les ) ** ( 2 ) ) + ( 1.0_jprb - real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 (&
-      jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) ) * r5alscp * ( 1.0_jprb / ( ztp1&
-      ( jk ) - r4ies ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) )
+      jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) ) * r5alscp * ( 1.0_jprb / ( ztp1&
+      ( jk ) - r4ies ) ** ( 2 ) ) , kind =JPRB ) )
      ztp1 ( jk ) = ztp1 ( jk ) + real ( real ( min ( 1.0_jprb , ( ( max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) *&
-      rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) * ralvdcp + ( 1.0_jprb - real ( min ( 1.0_jprb , ( (&
-      max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 )&
-      ) ) * ralsdcp , kind = selected_real_kind ( 13 , 300 ) ) * zcond1
+      rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) * ralvdcp + ( 1.0_jprb - real ( min ( 1.0_jprb , ( (&
+      max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = JPRB &
+      ) ) * ralsdcp , kind =JPRB ) * zcond1
      zqsmix ( jk ) = zqsmix ( jk ) - zcond1
      zdqs ( jl ) = zqsmix ( jk ) - zqold ( jl )
      zqsmix ( jk ) = zqold ( jl )
@@ -863,10 +863,10 @@ CONTAINS
       IF ( za ( jk ) > 0.99_jprb ) THEN
        zcor = 1.0_jprb / ( 1.0_jprb - retv * zqsmix ( jk ) )
        zcdmax = ( zqx ( jk , 5 ) - zqsmix ( jk ) ) * 1d0 / ( 1.0_jprb + zcor * zqsmix ( jk ) * real ( real ( min ( 1.0_jprb , ( (&
-        max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300&
-        ) ) * r5alvcp * ( 1.0_jprb / ( ztp1 ( jk ) - r4les ) ** ( 2 ) ) + ( 1.0_jprb - real ( min ( 1.0_jprb , ( ( max ( rtice ,&
-        min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) ) *&
-        r5alscp * ( 1.0_jprb / ( ztp1 ( jk ) - r4ies ) ** ( 2 ) ) , kind = selected_real_kind ( 13 , 300 ) ) )
+        max ( rtice , min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind = JPRB &
+        ) * r5alvcp * ( 1.0_jprb / ( ztp1 ( jk ) - r4les ) ** ( 2 ) ) + ( 1.0_jprb - real ( min ( 1.0_jprb , ( ( max ( rtice ,&
+        min ( rtwat , ztp1 ( jk ) ) ) - rtice ) * rtwat_rtice_r ) ** ( 2 ) ) , kind =JPRB ) ) *&
+        r5alscp * ( 1.0_jprb / ( ztp1 ( jk ) - r4ies ) ** ( 2 ) ) , kind =JPRB ) )
       ELSE
        zcdmax = ( zqx ( jk , 5 ) - za ( jk ) * zqsmix ( jk ) ) / za ( jk )
       END IF
@@ -965,8 +965,8 @@ CONTAINS
        zcldtopdist ( jl ) = zcldtopdist ( jl ) + zdp ( jl ) / ( zrho ( jl ) * rg )
       END IF
       IF ( zqxfg ( 1 ) > rlmin .AND. ztp1 ( jk ) < rtt ) THEN
-       zvpice = real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) , kind = selected_real_kind ( 13 ,&
-        300 ) ) * rv / rd
+       zvpice = real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) , kind = JPRB &
+        ) * rv / rd
        zvpliq = zvpice * zfokoop ( jl )
        zicenuclei ( jl ) = 1000.0_jprb * exp ( 12.96_jprb * ( zvpliq - zvpice ) / zvpliq - 0.639_jprb )
        zadd = rlstt * ( rlstt / ( rv * ztp1 ( jk ) ) - 1.0_jprb ) / ( 0.024_jprb * ztp1 ( jk ) )
@@ -999,8 +999,8 @@ CONTAINS
         zcldtopdist ( jl ) = zcldtopdist ( jl ) + zdp ( jl ) / ( zrho ( jl ) * rg )
        END IF
        IF ( zqxfg ( 1 ) > rlmin .AND. ztp1 ( jk ) < rtt ) THEN
-        zvpice = real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) , kind = selected_real_kind ( 13 ,&
-         300 ) ) * rv / rd
+        zvpice = real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) , kind = JPRB &
+         ) * rv / rd
         zvpliq = zvpice * zfokoop ( jl )
         zicenuclei ( jl ) = 1000.0_jprb * exp ( 12.96_jprb * ( zvpliq - zvpice ) / zvpliq - 0.639_jprb )
         zice0 = max ( zicecld ( jl ) , zicenuclei ( jl ) * riceinit / zrho ( jl ) )
@@ -1262,7 +1262,7 @@ CONTAINS
         zpreclr = zqxfg ( 3 ) / zcovptot ( jl )
         zfallcorr = ( rdensref / zrho ( jl ) ) ** ( 0.4_jprb )
         zesatliq = rv / rd * real ( r2es * exp ( r3les * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4les ) ) , kind =&
-         selected_real_kind ( 13 , 300 ) )
+        JPRB )
         zlambda = ( rcl_fac1 / ( zrho ( jl ) * zpreclr ) ) ** ( rcl_fac2 )
         zevap_denom = rcl_cdenom1 * zesatliq - rcl_cdenom2 * ztp1 ( jk ) * zesatliq + rcl_cdenom3 * ztp1 ( jk ) ** ( 3.0_jprb ) *&
          pap ( jl , jk )
@@ -1313,8 +1313,8 @@ CONTAINS
        llo1 = zcovpclr ( jl ) > zepsec .AND. zqx ( jk , 4 ) > zepsec .AND. zqe < zzrh * zqsice ( jk )
        IF ( llo1 ) THEN
         zpreclr = zqx ( jk , 4 ) / zcovptot ( jl )
-        zvpice = real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) , kind = selected_real_kind ( 13 ,&
-         300 ) ) * rv / rd
+        zvpice = real ( r2es * exp ( r3ies * ( ztp1 ( jk ) - rtt ) / ( ztp1 ( jk ) - r4ies ) ) , kind = JPRB &
+         ) * rv / rd
         ztcg = 1.0_jprb
         zfacx1s = 1.0_jprb
         zaplusb = rcl_apb1 * zvpice - rcl_apb2 * zvpice * ztp1 ( jk ) + pap ( jl , jk ) * rcl_apb3 * ztp1 ( jk ) ** ( 3 )
