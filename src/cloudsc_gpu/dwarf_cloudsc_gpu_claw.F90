@@ -11,9 +11,11 @@ INTEGER(KIND=JPIM) :: IARGS, LENARG, JARG, I
 
 INTEGER(KIND=JPIM) :: NUMOMP  = 1     ! Number of OpenMP threads for this run
 INTEGER(KIND=JPIM) :: NGPTOT  = 16384 ! Number of grid points (as read from command line)
-INTEGER(KIND=JPIM) :: NPROMA  = 32    ! NPROMA blocking factor (currently active)
+INTEGER(KIND=JPIM) :: NPROMA  = 16384 ! NPROMA blocking factor (currently active)
 
 TYPE(CLOUDSC_GLOBAL_STATE) :: GLOBAL_STATE
+
+#include "abor1.intfb.h"
 
 IARGS = COMMAND_ARGUMENT_COUNT()
 
@@ -35,7 +37,11 @@ IF (IARGS >= 3) THEN
   READ(CLARG(1:LENARG),*) NPROMA
 ENDIF
 
-! TODO: Create a global global memory state from serialized input data
+IF (MODULO(NPROMA, 64) /= 0) THEN
+  CALL ABOR1('ERROR: CLAW kernel requires NPROMA to be a multiple of 64.')
+END IF
+
+! Create a global global memory state from serialized input data
 CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT)
 
 ! Call the driver to perform the parallel loop over our kernel

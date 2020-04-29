@@ -1,11 +1,13 @@
-# Define this dwarf variant as an ECBuild feature
+# Define the naive GPU dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_GPU_NAIVE
-    DESCRIPTION "Build naive GPU version of CLOUDSC using `!$acc kernels`" DEFAULT ON
+    DESCRIPTION "Build naive GPU version of CLOUDSC using `!$acc kernels`" DEFAULT OFF
+    CONDITION Serialbox_FOUND
 )
 
-# Define this dwarf variant as an ECBuild feature
+# Define the CLAW-based GPU dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_GPU_CLAW
-    DESCRIPTION "Build optimized GPU version of CLOUDSC derived from CLAW" DEFAULT ON
+    DESCRIPTION "Build optimized GPU version of CLOUDSC derived from CLAW" DEFAULT OFF
+    CONDITION Serialbox_FOUND
 )
 
 if( HAVE_CLOUDSC_GPU_NAIVE )
