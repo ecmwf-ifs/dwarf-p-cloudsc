@@ -25,6 +25,7 @@ ecbuild_requires_macro_version(2.10.1)
 ecbuild_declare_project()
 
 find_package( OpenMP COMPONENTS Fortran C )
+find_package( OpenACC COMPONENTS Fortran C )
 
 # Add Serialbox utility package for platform-agnostic file I/O
 find_package( Serialbox )
