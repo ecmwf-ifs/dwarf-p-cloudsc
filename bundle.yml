@@ -55,6 +55,10 @@ options :
         help  : Build the naive GPU version CLOUDSC (!$acc kernels) [ON|OFF]
         cmake : ENABLE_CLOUDSC_GPU_NAIVE={{value}}
 
+    - cloudsc-gpu-claw :
+        help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
+        cmake : ENABLE_CLOUDSC_GPU_CLAW={{value}}
+
     - without-serialbox :
         help  : Disable Serialbox utility for platform-agnostic file I/O
         cmake : CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
