@@ -16,7 +16,7 @@ if( HAVE_CLOUDSC_FORTRAN )
     )
     target_link_libraries( dwarf-cloudsc-fortran PRIVATE cloudsc-common-lib )
 
-    if( OpenMP_Fortran_FOUND )
+    if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-fortran PRIVATE OpenMP::OpenMP_Fortran )
     endif()
 

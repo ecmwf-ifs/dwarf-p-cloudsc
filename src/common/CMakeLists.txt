@@ -20,10 +20,10 @@ ecbuild_add_library( TARGET cloudsc-common-lib
 target_include_directories( cloudsc-common-lib PUBLIC $<INSTALL_INTERFACE:include> )
 target_include_directories( cloudsc-common-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
-if( OpenMP_Fortran_FOUND )
+if( TARGET OpenMP::OpenMP_Fortran )
     target_link_libraries( cloudsc-common-lib PRIVATE OpenMP::OpenMP_Fortran )
 endif()
 
-if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
+if( TARGET Serialbox::Serialbox_Fortran )
     target_link_libraries( cloudsc-common-lib PRIVATE Serialbox::Serialbox_Fortran )
 endif()
