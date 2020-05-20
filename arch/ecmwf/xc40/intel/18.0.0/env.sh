@@ -73,14 +73,10 @@ module_load boost/1.61.0
 
 set -x
 
-# export ECBUILD_TOOLCHAIN="ecmwf-XC30-Intel"
-# export ECBUILD_TOOLCHAIN=$PWD/../toolchains/ecmwf-leap42-intel.cmake
-export ECBUILD_TOOLCHAIN=$PWD/../toolchains/ecmwf-xc40-intel.cmake
-
-#export CRAY_ADD_RPATH=yes
-
 # This is used to download binary test data
 export http_proxy="http://slb-proxy-web.ecmwf.int:3333/"
 
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null
+
+export ECBUILD_TOOLCHAIN="./toolchain.cmake"

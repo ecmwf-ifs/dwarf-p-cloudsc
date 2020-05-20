@@ -39,12 +39,6 @@ module_load cmake/3.15.0
 
 set -x
 
-# Dwarf-specific compiler settings
-export ECBUILD_TOOLCHAIN="$PWD/../toolchains/ecmwf-xc40-cray.cmake"
-
-# Default toolchain for IFS shipped with ecbuild
-# export ECBUILD_TOOLCHAIN="ecmwf-XC30-Cray"
-
 export CRAY_ADD_RPATH=yes
 
 # This is used to download binary test data
@@ -52,3 +46,5 @@ export http_proxy="http://slb-proxy-web.ecmwf.int:3333/"
 
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null
+
+export ECBUILD_TOOLCHAIN="./toolchain.cmake"

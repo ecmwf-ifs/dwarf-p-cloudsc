@@ -31,4 +31,4 @@ ulimit -S -s unlimited
 # Restore tracing to stored setting
 if [[ -n "$tracing_" ]]; then set -x; else set +x; fi
 
-export ECBUILD_TOOLCHAIN=$PWD/../toolchains/ecmwf-leap42-gnu.cmake
+export ECBUILD_TOOLCHAIN="./toolchain.cmake"
