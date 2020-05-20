@@ -22,12 +22,13 @@ if( HAVE_CLOUDSC_LOKI )
     # "Idempotence mode" for debugging Loki internals
     add_custom_command(
         OUTPUT cloudsc.idem.F90 cloudsc_driver_loki_mod.idem.F90
-        COMMAND loki-transform.py idem -out cloudsc --frontend ${LOKI_FRONTEND}
+        COMMAND loki-transform.py idem --frontend ${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
 	COMMENT "[Loki] Pre-processing: mode=idem frontend=${LOKI_FRONTEND}"
     )
