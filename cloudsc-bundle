@@ -33,7 +33,7 @@ fi
 command_exists () { type "$1" &> /dev/null ; }
 if ! command_exists ${BOOTSTRAPPED} ; then
     if [[ ! -d ${BUNDLE_DIR}/ecbundle ]]; then
-        git clone ${BITBUCKET}/ecsdk/ecbundle.git ${BUNDLE_DIR}/ecbundle
+        git clone ${BITBUCKET}/escape/ecbundle.git ${BUNDLE_DIR}/ecbundle
         ( cd ${BUNDLE_DIR}/ecbundle && git checkout ${ecbundle_VERSION} )
     fi
     export PATH=${BUNDLE_DIR}/ecbundle:${PATH}
