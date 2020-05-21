@@ -1,0 +1,62 @@
+---
+### Bundle
+
+name    : cloudsc-bundle
+version : 1.0.0-develop
+cmake : >
+        CMAKE_LINK_DEPENDS_NO_SHARED=ON
+
+projects :
+
+    - ecbuild :
+        git     : ${BITBUCKET}/escape/ecbuild
+        version : develop
+        bundle  : false
+
+    - serialbox :
+        git     : ${BITBUCKET}/escape/serialbox
+        version : v2.5.4/patched
+        cmake   : >
+            SERIALBOX_BUILD_SHARED=ON
+            SERIALBOX_ENABLE_FORTRAN=ON
+            SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
+            Serialbox_TARGETS_EXPORTED=TRUE
+            CMAKE_CXX_EXTENSIONS=ON
+
+    - cloudsc-dwarf :
+        # The CLOUDSC dwarf project with multiple implementations
+        dir     : $PWD
+        version : develop
+        require : ecbuild
+
+options :
+
+    - toolchain :
+        help  : Specify compiler options via supplied toolchain file
+        cmake : CMAKE_TOOLCHAIN_FILE={{value}}
+
+    - single-precision :
+        help  : Enable single precision build of the dwarf
+        cmake : ENABLE_SINGLE_PRECISION=ON
+
+    - cloudsc-prototype1 :
+        help  : Build the original operational Fortran prototype [ON|OFF]
+        cmake : ENABLE_CLOUDSC_PROTOTYPE1={{value}}
+
+    - cloudsc-fortran :
+        help  : Build the new Fortran version of CLOUDSC [ON|OFF]
+        cmake : ENABLE_CLOUDSC_FORTRAN={{value}}
+
+    - cloudsc-c :
+        help  : Build the C version of CLOUDSC [ON|OFF]
+        cmake : ENABLE_CLOUDSC_C={{value}}
+
+    - without-serialbox :
+        help  : Disable Serialbox utility for platform-agnostic file I/O
+        cmake : CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
+
+    - serialbox-experimental :
+        help  : Enable Serialbox experimental filesystem [ON|OFF]
+        cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM={{value}}
+
+...

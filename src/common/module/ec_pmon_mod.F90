@@ -1,0 +1,48 @@
+MODULE EC_PMON_MOD
+  USE PARKIND1, ONLY : JPIM, JPIB
+CONTAINS
+
+SUBROUTINE EC_PMON(ENERGY,POWER)
+  IMPLICIT NONE
+  INTEGER(KIND=JPIB),INTENT(OUT) :: ENERGY,POWER
+  INTEGER(KIND=JPIB),SAVE :: ENERGY_START = 0
+  INTEGER(KIND=JPIM),SAVE :: MONINIT = 0
+  INTEGER(KIND=JPIM) :: ISTAT
+  CHARACTER(LEN=1) :: CLEC_PMON
+  ENERGY = 0
+  IF (MONINIT >= 0) THEN
+    IF (MONINIT == 0) THEN ! The very first time only
+      CALL GET_ENVIRONMENT_VARIABLE('EC_PMON',CLEC_PMON)
+      IF (CLEC_PMON == '0') MONINIT = -2 ! Never try again
+    ENDIF
+    IF (MONINIT >= 0) THEN
+      OPEN(503,FILE='/sys/cray/pm_counters/energy',IOSTAT=ISTAT,STATUS='old',ACTION='read')
+      IF (ISTAT == 0) THEN
+        READ(503,*,IOSTAT=ISTAT) ENERGY
+        CLOSE(503)
+        IF (ISTAT == 0) THEN
+          IF (MONINIT == 0) THEN
+            ENERGY_START = ENERGY
+            MONINIT = 1 ! Ok
+          ENDIF
+          ENERGY = ENERGY - ENERGY_START
+        ENDIF
+      ENDIF
+      IF (ISTAT /= 0) THEN
+        MONINIT = -1 ! Never try again
+        ENERGY = 0
+      ENDIF
+    ENDIF
+  ENDIF
+  POWER = 0
+  IF (MONINIT > 0) THEN
+    OPEN(504,FILE='/sys/cray/pm_counters/power',IOSTAT=ISTAT,STATUS='old',ACTION='read')
+    IF (ISTAT == 0) THEN
+      READ(504,*,IOSTAT=ISTAT) POWER
+      CLOSE(504)
+    ENDIF
+    IF (ISTAT /= 0) POWER = 0
+  ENDIF
+END SUBROUTINE EC_PMON
+
+END MODULE EC_PMON_MOD

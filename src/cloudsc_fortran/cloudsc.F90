@@ -8,7 +8,6 @@ SUBROUTINE CLOUDSC &
  & PVERVEL,  PAP,      PAPH,&
  & PLSM,     LDCUM,    KTYPE, &
  & PLU,      PLUDE,    PSNDE,    PMFU,     PMFD,&
- & LDSLPHY,  LDMAINCALL, &
  !---prognostic fields
  & PA,&
  & PCLV,  &
@@ -25,7 +24,7 @@ SUBROUTINE CLOUDSC &
  & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
  & PFSQLTUR, PFSQITUR , &
  & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN,&
- & PEXTRA,   KFLDX)  
+ & KFLDX)
 
 !===============================================================================
 !**** *CLOUDSC* -  ROUTINE FOR PARAMATERIZATION OF CLOUD PROCESSES
@@ -177,12 +176,9 @@ REAL(KIND=JPRB)   ,INTENT(INOUT) :: PLUDE(KLON,KLEV) ! Conv. detrained water
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PSNDE(KLON,KLEV) ! Conv. detrained snow
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PMFU(KLON,KLEV)  ! Conv. mass flux up
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PMFD(KLON,KLEV)  ! Conv. mass flux down
-LOGICAL           ,INTENT(IN)    :: LDSLPHY 
-LOGICAL           ,INTENT(IN)    :: LDMAINCALL       ! T if main call to cloudsc
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PA(KLON,KLEV)    ! Original Cloud fraction (t)
 
 INTEGER(KIND=JPIM),INTENT(IN)    :: KFLDX 
-REAL(KIND=JPRB)   ,INTENT(INOUT) :: PEXTRA(KLON,KLEV,KFLDX) ! extra fields
 
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PCLV(KLON,KLEV,NCLV) 
 
@@ -658,13 +654,6 @@ DO JK=1,KLEV
     ZAORIG(JL,JK)      = PA(JL,JK)+PTSPHY*tendency_tmp%a(JL,JK)
   ENDDO
 ENDDO
-IF ( .NOT. LDSLPHY ) THEN
-  DO JK=1,KLEV
-    DO JL=KIDIA,KFDIA
-      ZLI(JL,JK)    = PCLV(JL,JK,NCLDQL)+PCLV(JL,JK,NCLDQI)+PTSPHY*(tendency_tmp%cld(JL,JK,NCLDQL)+tendency_tmp%cld(JL,JK,NCLDQI))
-    ENDDO
-  ENDDO
-ENDIF
 
 ! -------------------------------------
 ! initialization for CLV family
@@ -677,8 +666,6 @@ DO JM=1,NCLV-1
     ENDDO
   ENDDO
 ENDDO
-
-IF (LDMAINCALL) THEN  ! *** Only executed in main cloud scheme call***
 
 !-------------
 ! zero arrays
@@ -740,8 +727,6 @@ DO JM=1,NCLV-1
     ENDDO
   ENDDO
 ENDDO
-
-ENDIF ! on LDMAINCALL ***Above only executed in main cloud scheme call***
 
 
 ! ------------------------------
@@ -1063,11 +1048,7 @@ DO JK=NCLDTOP,KLEV
     !-------------------------------------------------------
     ! 3.1.3 Include supersaturation from previous timestep
     ! (Calculated in sltENDIF semi-lagrangian LDSLPHY=T)
-    !-------------------------------------------------------
-   IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
-    
-    IF( LDSLPHY ) THEN
-
+    !-------------------------------------------------------    
       IF (PSUPSAT(JL,JK)>ZEPSEC) THEN
         IF (ZTP1(JL,JK) > RTHOMO) THEN
           ! Turn supersaturation into liquid water
@@ -1089,9 +1070,6 @@ DO JK=NCLDTOP,KLEV
         ZSOLAC(JL)=(1.0_JPRB-ZA(JL,JK))*ZFACI
         ! Store cloud budget diagnostics if required
       ENDIF
-    ENDIF
-
-   ENDIF ! on LDMAINCALL ******************************
 
   ENDDO ! on JL
 
@@ -1106,8 +1084,6 @@ DO JK=NCLDTOP,KLEV
   !    term, since is now written in mass-flux terms  
   ! [#Note: Should use ZFOEALFACU used in convection rather than ZFOEALFA]
   !---------------------------------------------------------------------
- IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
-
   IF (JK < KLEV .AND. JK>=NCLDTOP) THEN
 
     DO JL=KIDIA,KFDIA
@@ -1136,8 +1112,6 @@ DO JK=NCLDTOP,KLEV
 
   ENDIF ! JK<KLEV
 
- ENDIF ! on LDMAINCALL ******************************
-
   !---------------------------------------------------------------------
   !  3.3  SUBSIDENCE COMPENSATING CONVECTIVE UPDRAUGHTS
   !---------------------------------------------------------------------
@@ -1146,8 +1120,6 @@ DO JK=NCLDTOP,KLEV
   ! * Evaporation of cloud within the layer
   ! * Subsidence sink of cloud to the layer below (Implicit solution)
   !---------------------------------------------------------------------
-
- IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
 
   !-----------------------------------------------
   ! Subsidence source from layer above
@@ -1230,8 +1202,6 @@ DO JK=NCLDTOP,KLEV
 
   ENDDO
 
- ENDIF ! on LDMAINCALL ******************************
-
   !----------------------------------------------------------------------
   ! 3.4  EROSION OF CLOUDS BY TURBULENT MIXING
   !----------------------------------------------------------------------
@@ -1239,8 +1209,6 @@ DO JK=NCLDTOP,KLEV
   !       area but leaves the specific cloud water content
   !       within clouds unchanged
   !----------------------------------------------------------------------
-
- IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
 
   ! ------------------------------
   ! Define turbulent erosion rate
@@ -1277,8 +1245,6 @@ DO JK=NCLDTOP,KLEV
 
     ENDIF
   ENDDO
-
- ENDIF ! on LDMAINCALL ******************************
 
   !----------------------------------------------------------------------
   ! 3.4  CONDENSATION/EVAPORATION DUE TO DQSAT/DT
@@ -1530,8 +1496,6 @@ DO JK=NCLDTOP,KLEV
   ! Bergeron-Findeisen adjustment in autoconversion term no longer needed
   !----------------------------------------------------------------------
 
- IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
-
   !--------------------------------------------------------
   !-
   !- Ice deposition following Rotstayn et al. (2001)
@@ -1711,8 +1675,6 @@ DO JK=NCLDTOP,KLEV
     ENDDO
 
   ENDIF ! on IDEPICE
-  
- ENDIF ! on LDMAINCALL ******************************
  
   !######################################################################
   !              4  *** PRECIPITATION PROCESSES ***
@@ -1734,8 +1696,6 @@ DO JK=NCLDTOP,KLEV
   !     the precipitation flux can be defined directly level by level
   !     There is no vertical memory required from the flux variable
   !----------------------------------------------------------------------
-
- IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
 
   DO JM = 1,NCLV
     IF (LLFALL(JM) .OR. JM == NCLDQI) THEN
@@ -1774,8 +1734,6 @@ DO JK=NCLDTOP,KLEV
     ENDIF ! LLFALL
   ENDDO ! jm
 
- ENDIF ! on LDMAINCALL ******************************
-
   !---------------------------------------------------------------
   ! Precip cover overlap using MAX-RAN Overlap
   ! Since precipitation is now prognostic we must 
@@ -1810,9 +1768,6 @@ DO JK=NCLDTOP,KLEV
       ZCOVPMAX(JL) = 0.0_JPRB ! reset max cover for ZZRH calc 
     ENDIF
   ENDDO
-
-
- IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
   
   !----------------------------------------------------------------------
   ! 4.3a AUTOCONVERSION TO SNOW
@@ -2794,81 +2749,7 @@ ENDIF ! on IEVAPSNOW
     ! 6.3 cloud cover 
     !-----------------------
     tendency_loc%a(JL,JK)=tendency_loc%a(JL,JK)+ZDA(JL)*ZQTMST
-
-    !------------------------------------------------------------------
-    ! check for supersaturation when Semi-Langrangian advection is off
-    !------------------------------------------------------------------
-    IF( .NOT. LDSLPHY ) THEN
-      ZQNEW=PQ(JL,JK)+PTSPHY*(tendency_loc%q(JL,JK)+tendency_cml%q(JL,JK))
-      ZTNEW=PT(JL,JK)+PTSPHY*(tendency_loc%T(JL,JK)+tendency_cml%T(JL,JK))
-      ZANEW=PA(JL,JK)+PTSPHY*(tendency_loc%a(JL,JK)+tendency_cml%a(JL,JK))
-      ZALFAW=FOEALFA(ZTNEW)
-      IF (ZTNEW>=RTT .OR. NSSOPT==0) THEN
-        ZFAC=1.0_JPRB
-        ZFACI=ZQTMST
-      ELSE
-        ZFAC=ZANEW+FOKOOP(ZTNEW)*(1.0_JPRB-ZANEW)
-        ZFACI=1.0_JPRB/RKOOPTAU
-      ENDIF
-      ZQSAT=FOEEWM(ZTNEW)/PAP(JL,JK)
-      ZQSAT=MIN(0.5_JPRB,ZQSAT)
-      ZQSAT=ZQSAT/(1.0_JPRB-RETV*ZQSAT)
-      IF (ZQNEW>ZFAC*ZQSAT) THEN 
-        ZCOND=(ZQNEW-ZFAC*ZQSAT)/ZCORQSMIX(JL)
-        tendency_loc%q(JL,JK)=tendency_loc%q(JL,JK)-ZCOND*ZQTMST
-        tendency_loc%T(JL,JK)=tendency_loc%T(JL,JK)+FOELDCPM(ZTP1(JL,JK))*ZCOND*ZQTMST
-        tendency_loc%a(JL,JK)=tendency_loc%a(JL,JK)+(1.0_JPRB-ZANEW)*ZFACI
-!       ZQXN(JL,NCLDQL)=ZQXN(JL,NCLDQL)+ZCOND*ZALFAW
-!       ZQXN(JL,NCLDQI)=ZQXN(JL,NCLDQI)+ZCOND*(1.0_JPRB-ZALFAW)
-        tendency_loc%cld(JL,JK,NCLDQL)=tendency_loc%cld(JL,JK,NCLDQL)+ZCOND*ZALFAW*ZQTMST
-        tendency_loc%cld(JL,JK,NCLDQI)=tendency_loc%cld(JL,JK,NCLDQI)+ZCOND*(1.0_JPRB-ZALFAW)*ZQTMST
-      ENDIF
-    ENDIF
   ENDDO
-
-
- ENDIF ! on LDMAINCALL ******************************
-
-
-!------------------------------------------------------------------
-! Add tendencies for first guess call of cloud scheme only
-!------------------------------------------------------------------
- IF (.NOT. LDMAINCALL) THEN
-
-  DO JL=KIDIA,KFDIA
-    IF (ZTP1(JL,JK) > RTHOMO) THEN
-      tendency_loc%T(JL,JK)=tendency_loc%T(JL,JK)+ &
-          & RALVDCP*(ZLCOND1(JL)+ZLCOND2(JL)+ZSUPSAT(JL))*ZQTMST
-    ELSE
-      tendency_loc%T(JL,JK)=tendency_loc%T(JL,JK)+ &
-          & RALSDCP*(ZLCOND1(JL)+ZLCOND2(JL)+ZSUPSAT(JL))*ZQTMST
-    ENDIF
-    ! Add evaporation
-    tendency_loc%T(JL,JK)=tendency_loc%T(JL,JK)- &
-          & (RALVDCP*ZLEVAPL(JL)+RALSDCP*ZLEVAPI(JL))*ZQTMST
-    tendency_loc%q(JL,JK)=tendency_loc%q(JL,JK)-(ZLCOND1(JL)+ZLCOND2(JL)+ZSUPSAT(JL) &
-                           &  -ZLEVAPL(JL)-ZLEVAPI(JL))*ZQTMST
-
-    ! cloud cover
-    ZANEW=(ZA(JL,JK)+ZSOLAC(JL))/(1.0_JPRB+ZSOLAB(JL))
-    ZANEW=MIN(ZANEW,1.0_JPRB)
-    IF (ZANEW<RAMIN) ZANEW=0.0_JPRB
-    ZDA(JL)=ZANEW-ZAORIG(JL,JK)
-    tendency_loc%a(JL,JK)=tendency_loc%a(JL,JK)+ZDA(JL)*ZQTMST
-
-    ! sustained cloud liquid and ice phase
-    IF (ZTP1(JL,JK) > RTHOMO) THEN
-      tendency_loc%cld(JL,JK,NCLDQL)=tendency_loc%cld(JL,JK,NCLDQL) &
-       &  + (ZLCOND1(JL)+ZLCOND2(JL)+ZSUPSAT(JL))*ZQTMST
-    ELSE
-      tendency_loc%cld(JL,JK,NCLDQI)=tendency_loc%cld(JL,JK,NCLDQI) &
-       &  + (ZLCOND1(JL)+ZLCOND2(JL)+ZSUPSAT(JL))*ZQTMST
-    ENDIF
-    tendency_loc%cld(JL,JK,NCLDQL)=tendency_loc%cld(JL,JK,NCLDQL)-ZLEVAPL(JL)*ZQTMST
-    tendency_loc%cld(JL,JK,NCLDQI)=tendency_loc%cld(JL,JK,NCLDQI)-ZLEVAPI(JL)*ZQTMST
-  ENDDO
-
- ENDIF
  
 !--------------------------------------------------
 ! Copy precipitation fraction into output variable
@@ -2881,10 +2762,6 @@ ENDDO ! on vertical level JK
 !----------------------------------------------------------------------
 !                       END OF VERTICAL LOOP
 !----------------------------------------------------------------------
-
-
-IF (LDMAINCALL) THEN  ! ***Only included if main call to cloudsc***
-
 
 !######################################################################
 !              8  *** FLUX/DIAGNOSTICS COMPUTATIONS ***
@@ -2974,8 +2851,6 @@ DO JK=1,KLEV+1
     PFHPSN(JL,JK) = -RLSTT*PFPLSN(JL,JK)
   ENDDO
 ENDDO
-
-ENDIF ! on LDMAINCALL ******************************
 
 !===============================================================================
 END ASSOCIATE

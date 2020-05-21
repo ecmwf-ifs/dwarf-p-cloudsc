@@ -27,19 +27,20 @@ include(ecbuild_system NO_POLICY_SCOPE)
 ecbuild_requires_macro_version(2.10.1)
 ecbuild_declare_project()
 
-include(CompilerFlags)
+find_package( OpenMP COMPONENTS Fortran C )
 
-find_package( OpenMP COMPONENTS Fortran )
-
-# Find installed version of serialbox
+# Add Serialbox utility package for platform-agnostic file I/O
 find_package( Serialbox )
-if( Serialbox_FOUND AND SERIALBOX_HAS_FORTRAN )
-  if( NOT SERIALBOX_HAS_FORTRAN )
-    message( STATUS "Serialbox found has no Fortran support... Certain features or prototypes may not be compiled." )
-    set( HAVE_SERIALBOX FALSE )
-  else()
-    set( HAVE_SERIALBOX TRUE )
-  endif()
+if( Serialbox_FOUND )
+    list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
+endif()
+
+# Add option for single-precision builds
+ecbuild_add_option( FEATURE SINGLE_PRECISION
+    DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
+)
+if( HAVE_SINGLE_PRECISION )
+    list(APPEND CLOUDSC_DEFINITIONS SINGLE)
 endif()
 
 # build executables
