@@ -52,7 +52,7 @@ options :
         cmake : ENABLE_CLOUDSC_C={{value}}
 
     - without-serialbox :
-        help  : Disable Serialbox utility for platform-agnostic file I/O [ON|OFF]
+        help  : Disable Serialbox utility for platform-agnostic file I/O
         cmake : CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
 
     - serialbox-experimental :

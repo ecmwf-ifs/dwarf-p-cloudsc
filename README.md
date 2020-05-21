@@ -50,18 +50,18 @@ module load cmake
 ```
 Then simply install the bundle via:
 ```
-./cloudsc-bundle create  # Checks out dependecy packages
+./cloudsc-bundle create  # Checks out dependency packages
 ./cloudsc-bundle build [--build-type=debug|bit|release] [--arch=$PWD/arch/ecmwf/machine/compiler/version/env.sh]
 ```
 
-The individual protoype variants of the dwarf are managed as ECBuild features
+The individual prototype variants of the dwarf are managed as ECBuild features
 and can be enable or disabled via `--cloudsc-<feature>=[ON|OFF]` arguments to
 `cloudsc-bundle build`.
 
 The use of the `boost` library or module is required by the Serialbox
 utility package for filesystem utilities. If `boost` is not available
 on a given system, Serialbox's internal "experimental filesystem" can
-be use via the `--serialbox-experimental=ON` argument, although this
+be used via the `--serialbox-experimental=ON` argument, although this
 has proven difficult with certain compiler toolchains.
 
 Running and testing

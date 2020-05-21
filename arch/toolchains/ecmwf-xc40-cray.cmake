@@ -104,8 +104,6 @@ set( ENABLE_RELATIVE_RPATHS OFF CACHE STRING "Disable relative rpaths" FORCE )
 # COMPILER
 ####################################################################
 
-include(CMakeForceCompiler)
-
 set( ECBUILD_FIND_MPI OFF )
 set( ECBUILD_TRUST_FLAGS ON )
 
