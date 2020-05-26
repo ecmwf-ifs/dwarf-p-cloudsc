@@ -26,7 +26,8 @@ module_unload cmake
 module_unload boost
 module_unload ecbuild
 module_unload cdt
-module_unload cmake
+module_unload python
+module_unload python3
 
 export EC_CRAYPE_INTEGRATION=off
 
@@ -36,6 +37,8 @@ module_load gcc/6.3.0
 module_load boost/1.61.0
 module_load ninja
 module_load cmake/3.15.0
+module_load python/2.7.12-01
+module_load python3/3.6.8-01
 
 set -x
 
