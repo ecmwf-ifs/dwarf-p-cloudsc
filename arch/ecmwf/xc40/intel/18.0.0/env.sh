@@ -22,24 +22,13 @@ module_unload() {
 }
 
 # Unload to be certain
-module_unload grib_api
-module_unload eccodes
-module_unload emos
 module_unload cmake
-module_unload fftw
-module_unload fcm
-module_unload netcdf4
-module_unload cray-netcdf-hdf5parallel
-module_unload cray-hdf5
-module_unload cray-hdf5-parallel
 module_unload python
 module_unload python3
 module_unload boost
 module_unload ecbuild
 module_unload ifs-support
-module_unload fcm
 module_unload cdt
-module_unload cmake
 module_unload boost
 module_unload PrgEnv-cray
 module_unload PrgEnv-intel
@@ -53,18 +42,9 @@ module load gcc
 module_load PrgEnv-intel/5.2.82
 module_unload intel
 module_load intel/18.0.0.033
-#module_load gcc/6.3.0
-export FFTW_PATH=$( { module load fftw/3.3.4.5; } 2>/dev/null; echo $FFTW_DIR )
-export FFTW_LIB_DIR=$FFTW_PATH # for modulefile.in (emos)
-export NETCDF_PATH=$( { module load cray-netcdf-hdf5parallel/4.3.2; } 2>/dev/null; echo $NETCDF_DIR )
-export HDF5_PATH=$( { module load cray-hdf5-parallel/1.8.13; } 2>/dev/null; echo $HDF5_DIR )
-module_load fcm/2015.02.0
 module_load python/2.7.12-01
 module_load python3/3.6.8-01
 module_load boost/1.61.0
-module_load eigen/3.2.0
-module_load nag
-module_load parmetis
 module_load cray-snplauncher
 module_load atp
 module_load ninja

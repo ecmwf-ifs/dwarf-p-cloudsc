@@ -17,6 +17,7 @@ module_unload boost
 module_unload intel
 module_unload cmake
 module_unload gnu
+module_unload ecbuild
 
 # Load modules
 module_load gnu/7.3.0

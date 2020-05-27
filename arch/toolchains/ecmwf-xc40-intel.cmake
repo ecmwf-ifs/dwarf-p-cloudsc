@@ -113,7 +113,7 @@ set( ECBUILD_TRUST_FLAGS ON )
 
 # General Flags (add to default)
 
-set(ECBUILD_Fortran_FLAGS "-O2 -g")
+set(ECBUILD_Fortran_FLAGS "-g")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -qopenmp-threadprivate compat")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -assume byterecl")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -convert big_endian")
@@ -124,8 +124,6 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -xHost")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -finline-functions")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -finline-limit=500")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Winline")
-
-set(ECBUILD_Fortran_FLAGS_BIT "")
 
 ####################################################################
 # LINK FLAGS

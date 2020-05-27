@@ -113,16 +113,10 @@ set( ECBUILD_TRUST_FLAGS ON )
 
 # General Flags (add to default)
 
-set(ECBUILD_Fortran_FLAGS "-O2")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hflex_mp=conservative")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hfp1")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hadd_paren")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hcontiguous")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Ktrap=fp")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl, --as-needed")
-
-set(ECBUILD_Fortran_FLAGS_BIT "")
 
 ####################################################################
 # LINK FLAGS
