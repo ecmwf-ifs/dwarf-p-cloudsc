@@ -6,6 +6,9 @@ ecbuild_add_option( FEATURE CLOUDSC_C
 
 if( HAVE_CLOUDSC_C )
 
+    set( CMAKE_C_STANDARD 11 )
+    set( CMAKE_C_STANDARD_REQUIRED ON )
+
     ecbuild_add_library(
         TARGET dwarf-cloudsc-c-lib
 	INSTALL_HEADERS LISTED

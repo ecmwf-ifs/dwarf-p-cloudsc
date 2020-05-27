@@ -118,8 +118,6 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Ktrap=fp")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl, --as-needed")
 
-set(ECBUILD_Fortran_FLAGS_BIT "")
-
 ####################################################################
 # LINK FLAGS
 ####################################################################

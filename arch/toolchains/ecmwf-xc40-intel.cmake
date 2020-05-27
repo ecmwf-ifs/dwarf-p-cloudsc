@@ -125,8 +125,6 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -finline-functions")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -finline-limit=500")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Winline")
 
-set(ECBUILD_C_FLAGS "-g -std=c11")
-
 ####################################################################
 # LINK FLAGS
 ####################################################################
