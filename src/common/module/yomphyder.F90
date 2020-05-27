@@ -16,8 +16,11 @@ type dimension_type
 end type dimension_type
 
 type state_type
+  !$loki dimension(klon,klev)
   REAL(KIND=JPRB), dimension(:,:), pointer :: u,v,T   ! GMV fields
+  !$loki dimension(klon,klev)
   REAL(KIND=JPRB), dimension(:,:), pointer :: o3,q,a  ! GFL fields
+  !$loki dimension(klon,klev,5)
   REAL(KIND=JPRB), dimension(:,:,:), pointer :: cld   ! composed cloud array
   !REAL(KIND=JPRB), dimension(:,:), pointer :: qsat    ! spec. humidity at saturation
 end type state_type
