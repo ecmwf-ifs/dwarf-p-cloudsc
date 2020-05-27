@@ -33,11 +33,25 @@ if( HAVE_CLOUDSC_LOKI )
 	COMMENT "[Loki] Pre-processing: mode=idem frontend=${LOKI_FRONTEND}"
     )
 
+    # "Single Column Abstraction (SCA) mode" for removing horizontal vector loops
+    add_custom_command(
+        OUTPUT cloudsc.sca.F90 cloudsc_driver_loki_mod.sca.F90
+        COMMAND loki-transform.py convert --mode sca --frontend ${LOKI_FRONTEND}
+                      --header ${COMMON_MODULE}/yomphyder.F90
+                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
+                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
+                      --include ${COMMON_INCLUDE}
+                      --xmod ${XMOD_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+	COMMENT "[Loki] Pre-processing: mode=sca frontend=${LOKI_FRONTEND}"
+    )
+
     ####################################################
     ##  Define build targets for Loki transformations ##
     ####################################################
 
-    # Define the binary build target for this variant
+    # Define the "idem" build target for this variant
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem
         SOURCES
             dwarf_cloudsc.F90
@@ -47,9 +61,22 @@ if( HAVE_CLOUDSC_LOKI )
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries( dwarf-cloudsc-loki-idem PRIVATE cloudsc-common-lib )
-
     if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-idem PRIVATE OpenMP::OpenMP_Fortran )
+    endif()
+
+    # Define the "sca" build target for this variant
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-sca
+        SOURCES
+            dwarf_cloudsc.F90
+            cloudsc_global_state_mod.F90
+            cloudsc_driver_loki_mod.sca.F90
+            cloudsc.sca.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+    target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE cloudsc-common-lib )
+    if( TARGET OpenMP::OpenMP_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE OpenMP::OpenMP_Fortran )
     endif()
 
     # Create symlink for the input data
