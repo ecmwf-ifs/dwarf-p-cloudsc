@@ -1,6 +1,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN
     DESCRIPTION "Build the new Fortran version CLOUDSC using Serialbox" DEFAULT ON
+    CONDITION Serialbox_FOUND
 )
 
 if( HAVE_CLOUDSC_FORTRAN )
