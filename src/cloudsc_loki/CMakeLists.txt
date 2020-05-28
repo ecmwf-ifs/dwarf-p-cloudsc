@@ -47,6 +47,50 @@ if( HAVE_CLOUDSC_LOKI )
 	COMMENT "[Loki] Pre-processing: mode=sca frontend=${LOKI_FRONTEND}"
     )
 
+    # CLAW-GPU mode for generating OpenACC-parallel GPU code via loki-generated SCA
+    add_custom_command(
+        OUTPUT cloudsc.claw.gpu.F90 cloudsc_driver_loki_mod.claw.gpu.F90
+        COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
+                      --header ${COMMON_MODULE}/yomphyder.F90
+                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
+                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
+                      --include ${COMMON_INCLUDE}
+                      --xmod ${XMOD_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND clawfc -w 132 --target=gpu --directive=openacc
+                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                      -o cloudsc.claw.gpu.F90 cloudsc.claw.F90
+        COMMAND clawfc -w 132 --target=gpu --directive=openacc
+                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                      -o cloudsc_driver_loki_mod.claw.gpu.F90 cloudsc_driver_loki_mod.claw.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+	COMMENT "[Loki] Pre-processing: mode=claw-gpu frontend=${LOKI_FRONTEND}"
+    )
+
+
+    # CLAW-CPU mode for generating vectorized CPU host code via loki-generated SCA
+    add_custom_command(
+        OUTPUT cloudsc.claw.cpu.F90 cloudsc_driver_loki_mod.claw.cpu.F90
+        COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
+                      --header ${COMMON_MODULE}/yomphyder.F90
+                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
+                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
+                      --include ${COMMON_INCLUDE}
+                      --xmod ${XMOD_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
+        # We purposefully suppress CLAWs insertion of OpenMP loops,
+	# as their are already present in the outer driver.
+        COMMAND clawfc -w 132 --target=cpu --directive=none
+                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                      -o cloudsc.claw.cpu.F90 cloudsc.claw.F90
+        COMMAND clawfc -w 132 --target=cpu --directive=none
+                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                      -o cloudsc_driver_loki_mod.claw.cpu.F90 cloudsc_driver_loki_mod.claw.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+	COMMENT "[Loki] Pre-processing: mode=claw-cpu frontend=${LOKI_FRONTEND}"
+    )
+
+
     ####################################################
     ##  Define build targets for Loki transformations ##
     ####################################################
@@ -77,6 +121,37 @@ if( HAVE_CLOUDSC_LOKI )
     target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE cloudsc-common-lib )
     if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE OpenMP::OpenMP_Fortran )
+    endif()
+
+    # Define the CLAW-GPU build target for this variant
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-gpu
+        SOURCES
+            dwarf_cloudsc.F90
+            cloudsc_global_state_mod.F90
+            cloudsc_driver_loki_mod.claw.gpu.F90
+            cloudsc.claw.gpu.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+    target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
+    if( TARGET OpenMP::OpenMP_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenMP::OpenMP_Fortran )
+    endif()
+    if( TARGET OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenACC::OpenACC_Fortran )
+    endif()
+
+    # Define the CLAW-CPU build target for this variant
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-cpu
+        SOURCES
+            dwarf_cloudsc.F90
+            cloudsc_global_state_mod.F90
+            cloudsc_driver_loki_mod.claw.cpu.F90
+            cloudsc.claw.cpu.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+    target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE cloudsc-common-lib )
+    if( TARGET OpenMP::OpenMP_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE OpenMP::OpenMP_Fortran )
     endif()
 
     # Create symlink for the input data
