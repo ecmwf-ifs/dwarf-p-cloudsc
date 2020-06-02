@@ -485,6 +485,7 @@ REAL(KIND=JPRB) :: ZEPSILON
 
 REAL(KIND=JPRB) :: ZCOND1, ZQP
 
+REAL(KIND=JPRB) :: PSUM_SOLQA(KLON)
 
 #include "abor1.intfb.h"
 
@@ -2486,35 +2487,6 @@ ENDIF ! on IEVAPSNOW
       ZRATIO(JL,JM)=ZMAX/ZRAT
     ENDDO
   ENDDO
-  !--------------------------------------------------------
-  ! now sort zratio to find out which species run out first
-  !--------------------------------------------------------
-  DO JM=1,NCLV
-    DO JL=KIDIA,KFDIA
-      IORDER(JL,JM)=-999
-    ENDDO
-  ENDDO
-  DO JN=1,NCLV
-    DO JL=KIDIA,KFDIA
-      LLINDEX1(JL,JN)=.TRUE.
-    ENDDO
-  ENDDO
-  DO JM=1,NCLV
-    DO JL=KIDIA,KFDIA
-      ZMIN(JL)=1.E32_JPRB
-    ENDDO
-    DO JN=1,NCLV
-      DO JL=KIDIA,KFDIA
-        IF (LLINDEX1(JL,JN) .AND. ZRATIO(JL,JN)<ZMIN(JL)) THEN
-          IORDER(JL,JM)=JN
-          ZMIN(JL)=ZRATIO(JL,JN)
-        ENDIF
-      ENDDO
-    ENDDO
-    DO JL=KIDIA,KFDIA
-      LLINDEX1(JL,IORDER(JL,JM))=.FALSE. ! marked as searched
-    ENDDO
-  ENDDO
 
   !--------------------------------------------
   ! scale the sink terms, in the correct order, 
@@ -2530,40 +2502,35 @@ ENDIF ! on IEVAPSNOW
   ! recalculate sum
   !----------------
   DO JM=1,NCLV
-!   DO JN=1,NCLV
+    PSUM_SOLQA(:) = 0.0
+    DO JN=1,NCLV
     DO JL=KIDIA,KFDIA
-      JO=IORDER(JL,JM)
-!     ZZSUM=ZSINKSUM(JL,JO)
-!DIR$ IVDEP
-!DIR$ PREFERVECTOR
-      DO JN=1,NCLV
-        LLINDEX3(JL,JO,JN)=ZSOLQA(JL,JO,JN)<0.0_JPRB
-!       ZSINKSUM(JL,JO)=ZSINKSUM(JL,JO)-ZSOLQA(JL,JO,JN)
-!       ZZSUM=ZZSUM-ZSOLQA(JL,JO,JN)
+          PSUM_SOLQA(JL) = PSUM_SOLQA(JL) + ZSOLQA(JL,JM,JN)
       ENDDO
-      ZSINKSUM(JL,JO)=ZSINKSUM(JL,JO)-SUM(ZSOLQA(JL,JO,1:NCLV))
+    END DO
+    DO JL=KIDIA,KFDIA
+      ! ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-SUM(ZSOLQA(JL,JM,1:NCLV))
+      ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-PSUM_SOLQA(JL)
     ENDDO
     !---------------------------
     ! recalculate scaling factor
     !---------------------------
     DO JL=KIDIA,KFDIA
-      JO=IORDER(JL,JM)
-      ZMM=MAX(ZQX(JL,JK,JO),ZEPSEC)
-      ZRR=MAX(ZSINKSUM(JL,JO),ZMM)
-      ZRATIO(JL,JO)=ZMM/ZRR
+      ZMM=MAX(ZQX(JL,JK,JM),ZEPSEC)
+      ZRR=MAX(ZSINKSUM(JL,JM),ZMM)
+      ZRATIO(JL,JM)=ZMM/ZRR
     ENDDO
     !------
     ! scale
     !------
     DO JL=KIDIA,KFDIA
-      JO=IORDER(JL,JM)
-      ZZRATIO=ZRATIO(JL,JO)
+      ZZRATIO=ZRATIO(JL,JM)
 !DIR$ IVDEP
 !DIR$ PREFERVECTOR
       DO JN=1,NCLV
-        IF (LLINDEX3(JL,JO,JN)) THEN
-          ZSOLQA(JL,JO,JN)=ZSOLQA(JL,JO,JN)*ZZRATIO
-          ZSOLQA(JL,JN,JO)=ZSOLQA(JL,JN,JO)*ZZRATIO
+        IF (ZSOLQA(JL,JM,JN)<0.0_JPRB) THEN
+          ZSOLQA(JL,JM,JN)=ZSOLQA(JL,JM,JN)*ZZRATIO
+          ZSOLQA(JL,JN,JM)=ZSOLQA(JL,JN,JM)*ZZRATIO
         ENDIF
       ENDDO
     ENDDO
@@ -2629,8 +2596,10 @@ ENDIF ! on IEVAPSNOW
   ! Non pivoting recursive factorization 
   DO JN = 1, NCLV-1  ! number of steps
     DO JM = JN+1,NCLV ! row index
-      ZQLHS(KIDIA:KFDIA,JM,JN)=ZQLHS(KIDIA:KFDIA,JM,JN) &
-       &                     / ZQLHS(KIDIA:KFDIA,JN,JN)
+       DO JL=KIDIA,KFDIA
+          ZQLHS(JL,JM,JN)=ZQLHS(JL,JM,JN) &
+               &                     / ZQLHS(JL,JN,JN)
+       ENDDO
       DO IK=JN+1,NCLV ! column index
         DO JL=KIDIA,KFDIA
           ZQLHS(JL,JM,IK)=ZQLHS(JL,JM,IK)-ZQLHS(JL,JM,JN)*ZQLHS(JL,JN,IK)
@@ -2643,18 +2612,26 @@ ENDIF ! on IEVAPSNOW
   !  step 1 
   DO JN=2,NCLV
     DO JM = 1,JN-1
-      ZQXN(KIDIA:KFDIA,JN)=ZQXN(KIDIA:KFDIA,JN)-ZQLHS(KIDIA:KFDIA,JN,JM) &
-       &  *ZQXN(KIDIA:KFDIA,JM)
+       DO JL=KIDIA,KFDIA
+          ZQXN(JL,JN)=ZQXN(JL,JN)-ZQLHS(JL,JN,JM) &
+       &  *ZQXN(JL,JM)
+       ENDDO
     ENDDO
   ENDDO
   !  step 2
-  ZQXN(KIDIA:KFDIA,NCLV)=ZQXN(KIDIA:KFDIA,NCLV)/ZQLHS(KIDIA:KFDIA,NCLV,NCLV)
+  DO JL=KIDIA,KFDIA
+     ZQXN(JL,NCLV)=ZQXN(JL,NCLV)/ZQLHS(JL,NCLV,NCLV)
+  ENDDO
   DO JN=NCLV-1,1,-1
     DO JM = JN+1,NCLV
-      ZQXN(KIDIA:KFDIA,JN)=ZQXN(KIDIA:KFDIA,JN)-ZQLHS(KIDIA:KFDIA,JN,JM) &
-       &  *ZQXN(KIDIA:KFDIA,JM)
+       DO JL=KIDIA,KFDIA
+          ZQXN(JL,JN)=ZQXN(JL,JN)-ZQLHS(JL,JN,JM) &
+               &  *ZQXN(JL,JM)
     ENDDO
-    ZQXN(KIDIA:KFDIA,JN)=ZQXN(KIDIA:KFDIA,JN)/ZQLHS(KIDIA:KFDIA,JN,JN)
+    ENDDO
+    DO JL=KIDIA,KFDIA
+       ZQXN(JL,JN)=ZQXN(JL,JN)/ZQLHS(JL,JN,JN)
+    ENDDO
   ENDDO
 
   ! Ensure no small values (including negatives) remain in cloud variables nor
