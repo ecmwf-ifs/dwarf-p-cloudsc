@@ -162,6 +162,48 @@ if( HAVE_CLOUDSC_LOKI )
         target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE OpenMP::OpenMP_Fortran )
     endif()
 
+    ##############################################################################
+    # C-transpilation mode for generating vectorized C host code (experimental!)
+    ##############################################################################
+    add_custom_command(
+	OUTPUT loki-c/cloudsc_driver_loki_mod.c.F90
+               loki-c/cloudsc_fc.f90 loki-c/cloudsc_c.c
+               loki-c/yoethf_fc.f90 loki-c/yomcst_fc.f90
+               loki-c/yoecldp_fc.f90
+        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-c
+        COMMAND loki-transform.py transpile
+                      --header ${COMMON_MODULE}/yomphyder.F90
+                      --header ${COMMON_MODULE}/yomcst.F90
+                      --header ${COMMON_MODULE}/yoethf.F90
+                      --header ${COMMON_MODULE}/yoecldp.F90
+                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
+                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
+                      --include ${COMMON_INCLUDE}
+                      --xmod ${XMOD_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-c
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+	COMMENT "[Loki] Pre-processing: mode=transpile frontend=omni"
+    )
+
+    # Define the CLAW-CPU build target for this variant
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-c
+        SOURCES
+            dwarf_cloudsc.F90
+            cloudsc_global_state_mod.F90
+            loki-c/cloudsc_driver_loki_mod.c.F90
+            loki-c/cloudsc_fc.f90
+            loki-c/cloudsc_c.c
+            loki-c/yoethf_fc.f90
+            loki-c/yomcst_fc.f90
+            loki-c/yoecldp_fc.f90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+    target_link_libraries( dwarf-cloudsc-loki-c PRIVATE cloudsc-common-lib )
+    if( TARGET OpenMP::OpenMP_Fortran AND TARGET OpenMP::OpenMP_C )
+        target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_C )
+    endif()
+
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )

@@ -28,7 +28,7 @@ SUBROUTINE CLOUDSC &
  & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
  & PFSQLTUR, PFSQITUR , &
  & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN,&
- & KFLDX)
+ & KFLDX, YRECLDP)
 
 !===============================================================================
 !**** *CLOUDSC* -  ROUTINE FOR PARAMATERIZATION OF CLOUD PROCESSES
@@ -129,7 +129,7 @@ USE YOMCST   , ONLY : RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
 USE YOETHF   , ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
  & R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
  & RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
-USE YOECLDP  , ONLY : YRECLDP, NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
+USE YOECLDP  , ONLY : TECLDP, NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
 USE YOMPHYDER ,ONLY : STATE_TYPE
 
 IMPLICIT NONE
@@ -205,6 +205,8 @@ REAL(KIND=JPRB)   ,INTENT(OUT)   :: PFPLSL(KLON,KLEV+1) ! liq+rain sedim flux
 REAL(KIND=JPRB)   ,INTENT(OUT)   :: PFPLSN(KLON,KLEV+1) ! ice+snow sedim flux
 REAL(KIND=JPRB)   ,INTENT(OUT)   :: PFHPSL(KLON,KLEV+1) ! Enthalpy flux for liq
 REAL(KIND=JPRB)   ,INTENT(OUT)   :: PFHPSN(KLON,KLEV+1) ! Enthalp flux for ice
+
+TYPE(TECLDP), INTENT(INOUT) :: YRECLDP
 
 !-------------------------------------------------------------------------------
 !                       Declare local variables
@@ -675,10 +677,26 @@ ENDDO
 !-------------
 ! zero arrays
 !-------------
-ZPFPLSX(:,:,:) = 0.0_JPRB ! precip fluxes
-ZQXN2D(:,:,:)  = 0.0_JPRB ! end of timestep values in 2D
-ZLNEG(:,:,:)   = 0.0_JPRB ! negative input check
-PRAINFRAC_TOPRFZ(:) =0.0_JPRB ! rain fraction at top of refreezing layer
+DO JM=1,NCLV
+  DO JK=1,KLEV+1
+    DO JL=KIDIA,KFDIA
+       ZPFPLSX(JL,JK,JM) = 0.0_JPRB ! precip fluxes
+    ENDDO
+  ENDDO
+ENDDO
+
+DO JM=1,NCLV
+  DO JK=1,KLEV
+    DO JL=KIDIA,KFDIA
+       ZQXN2D(JL,JK,JM)  = 0.0_JPRB ! end of timestep values in 2D
+       ZLNEG(JL,JK,JM)   = 0.0_JPRB ! negative input check
+    ENDDO
+  ENDDO
+ENDDO
+
+DO JL=KIDIA,KFDIA
+   PRAINFRAC_TOPRFZ(JL) =0.0_JPRB ! rain fraction at top of refreezing layer
+ENDDO
 LLRAINLIQ(:) = .TRUE.  ! Assume all raindrops are liquid initially
 
 ! ----------------------------------------------------
@@ -826,12 +844,14 @@ ENDDO
 ! Reset single level variables
 !-----------------------------
 
-ZANEWM1(:)  = 0.0_JPRB
-ZDA(:)      = 0.0_JPRB
-ZCOVPCLR(:) = 0.0_JPRB
-ZCOVPMAX(:) = 0.0_JPRB  
-ZCOVPTOT(:) = 0.0_JPRB
-ZCLDTOPDIST(:) = 0.0_JPRB
+DO JL=KIDIA,KFDIA
+ZANEWM1(JL)  = 0.0_JPRB
+ZDA(JL)      = 0.0_JPRB
+ZCOVPCLR(JL) = 0.0_JPRB
+ZCOVPMAX(JL) = 0.0_JPRB  
+ZCOVPTOT(JL) = 0.0_JPRB
+ZCLDTOPDIST(JL) = 0.0_JPRB
+ENDDO
 
 !######################################################################
 !           3.       *** PHYSICS ***
@@ -861,44 +881,57 @@ DO JK=NCLDTOP,KLEV
   ! Set KLON arrays to zero
   !---------------------------------
 
-  ZLICLD(:)   = 0.0_JPRB                                
-  ZRAINAUT(:) = 0.0_JPRB  ! currently needed for diags  
-  ZRAINACC(:) = 0.0_JPRB  ! currently needed for diags  
-  ZSNOWAUT(:) = 0.0_JPRB  ! needed                      
-  ZLDEFR(:)   = 0.0_JPRB                                
-  ZACUST(:)   = 0.0_JPRB  ! set later when needed       
-  ZQPRETOT(:) = 0.0_JPRB                                
-  ZLFINALSUM(:)= 0.0_JPRB                               
+  DO JL=KIDIA,KFDIA
+  ZLICLD(JL)   = 0.0_JPRB                                
+  ZRAINAUT(JL) = 0.0_JPRB  ! currently needed for diags  
+  ZRAINACC(JL) = 0.0_JPRB  ! currently needed for diags  
+  ZSNOWAUT(JL) = 0.0_JPRB  ! needed                      
+  ZLDEFR(JL)   = 0.0_JPRB                                
+  ZACUST(JL)   = 0.0_JPRB  ! set later when needed       
+  ZQPRETOT(JL) = 0.0_JPRB                                
+  ZLFINALSUM(JL)= 0.0_JPRB                               
 
   ! Required for first guess call
-  ZLCOND1(:) = 0.0_JPRB
-  ZLCOND2(:) = 0.0_JPRB
-  ZSUPSAT(:) = 0.0_JPRB
-  ZLEVAPL(:) = 0.0_JPRB
-  ZLEVAPI(:) = 0.0_JPRB
+  ZLCOND1(JL) = 0.0_JPRB
+  ZLCOND2(JL) = 0.0_JPRB
+  ZSUPSAT(JL) = 0.0_JPRB
+  ZLEVAPL(JL) = 0.0_JPRB
+  ZLEVAPI(JL) = 0.0_JPRB
 
   !-------------------------------------                
   ! solvers for cloud fraction                          
   !-------------------------------------                
-  ZSOLAB(:) = 0.0_JPRB
-  ZSOLAC(:) = 0.0_JPRB
+  ZSOLAB(JL) = 0.0_JPRB
+  ZSOLAC(JL) = 0.0_JPRB
+
+  ZICETOT(JL)     = 0.0_JPRB                            
+  ENDDO
 
   !------------------------------------------           
   ! reset matrix so missing pathways are set            
   !------------------------------------------           
-  ZSOLQB(:,:,:) = 0.0_JPRB
-  ZSOLQA(:,:,:) = 0.0_JPRB
+  DO JM=1,NCLV
+     DO JN=1,NCLV
+        DO JL=KIDIA,KFDIA
+  ZSOLQB(JL,JN,JM) = 0.0_JPRB
+  ZSOLQA(JL,JN,JM) = 0.0_JPRB
+  ENDDO
+  ENDDO
+  ENDDO
 
   !----------------------------------                   
   ! reset new microphysics variables                    
   !----------------------------------                   
-  ZFALLSRCE(:,:) = 0.0_JPRB
-  ZFALLSINK(:,:) = 0.0_JPRB
-  ZCONVSRCE(:,:) = 0.0_JPRB
-  ZCONVSINK(:,:) = 0.0_JPRB
-  ZPSUPSATSRCE(:,:) = 0.0_JPRB
-  ZRATIO(:,:)    = 0.0_JPRB
-  ZICETOT(:)     = 0.0_JPRB                            
+  DO JM=1,NCLV
+     DO JL=KIDIA,KFDIA
+  ZFALLSRCE(JL,JM) = 0.0_JPRB
+  ZFALLSINK(JL,JM) = 0.0_JPRB
+  ZCONVSRCE(JL,JM) = 0.0_JPRB
+  ZCONVSINK(JL,JM) = 0.0_JPRB
+  ZPSUPSATSRCE(JL,JM) = 0.0_JPRB
+  ZRATIO(JL,JM)    = 0.0_JPRB
+  ENDDO
+  ENDDO                         
   
   DO JL=KIDIA,KFDIA
 
@@ -1929,7 +1962,7 @@ DO JK=NCLDTOP,KLEV
     IF(ZTP1(JL,JK) <= RTT .AND. ZLIQCLD(JL)>ZEPSEC) THEN
 
       ! Fallspeed air density correction 
-      ZFALLCORR = (RDENSREF/ZRHO(JL))**0.4
+      ZFALLCORR = (RDENSREF/ZRHO(JL))**0.4_JPRB
 
       !------------------------------------------------------------------
       ! Riming of snow by cloud water - implicit in lwc
@@ -2049,7 +2082,7 @@ DO JK=NCLDTOP,KLEV
       ! If temperature less than zero
       IF (ZTP1(JL,JK) < RTT) THEN
 
-        IF (LLRAINLIQ(JL)) THEN 
+        IF (PRAINFRAC_TOPRFZ(JL) > 0.8) THEN
 
           ! Majority of raindrops completely melted
           ! Refreezing is by slow heterogeneous freezing
