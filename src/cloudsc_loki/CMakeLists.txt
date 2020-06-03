@@ -21,48 +21,53 @@ if( HAVE_CLOUDSC_LOKI )
 
     # "Idempotence mode" for debugging Loki internals
     add_custom_command(
-        OUTPUT cloudsc.idem.F90 cloudsc_driver_loki_mod.idem.F90
+        OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
+        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         COMMAND loki-transform.py idem --frontend ${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
-                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
 	COMMENT "[Loki] Pre-processing: mode=idem frontend=${LOKI_FRONTEND}"
     )
 
     # "Single Column Abstraction (SCA) mode" for removing horizontal vector loops
     add_custom_command(
-        OUTPUT cloudsc.sca.F90 cloudsc_driver_loki_mod.sca.F90
+        OUTPUT loki-sca/cloudsc.sca.F90 loki-sca/cloudsc_driver_loki_mod.sca.F90
+        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         COMMAND loki-transform.py convert --mode sca --frontend ${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
-                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
 	COMMENT "[Loki] Pre-processing: mode=sca frontend=${LOKI_FRONTEND}"
     )
 
     # CLAW-GPU mode for generating OpenACC-parallel GPU code via loki-generated SCA
     add_custom_command(
-        OUTPUT cloudsc.claw.gpu.F90 cloudsc_driver_loki_mod.claw.gpu.F90
+        OUTPUT loki-claw-gpu/cloudsc.claw.gpu.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
+        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
-                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
         COMMAND clawfc -w 132 --target=gpu --directive=openacc
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o cloudsc.claw.gpu.F90 cloudsc.claw.F90
+                      -o loki-claw-gpu/cloudsc.claw.gpu.F90
+                      loki-claw-gpu/cloudsc.claw.F90
         COMMAND clawfc -w 132 --target=gpu --directive=openacc
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o cloudsc_driver_loki_mod.claw.gpu.F90 cloudsc_driver_loki_mod.claw.F90
+                      -o loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
+                      loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
 	COMMENT "[Loki] Pre-processing: mode=claw-gpu frontend=${LOKI_FRONTEND}"
     )
@@ -70,22 +75,25 @@ if( HAVE_CLOUDSC_LOKI )
 
     # CLAW-CPU mode for generating vectorized CPU host code via loki-generated SCA
     add_custom_command(
-        OUTPUT cloudsc.claw.cpu.F90 cloudsc_driver_loki_mod.claw.cpu.F90
+        OUTPUT loki-claw-cpu/cloudsc.claw.cpu.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
+        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
-                      --out-path ${CMAKE_CURRENT_BINARY_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
         # We purposefully suppress CLAWs insertion of OpenMP loops,
 	# as their are already present in the outer driver.
         COMMAND clawfc -w 132 --target=cpu --directive=none
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o cloudsc.claw.cpu.F90 cloudsc.claw.F90
+                      -o loki-claw-cpu/cloudsc.claw.cpu.F90
+                      loki-claw-cpu/cloudsc.claw.F90
         COMMAND clawfc -w 132 --target=cpu --directive=none
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o cloudsc_driver_loki_mod.claw.cpu.F90 cloudsc_driver_loki_mod.claw.F90
+                      -o loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
+                      loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
 	COMMENT "[Loki] Pre-processing: mode=claw-cpu frontend=${LOKI_FRONTEND}"
     )
@@ -100,8 +108,8 @@ if( HAVE_CLOUDSC_LOKI )
         SOURCES
             dwarf_cloudsc.F90
             cloudsc_global_state_mod.F90
-            cloudsc_driver_loki_mod.idem.F90
-            cloudsc.idem.F90
+            loki-idem/cloudsc_driver_loki_mod.idem.F90
+            loki-idem/cloudsc.idem.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries( dwarf-cloudsc-loki-idem PRIVATE cloudsc-common-lib )
@@ -114,8 +122,8 @@ if( HAVE_CLOUDSC_LOKI )
         SOURCES
             dwarf_cloudsc.F90
             cloudsc_global_state_mod.F90
-            cloudsc_driver_loki_mod.sca.F90
-            cloudsc.sca.F90
+            loki-sca/cloudsc_driver_loki_mod.sca.F90
+            loki-sca/cloudsc.sca.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE cloudsc-common-lib )
@@ -128,8 +136,8 @@ if( HAVE_CLOUDSC_LOKI )
         SOURCES
             dwarf_cloudsc.F90
             cloudsc_global_state_mod.F90
-            cloudsc_driver_loki_mod.claw.gpu.F90
-            cloudsc.claw.gpu.F90
+            loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
+            loki-claw-gpu/cloudsc.claw.gpu.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
@@ -145,8 +153,8 @@ if( HAVE_CLOUDSC_LOKI )
         SOURCES
             dwarf_cloudsc.F90
             cloudsc_global_state_mod.F90
-            cloudsc_driver_loki_mod.claw.cpu.F90
-            cloudsc.claw.cpu.F90
+            loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
+            loki-claw-cpu/cloudsc.claw.cpu.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE cloudsc-common-lib )
