@@ -57,7 +57,7 @@ if( HAVE_CLOUDSC_PROTOTYPE1 )
                              Serialbox::SerialboxFortranShared )
     endif()
 
-    if( TARGET OpenMP::OpenMP_Fortran )
+    if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE  OpenMP::OpenMP_Fortran )
     endif()
 

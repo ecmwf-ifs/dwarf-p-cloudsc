@@ -28,7 +28,7 @@ if( HAVE_CLOUDSC_C )
 	    cloudsc/mycpu.c
     )
     target_link_libraries( dwarf-cloudsc-c-lib PRIVATE Serialbox::Serialbox_C )
-    if( TARGET OpenMP::OpenMP_C )
+    if( HAVE_OMP AND TARGET OpenMP::OpenMP_C )
         target_link_libraries( dwarf-cloudsc-c-lib PRIVATE OpenMP::OpenMP_C )
     endif()
     target_include_directories( dwarf-cloudsc-c-lib PUBLIC $<INSTALL_INTERFACE:include> )

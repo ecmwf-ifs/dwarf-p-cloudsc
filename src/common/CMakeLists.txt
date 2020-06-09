@@ -20,7 +20,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
 target_include_directories( cloudsc-common-lib PUBLIC $<INSTALL_INTERFACE:include> )
 target_include_directories( cloudsc-common-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
-if( TARGET OpenMP::OpenMP_Fortran )
+if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
     target_link_libraries( cloudsc-common-lib PRIVATE OpenMP::OpenMP_Fortran )
 endif()
 
