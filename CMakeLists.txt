@@ -11,20 +11,43 @@
 # define minimum version of cmake required
 cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
-set(ENABLE_OS_TYPES_TEST       OFF   CACHE BOOL " ")
-set(ENABLE_OS_FUNCTIONS_TEST   OFF   CACHE BOOL " ")
-set(ENABLE_LARGE_FILE_SUPPORT  OFF   CACHE BOOL " ")
-set(ENABLE_OS_ENDINESS_TEST    OFF   CACHE BOOL " ")
+find_package( ecbuild REQUIRED )
 
 # define the project
 project(dwarf-P-cloudMicrophysics-IFSScheme VERSION 1.1 LANGUAGES C Fortran )
 
-# include ecbuild required commands
-include(ecbuild_system NO_POLICY_SCOPE)
-ecbuild_requires_macro_version(2.10.1)
-ecbuild_declare_project()
+include( cmake/compat.cmake )
 
-find_package( OpenMP COMPONENTS Fortran C )
+### OpenACC
+if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
+    find_package( OpenACC COMPONENTS Fortran C )
+    # Ensure targets are available
+    if( OpenACC_Fortran_FOUND AND NOT TARGET OpenACC::OpenACC_Fortran )
+        ecbuild_critical( "OpenACC::OpenACC_Fortran should have been defined as a CMake target" )
+    endif()
+    if( OpenACC_C_FOUND AND NOT TARGET OpenACC::OpenACC_C )
+        ecbuild_critical( "OpenACC::OpenACC_C should have been defined as a CMake target" )
+    endif()
+endif()
+ecbuild_add_option( FEATURE ACC
+    DESCRIPTION "OpenACC" DEFAULT ON
+    CONDITION OpenACC_C_FOUND OR OpenACC_Fortran_FOUND )
+
+### OpenMP
+if( NOT DEFINED ENABLE_OMP OR ENABLE_OMP )
+    find_package( OpenMP COMPONENTS Fortran C )
+    # Ensure targets are available
+    if( OpenMP_Fortran_FOUND AND NOT TARGET OpenMP::OpenMP_Fortran )
+        ecbuild_critical( "OpenMP::OpenMP_Fortran should have been defined as a CMake target" )
+    endif()
+    if( OpenMP_C_FOUND AND NOT TARGET OpenMP::OpenMP_C )
+        ecbuild_critical( "OpenMP::OpenMP_C should have been defined as a CMake target" )
+    endif()
+endif()
+ecbuild_add_option( FEATURE OMP
+    DESCRIPTION "OpenMP" DEFAULT ON
+    CONDITION OpenMP_C_FOUND AND OpenMP_Fortran_FOUND )
+
 
 # Add Serialbox utility package for platform-agnostic file I/O
 find_package( Serialbox )

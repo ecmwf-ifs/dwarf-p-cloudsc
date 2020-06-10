@@ -57,7 +57,9 @@ if( HAVE_CLOUDSC_PROTOTYPE1 )
                              Serialbox::SerialboxFortranShared )
     endif()
 
-    target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE  OpenMP::OpenMP_Fortran )
+    if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
+        target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE  OpenMP::OpenMP_Fortran )
+    endif()
 
     ecbuild_add_executable(TARGET  dwarf-P-cloudMicrophysics-IFSScheme
                            SOURCES cloudsc_dwarf.F90 )

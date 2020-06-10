@@ -1,6 +1,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN
     DESCRIPTION "Build the new Fortran version CLOUDSC using Serialbox" DEFAULT ON
+    CONDITION Serialbox_FOUND
 )
 
 if( HAVE_CLOUDSC_FORTRAN )
@@ -16,7 +17,7 @@ if( HAVE_CLOUDSC_FORTRAN )
     )
     target_link_libraries( dwarf-cloudsc-fortran PRIVATE cloudsc-common-lib )
 
-    if( TARGET OpenMP::OpenMP_Fortran )
+    if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-fortran PRIVATE OpenMP::OpenMP_Fortran )
     endif()
 

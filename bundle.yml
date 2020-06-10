@@ -39,6 +39,12 @@ options :
         help  : Enable single precision build of the dwarf
         cmake : ENABLE_SINGLE_PRECISION=ON
 
+    - with-gpu :
+        help  : Enable GPU kernel (naive and CLAW-based)
+        cmake : >
+            ENABLE_CLOUDSC_GPU_NAIVE=ON
+            ENABLE_CLOUDSC_GPU_CLAW=ON
+
     - cloudsc-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
         cmake : ENABLE_CLOUDSC_PROTOTYPE1={{value}}
@@ -50,6 +56,14 @@ options :
     - cloudsc-c :
         help  : Build the C version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_C={{value}}
+
+    - cloudsc-gpu-naive :
+        help  : Build the naive GPU version CLOUDSC (!$acc kernels) [ON|OFF]
+        cmake : ENABLE_CLOUDSC_GPU_NAIVE={{value}}
+
+    - cloudsc-gpu-claw :
+        help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
+        cmake : ENABLE_CLOUDSC_GPU_CLAW={{value}}
 
     - without-serialbox :
         help  : Disable Serialbox utility for platform-agnostic file I/O
