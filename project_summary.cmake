@@ -29,7 +29,7 @@ if( HAVE_OMP )
         ecbuild_info("  - Fortran libraries:     ${OpenMP_Fortran_LIBRARIES}" )
         ecbuild_info("  - Fortran flags:         ${OpenMP_Fortran_FLAGS}" )
     else()
-        ecbuild_info("  - OpenACC_Fortran_FOUND: FALSE")
+        ecbuild_info("  - OpenMP_Fortran_FOUND: FALSE")
     endif()
 endif()
 
