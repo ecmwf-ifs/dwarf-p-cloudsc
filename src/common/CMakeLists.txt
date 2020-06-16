@@ -1,5 +1,14 @@
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
+# For OpenACC runs we can ensure global module variables from our utility
+# modules are copied to devices via `!$acc declare copyin(<module_vars>)`
+# However, this requries static linking as per this thread:
+# https://www.pgroup.com/userforum/viewtopic.php?t=7296
+unset( LIB_TYPE )
+if( HAVE_ACC )
+  set( LIB_TYPE STATIC )
+endif()
+
 ecbuild_add_library( TARGET cloudsc-common-lib
     SOURCES
         module/parkind1.F90
@@ -19,6 +28,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         module/validate_mod.F90
         module/cloudsc_global_state_mod.F90
         module/cloudsc_mpi_mod.F90
+    TYPE ${LIB_TYPE}
     DEFINITIONS ${CLOUDSC_DEFINITIONS}
 )
 target_include_directories( cloudsc-common-lib PUBLIC $<INSTALL_INTERFACE:include> )
@@ -38,6 +48,10 @@ if ( HAVE_HDF5 )
     target_sources( cloudsc-common-lib PRIVATE module/hdf5_file_mod.F90 )
     target_include_directories( cloudsc-common-lib PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
     target_link_libraries( cloudsc-common-lib PRIVATE ${HDF5_LIBRARIES} )
+endif()
+
+if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+    target_link_libraries( cloudsc-common-lib PRIVATE OpenACC::OpenACC_Fortran )
 endif()
 
 if( TARGET Serialbox::Serialbox_Fortran )

@@ -148,5 +148,7 @@ REAL(KIND=JPRB) :: RGAMD
 !   & CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(244)//CHAR(127)
 REAL(KIND=JPRB) :: RSNAN
 
+!$acc declare copyin(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+
 !    ------------------------------------------------------------------
 END MODULE YOMCST
