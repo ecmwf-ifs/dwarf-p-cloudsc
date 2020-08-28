@@ -61,10 +61,12 @@ if( HAVE_CLOUDSC_LOKI )
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
         COMMAND clawfc -w 132 --target=gpu --directive=openacc
+	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                       -o loki-claw-gpu/cloudsc.claw.gpu.F90
                       loki-claw-gpu/cloudsc.claw.F90
         COMMAND clawfc -w 132 --target=gpu --directive=openacc
+	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                       -o loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
                       loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
@@ -87,10 +89,12 @@ if( HAVE_CLOUDSC_LOKI )
         # We purposefully suppress CLAWs insertion of OpenMP loops,
 	# as their are already present in the outer driver.
         COMMAND clawfc -w 132 --target=cpu --directive=none
+	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                       -o loki-claw-cpu/cloudsc.claw.cpu.F90
                       loki-claw-cpu/cloudsc.claw.F90
         COMMAND clawfc -w 132 --target=cpu --directive=none
+	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                       -o loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
                       loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
