@@ -2489,6 +2489,7 @@ ENDIF ! on IEVAPSNOW
   !--------------------------------------------------------------
 
   DO JM=1,NCLV
+!$claw nodep
     DO JN=1,NCLV
       DO JL=KIDIA,KFDIA
         LLINDEX3(JL,JN,JM)=.FALSE.
