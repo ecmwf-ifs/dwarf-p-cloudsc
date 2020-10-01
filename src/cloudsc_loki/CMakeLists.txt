@@ -171,9 +171,9 @@ if( HAVE_CLOUDSC_LOKI )
     ##############################################################################
     add_custom_command(
 	OUTPUT loki-c/cloudsc_driver_loki_mod.c.F90
-               loki-c/cloudsc_fc.f90 loki-c/cloudsc_c.c
-               loki-c/yoethf_fc.f90 loki-c/yomcst_fc.f90
-               loki-c/yoecldp_fc.f90
+               loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
+               loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
+               loki-c/yoecldp_fc.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-c
         COMMAND loki-transform.py transpile
                       --header ${COMMON_MODULE}/yomphyder.F90
@@ -195,11 +195,11 @@ if( HAVE_CLOUDSC_LOKI )
             dwarf_cloudsc.F90
             cloudsc_global_state_mod.F90
             loki-c/cloudsc_driver_loki_mod.c.F90
-            loki-c/cloudsc_fc.f90
+            loki-c/cloudsc_fc.F90
             loki-c/cloudsc_c.c
-            loki-c/yoethf_fc.f90
-            loki-c/yomcst_fc.f90
-            loki-c/yoecldp_fc.f90
+            loki-c/yoethf_fc.F90
+            loki-c/yomcst_fc.F90
+            loki-c/yoecldp_fc.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     target_link_libraries( dwarf-cloudsc-loki-c PRIVATE cloudsc-common-lib )
