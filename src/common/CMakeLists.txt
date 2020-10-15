@@ -8,6 +8,8 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         module/yoethf.F90
         module/yoephli.F90
         module/yomphyder.F90
+        module/fcttre_mod.F90
+        module/fccld_mod.F90
         module/routines.F90
         module/abor1.F90
         module/timer_mod.F90
