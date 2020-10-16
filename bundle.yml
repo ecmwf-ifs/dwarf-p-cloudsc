@@ -45,6 +45,14 @@ options :
             ENABLE_CLOUDSC_GPU_NAIVE=ON
             ENABLE_CLOUDSC_GPU_CLAW=ON
 
+    - with-loki :
+        help  : Enable Loki/CLAW source-to-source transformations
+        cmake : ENABLE_CLOUDSC_LOKI=ON
+
+    - loki-frontend :
+        help  : Frontend parser to use for Loki transformations
+        cmake : LOKI_FRONTEND={{value}}
+
     - cloudsc-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
         cmake : ENABLE_CLOUDSC_PROTOTYPE1={{value}}
@@ -64,6 +72,10 @@ options :
     - cloudsc-gpu-claw :
         help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_GPU_CLAW={{value}}
+
+    - cloudsc-loki :
+        help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
+        cmake : ENABLE_CLOUDSC_LOKI={{value}}
 
     - without-serialbox :
         help  : Disable Serialbox utility for platform-agnostic file I/O
