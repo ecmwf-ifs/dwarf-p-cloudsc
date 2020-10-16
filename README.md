@@ -112,7 +112,8 @@ described in the
 [Loki install instructions](https://git.ecmwf.int/projects/RDX/repos/loki/browse/INSTALL.md).
 _Please note that the in-house "volta" machine needs some manual workarounds for this atm._
 
-Once Loki and CLAW are installed, the following build flags enable the demonstrator build targets:
+Once Loki and CLAW are installed and activated via `source loki-activate`,
+the following build flags enable the demonstrator build targets:
 ```
 # For general use on workstations with GNU
 # Please note that OpenACC needs to be disable with GNU,
@@ -142,3 +143,10 @@ The following Loki modes are included in the dwarf, each with a bespoke demonstr
 * **cloudsc-loki-c**: A prototype C transpilation pipeline that converts
   the kernel to C and calls it via iso_c_bindings interfaces from the
   driver.
+
+#### A note on accuracy in Loki variants
+The original CLOUDSC kernel contains a bug that forces the use of a single
+precision constant for an exponential computation. This has been corrected
+in the Loki-specific variants, resulting in small deviations in the final
+results for some variables against the reference data from the original
+version.
