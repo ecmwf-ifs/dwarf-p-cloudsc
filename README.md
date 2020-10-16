@@ -144,6 +144,22 @@ The following Loki modes are included in the dwarf, each with a bespoke demonstr
   the kernel to C and calls it via iso_c_bindings interfaces from the
   driver.
 
+#### A note on frontends
+Loki currently supports three frontends to parse the Fortran source code:
+* [FParser](https://github.com/stfc/fparser) (`loki-frontend=fp`):
+  The preferred default; developed by STFC for PsyClone.
+* [OMNI](https://github.com/omni-compiler/omni-compiler) frontend (`loki-frontend=omni`):
+  Generates the same AST as used by CLAW.
+* [OFP](https://github.com/OpenFortranProject/open-fortran-parser),
+  a Python wrapper around the ROSE frontend (`loki-frontend=ofp`):
+  Supported, but bugged in some places and slow; use with care.
+
+For completeness, all three frontends are tested in our CI, which
+means we require the `.xmod` module description files for utility
+routines in `src/common` for processing the CLOUDSC source files with
+the OMNI frontend. These are stored in the source under
+`src/cloudsc_loki/xmod`.
+
 #### A note on accuracy in Loki variants
 The original CLOUDSC kernel contains a bug that forces the use of a single
 precision constant for an exponential computation. This has been corrected
