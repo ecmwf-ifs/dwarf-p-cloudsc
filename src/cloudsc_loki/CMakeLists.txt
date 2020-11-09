@@ -175,18 +175,21 @@ if( HAVE_CLOUDSC_LOKI )
                loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
                loki-c/yoecldp_fc.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-c
-        COMMAND loki-transform.py transpile
+        COMMAND loki-transform.py transpile --frontend=${LOKI_FRONTEND}
+                      --header ${COMMON_MODULE}/parkind1.F90
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --header ${COMMON_MODULE}/yomcst.F90
                       --header ${COMMON_MODULE}/yoethf.F90
                       --header ${COMMON_MODULE}/yoecldp.F90
+                      --header ${COMMON_MODULE}/fcttre_mod.F90
+                      --header ${COMMON_MODULE}/fccld_mod.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-c
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=transpile frontend=omni"
+	COMMENT "[Loki] Pre-processing: mode=transpile frontend=${LOKI_FRONTEND}"
     )
 
     # Define the CLAW-CPU build target for this variant
