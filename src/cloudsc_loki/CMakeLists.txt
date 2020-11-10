@@ -176,6 +176,44 @@ if( HAVE_CLOUDSC_LOKI )
     endif()
 
 
+    ####################################################
+    ##  "Single Column Coalesced" (SCC) mode          ##
+    ##   * Removes horizontal vector loops            ##
+    ##   * Invokes compute kernel as `!$acc vector`   ##
+    ####################################################
+    add_custom_command(
+        OUTPUT loki-scc/cloudsc.scc.F90 loki-scc/cloudsc_driver_loki_mod.scc.F90
+        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
+        COMMAND loki-transform.py convert --mode scc --frontend ${LOKI_FRONTEND}
+                      --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+                      --path ${CMAKE_CURRENT_SOURCE_DIR}
+                      --header ${COMMON_MODULE}/yomphyder.F90
+                      --cpp --define CLOUDSC_STMT_FUNC
+                      --data-offload --remove-openmp
+                      --xmod ${XMOD_DIR}
+                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+	COMMENT "[Loki] Pre-processing: mode=scc frontend=${LOKI_FRONTEND}"
+    )
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
+        SOURCES
+            dwarf_cloudsc.F90
+            loki-scc/cloudsc_driver_loki_mod.scc.F90
+            loki-scc/cloudsc.scc.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+    if( TARGET OpenMP::OpenMP_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE OpenMP::OpenMP_Fortran )
+    endif()
+    if( TARGET OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE cloudsc-common-lib-static )
+    else()
+        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE cloudsc-common-lib )
+    endif()
+
+
     ##############################################################################
     # C-transpilation mode for generating vectorized C host code (experimental!)
     ##############################################################################
