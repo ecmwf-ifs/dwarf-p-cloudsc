@@ -1,0 +1,203 @@
+<OmniFortranModule version="1.0">
+  <name>fccld_mod</name>
+  <depends>
+    <name>parkind1</name>
+    <name>yoethf</name>
+    <name>fcttre_mod</name>
+  </depends>
+  <typeTable>
+    <FbasicType type="I2488630" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I2488860" is_parameter="true" ref="Fint"/>
+    <FbasicType type="R249e900" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R249e500" is_save="true" ref="R249e900"/>
+    <FbasicType type="R249ea40" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R249e760" is_save="true" ref="R249ea40"/>
+    <FfunctionType type="F24c9ca0" return_type="R24ca2b0" is_elemental="true">
+      <params>
+        <name type="R24ca4e0">ptare</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R24ca2b0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R24ca620" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R24ca4e0" intent="in" ref="R24ca620"/>
+    <FbasicType type="R2559c50" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R25582a0" intent="in" ref="R2559c50"/>
+    <FfunctionType type="F24c9fd0" return_type="R24ca930" is_elemental="true">
+      <params>
+        <name type="R24cab60">ptare</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R24ca930" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R24cacc0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R24cab60" intent="in" ref="R24cacc0"/>
+    <FbasicType type="R255e4a0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R255ca50" intent="in" ref="R255e4a0"/>
+    <FfunctionType type="F247b910" return_type="R247e4c0" is_elemental="true">
+      <params>
+        <name type="R2480380">ptare</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R247e380" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R247e4c0" ref="R247e380"/>
+    <FbasicType type="R2480240" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R2480380" intent="in" ref="R2480240"/>
+    <FfunctionType type="F247cf70" return_type="Fint"/>
+    <FfunctionType type="F247ff70" return_type="Fint"/>
+    <FfunctionType type="F2482250" return_type="R2482110"/>
+    <FbasicType type="R24817d0" ref="R2480380"/>
+    <FbasicType type="R2482110" ref="R24817d0"/>
+    <FbasicType type="R24819d0" ref="R24817d0"/>
+  </typeTable>
+  <identifiers>
+    <id type="I2488630" sclass="flocal" original_name="jpim" declared_in="parkind1">
+      <name>jpim</name>
+    </id>
+    <id type="I2488860" sclass="flocal" original_name="jprb" declared_in="parkind1">
+      <name>jprb</name>
+    </id>
+    <id type="R249e500" sclass="fsave" original_name="rkoop1" declared_in="yoethf">
+      <name>rkoop1</name>
+    </id>
+    <id type="R249e760" sclass="fsave" original_name="rkoop2" declared_in="yoethf">
+      <name>rkoop2</name>
+    </id>
+    <id type="F24c9ca0" sclass="ffunc" original_name="foeeliq" declared_in="fcttre_mod">
+      <name>foeeliq</name>
+    </id>
+    <id type="F24c9fd0" sclass="ffunc" original_name="foeeice" declared_in="fcttre_mod">
+      <name>foeeice</name>
+    </id>
+    <id type="F247b910" sclass="ffunc" original_name="fokoop" declared_in="fccld_mod">
+      <name>fokoop</name>
+    </id>
+  </identifiers>
+  <declarations>
+    <varDecl>
+      <name type="I2488630">jpim</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">9</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl>
+      <name type="I2488860">jprb</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+  </declarations>
+  <interfaceDecls>
+  </interfaceDecls>
+  <aux_info>
+  </aux_info>
+</OmniFortranModule>
