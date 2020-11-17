@@ -1,7 +1,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_LOKI
     DESCRIPTION "Use Loki/CLAW source-to-source transformations with CLOUDSC " DEFAULT OFF
-    CONDITION Serialbox_FOUND
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
 if( HAVE_CLOUDSC_LOKI )
@@ -111,7 +111,6 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem
         SOURCES
             dwarf_cloudsc.F90
-            cloudsc_global_state_mod.F90
             loki-idem/cloudsc_driver_loki_mod.idem.F90
             loki-idem/cloudsc.idem.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
@@ -125,7 +124,6 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-sca
         SOURCES
             dwarf_cloudsc.F90
-            cloudsc_global_state_mod.F90
             loki-sca/cloudsc_driver_loki_mod.sca.F90
             loki-sca/cloudsc.sca.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
@@ -139,7 +137,6 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-gpu
         SOURCES
             dwarf_cloudsc.F90
-            cloudsc_global_state_mod.F90
             loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
             loki-claw-gpu/cloudsc.claw.gpu.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
@@ -156,7 +153,6 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-cpu
         SOURCES
             dwarf_cloudsc.F90
-            cloudsc_global_state_mod.F90
             loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
             loki-claw-cpu/cloudsc.claw.cpu.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
@@ -196,7 +192,6 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-c
         SOURCES
             dwarf_cloudsc.F90
-            cloudsc_global_state_mod.F90
             loki-c/cloudsc_driver_loki_mod.c.F90
             loki-c/cloudsc_fc.F90
             loki-c/cloudsc_c.c
@@ -212,6 +207,15 @@ if( HAVE_CLOUDSC_LOKI )
     endif()
 
     # Create symlink for the input data
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+    if( HAVE_SERIALBOX )
+      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+          ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+    endif()
+
+    if( HAVE_HDF5 )
+      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
+      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
+    endif()
 endif()
