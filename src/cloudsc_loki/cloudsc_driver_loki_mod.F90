@@ -136,7 +136,7 @@ CONTAINS
        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-       & KFLDX, YRECLDP)
+       & YRECLDP)
 
       ! Log number of columns processed by this thread
       CALL TIMER%THREAD_LOG(TID, IGPC=ICEND)

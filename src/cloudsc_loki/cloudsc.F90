@@ -30,7 +30,7 @@ SUBROUTINE CLOUDSC &
  & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
  & PFSQLTUR, PFSQITUR , &
  & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN,&
- & KFLDX, YRECLDP)
+ & YRECLDP)
 
 !===============================================================================
 !**** *CLOUDSC* -  ROUTINE FOR PARAMATERIZATION OF CLOUD PROCESSES
@@ -191,8 +191,6 @@ REAL(KIND=JPRB)   ,INTENT(IN)    :: PSNDE(KLON,KLEV) ! Conv. detrained snow
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PMFU(KLON,KLEV)  ! Conv. mass flux up
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PMFD(KLON,KLEV)  ! Conv. mass flux down
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PA(KLON,KLEV)    ! Original Cloud fraction (t)
-
-INTEGER(KIND=JPIM),INTENT(IN)    :: KFLDX 
 
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PCLV(KLON,KLEV,NCLV) 
 
@@ -487,10 +485,6 @@ REAL(KIND=JPRB) :: ZTMPL,ZTMPI,ZTMPA
 
 REAL(KIND=JPRB) :: ZMM,ZRR
 REAL(KIND=JPRB) :: ZRG(KLON)
-
-REAL(KIND=JPRB) :: ZBUDCC(KLON,KFLDX) ! extra fields
-REAL(KIND=JPRB) :: ZBUDL(KLON,KFLDX) ! extra fields
-REAL(KIND=JPRB) :: ZBUDI(KLON,KFLDX) ! extra fields
 
 REAL(KIND=JPRB) :: ZZSUM, ZZRATIO
 REAL(KIND=JPRB) :: ZEPSILON
