@@ -1,7 +1,7 @@
 MODULE CLOUDSC_DRIVER_LOKI_MOD
   USE PARKIND1, ONLY: JPIM, JPIB, JPRB, JPRD
   USE YOMPHYDER, ONLY: STATE_TYPE
-  USE YOECLDP, ONLY : NCLV, YRECLDP
+  USE YOECLDP, ONLY : NCLV, YRECLDP, TECLDP
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
@@ -92,6 +92,9 @@ CONTAINS
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND
 
+    ! Local copy of cloud parameters for offload
+    TYPE(TECLDP) :: LOCAL_YRECLDP
+
     TYPE(PERFORMANCE_TIMER) :: TIMER
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
@@ -104,6 +107,11 @@ CONTAINS
 
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
+
+    ! Workaround for PGI / OpenACC oddities:
+    ! Create a local copy of the parameter struct to ensure they get
+    ! moved to the device the in ``acc data`` clause below
+    LOCAL_YRECLDP = YRECLDP
 
     !$loki data
 
@@ -142,7 +150,7 @@ CONTAINS
        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-       & YRECLDP)
+       & LOCAL_YRECLDP)
 
 #ifndef CLOUDSC_GPU_TIMING
       ! Log number of columns processed by this thread (OpenMP mode)
