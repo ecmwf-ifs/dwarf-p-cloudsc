@@ -112,10 +112,6 @@ CONTAINS
       IBL=(JKGLO-1)/NPROMA+1
       ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-      !-- These were uninitialized : meaningful only when we compare error differences
-      PCOVPTOT(:,:,IBL) = 0.0_JPRB
-      TENDENCY_LOC(IBL)%cld(:,:,NCLV) = 0.0_JPRB
-
       CALL CLOUDSC &
        & (    1,    ICEND,    NPROMA,  NLEV,&
        & PTSPHY,&
