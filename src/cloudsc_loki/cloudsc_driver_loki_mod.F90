@@ -11,7 +11,9 @@ CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER( &
      & NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, KFLDX, PTSPHY, &
-     & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
+     & PT, PQ, &
+     & TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
+     & BUFFER_CML, BUFFER_TMP, BUFFER_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
      & PHRSW,    PHRLW, &
      & PVERVEL,  PAP,      PAPH, &
@@ -37,6 +39,9 @@ CONTAINS
     TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_CML(NGPBLKS) ! cumulative tendency used for final output
     TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_TMP(NGPBLKS) ! cumulative tendency used as input
     TYPE(STATE_TYPE),   INTENT(OUT)   :: TENDENCY_LOC(NGPBLKS) ! local tendency from cloud scheme
+    REAL(KIND=JPRB),    INTENT(INOUT) :: BUFFER_CML(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
+    REAL(KIND=JPRB),    INTENT(INOUT) :: BUFFER_TMP(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_TMP
+    REAL(KIND=JPRB),    INTENT(INOUT) :: BUFFER_LOC(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_LOC
     REAL(KIND=JPRB),    INTENT(IN)    :: PVFA(NPROMA,NLEV,NGPBLKS)  ! CC from VDF scheme
     REAL(KIND=JPRB),    INTENT(IN)    :: PVFL(NPROMA,NLEV,NGPBLKS)  ! Liq from VDF scheme
     REAL(KIND=JPRB),    INTENT(IN)    :: PVFI(NPROMA,NLEV,NGPBLKS)  ! Ice from VDF scheme
@@ -114,7 +119,9 @@ CONTAINS
       CALL CLOUDSC &
        & (    1,    ICEND,    NPROMA,  NLEV,&
        & PTSPHY,&
-       & PT(:,:,IBL), PQ(:,:,IBL), TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
+       & PT(:,:,IBL), PQ(:,:,IBL), &
+       & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
+       & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
        & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
        & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
        & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&

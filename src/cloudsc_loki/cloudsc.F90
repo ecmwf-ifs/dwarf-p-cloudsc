@@ -5,8 +5,10 @@ CONTAINS
 SUBROUTINE CLOUDSC &
  !---input
  & (KIDIA,    KFDIA,    KLON,    KLEV,&
- & PTSPHY,&
- & PT, PQ, tendency_cml,tendency_tmp,tendency_loc, &
+ & PTSPHY, &
+ & PT, PQ, &
+ & TENDENCY_TMP_T, TENDENCY_TMP_Q, TENDENCY_TMP_A, TENDENCY_TMP_CLD, &
+ & TENDENCY_LOC_T, TENDENCY_LOC_Q, TENDENCY_LOC_A, TENDENCY_LOC_CLD, &
  & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
  & PHRSW,    PHRLW,&
  & PVERVEL,  PAP,      PAPH,&
@@ -161,9 +163,14 @@ INTEGER(KIND=JPIM),INTENT(IN)    :: KFDIA
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PTSPHY            ! Physics timestep
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PT(KLON,KLEV)    ! T at start of callpar
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PQ(KLON,KLEV)    ! Q at start of callpar
-TYPE (STATE_TYPE) , INTENT (IN)  :: tendency_cml   ! cumulative tendency used for final output
-TYPE (STATE_TYPE) , INTENT (IN)  :: tendency_tmp   ! cumulative tendency used as input
-TYPE (STATE_TYPE) , INTENT (OUT) :: tendency_loc   ! local tendency from cloud scheme
+REAL(KIND=JPRB)   ,INTENT(IN)    :: TENDENCY_TMP_T(KLON, KLEV)
+REAL(KIND=JPRB)   ,INTENT(IN)    :: TENDENCY_TMP_Q(KLON, KLEV)
+REAL(KIND=JPRB)   ,INTENT(IN)    :: TENDENCY_TMP_A(KLON, KLEV)
+REAL(KIND=JPRB)   ,INTENT(IN)    :: TENDENCY_TMP_CLD(KLON, KLEV, NCLV)
+REAL(KIND=JPRB)   ,INTENT(INOUT) :: TENDENCY_LOC_T(KLON, KLEV)
+REAL(KIND=JPRB)   ,INTENT(INOUT) :: TENDENCY_LOC_Q(KLON, KLEV)
+REAL(KIND=JPRB)   ,INTENT(INOUT) :: TENDENCY_LOC_A(KLON, KLEV)
+REAL(KIND=JPRB)   ,INTENT(INOUT) :: TENDENCY_LOC_CLD(KLON, KLEV, NCLV)
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PVFA(KLON,KLEV)  ! CC from VDF scheme
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PVFL(KLON,KLEV)  ! Liq from VDF scheme
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PVFI(KLON,KLEV)  ! Ice from VDF scheme
@@ -616,15 +623,15 @@ IMELT(NCLDQS)=NCLDQR
 ! -----------------------------------------------
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
-    tendency_loc%T(JL,JK)=0.0_JPRB
-    tendency_loc%q(JL,JK)=0.0_JPRB
-    tendency_loc%a(JL,JK)=0.0_JPRB
+    TENDENCY_LOC_T(JL,JK)=0.0_JPRB
+    TENDENCY_LOC_Q(JL,JK)=0.0_JPRB
+    TENDENCY_LOC_A(JL,JK)=0.0_JPRB
   ENDDO
 ENDDO
 DO JM=1,NCLV-1
   DO JK=1,KLEV
     DO JL=KIDIA,KFDIA
-      tendency_loc%cld(JL,JK,JM)=0.0_JPRB
+      TENDENCY_LOC_CLD(JL,JK,JM)=0.0_JPRB
     ENDDO
   ENDDO
 ENDDO
@@ -656,11 +663,11 @@ LLFALL(NCLDQI)=.FALSE.
 ! ----------------------
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
-    ZTP1(JL,JK)        = PT(JL,JK)+PTSPHY*tendency_tmp%T(JL,JK)
-    ZQX(JL,JK,NCLDQV)  = PQ(JL,JK)+PTSPHY*tendency_tmp%q(JL,JK) 
-    ZQX0(JL,JK,NCLDQV) = PQ(JL,JK)+PTSPHY*tendency_tmp%q(JL,JK)
-    ZA(JL,JK)          = PA(JL,JK)+PTSPHY*tendency_tmp%a(JL,JK)
-    ZAORIG(JL,JK)      = PA(JL,JK)+PTSPHY*tendency_tmp%a(JL,JK)
+    ZTP1(JL,JK)        = PT(JL,JK)+PTSPHY*TENDENCY_TMP_T(JL,JK)
+    ZQX(JL,JK,NCLDQV)  = PQ(JL,JK)+PTSPHY*TENDENCY_TMP_Q(JL,JK) 
+    ZQX0(JL,JK,NCLDQV) = PQ(JL,JK)+PTSPHY*TENDENCY_TMP_Q(JL,JK)
+    ZA(JL,JK)          = PA(JL,JK)+PTSPHY*TENDENCY_TMP_A(JL,JK)
+    ZAORIG(JL,JK)      = PA(JL,JK)+PTSPHY*TENDENCY_TMP_A(JL,JK)
   ENDDO
 ENDDO
 
@@ -670,8 +677,8 @@ ENDDO
 DO JM=1,NCLV-1
   DO JK=1,KLEV
     DO JL=KIDIA,KFDIA
-      ZQX(JL,JK,JM)  = PCLV(JL,JK,JM)+PTSPHY*tendency_tmp%cld(JL,JK,JM)
-      ZQX0(JL,JK,JM) = PCLV(JL,JK,JM)+PTSPHY*tendency_tmp%cld(JL,JK,JM)
+      ZQX(JL,JK,JM)  = PCLV(JL,JK,JM)+PTSPHY*TENDENCY_TMP_CLD(JL,JK,JM)
+      ZQX0(JL,JK,JM) = PCLV(JL,JK,JM)+PTSPHY*TENDENCY_TMP_CLD(JL,JK,JM)
     ENDDO
   ENDDO
 ENDDO
@@ -711,16 +718,16 @@ DO JK=1,KLEV
       ! Evaporate small cloud liquid water amounts
       ZLNEG(JL,JK,NCLDQL) = ZLNEG(JL,JK,NCLDQL)+ZQX(JL,JK,NCLDQL)
       ZQADJ               = ZQX(JL,JK,NCLDQL)*ZQTMST
-      tendency_loc%q(JL,JK)        = tendency_loc%q(JL,JK)+ZQADJ
-      tendency_loc%T(JL,JK)        = tendency_loc%T(JL,JK)-RALVDCP*ZQADJ
+      TENDENCY_LOC_Q(JL,JK)        = TENDENCY_LOC_Q(JL,JK)+ZQADJ
+      TENDENCY_LOC_T(JL,JK)        = TENDENCY_LOC_T(JL,JK)-RALVDCP*ZQADJ
       ZQX(JL,JK,NCLDQV)   = ZQX(JL,JK,NCLDQV)+ZQX(JL,JK,NCLDQL)
       ZQX(JL,JK,NCLDQL)   = 0.0_JPRB
 
       ! Evaporate small cloud ice water amounts
       ZLNEG(JL,JK,NCLDQI) = ZLNEG(JL,JK,NCLDQI)+ZQX(JL,JK,NCLDQI)
       ZQADJ               = ZQX(JL,JK,NCLDQI)*ZQTMST
-      tendency_loc%q(JL,JK)        = tendency_loc%q(JL,JK)+ZQADJ
-      tendency_loc%T(JL,JK)        = tendency_loc%T(JL,JK)-RALSDCP*ZQADJ
+      TENDENCY_LOC_Q(JL,JK)        = TENDENCY_LOC_Q(JL,JK)+ZQADJ
+      TENDENCY_LOC_T(JL,JK)        = TENDENCY_LOC_T(JL,JK)-RALSDCP*ZQADJ
       ZQX(JL,JK,NCLDQV)   = ZQX(JL,JK,NCLDQV)+ZQX(JL,JK,NCLDQI)
       ZQX(JL,JK,NCLDQI)   = 0.0_JPRB
 
@@ -743,9 +750,9 @@ DO JM=1,NCLV-1
       IF (ZQX(JL,JK,JM)<RLMIN) THEN
         ZLNEG(JL,JK,JM) = ZLNEG(JL,JK,JM)+ZQX(JL,JK,JM)
         ZQADJ               = ZQX(JL,JK,JM)*ZQTMST
-        tendency_loc%q(JL,JK)        = tendency_loc%q(JL,JK)+ZQADJ
-        IF (IPHASE(JM)==1) tendency_loc%T(JL,JK) = tendency_loc%T(JL,JK)-RALVDCP*ZQADJ
-        IF (IPHASE(JM)==2) tendency_loc%T(JL,JK) = tendency_loc%T(JL,JK)-RALSDCP*ZQADJ
+        TENDENCY_LOC_Q(JL,JK)        = TENDENCY_LOC_Q(JL,JK)+ZQADJ
+        IF (IPHASE(JM)==1) TENDENCY_LOC_T(JL,JK) = TENDENCY_LOC_T(JL,JK)-RALVDCP*ZQADJ
+        IF (IPHASE(JM)==2) TENDENCY_LOC_T(JL,JK) = TENDENCY_LOC_T(JL,JK)-RALSDCP*ZQADJ
         ZQX(JL,JK,NCLDQV)   = ZQX(JL,JK,NCLDQV)+ZQX(JL,JK,JM)
         ZQX(JL,JK,JM)       = 0.0_JPRB
       ENDIF
@@ -2732,14 +2739,14 @@ ENDIF ! on IEVAPSNOW
 
     IF (IPHASE(JM)==1) THEN
       DO JL=KIDIA,KFDIA
-        tendency_loc%T(JL,JK)=tendency_loc%T(JL,JK)+ &
+        TENDENCY_LOC_T(JL,JK)=TENDENCY_LOC_T(JL,JK)+ &
           & RALVDCP*(ZQXN(JL,JM)-ZQX(JL,JK,JM)-ZFLUXQ(JL,JM))*ZQTMST
       ENDDO
     ENDIF
 
     IF (IPHASE(JM)==2) THEN
       DO JL=KIDIA,KFDIA
-        tendency_loc%T(JL,JK)=tendency_loc%T(JL,JK)+ &
+        TENDENCY_LOC_T(JL,JK)=TENDENCY_LOC_T(JL,JK)+ &
           & RALSDCP*(ZQXN(JL,JM)-ZQX(JL,JK,JM)-ZFLUXQ(JL,JM))*ZQTMST
       ENDDO
     ENDIF
@@ -2748,10 +2755,10 @@ ENDIF ! on IEVAPSNOW
       ! New prognostic tendencies - ice,liquid rain,snow 
       ! Note: CLV arrays use PCLV in calculation of tendency while humidity
       !       uses ZQX. This is due to clipping at start of cloudsc which
-      !       include the tendency already in tendency_loc%T and tendency_loc%q. ZQX was reset
+      !       include the tendency already in TENDENCY_LOC_T and TENDENCY_LOC_q. ZQX was reset
       !----------------------------------------------------------------------
     DO JL=KIDIA,KFDIA
-      tendency_loc%cld(JL,JK,JM)=tendency_loc%cld(JL,JK,JM)+(ZQXN(JL,JM)-ZQX0(JL,JK,JM))*ZQTMST
+      TENDENCY_LOC_CLD(JL,JK,JM)=TENDENCY_LOC_CLD(JL,JK,JM)+(ZQXN(JL,JM)-ZQX0(JL,JK,JM))*ZQTMST
     ENDDO
 
   ENDDO
@@ -2760,12 +2767,12 @@ ENDIF ! on IEVAPSNOW
     !----------------------
     ! 6.2 Humidity budget
     !----------------------
-    tendency_loc%q(JL,JK)=tendency_loc%q(JL,JK)+(ZQXN(JL,NCLDQV)-ZQX(JL,JK,NCLDQV))*ZQTMST
+    TENDENCY_LOC_q(JL,JK)=TENDENCY_LOC_Q(JL,JK)+(ZQXN(JL,NCLDQV)-ZQX(JL,JK,NCLDQV))*ZQTMST
 
     !-------------------
     ! 6.3 cloud cover 
     !-----------------------
-    tendency_loc%a(JL,JK)=tendency_loc%a(JL,JK)+ZDA(JL)*ZQTMST
+    TENDENCY_LOC_a(JL,JK)=TENDENCY_LOC_A(JL,JK)+ZDA(JL)*ZQTMST
   ENDDO
  
 !--------------------------------------------------
