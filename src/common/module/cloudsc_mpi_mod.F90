@@ -4,7 +4,7 @@ module cloudsc_mpi_mod
   use parkind1, only : jpim, jprd
 
 #ifdef HAVE_MPI
-  use mpi
+  use cloudsc_mpif
 #endif
 
   implicit none

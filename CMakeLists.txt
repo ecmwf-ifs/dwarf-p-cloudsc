@@ -51,12 +51,12 @@ ecbuild_add_option( FEATURE OMP
 ### MPI
 if( NOT DEFINED ENABLE_MPI OR ENABLE_MPI )
     ecbuild_find_mpi( COMPONENTS Fortran )
+endif()
+if( MPI_Fortran_FOUND AND ENABLE_MPI )
     # Ensure targets are available
     if( MPI_Fortran_FOUND AND NOT TARGET MPI::MPI_Fortran )
         ecbuild_critical( "MPI::MPI_Fortran should have been defined as a CMake target" )
     endif()
-endif()
-if( MPI_Fortran_FOUND AND ENABLE_MPI )
     ecbuild_add_option( FEATURE MPI
         DESCRIPTION "MPI" DEFAULT OFF
         CONDITION MPI_Fortran_FOUND )

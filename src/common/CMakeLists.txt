@@ -30,6 +30,7 @@ if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
 endif()
 
 if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+    target_sources( cloudsc-common-lib PRIVATE module/cloudsc_mpif.F90 )
     target_link_libraries( cloudsc-common-lib PRIVATE MPI::MPI_Fortran )
 endif()
 
