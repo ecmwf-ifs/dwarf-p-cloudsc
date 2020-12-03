@@ -75,11 +75,41 @@ has proven difficult with certain compiler toolchains.
 ### GPU versions of CLOUDSC
 
 The GPU-enabled versions of the dwarf are by default disabled. To
-enabled them use the `--with-gpu` flag. For example:
+enable them use the `--with-gpu` flag. For example:
 ```
 ./cloudsc-bundle create  # Checks out dependency packages
-./cloudsc-bundle build --clean --with-gpu --arch=$PWD/arch/ecmwf/volta/pgi-gpu/19.5/env.sh
+./cloudsc-bundle build --clean --with-gpu --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
 ```
+
+### MPI-enabled versions of CLOUDSC
+
+Optionally, dwarf-cloudsc-fortran and the GPU versions can be built with
+MPI support by providing the `--with-mpi` flag. For example on volta:
+```
+./cloudsc-bundle create
+./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
+```
+
+Running with MPI parallelization distributes the columns of the working set
+among all ranks. The specified number of OpenMP threads is then spawned on
+each rank. Results are gathered from all ranks and reported for the global
+working set. Performance numbers are also gathered and reported per thread,
+per rank and total.
+
+When running with multiple GPUs each rank needs to be assigned a different
+device. This can be achieved using the `CUDA_VISIBLE_DEVICES` environment
+variable:
+
+```
+mpirun -np 2 bash -c "CUDA_VISIBLE_DEVICES=\${OMPI_COMM_WORLD_RANK} bin/dwarf-cloudsc-gpu-claw 1 163840 8192"
+```
+
+### HDF5 input file support
+
+As an alternative to Serialbox, versions dwarf-cloudsc-fortran as well as GPU
+and Loki versions can use HDF5 files for input and reference data. To enable this,
+use the `--with-hdf5` flag (note that this disables Serialbox support).
+
 
 Running and testing
 -------------------
