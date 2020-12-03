@@ -18,11 +18,15 @@ module_unload intel
 module_unload cmake
 module_unload gnu
 module_unload ecbuild
+module_unload openmpi
+module_unload hdf5
 
 # Load modules
 module_load gnu/7.3.0
 module_load boost/1.61.0
 module_load cmake/3.15.0
+module_load openmpi/4.0.3
+module_load hdf5/1.10.6
 
 set -x
 

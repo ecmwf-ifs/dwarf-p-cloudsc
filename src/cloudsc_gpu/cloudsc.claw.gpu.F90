@@ -13,6 +13,7 @@ CONTAINS
    rtwat , rtice , rticecu , rtwat_rtice_r , rtwat_rticecu_r , rkoop1 , rkoop2
   USE yoecldp , ONLY: tecldp , ncldqv , ncldql , ncldqr , ncldqi , ncldqs , nclv
   USE yomphyder , ONLY: state_type
+  IMPLICIT NONE
   INTEGER , INTENT(IN) :: nproma
   INTERFACE
    SUBROUTINE abor1 ( cdtext )
@@ -322,6 +323,7 @@ CONTAINS
   REAL ( KIND=JPRB ) :: zqp
   REAL ( KIND=JPRB ) :: psum_solqa ( 1 : nproma )
   INTEGER :: jl, j, i
+  LOGICAL :: llcldbudcc, llcldbudl, llcldbudi
 
 !$acc data &
 !$acc present(plcrit_aer,picrit_aer,pre_ice,pccn,pnice,pt,pq,tendency_cml_t,tendency_cml_q,tendency_cml_cld,tendency_tmp_t &

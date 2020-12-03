@@ -48,6 +48,32 @@ ecbuild_add_option( FEATURE OMP
     DESCRIPTION "OpenMP" DEFAULT ON
     CONDITION OpenMP_C_FOUND AND OpenMP_Fortran_FOUND )
 
+### MPI
+if( NOT DEFINED ENABLE_MPI OR ENABLE_MPI )
+    ecbuild_find_mpi( COMPONENTS Fortran )
+endif()
+if( MPI_Fortran_FOUND AND ENABLE_MPI )
+    # Ensure targets are available
+    if( MPI_Fortran_FOUND AND NOT TARGET MPI::MPI_Fortran )
+        ecbuild_critical( "MPI::MPI_Fortran should have been defined as a CMake target" )
+    endif()
+    ecbuild_add_option( FEATURE MPI
+        DESCRIPTION "MPI" DEFAULT OFF
+        CONDITION MPI_Fortran_FOUND )
+    list(APPEND CLOUDSC_DEFINITIONS HAVE_MPI ${MPI_DEFINITIONS})
+endif()
+
+### HDF5
+if( NOT DEFINED ENABLE_HDF5 OR ENABLE_HDF5 )
+    ecbuild_find_package( NAME HDF5
+        COMPONENTS Fortran )
+endif()
+if( HDF5_FOUND AND ENABLE_HDF5 )
+    ecbuild_add_option( FEATURE HDF5
+        DESCRIPTION "HDF5" DEFAULT OFF
+        CONDITION HDF5_FOUND )
+    list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 ${HDF5_Fortran_DEFINITIONS})
+endif()
 
 # Add Serialbox utility package for platform-agnostic file I/O
 find_package( Serialbox )

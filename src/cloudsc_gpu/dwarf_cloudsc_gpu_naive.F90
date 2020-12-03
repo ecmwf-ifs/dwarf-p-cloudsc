@@ -1,6 +1,7 @@
 PROGRAM DWARF_CLOUDSC
 
 USE PARKIND1, ONLY: JPIM
+USE CLOUDSC_MPI_MOD, ONLY: CLOUDSC_MPI_INIT, CLOUDSC_MPI_END, NUMPROC, IRANK
 USE CLOUDSC_GLOBAL_STATE_MOD, ONLY: CLOUDSC_GLOBAL_STATE
 USE CLOUDSC_DRIVER_GPU_NAIVE_MOD, ONLY: CLOUDSC_DRIVER_GPU_NAIVE
 
@@ -9,9 +10,10 @@ IMPLICIT NONE
 CHARACTER(LEN=20) :: CLARG
 INTEGER(KIND=JPIM) :: IARGS, LENARG, JARG, I
 
-INTEGER(KIND=JPIM) :: NUMOMP  = 1     ! Number of OpenMP threads for this run
-INTEGER(KIND=JPIM) :: NGPTOT  = 16384 ! Number of grid points (as read from command line)
-INTEGER(KIND=JPIM) :: NPROMA  = 32    ! NPROMA blocking factor (currently active)
+INTEGER(KIND=JPIM) :: NUMOMP   = 1     ! Number of OpenMP threads for this run
+INTEGER(KIND=JPIM) :: NGPTOTG  = 16384 ! Number of grid points (as read from command line)
+INTEGER(KIND=JPIM) :: NPROMA   = 32    ! NPROMA blocking factor (currently active)
+INTEGER(KIND=JPIM) :: NGPTOT           ! Local number of grid points
 
 TYPE(CLOUDSC_GLOBAL_STATE) :: GLOBAL_STATE
 
@@ -23,11 +25,20 @@ if (IARGS >= 1) then
    READ(CLARG(1:LENARG),*) NUMOMP
 end if
 
+! Initialize MPI environment
+CALL CLOUDSC_MPI_INIT(NUMOMP)
+
 ! Get total number of grid points (NGPTOT) with which to run the benchmark
 IF (IARGS >= 2) THEN
   CALL GET_COMMAND_ARGUMENT(2, CLARG, LENARG)
-  READ(CLARG(1:LENARG),*) NGPTOT
+  READ(CLARG(1:LENARG),*) NGPTOTG
 END IF
+
+! Determine local number of grid points
+NGPTOT = (NGPTOTG - 1) / NUMPROC + 1
+if (IRANK == NUMPROC - 1) then
+  NGPTOT = NGPTOTG - (NUMPROC - 1) * NGPTOT
+end if
 
 ! Get the block size (NPROMA) for which to run the benchmark
 IF (IARGS >= 3) THEN
@@ -36,10 +47,10 @@ IF (IARGS >= 3) THEN
 ENDIF
 
 ! TODO: Create a global global memory state from serialized input data
-CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT)
+CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT, NGPTOTG)
 
 ! Call the driver to perform the parallel loop over our kernel
-CALL CLOUDSC_DRIVER_GPU_NAIVE(NUMOMP, NPROMA, GLOBAL_STATE%KLEV, NGPTOT, &
+CALL CLOUDSC_DRIVER_GPU_NAIVE(NUMOMP, NPROMA, GLOBAL_STATE%KLEV, NGPTOT, NGPTOTG, &
      & GLOBAL_STATE%KFLDX, GLOBAL_STATE%PTSPHY, &
      & GLOBAL_STATE%PT, GLOBAL_STATE%PQ, &
      & GLOBAL_STATE%TENDENCY_CML, GLOBAL_STATE%TENDENCY_TMP, GLOBAL_STATE%TENDENCY_LOC, &
@@ -63,6 +74,9 @@ CALL CLOUDSC_DRIVER_GPU_NAIVE(NUMOMP, NPROMA, GLOBAL_STATE%KLEV, NGPTOT, &
      & GLOBAL_STATE%PEXTRA    )
 
 ! Validate the output against serialized reference data
-CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT)
+CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT, NGPTOTG)
+
+! Tear down MPI environment
+CALL CLOUDSC_MPI_END()
 
 END PROGRAM DWARF_CLOUDSC

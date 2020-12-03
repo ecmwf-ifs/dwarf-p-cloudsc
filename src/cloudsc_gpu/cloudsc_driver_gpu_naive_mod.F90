@@ -3,6 +3,7 @@ MODULE CLOUDSC_DRIVER_GPU_NAIVE_MOD
   USE PARKIND1, ONLY: JPIM, JPRB
   USE YOMPHYDER, ONLY: STATE_TYPE
   USE YOECLDP, ONLY : NCLV, YRECLDP
+  USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
   USE CLOUDSC_ACC_KERNELS_MOD, ONLY: CLOUDSC_ACC_KERNELS
@@ -12,7 +13,7 @@ MODULE CLOUDSC_DRIVER_GPU_NAIVE_MOD
 CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER_GPU_NAIVE( &
-     & NUMOMP, NPROMA, NLEV, NGPTOT, KFLDX, PTSPHY, &
+     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, KFLDX, PTSPHY, &
      & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
      & BUFFER_CML, BUFFER_TMP, BUFFER_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
@@ -32,7 +33,7 @@ CONTAINS
      & PEXTRA    )
     ! Driver routine that invokes the naive CLOUDSC GPU kernel
 
-    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT
+    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG
     INTEGER(KIND=JPIM)                                    :: KFLDX 
     REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB)   ,POINTER, CONTIGUOUS, INTENT(IN)    :: PT(:,:,:)    ! T at start of callpar
@@ -97,8 +98,10 @@ CONTAINS
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
-1003 format(5x,'NUMOMP=',i0,', NGPTOT=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
-    write(0,1003) NUMOMP,NGPTOT,NPROMA,NGPBLKS
+1003 format(5x,'NUMPROC=',i0', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
+    if (irank == 0) then
+      write(0,1003) NUMPROC,NUMOMP,NGPTOTG,NPROMA,NGPBLKS
+    end if
 
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)

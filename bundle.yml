@@ -45,6 +45,10 @@ options :
             ENABLE_CLOUDSC_GPU_NAIVE=ON
             ENABLE_CLOUDSC_GPU_CLAW=ON
 
+    - with-mpi :
+        help  : Enable MPI-parallel kernel
+        cmake : ENABLE_MPI=ON
+
     - with-loki :
         help  : Enable Loki/CLAW source-to-source transformations
         cmake : ENABLE_CLOUDSC_LOKI=ON
@@ -76,6 +80,16 @@ options :
     - cloudsc-loki :
         help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_LOKI={{value}}
+
+    - hdf5 :
+        help : Enable use of HDF5 input file [ON|OFF]
+        cmake : ENABLE_HDF5={{value}}
+
+    - with-hdf5 :
+        help : Enable use of HDF5 input file (disables Serialbox)
+        cmake : >
+            ENABLE_HDF5=ON
+            CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
 
     - without-serialbox :
         help  : Disable Serialbox utility for platform-agnostic file I/O
