@@ -184,7 +184,7 @@ CONTAINS
 
     class(hdf5_file) :: self
     character(len=*), intent(in) :: name
-    real(kind=jprb), intent(inout) :: val
+    real(kind=jprd), intent(inout) :: val
     real(kind=jprd), target :: buf
     type(c_ptr) :: ptr
     ptr = c_loc(buf)
