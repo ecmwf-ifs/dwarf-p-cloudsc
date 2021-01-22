@@ -101,6 +101,8 @@ CONTAINS
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
 
+    !$loki data
+
     !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID) num_threads(NUMOMP)
 
     ! Local timer for each thread
@@ -149,6 +151,8 @@ CONTAINS
     CALL TIMER%THREAD_END(TID)
 
     !$omp end parallel
+
+    !$loki end data
 
     CALL TIMER%END()
 

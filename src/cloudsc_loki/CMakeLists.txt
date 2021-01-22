@@ -141,6 +141,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --cpp --define CLOUDSC_STMT_FUNC
+      	              --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
         COMMAND clawfc -w 132 --target=gpu --directive=openacc
