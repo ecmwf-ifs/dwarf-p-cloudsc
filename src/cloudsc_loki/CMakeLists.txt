@@ -140,7 +140,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --cpp --define CLOUDSC_STMT_FUNC
+                      --cpp --define CLOUDSC_GPU_TIMING --define CLOUDSC_STMT_FUNC
       	              --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
@@ -188,7 +188,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --cpp --define CLOUDSC_STMT_FUNC
+                      --cpp --define CLOUDSC_GPU_TIMING --define CLOUDSC_STMT_FUNC
                       --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
