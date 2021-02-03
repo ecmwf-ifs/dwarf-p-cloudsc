@@ -53,11 +53,13 @@ if( HAVE_CLOUDSC_LOKI )
     add_custom_command(
         OUTPUT loki-claw-gpu/cloudsc.claw.gpu.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
+	# Uses Loki-frontend CPP to switch to statement function variant again,
+	# but suppresses inlining of stmt funcs by omitting `--include`
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-                      --include ${COMMON_INCLUDE}
+                      --cpp --define CLOUDSC_STMT_FUNC
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
         COMMAND clawfc -w 132 --target=gpu --directive=openacc

@@ -151,7 +151,7 @@ the following build flags enable the demonstrator build targets:
 ./cloudsc-bundle build --clean --with-loki --loki-frontend=fp --cmake="ENABLE_ACC=OFF" --arch=$PWD/arch/ecmwf/leap42/gnu/7.3.0/env.sh
 
 # For GPU exploration on volta
-./cloudsc-bundle build --clean [--with-gpu]--with-loki --loki-frontend=fp --arch=$PWD/arch/ecmwf/volta/pgi-gpu/19.5/env.sh
+./cloudsc-bundle build --clean [--with-gpu]--with-loki --loki-frontend=fp --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
 ```
 
 The following Loki modes are included in the dwarf, each with a bespoke demonstrator build:
