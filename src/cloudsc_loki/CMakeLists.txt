@@ -29,9 +29,8 @@ if( HAVE_CLOUDSC_LOKI )
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         COMMAND loki-transform.py convert --mode idem --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+                      --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
-                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
@@ -61,9 +60,8 @@ if( HAVE_CLOUDSC_LOKI )
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         COMMAND loki-transform.py convert --mode sca --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+                      --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
-                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
@@ -94,9 +92,8 @@ if( HAVE_CLOUDSC_LOKI )
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+                      --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
-                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
@@ -141,9 +138,8 @@ if( HAVE_CLOUDSC_LOKI )
 	# but suppresses inlining of stmt funcs by omitting `--include`
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+                      --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
-                      --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
                       --cpp --define CLOUDSC_STMT_FUNC
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
