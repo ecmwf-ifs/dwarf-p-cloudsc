@@ -27,7 +27,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-                      --include ${COMMON_INCLUDE}
+                      --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
@@ -42,7 +42,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-                      --include ${COMMON_INCLUDE}
+                      --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
@@ -85,7 +85,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-                      --include ${COMMON_INCLUDE}
+                      --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
         # We purposefully suppress CLAWs insertion of OpenMP loops,
@@ -183,7 +183,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --header ${COMMON_MODULE}/fccld_mod.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-                      --include ${COMMON_INCLUDE}
+                      --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-c
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
