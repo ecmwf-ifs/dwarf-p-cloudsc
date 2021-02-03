@@ -28,6 +28,7 @@ if( HAVE_CLOUDSC_LOKI )
         OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         COMMAND loki-transform.py convert --mode idem --frontend ${LOKI_FRONTEND}
+                      --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
@@ -59,6 +60,7 @@ if( HAVE_CLOUDSC_LOKI )
         OUTPUT loki-sca/cloudsc.sca.F90 loki-sca/cloudsc_driver_loki_mod.sca.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         COMMAND loki-transform.py convert --mode sca --frontend ${LOKI_FRONTEND}
+                      --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
@@ -91,6 +93,7 @@ if( HAVE_CLOUDSC_LOKI )
         OUTPUT loki-claw-cpu/cloudsc.claw.cpu.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
+                      --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
@@ -137,6 +140,7 @@ if( HAVE_CLOUDSC_LOKI )
 	# Uses Loki-frontend CPP to switch to statement function variant again,
 	# but suppresses inlining of stmt funcs by omitting `--include`
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
+                      --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
