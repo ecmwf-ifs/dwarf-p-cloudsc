@@ -27,7 +27,7 @@ if( HAVE_CLOUDSC_LOKI )
     add_custom_command(
         OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
-        COMMAND loki-transform.py idem --frontend ${LOKI_FRONTEND}
+        COMMAND loki-transform.py convert --mode idem --frontend ${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --driver ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
                       --source ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
