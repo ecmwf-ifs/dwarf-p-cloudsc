@@ -286,7 +286,7 @@ contains
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
 
-    !OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B)
+!$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
     do b=1, nblocks
        ! state(b)%u => field(:,:,1,b)
        ! state(b)%v => field(:,:,2,b)
@@ -296,6 +296,7 @@ contains
        state(b)%q => field(:,:,6,b)
        state(b)%cld => field(:,:,7:6+ndim,b)
     end do
+!$OMP end parallel do
 
   end subroutine load_and_expand_state
 
@@ -304,7 +305,7 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
 
-    !omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend)
+!$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
        bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
@@ -328,6 +329,7 @@ contains
        ! Zero out the remainder of last block
        field(bsize+1:nproma,b) = .FALSE.
     end do
+!$omp end parallel do
   end subroutine expand_l1
 
   subroutine expand_i1(buffer, field, nlon, nproma, ngptot, nblocks)
@@ -335,7 +337,7 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
 
-    !omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend)
+!$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime) 
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
        bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
@@ -359,6 +361,7 @@ contains
        ! Zero out the remainder of last block
        field(bsize+1:nproma,b) = 0_JPIM
     end do
+!$omp end parallel do
   end subroutine expand_i1
 
   subroutine expand_r1(buffer, field, nlon, nproma, ngptot, nblocks)
@@ -367,7 +370,7 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
 
-    !omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend)
+!$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime) 
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
        bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
@@ -391,15 +394,17 @@ contains
        ! Zero out the remainder of last block
        field(bsize+1:nproma,b) = 0.0_JPRB
     end do
+!$omp end parallel do    
   end subroutine expand_r1
 
   subroutine expand_r2(buffer, field, nlon, nproma, nlev, ngptot, nblocks)
+          use omp_lib
     real(kind=JPRD), intent(inout) :: buffer(nlon, nlev)
     real(kind=JPRB), intent(inout) :: field(nproma, nlev, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
 
-    !omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend)
+!$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
        bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
@@ -422,6 +427,8 @@ contains
 
        field(bsize+1:nproma,:,b) = 0.0_JPRB
     end do
+!$omp end parallel do
+
   end subroutine expand_r2
 
   subroutine expand_r3(buffer, field, nlon, nproma, nlev, ndim, ngptot, nblocks)
@@ -430,7 +437,7 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
 
-    !omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend)
+!$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime) 
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
        bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
@@ -454,6 +461,7 @@ contains
        ! Zero out the remainder of last block
        field(bsize+1:nproma,:,:,b) = 0.0_JPRB
     end do
+!$omp end parallel do
   end subroutine expand_r3
 
   subroutine load_metainfo_scalar_real(name, variable)
