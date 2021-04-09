@@ -10,6 +10,12 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_CLAW
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+
 if( HAVE_CLOUDSC_GPU_KERNELS )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-kernels
@@ -48,6 +54,27 @@ if( HAVE_CLOUDSC_GPU_CLAW )
 
     if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
         target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE MPI::MPI_Fortran )
+    endif()
+endif()
+
+
+if( HAVE_CLOUDSC_GPU_SCC )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_mod.F90
+            cloudsc.scc.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
+    )
+    target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE cloudsc-common-lib )
+
+    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE OpenACC::OpenACC_Fortran )
+    endif()
+
+    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE MPI::MPI_Fortran )
     endif()
 endif()
 

@@ -44,6 +44,7 @@ options :
         cmake : >
             ENABLE_CLOUDSC_GPU_KERNELS=ON
             ENABLE_CLOUDSC_GPU_CLAW=ON
+            ENABLE_CLOUDSC_GPU_SCC=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
