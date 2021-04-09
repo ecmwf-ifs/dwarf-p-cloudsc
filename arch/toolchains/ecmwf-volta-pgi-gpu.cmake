@@ -16,9 +16,7 @@ set( OpenMP_Fortran_FLAGS       "-mp -mp=bind,allcores,numa" )
 # OpenAcc FLAGS
 ####################################################################
 
-set( OpenACC_Fortran_FLAGS "-acc -ta=tesla:lineinfo,deepcopy,maxregcount:100,fastmath" )
-set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Mvect=levels:6" )
-set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Mconcur=levels:6" )
+set( OpenACC_Fortran_FLAGS "-acc -ta=tesla:lineinfo,deepcopy,fastmath" )
 set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
 ####################################################################
