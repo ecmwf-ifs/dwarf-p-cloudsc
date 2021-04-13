@@ -127,6 +127,12 @@ cd build
 ./bin/dwarf-cloudsc-fortran 4 16384 32   # The cleaned-up Fortran
 ./bin/dwarf-cloudsc-c 4 16384 32   # The standalone C version
 ```
+On the ATOS TEMS system, a high-watermark run on a single socket can be performed as follows:
+```
+export OMP_NUM_THREADS=64
+OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS ./bin/dwarf-cloudsc-fortran $OMP_NUM_THREADS 163840 32
+```
+For a build with the intel 2021.1.1 compiler, performance of ~74 GF is achieved. 
 
 ### Loki transformations for CLOUDSC
 
