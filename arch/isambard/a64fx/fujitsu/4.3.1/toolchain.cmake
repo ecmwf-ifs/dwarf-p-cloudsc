@@ -35,6 +35,7 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Ksimd=2")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Klto")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -SSL2")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Kassume=notime_saving_compilation")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -DNDEBUG")
 
 set(ECBUILD_C_FLAGS "${ECBUILD_C_FLAGS} -fpic")
 set(ECBUILD_C_FLAGS "${ECBUILD_C_FLAGS} -Klto")

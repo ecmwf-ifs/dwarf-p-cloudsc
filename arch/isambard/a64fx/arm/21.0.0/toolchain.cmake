@@ -23,6 +23,7 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Ofast")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -mcpu=a64fx")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -march=armv8.2-a+sve")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -I$ENV{ARMPL_DIR}/include ")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -DNDEBUG")
 
 set(ECBUILD_C_FLAGS "${ECBUILD_C_FLAGS} -fpic")
 set(ECBUILD_CXX_FLAGS "${ECBUILD_CXX_FLAGS} -fpic")
