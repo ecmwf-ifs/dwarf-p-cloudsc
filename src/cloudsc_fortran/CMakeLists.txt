@@ -16,6 +16,9 @@ if( HAVE_CLOUDSC_FORTRAN )
     )
     target_link_libraries( dwarf-cloudsc-fortran PRIVATE cloudsc-common-lib )
 
+    target_include_directories(dwarf-cloudsc-fortran PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(dwarf-cloudsc-fortran PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../common)
+
     if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-fortran PRIVATE OpenMP::OpenMP_Fortran )
     endif()
