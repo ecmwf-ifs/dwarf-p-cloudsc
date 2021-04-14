@@ -6,14 +6,15 @@
 set( ECBUILD_FIND_MPI ON )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -O3")
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -hfp1")
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -hscalar3")
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -hvector3")
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -G2")
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -hcontiguous")
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -haggress")
-set(ECBUILD_Fortran_FLAGS_BIT "${ECBUILD_Fortran_FLAGS_BIT} -Ktrap=fp")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -O3")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hfp1")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hscalar3")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hvector3")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -G2")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hcontiguous")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -haggress")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Ktrap=fp")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -DNDEBUG")
 
 ####################################################################
 # LINK FLAGS
