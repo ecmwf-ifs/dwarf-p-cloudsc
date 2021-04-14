@@ -13,7 +13,8 @@ export FC_INCLUDES=-I$HDF5_DIR/include
 export CC=armclang
 export CXX=armclang++
 export FC=armflang
-
+ 
+module load openmpi/4.1.0/arm-21.0
 module load cmake
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"

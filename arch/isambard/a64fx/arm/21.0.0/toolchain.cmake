@@ -2,7 +2,7 @@
 # COMPILER
 ####################################################################
 
-set( ECBUILD_FIND_MPI OFF )
+set( ECBUILD_FIND_MPI ON )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ####################################################################
