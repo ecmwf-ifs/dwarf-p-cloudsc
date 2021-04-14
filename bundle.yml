@@ -90,10 +90,13 @@ options :
         cmake : >
             ENABLE_HDF5=ON
             CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
+            BUILD_serialbox=OFF
 
     - without-serialbox :
         help  : Disable Serialbox utility for platform-agnostic file I/O
-        cmake : CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
+        cmake : >
+            CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
+            BUILD_serialbox=OFF
 
     - serialbox-experimental :
         help  : Enable Serialbox experimental filesystem [ON|OFF]
