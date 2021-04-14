@@ -39,15 +39,4 @@ if ! command_exists ${BOOTSTRAPPED} ; then
     export PATH=${BUNDLE_DIR}/ecbundle:${PATH}
 fi
 
-# Make sure python has version 2.7
-python_version_ok=$(python -c "import sys; print( sys.version_info[:3] >= tuple(map(int, '2.7'.split('.'))))")
-if [[ "${python_version_ok}" != "True" ]]; then
-    if [[ ${ARCH:-unset} == "cray" ]]; then
-        { module unload python; module load python; } 2>/dev/null
-    else
-        echo "ERROR: Installed python requires version \"2.7\" or greater"
-        exit 1
-    fi
-fi
-
 ${BOOTSTRAPPED} "$@"
