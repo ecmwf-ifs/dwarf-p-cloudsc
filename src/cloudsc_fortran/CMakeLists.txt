@@ -31,6 +31,8 @@ if( HAVE_CLOUDSC_FORTRAN )
     endif()
 
     if( HAVE_HDF5 )
+      target_include_directories( dwarf-cloudsc-fortran PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+      target_link_libraries( dwarf-cloudsc-fortran PRIVATE ${HDF5_LIBRARIES} )
       execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
           ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
       execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
