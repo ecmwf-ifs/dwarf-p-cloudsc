@@ -30,6 +30,29 @@ target_include_directories( cloudsc-common-lib PUBLIC $<INSTALL_INTERFACE:includ
 target_include_directories( cloudsc-common-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories( cloudsc-common-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>)
 
+if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
+  target_link_libraries( cloudsc-common-lib PRIVATE OpenMP::OpenMP_Fortran )
+endif()
+
+if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+  target_sources( cloudsc-common-lib PRIVATE module/cloudsc_mpif.F90 )
+  target_link_libraries( cloudsc-common-lib PRIVATE MPI::MPI_Fortran )
+endif()
+
+if ( HAVE_HDF5 )
+  target_sources( cloudsc-common-lib PRIVATE module/hdf5_file_mod.F90 )
+  target_include_directories( cloudsc-common-lib PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+  target_link_libraries( cloudsc-common-lib PRIVATE ${HDF5_LIBRARIES} )
+endif()
+
+if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+  target_link_libraries( cloudsc-common-lib PRIVATE OpenACC::OpenACC_Fortran )
+endif()
+
+if( TARGET Serialbox::Serialbox_Fortran )
+  target_link_libraries( cloudsc-common-lib PRIVATE Serialbox::Serialbox_Fortran )
+endif()
+
 
 if( HAVE_ACC )
   # ========================================================================
@@ -47,40 +70,27 @@ if( HAVE_ACC )
   target_include_directories( cloudsc-common-lib-static PUBLIC $<INSTALL_INTERFACE:include> )
   target_include_directories( cloudsc-common-lib-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
   target_include_directories( cloudsc-common-lib-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>)
-endif()
 
-if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
-  target_link_libraries( cloudsc-common-lib PRIVATE OpenMP::OpenMP_Fortran )
+  if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
+    target_link_libraries( cloudsc-common-lib-static PRIVATE OpenMP::OpenMP_Fortran )
+  endif()
 
-  target_link_libraries( cloudsc-common-lib-static PRIVATE OpenMP::OpenMP_Fortran )
-endif()
+  if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+    target_sources( cloudsc-common-lib-static PRIVATE module/cloudsc_mpif.F90 )
+    target_link_libraries( cloudsc-common-lib-static PRIVATE MPI::MPI_Fortran )
+  endif()
 
-if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-  target_sources( cloudsc-common-lib PRIVATE module/cloudsc_mpif.F90 )
-  target_link_libraries( cloudsc-common-lib PRIVATE MPI::MPI_Fortran )
+  if ( HAVE_HDF5 )
+    target_sources( cloudsc-common-lib-static PRIVATE module/hdf5_file_mod.F90 )
+    target_include_directories( cloudsc-common-lib-static PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    target_link_libraries( cloudsc-common-lib-static PRIVATE ${HDF5_LIBRARIES} )
+  endif()
 
-  target_sources( cloudsc-common-lib-static PRIVATE module/cloudsc_mpif.F90 )
-  target_link_libraries( cloudsc-common-lib-static PRIVATE MPI::MPI_Fortran )
-endif()
+  if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+    target_link_libraries( cloudsc-common-lib-static PRIVATE OpenACC::OpenACC_Fortran )
+  endif()
 
-if ( HAVE_HDF5 )
-  target_sources( cloudsc-common-lib PRIVATE module/hdf5_file_mod.F90 )
-  target_include_directories( cloudsc-common-lib PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-  target_link_libraries( cloudsc-common-lib PRIVATE ${HDF5_LIBRARIES} )
-
-  target_sources( cloudsc-common-lib-static PRIVATE module/hdf5_file_mod.F90 )
-  target_include_directories( cloudsc-common-lib-static PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-  target_link_libraries( cloudsc-common-lib-static PRIVATE ${HDF5_LIBRARIES} )
-endif()
-
-if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-  target_link_libraries( cloudsc-common-lib PRIVATE OpenACC::OpenACC_Fortran )
-
-  target_link_libraries( cloudsc-common-lib-static PRIVATE OpenACC::OpenACC_Fortran )
-endif()
-
-if( TARGET Serialbox::Serialbox_Fortran )
-  target_link_libraries( cloudsc-common-lib PRIVATE Serialbox::Serialbox_Fortran )
-
-  target_link_libraries( cloudsc-common-lib-static PRIVATE Serialbox::Serialbox_Fortran )
+  if( TARGET Serialbox::Serialbox_Fortran )
+    target_link_libraries( cloudsc-common-lib-static PRIVATE Serialbox::Serialbox_Fortran )
+  endif()
 endif()
