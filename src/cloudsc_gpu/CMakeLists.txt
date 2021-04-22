@@ -1,5 +1,5 @@
 # Define the naive GPU dwarf variant as an ECBuild feature
-ecbuild_add_option( FEATURE CLOUDSC_GPU_NAIVE
+ecbuild_add_option( FEATURE CLOUDSC_GPU_KERNELS
     DESCRIPTION "Build naive GPU version of CLOUDSC using `!$acc kernels`" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
@@ -10,23 +10,34 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_CLAW
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
-if( HAVE_CLOUDSC_GPU_NAIVE )
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+
+if( HAVE_CLOUDSC_GPU_KERNELS )
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-naive
+        TARGET dwarf-cloudsc-gpu-kernels
         SOURCES
-            dwarf_cloudsc_gpu_naive.F90
-            cloudsc_driver_gpu_naive_mod.F90
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_kernels_mod.F90
             cloudsc_acc_kernels_mod.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_KERNELS
     )
-    target_link_libraries( dwarf-cloudsc-gpu-naive PRIVATE cloudsc-common-lib )
+    target_link_libraries( dwarf-cloudsc-gpu-kernels PRIVATE cloudsc-common-lib-static )
 
     if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-naive PRIVATE OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-kernels PRIVATE OpenACC::OpenACC_Fortran )
     endif()
 
     if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-naive PRIVATE MPI::MPI_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-kernels PRIVATE MPI::MPI_Fortran )
     endif()
 endif()
 
@@ -35,12 +46,12 @@ if( HAVE_CLOUDSC_GPU_CLAW )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-claw
         SOURCES
-            dwarf_cloudsc_gpu_claw.F90
+            dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_claw_mod.F90
             cloudsc.claw.gpu.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_CLAW
     )
-    target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE cloudsc-common-lib )
+    target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE cloudsc-common-lib-static )
 
     if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
         target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE OpenACC::OpenACC_Fortran )
@@ -50,6 +61,49 @@ if( HAVE_CLOUDSC_GPU_CLAW )
         target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE MPI::MPI_Fortran )
     endif()
 endif()
+
+
+if( HAVE_CLOUDSC_GPU_SCC )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_mod.F90
+            cloudsc.scc.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
+    )
+    target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE cloudsc-common-lib-static )
+
+    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE OpenACC::OpenACC_Fortran )
+    endif()
+
+    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE MPI::MPI_Fortran )
+    endif()
+endif()
+
+
+if( HAVE_CLOUDSC_GPU_SCC_HOIST )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-hoist
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_hoist_mod.F90
+            cloudsc.scc_hoist.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
+    )
+    target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE cloudsc-common-lib-static )
+
+    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE OpenACC::OpenACC_Fortran )
+    endif()
+
+    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE MPI::MPI_Fortran )
+    endif()
+endif()
+
 
 # Create symlink for the input data
 if( HAVE_SERIALBOX )
