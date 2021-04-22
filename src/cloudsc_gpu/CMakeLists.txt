@@ -16,7 +16,7 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
 )
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout" DEFAULT OFF
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
