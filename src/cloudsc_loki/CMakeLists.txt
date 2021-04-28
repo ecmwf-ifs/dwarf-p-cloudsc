@@ -143,12 +143,14 @@ if( HAVE_CLOUDSC_LOKI )
             loki-claw-gpu/cloudsc.claw.gpu.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib-static )
     if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenMP::OpenMP_Fortran )
     endif()
     if( TARGET OpenACC::OpenACC_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib-static )
+    else()
+        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
     endif()
 
     # Define the CLAW-CPU build target for this variant
