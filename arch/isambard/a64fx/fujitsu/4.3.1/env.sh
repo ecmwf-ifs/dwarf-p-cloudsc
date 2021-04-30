@@ -3,7 +3,7 @@
 source $HOME/arm-sve-tools/isambard-fujitsu.bashrc
 
 # Requires manual HDF5 installation, e.g. via the script provided
-# in https://git.ecmwf.int/users/nabr/repos/build-scripts 
+# in https://git.ecmwf.int/users/nabr/repos/build-scripts
 source $HOME/deps/fujitsu/4.3.1/deps_env.sh
 export HDF5_DIR=$HOME/deps/fujitsu/4.3.1
 

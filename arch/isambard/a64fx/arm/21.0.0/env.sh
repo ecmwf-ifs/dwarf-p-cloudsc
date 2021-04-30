@@ -3,7 +3,7 @@
 source $HOME/arm-sve-tools/isambard-arm.bashrc
 
 # Requires manual HDF5 installation, e.g. via the script provided
-# in https://git.ecmwf.int/users/nabr/repos/build-scripts 
+# in https://git.ecmwf.int/users/nabr/repos/build-scripts
 source $HOME/deps/arm/21.0.0/deps_env.sh
 export HDF5_DIR=$HOME/deps/arm/21.0.0
 
