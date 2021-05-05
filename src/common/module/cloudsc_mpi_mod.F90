@@ -66,7 +66,7 @@ contains
 
     if (ierror /= 0) call abor1('cloudsc_mpi: mpi_init_thread failed')
     if (iprovided < irequired) then
-      call abor1('cloudsc_mpi: insufficient threading support provided')
+      print *, "WARNING: MPI_INIT_THREAD reports insufficient threading support"
     end if
 
     ! determine communicator size and local rank

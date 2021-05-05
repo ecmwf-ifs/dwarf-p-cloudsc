@@ -124,6 +124,12 @@ As an alternative to Serialbox, versions dwarf-cloudsc-fortran as well as GPU
 and Loki versions can use HDF5 files for input and reference data. To enable this,
 use the `--with-hdf5` flag (note that this disables Serialbox support).
 
+### A64FX version of CLOUDSC
+
+Preliminary results for CLOUDSC have been generated for A64FX CPUs on
+Isambard. A set of arch and toolchain files and detailed installation
+and run instructions are provided
+[here](https://confluence.ecmwf.int/display/~nabr/3rd+Isambard+Hackathon).
 
 Running and testing
 -------------------
