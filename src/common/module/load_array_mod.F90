@@ -85,8 +85,8 @@ contains
 
   end subroutine query_dimensions
 
-  subroutine get_offsets(start, end, count, nlon, ndim, nlev, ngptot, ngptotg)
-    integer(kind=jpim), intent(inout) :: start(3), end(3), count(3)
+  subroutine get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
+    integer(kind=jpim), intent(inout) :: start, end, size
     integer(kind=jpim), intent(in) :: nlon, ndim, nlev, ngptot
     integer(kind=jpim), intent(in), optional :: ngptotg
     integer(kind=jpim) :: rankstride
@@ -95,23 +95,19 @@ contains
     if (present(ngptotg)) use_offset = nlon >= ngptotg
     if (use_offset) then
       rankstride = (ngptotg - 1) / numproc + 1
-      start(1) = irank * rankstride + 1
+      start = irank * rankstride + 1
     else
-      start(1) = 1
+      start = 1
     end if
-    start(2) = 1
-    start(3) = 1
-    count(1) = min(nlon, ngptot)
-    count(2) = nlev
-    count(3) = ndim
-    end(:) = start(:) + count(:) - 1
+    size = min(nlon, ngptot)
+    end = start + size - 1
   end subroutine get_offsets
 
-  subroutine load_i1(name, start, end, count, nlon, buffer)
+  subroutine load_i1(name, start, end, size, nlon, buffer)
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
-    integer(kind=jpim), intent(in) :: start, end, count, nlon
-    integer(kind=jpim), intent(out) :: buffer(count)
+    integer(kind=jpim), intent(in) :: start, end, size, nlon
+    integer(kind=jpim), intent(out) :: buffer(size)
     integer(kind=jpim), allocatable :: rbuf(:)
 
 #ifdef HAVE_SERIALBOX
@@ -120,17 +116,17 @@ contains
     buffer(:) = rbuf(start:end)
     deallocate(rbuf)
 #elif defined(HAVE_HDF5)
-    call input_file%load(name, buffer, start, count)
+    call input_file%load(name, buffer, start, size)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
   end subroutine load_i1
 
-  subroutine load_l1(name, start, end, count, nlon, buffer)
+  subroutine load_l1(name, start, end, size, nlon, buffer)
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
-    integer(kind=jpim), intent(in) :: start, end, count, nlon
-    logical, intent(out) :: buffer(count)
+    integer(kind=jpim), intent(in) :: start, end, size, nlon
+    logical, intent(out) :: buffer(size)
     logical, allocatable :: rbuf(:)
 
 #ifdef HAVE_SERIALBOX
@@ -139,17 +135,17 @@ contains
     buffer(:) = rbuf(start:end)
     deallocate(rbuf)
 #elif defined(HAVE_HDF5)
-    call input_file%load(name, buffer, start, count)
+    call input_file%load(name, buffer, start, size)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
   end subroutine load_l1
 
-  subroutine load_r1(name, start, end, count, nlon, buffer)
+  subroutine load_r1(name, start, end, size, nlon, buffer)
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
-    integer(kind=jpim), intent(in) :: start, end, count, nlon
-    real(kind=jprd), intent(out) :: buffer(count)
+    integer(kind=jpim), intent(in) :: start, end, size, nlon
+    real(kind=jprd), intent(out) :: buffer(size)
     real(kind=jprd), allocatable :: rbuf(:)
 
 #ifdef HAVE_SERIALBOX
@@ -158,18 +154,18 @@ contains
     buffer(:) = rbuf(start:end)
     deallocate(rbuf)
 #elif defined(HAVE_HDF5)
-    call input_file%load(name, buffer, start, count)
+    call input_file%load(name, buffer, start, size)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
   end subroutine load_r1
 
-  subroutine load_r2(name, start, end, count, nlon, nlev, buffer)
+  subroutine load_r2(name, start, end, size, nlon, nlev, buffer)
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
-    integer(kind=jpim), intent(in) :: start, end, count, nlon, nlev
-    real(kind=jprd), intent(out) :: buffer(count,nlev)
-    integer(kind=jpim) :: istart(2), icount(2)
+    integer(kind=jpim), intent(in) :: start, end, size, nlon, nlev
+    real(kind=jprd), intent(out) :: buffer(size,nlev)
+    integer(kind=jpim) :: istart(2), isize(2)
     real(kind=jprd), allocatable :: rbuf(:,:)
 
 #ifdef HAVE_SERIALBOX
@@ -180,20 +176,20 @@ contains
 #elif defined(HAVE_HDF5)
     istart(1) = start
     istart(2) = 1
-    icount(1) = count
-    icount(2) = nlev
-    call input_file%load(name, buffer, istart, icount)
+    isize(1) = size
+    isize(2) = nlev
+    call input_file%load(name, buffer, istart, isize)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
   end subroutine load_r2
 
-  subroutine load_r3(name, start, end, count, nlon, nlev, ndim, buffer)
+  subroutine load_r3(name, start, end, size, nlon, nlev, ndim, buffer)
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
-    integer(kind=jpim), intent(in) :: start, end, count, nlon, nlev, ndim
-    real(kind=jprd), intent(out) :: buffer(count,nlev,ndim)
-    integer(kind=jpim) :: istart(3), icount(3)
+    integer(kind=jpim), intent(in) :: start, end, size, nlon, nlev, ndim
+    real(kind=jprd), intent(out) :: buffer(size,nlev,ndim)
+    integer(kind=jpim) :: istart(3), isize(3)
     real(kind=jprd), allocatable :: rbuf(:,:,:)
 
 #ifdef HAVE_SERIALBOX
@@ -205,10 +201,10 @@ contains
     istart(1) = start
     istart(2) = 1
     istart(3) = 1
-    icount(1) = count
-    icount(2) = nlev
-    icount(3) = ndim
-    call input_file%load(name, buffer, istart, icount)
+    isize(1) = size
+    isize(2) = nlev
+    isize(3) = ndim
+    call input_file%load(name, buffer, istart, isize)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
@@ -221,13 +217,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     integer(kind=jpim), allocatable :: buffer(:), rbuf(:)
-    integer(kind=jpim) :: start(3), count(3), end(3)
+    integer(kind=jpim) :: start, end, size
 
-    call get_offsets(start, end, count, nlon, 1, 1, ngptot, ngptotg)
+    call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
     allocate(field(nproma, nblocks))
-    allocate(buffer(count(1)))
-    call load_i1(name, start(1), end(1), count(1), nlon, buffer)
-    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
+    allocate(buffer(size))
+    call load_i1(name, start, end, size, nlon, buffer)
+    call expand(buffer, field, size, nproma, ngptot, nblocks)
     deallocate(buffer)
   end subroutine load_and_expand_i1
 
@@ -238,13 +234,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     logical, allocatable :: buffer(:), rbuf(:)
-    integer(kind=jpim) :: start(3), count(3), end(3)
+    integer(kind=jpim) :: start, end, size
 
-    call get_offsets(start, end, count, nlon, 1, 1, ngptot, ngptotg)
+    call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
     allocate(field(nproma, nblocks))
-    allocate(buffer(count(1)))
-    call load_l1(name, start(1), end(1), count(1), nlon, buffer)
-    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
+    allocate(buffer(size))
+    call load_l1(name, start, end, size, nlon, buffer)
+    call expand(buffer, field, size, nproma, ngptot, nblocks)
     deallocate(buffer)
   end subroutine load_and_expand_l1
 
@@ -255,13 +251,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprd), allocatable :: buffer(:), rbuf(:)
-    integer(kind=jpim) :: start(3), count(3), end(3)
+    integer(kind=jpim) :: start, end, size
 
-    call get_offsets(start, end, count, nlon, 1, 1, ngptot, ngptotg)
+    call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
     allocate(field(nproma, nblocks))
-    allocate(buffer(count(1)))
-    call load_r1(name, start(1), end(1), count(1), nlon, buffer)
-    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
+    allocate(buffer(size))
+    call load_r1(name, start, end, size, nlon, buffer)
+    call expand(buffer, field, size, nproma, ngptot, nblocks)
     deallocate(buffer)
   end subroutine load_and_expand_r1
 
@@ -272,13 +268,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprd), allocatable :: buffer(:,:), rbuf(:,:)
-    integer(kind=jpim) :: start(3), count(3), end(3)
+    integer(kind=jpim) :: start, end, size
 
-    call get_offsets(start, end, count, nlon, 1, nlev, ngptot, ngptotg)
+    call get_offsets(start, end, size, nlon, 1, nlev, ngptot, ngptotg)
     allocate(field(nproma, nlev, nblocks))
-    allocate(buffer(count(1), count(2)))
-    call load_r2(name, start(1), end(1), count(1), nlon, nlev, buffer)
-    call expand(buffer, field, count(1), nproma, nlev, ngptot, nblocks)
+    allocate(buffer(size, nlev))
+    call load_r2(name, start, end, size, nlon, nlev, buffer)
+    call expand(buffer, field, size, nproma, nlev, ngptot, nblocks)
     deallocate(buffer)
   end subroutine load_and_expand_r2
 
@@ -289,13 +285,13 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprd), allocatable :: buffer(:,:,:), rbuf(:,:,:)
-    integer(kind=jpim) :: start(3), count(3), end(3)
+    integer(kind=jpim) :: start, end, size
 
-    call get_offsets(start, end, count, nlon, ndim, nlev, ngptot, ngptotg)
+    call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
     allocate(field(nproma, nlev, ndim, nblocks))
-    allocate(buffer(count(1), count(2), count(3)))
-    call load_r3(name, start(1), end(1), count(1), nlon, nlev, ndim, buffer)
-    call expand(buffer, field, count(1), nproma, nlev, ndim, ngptot, nblocks)
+    allocate(buffer(size, nlev, ndim))
+    call load_r3(name, start, end, size, nlon, nlev, ndim, buffer)
+    call expand(buffer, field, size, nproma, nlev, ndim, ngptot, nblocks)
     deallocate(buffer)
   end subroutine load_and_expand_r3
 
@@ -307,24 +303,24 @@ contains
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprd), allocatable :: buffer(:,:,:), rbuf(:,:,:)
-    integer(kind=jpim) :: start(3), count(3), end(3)
+    integer(kind=jpim) :: start, end, size
 
     integer :: b
 
-    call get_offsets(start, end, count, nlon, ndim, nlev, ngptot, ngptotg)
+    call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
     allocate(state(nblocks))
     allocate(field(nproma, nlev, 6+ndim, nblocks))
-    allocate(buffer(count(1), count(2), 6+ndim))
+    allocate(buffer(size, nlev, 6+ndim))
 
-    call load_r2(name//'_T', start(1), end(1), count(1), nlon, nlev, buffer(:,:,3))
-    call load_r2(name//'_A', start(1), end(1), count(1), nlon, nlev, buffer(:,:,5))
-    call load_r2(name//'_Q', start(1), end(1), count(1), nlon, nlev, buffer(:,:,6))
-    call load_r3(name//'_CLD', start(1), end(1), count(1), nlon, nlev, ndim, buffer(:,:,7:))
+    call load_r2(name//'_T', start, end, size, nlon, nlev, buffer(:,:,3))
+    call load_r2(name//'_A', start, end, size, nlon, nlev, buffer(:,:,5))
+    call load_r2(name//'_Q', start, end, size, nlon, nlev, buffer(:,:,6))
+    call load_r3(name//'_CLD', start, end, size, nlon, nlev, ndim, buffer(:,:,7:))
 
-    call expand(buffer(:,:,3), field(:,:,3,:), count(1), nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,5), field(:,:,5,:), count(1), nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,6), field(:,:,6,:), count(1), nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,7:), field(:,:,7:,:), count(1), nproma, nlev, ndim, ngptot, nblocks)
+    call expand(buffer(:,:,3), field(:,:,3,:), size, nproma, nlev, ngptot, nblocks)
+    call expand(buffer(:,:,5), field(:,:,5,:), size, nproma, nlev, ngptot, nblocks)
+    call expand(buffer(:,:,6), field(:,:,6,:), size, nproma, nlev, ngptot, nblocks)
+    call expand(buffer(:,:,7:), field(:,:,7:,:), size, nproma, nlev, ndim, ngptot, nblocks)
     deallocate(buffer)
 
 !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
