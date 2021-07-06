@@ -81,8 +81,8 @@ contains
 
   end subroutine query_dimensions
 
-  subroutine get_offsets(start, count, nlon, ndim, nlev, ngptot, ngptotg)
-    integer(kind=jpim), intent(inout) :: start(3), count(3)
+  subroutine get_offsets(start, end, count, nlon, ndim, nlev, ngptot, ngptotg)
+    integer(kind=jpim), intent(inout) :: start(3), end(3), count(3)
     integer(kind=jpim), intent(in) :: nlon, ndim, nlev, ngptot
     integer(kind=jpim), intent(in), optional :: ngptotg
     integer(kind=jpim) :: rankstride
@@ -91,15 +91,16 @@ contains
     if (present(ngptotg)) use_offset = nlon >= ngptotg
     if (use_offset) then
       rankstride = (ngptotg - 1) / numproc + 1
-      start(1) = irank * rankstride
+      start(1) = irank * rankstride + 1
     else
-      start(1) = 0
+      start(1) = 1
     end if
-    start(2) = 0
-    start(3) = 0
+    start(2) = 1
+    start(3) = 1
     count(1) = min(nlon, ngptot)
     count(2) = nlev
     count(3) = ndim
+    end(:) = start(:) + count(:) - 1
   end subroutine get_offsets
 
   subroutine load_and_expand_i1(name, field, nlon, nproma, ngptot, nblocks, ngptotg)
@@ -108,23 +109,24 @@ contains
     integer(kind=jpim), pointer, intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
-    integer(kind=jpim), allocatable :: buffer(:)
-    integer(kind=jpim) :: start(3), count(3)
+    integer(kind=jpim), allocatable :: buffer(:), rbuf(:)
+    integer(kind=jpim) :: start(3), count(3), end(3)
 
+    call get_offsets(start, end, count, nlon, 1, 1, ngptot, ngptotg)
     allocate(field(nproma, nblocks))
-#ifdef HAVE_SERIALBOX
-    allocate(buffer(nlon))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
-    call expand(buffer, field, nlon, nproma, ngptot, nblocks)
-#elif defined(HAVE_HDF5)
-    call get_offsets(start, count, nlon, 1, 1, ngptot, ngptotg)
     allocate(buffer(count(1)))
+#ifdef HAVE_SERIALBOX
+    allocate(rbuf(nlon))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, rbuf)
+    buffer(:) = rbuf(start(1):end(1))
+    deallocate(rbuf)
+#elif defined(HAVE_HDF5)
     call input_file%load(name, buffer, start(1), count(1))
-    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
-    deallocate(buffer)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
+    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
+    deallocate(buffer)
   end subroutine load_and_expand_i1
 
   subroutine load_and_expand_l1(name, field, nlon, nproma, ngptot, nblocks, ngptotg)
@@ -133,23 +135,24 @@ contains
     logical, pointer, intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
-    logical, allocatable :: buffer(:)
-    integer(kind=jpim) :: start(3), count(3)
+    logical, allocatable :: buffer(:), rbuf(:)
+    integer(kind=jpim) :: start(3), count(3), end(3)
 
+    call get_offsets(start, end, count, nlon, 1, 1, ngptot, ngptotg)
     allocate(field(nproma, nblocks))
-#ifdef HAVE_SERIALBOX
-    allocate(buffer(nlon))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
-    call expand(buffer, field, nlon, nproma, ngptot, nblocks)
-#elif defined(HAVE_HDF5)
-    call get_offsets(start, count, nlon, 1, 1, ngptot, ngptotg)
     allocate(buffer(count(1)))
+#ifdef HAVE_SERIALBOX
+    allocate(rbuf(nlon))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, rbuf)
+    buffer(:) = rbuf(start(1):end(1))
+    deallocate(rbuf)
+#elif defined(HAVE_HDF5)
     call input_file%load(name, buffer, start(1), count(1))
-    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
-    deallocate(buffer)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
+    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
+    deallocate(buffer)
   end subroutine load_and_expand_l1
 
   subroutine load_and_expand_r1(name, field, nlon, nproma, ngptot, nblocks, ngptotg)
@@ -158,24 +161,24 @@ contains
     real(kind=JPRB), pointer, intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
-    real(kind=jprd), allocatable :: buffer(:)
-    integer(kind=jpim) :: start(3), count(3)
+    real(kind=jprd), allocatable :: buffer(:), rbuf(:)
+    integer(kind=jpim) :: start(3), count(3), end(3)
 
+    call get_offsets(start, end, count, nlon, 1, 1, ngptot, ngptotg)
     allocate(field(nproma, nblocks))
-#ifdef HAVE_SERIALBOX
-    allocate(buffer(nlon))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
-    call expand(buffer, field, nlon, nproma, ngptot, nblocks)
-    deallocate(buffer)
-#elif defined(HAVE_HDF5)
-    call get_offsets(start, count, nlon, 1, 1, ngptot, ngptotg)
     allocate(buffer(count(1)))
+#ifdef HAVE_SERIALBOX
+    allocate(rbuf(nlon))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, rbuf)
+    buffer(:) = rbuf(start(1):end(1))
+    deallocate(rbuf)
+#elif defined(HAVE_HDF5)
     call input_file%load(name, buffer, start(1), count(1))
-    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
-    deallocate(buffer)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
+    call expand(buffer, field, count(1), nproma, ngptot, nblocks)
+    deallocate(buffer)
   end subroutine load_and_expand_r1
 
   subroutine load_and_expand_r2(name, field, nlon, nlev, nproma, ngptot, nblocks, ngptotg)
@@ -184,24 +187,24 @@ contains
     real(kind=JPRB), pointer, intent(inout) :: field(:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
-    real(kind=jprd), allocatable :: buffer(:,:)
-    integer(kind=jpim) :: start(3), count(3)
+    real(kind=jprd), allocatable :: buffer(:,:), rbuf(:,:)
+    integer(kind=jpim) :: start(3), count(3), end(3)
 
+    call get_offsets(start, end, count, nlon, 1, nlev, ngptot, ngptotg)
     allocate(field(nproma, nlev, nblocks))
-#ifdef HAVE_SERIALBOX
-    allocate(buffer(nlon, nlev))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
-    call expand(buffer, field, nlon, nproma, nlev, ngptot, nblocks)
-    deallocate(buffer)
-#elif defined(HAVE_HDF5)
-    call get_offsets(start, count, nlon, 1, nlev, ngptot, ngptotg)
     allocate(buffer(count(1), count(2)))
+#ifdef HAVE_SERIALBOX
+    allocate(rbuf(nlon, nlev))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, rbuf)
+    buffer(:,:) = rbuf(start(1):end(1), start(2):end(2))
+    deallocate(rbuf)
+#elif defined(HAVE_HDF5)
     call input_file%load(name, buffer, start(1:2), count(1:2))
-    call expand(buffer, field, count(1), nproma, nlev, ngptot, nblocks)
-    deallocate(buffer)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
+    call expand(buffer, field, count(1), nproma, nlev, ngptot, nblocks)
+    deallocate(buffer)
   end subroutine load_and_expand_r2
 
   subroutine load_and_expand_r3(name, field, nlon, nlev, ndim, nproma, ngptot, nblocks, ngptotg)
@@ -210,24 +213,24 @@ contains
     real(kind=JPRB), pointer, intent(inout) :: field(:,:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
-    real(kind=jprd), allocatable :: buffer(:,:,:)
-    integer(kind=jpim) :: start(3), count(3)
+    real(kind=jprd), allocatable :: buffer(:,:,:), rbuf(:,:,:)
+    integer(kind=jpim) :: start(3), count(3), end(3)
 
+    call get_offsets(start, end, count, nlon, ndim, nlev, ngptot, ngptotg)
     allocate(field(nproma, nlev, ndim, nblocks))
-#ifdef HAVE_SERIALBOX
-    allocate(buffer(nlon, nlev, ndim))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, buffer)
-    call expand(buffer, field, nlon, nproma, nlev, ndim, ngptot, nblocks)
-    deallocate(buffer)
-#elif defined(HAVE_HDF5)
-    call get_offsets(start, count, nlon, ndim, nlev, ngptot, ngptotg)
     allocate(buffer(count(1), count(2), count(3)))
+#ifdef HAVE_SERIALBOX
+    allocate(rbuf(nlon, nlev, ndim))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, rbuf)
+    buffer(:,:,:) = rbuf(start(1):end(1), start(2):end(2), start(3):end(3))
+    deallocate(rbuf)
+#elif defined(HAVE_HDF5)
     call input_file%load(name, buffer, start, count)
-    call expand(buffer, field, count(1), nproma, nlev, ndim, ngptot, nblocks)
-    deallocate(buffer)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
+    call expand(buffer, field, count(1), nproma, nlev, ndim, ngptot, nblocks)
+    deallocate(buffer)
   end subroutine load_and_expand_r3
 
   subroutine load_and_expand_state(name, state, field, nlon, nlev, ndim, nproma, ngptot, nblocks, ngptotg)
@@ -237,42 +240,36 @@ contains
     real(kind=JPRB), pointer, intent(inout) :: field(:,:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
-    real(kind=jprd), allocatable :: buffer(:,:,:)
-    integer(kind=jpim) :: start(3), count(3)
+    real(kind=jprd), allocatable :: buffer(:,:,:), rbuf(:,:,:)
+    integer(kind=jpim) :: start(3), count(3), end(3)
 
     integer :: b
 
+    call get_offsets(start, end, count, nlon, ndim, nlev, ngptot, ngptotg)
     allocate(state(nblocks))
     allocate(field(nproma, nlev, 6+ndim, nblocks))
+    allocate(buffer(count(1), count(2), 6+ndim))
 
 #ifdef HAVE_SERIALBOX
-    allocate(buffer(nlon, nlev, 6+ndim))
-    ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_U', buffer(:,:,1))
-    ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_V', buffer(:,:,2))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_T', buffer(:,:,3))
-    ! call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_O3', buffer(:,:,4))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_A', buffer(:,:,5))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_Q', buffer(:,:,6))
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_CLD', buffer(:,:,7:))
+    allocate(rbuf(nlon, nlev, 6+ndim))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_T', rbuf(:,:,3))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_A', rbuf(:,:,5))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_Q', rbuf(:,:,6))
+    call fs_read_field(ppser_serializer_ref, ppser_savepoint, name//'_CLD', rbuf(:,:,7:))
 
-    ! call expand(buffer(:,:,1), field(:,:,1,:), nlon, nproma, nlev, ngptot, nblocks)
-    ! call expand(buffer(:,:,2), field(:,:,2,:), nlon, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,3), field(:,:,3,:), nlon, nproma, nlev, ngptot, nblocks)
-    ! call expand(buffer(:,:,4), field(:,:,4,:), nlon, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,5), field(:,:,5,:), nlon, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,6), field(:,:,6,:), nlon, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,7:), field(:,:,7:,:), nlon, nproma, nlev, ndim, ngptot, nblocks)
-    deallocate(buffer)
+    buffer(:,:,3) = rbuf(start(1):end(1), start(2):end(2), 3)
+    buffer(:,:,5) = rbuf(start(1):end(1), start(2):end(2), 5)
+    buffer(:,:,6) = rbuf(start(1):end(1), start(2):end(2), 6)
+    buffer(:,:,7:) = rbuf(start(1):end(1), start(2):end(2), 7:)
+    deallocate(rbuf)
 #elif defined(HAVE_HDF5)
-    call get_offsets(start, count, nlon, ndim, nlev, ngptot, ngptotg)
-    allocate(buffer(count(1), count(2), 6+ndim))
-    ! call input_file%load(name//'_U', buffer(:,:,1), start(1:2), count(1:2))
-    ! call input_file%load(name//'_V', buffer(:,:,2), start(1:2), count(1:2))
     call input_file%load(name//'_T', buffer(:,:,3), start(1:2), count(1:2))
-    ! call input_file%load(name//'_O3', buffer(:,:,4), start(1:2), count(1:2))
     call input_file%load(name//'_A', buffer(:,:,5), start(1:2), count(1:2))
     call input_file%load(name//'_Q', buffer(:,:,6), start(1:2), count(1:2))
     call input_file%load(name//'_CLD', buffer(:,:,7:), start, count)
+#else
+    call abor1('ERROR: Serialbox and HDF5 not found.')
+#endif
 
     ! call expand(buffer(:,:,1), field(:,:,1,:), count(1), nproma, nlev, ngptot, nblocks)
     ! call expand(buffer(:,:,2), field(:,:,2,:), count(1), nproma, nlev, ngptot, nblocks)
@@ -282,9 +279,6 @@ contains
     call expand(buffer(:,:,6), field(:,:,6,:), count(1), nproma, nlev, ngptot, nblocks)
     call expand(buffer(:,:,7:), field(:,:,7:,:), count(1), nproma, nlev, ndim, ngptot, nblocks)
     deallocate(buffer)
-#else
-    call abor1('ERROR: Serialbox and HDF5 not found.')
-#endif
 
 !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
     do b=1, nblocks
