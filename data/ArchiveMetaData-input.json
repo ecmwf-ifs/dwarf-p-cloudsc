@@ -14,18 +14,6 @@
         "AFD7E84FC48D41A3EB5E2A7D19454DE76F3F5133E4DB59F75B938295AA4A33"
       ]
     ],
-    "LDMAINCALL": [
-      [
-        0,
-        "53471688264CC3CCFCE77755D4D68B8C49634C1633150AA69D57DBF5FF06CC4"
-      ]
-    ],
-    "LDSLPHY": [
-      [
-        0,
-        "53471688264CC3CCFCE77755D4D68B8C49634C1633150AA69D57DBF5FF06CC4"
-      ]
-    ],
     "PA": [
       [
         0,
@@ -256,5 +244,5 @@
     ]
   },
   "hash_algorithm": "SHA256",
-  "serialbox_version": 253
+  "serialbox_version": 255
 }
