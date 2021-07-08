@@ -39,14 +39,14 @@ contains
   subroutine load_and_expand_i1(name, field, nlon, nproma, ngptot, nblocks, ngptotg)
     ! Load into the local memory buffer and expand to global field
     character(len=*) :: name
-    integer(kind=jpim), pointer, intent(inout) :: field(:,:)
+    integer(kind=jpim), allocatable, intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     integer(kind=jpim), allocatable :: buffer(:)
     integer(kind=jpim) :: start, end, size
 
     call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
-    allocate(field(nproma, nblocks))
+    if (.not. allocated(field))  allocate(field(nproma, nblocks))
     allocate(buffer(size))
     call load_array(name, start, end, size, nlon, buffer)
     call expand(buffer, field, size, nproma, ngptot, nblocks)
@@ -56,7 +56,7 @@ contains
   subroutine load_and_expand_l1(name, field, nlon, nproma, ngptot, nblocks, ngptotg)
     ! Load into the local memory buffer and expand to global field
     character(len=*) :: name
-    logical, pointer, intent(inout) :: field(:,:)
+    logical, allocatable, intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     logical, allocatable :: buffer(:), rbuf(:)
@@ -64,7 +64,7 @@ contains
     integer(kind=4), allocatable :: tmp(:)
 
     call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
-    allocate(field(nproma, nblocks))
+    if (.not. allocated(field))  allocate(field(nproma, nblocks))
     allocate(buffer(size))
     call load_array(name, start, end, size, nlon, buffer)
     call expand(buffer, field, size, nproma, ngptot, nblocks)
@@ -74,14 +74,14 @@ contains
   subroutine load_and_expand_r1(name, field, nlon, nproma, ngptot, nblocks, ngptotg)
     ! Load into the local memory buffer and expand to global field
     character(len=*) :: name
-    real(kind=JPRB), pointer, intent(inout) :: field(:,:)
+    real(kind=JPRB), allocatable, intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprb), allocatable :: buffer(:)
     integer(kind=jpim) :: start, end, size
 
     call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
-    allocate(field(nproma, nblocks))
+    if (.not. allocated(field))  allocate(field(nproma, nblocks))
     allocate(buffer(size))
     call load_array(name, start, end, size, nlon, buffer)
     call expand(buffer, field, size, nproma, ngptot, nblocks)
@@ -91,14 +91,14 @@ contains
   subroutine load_and_expand_r2(name, field, nlon, nlev, nproma, ngptot, nblocks, ngptotg)
     ! Load into the local memory buffer and expand to global field
     character(len=*) :: name
-    real(kind=JPRB), pointer, intent(inout) :: field(:,:,:)
+    real(kind=JPRB), allocatable, intent(inout) :: field(:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprb), allocatable :: buffer(:,:)
     integer(kind=jpim) :: start, end, size
 
     call get_offsets(start, end, size, nlon, 1, nlev, ngptot, ngptotg)
-    allocate(field(nproma, nlev, nblocks))
+    if (.not. allocated(field))  allocate(field(nproma, nlev, nblocks))
     allocate(buffer(size, nlev))
     call load_array(name, start, end, size, nlon, nlev, buffer)
     call expand(buffer, field, size, nproma, nlev, ngptot, nblocks)
@@ -108,14 +108,14 @@ contains
   subroutine load_and_expand_r3(name, field, nlon, nlev, ndim, nproma, ngptot, nblocks, ngptotg)
     ! Load into the local memory buffer and expand to global field
     character(len=*) :: name
-    real(kind=JPRB), pointer, intent(inout) :: field(:,:,:,:)
+    real(kind=JPRB), allocatable, intent(inout) :: field(:,:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprb), allocatable :: buffer(:,:,:)
     integer(kind=jpim) :: start, end, size
 
     call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
-    allocate(field(nproma, nlev, ndim, nblocks))
+    if (.not. allocated(field))  allocate(field(nproma, nlev, ndim, nblocks))
     allocate(buffer(size, nlev, ndim))
     call load_array(name, start, end, size, nlon, nlev, ndim, buffer)
     call expand(buffer, field, size, nproma, nlev, ndim, ngptot, nblocks)
@@ -125,8 +125,8 @@ contains
   subroutine load_and_expand_state(name, state, field, nlon, nlev, ndim, nproma, ngptot, nblocks, ngptotg)
     ! Load into the local memory buffer and expand to global field
     character(len=*) :: name
-    type(state_type), pointer, intent(inout) :: state(:)
-    real(kind=JPRB), pointer, intent(inout) :: field(:,:,:,:)
+    type(state_type), allocatable, intent(inout) :: state(:)
+    real(kind=JPRB), allocatable, target, intent(inout) :: field(:,:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
     real(kind=jprb), allocatable :: buffer(:,:,:)
@@ -135,8 +135,8 @@ contains
     integer :: b
 
     call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
-    allocate(state(nblocks))
-    allocate(field(nproma, nlev, 3+ndim, nblocks))
+    if (.not. allocated(state))  allocate(state(nblocks))
+    if (.not. allocated(field))  allocate(field(nproma, nlev, 3+ndim, nblocks))
     allocate(buffer(size, nlev, 3+ndim))
 
     call load_array(name//'_T', start, end, size, nlon, nlev, buffer(:,:,1))
