@@ -1903,7 +1903,7 @@ DO JK=YRECLDP%NCLDTOP,KLEV
     IF(ZTP1(JL,JK) <= RTT .AND. ZLIQCLD(JL)>ZEPSEC) THEN
 
       ! Fallspeed air density correction 
-      ZFALLCORR = (YRECLDP%RDENSREF/ZRHO(JL))**0.4
+      ZFALLCORR = (YRECLDP%RDENSREF/ZRHO(JL))**0.4_JPRB
 
       !------------------------------------------------------------------
       ! Riming of snow by cloud water - implicit in lwc
@@ -2191,7 +2191,7 @@ DO JK=YRECLDP%NCLDTOP,KLEV
       ZPRECLR = ZQXFG(JL,NCLDQR)/ZCOVPTOT(JL)
 
       ! Fallspeed air density correction 
-      ZFALLCORR = (YRECLDP%RDENSREF/ZRHO(JL))**0.4
+      ZFALLCORR = (YRECLDP%RDENSREF/ZRHO(JL))**0.4_JPRB
 
       ! Saturation vapour pressure with respect to liquid phase
       ZESATLIQ = RV/RD*FOEELIQ(ZTP1(JL,JK))
