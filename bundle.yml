@@ -42,7 +42,6 @@ options :
     - with-gpu :
         help  : Enable GPU kernel (ACC kernels and CLAW-based)
         cmake : >
-            ENABLE_CLOUDSC_GPU_KERNELS=ON
             ENABLE_CLOUDSC_GPU_CLAW=ON
             ENABLE_CLOUDSC_GPU_SCC=ON
             ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
@@ -70,10 +69,6 @@ options :
     - cloudsc-c :
         help  : Build the C version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_C={{value}}
-
-    - cloudsc-gpu-kernels :
-        help  : Build the naive GPU version CLOUDSC (!$acc kernels) [ON|OFF]
-        cmake : ENABLE_CLOUDSC_GPU_KERNELS={{value}}
 
     - cloudsc-gpu-claw :
         help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
