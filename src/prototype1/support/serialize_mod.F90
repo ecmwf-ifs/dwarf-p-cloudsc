@@ -103,6 +103,8 @@ contains
     REAL(KIND=JPRB)   ,INTENT(INOUT)    :: PEXTRA(KLON,KLEV,KFLDX) ! extra fields
 
 #ifdef HAVE_SERIALBOX
+    print *, "[CLOUDSC] Serializing input data to Serialbox format"
+
     ! Initialize serializer for storing reference input
     call ppser_initialize(directory='data', prefix='input')
     call fs_create_savepoint('input', ppser_savepoint)
@@ -652,6 +654,8 @@ contains
     TYPE(STATE_TYPE),INTENT(INOUT) :: TENDENCY_LOC
 
 #ifdef HAVE_SERIALBOX
+    print *, "[CLOUDSC] Serializing reference data to Serialbox format"
+
     ! Initialize serializer for storing reference input
     call ppser_initialize(directory='data', prefix='reference')
     call fs_create_savepoint('reference', ppser_savepoint)

@@ -100,6 +100,8 @@ REAL(KIND=JPRB) :: t1, t2, tloc, tdiff
 
 character(len=80) :: cl_omp_schedule
 
+CHARACTER(LEN=1) :: write_input, write_reference
+
 REAL(KIND=JPRB), parameter :: zhpm = 12482329.0_JPRB ! IBM P7 HPM flop count for 100 points at L137
 REAL(KIND=JPRB) :: zmflops ! MFlops/s rate
 REAL(KIND=JPRB) :: zfrac ! fraction of gp columns handled by thread
@@ -118,6 +120,9 @@ REAL(KIND=JPRB) :: zinfo(4,0:NUMOMP - 1)
 #include "cloudsc_in.intfb.h"
 #include "cloudsc.intfb.h"
 #include "mycpu.intfb.h"
+
+CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_WRITE_INPUT', write_input)
+CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_WRITE_REFERENCE', write_reference)
 
 open(iu,file='cloudsc.bin',status='old',&
      & access='stream', form='unformatted')
@@ -233,15 +238,17 @@ CALL CLOUDSC_IN &
 close(iu)
 
 ! Serialize the reference input (for debug and migration purposes)
-call serialize( &
- & KLON, KLEV, PTSPHY,&
- & PT, PQ, TENDENCY_CML, TENDENCY_TMP, &
- & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
- & PHRSW, PHRLW, PVERVEL, PAP, PAPH, &
- & PLSM, LDCUM, KTYPE, PLU, PLUDE, PSNDE, PMFU, PMFD, &
- & LDSLPHY,  LDMAINCALL, &
- & PA, PCLV, PSUPSAT, PLCRIT_AER,PICRIT_AER, &
- & PRE_ICE, PCCN, PNICE, PEXTRA, KFLDX)
+if (write_input == '1') then
+  call serialize( &
+   & KLON, KLEV, PTSPHY,&
+   & PT, PQ, TENDENCY_CML, TENDENCY_TMP, &
+   & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
+   & PHRSW, PHRLW, PVERVEL, PAP, PAPH, &
+   & PLSM, LDCUM, KTYPE, PLU, PLUDE, PSNDE, PMFU, PMFD, &
+   & LDSLPHY,  LDMAINCALL, &
+   & PA, PCLV, PSUPSAT, PLCRIT_AER,PICRIT_AER, &
+   & PRE_ICE, PCCN, PNICE, PEXTRA, KFLDX)
+end if
 
 call query_dimensions(KLON, KLEV, KFLDX, name='input')
 write(0,*) 'KLON,KLEV,KFLDX,NCLV=',KLON,KLEV,KFLDX,NCLV
@@ -315,13 +322,15 @@ CALL CLOUDSC &
      & PEXTRA_tmp,   KFLDX)
 
 ! Generate reference data if flag is set
-call serialize_reference( KLON, KLEV, KFLDX, &
-     & PLUDE_tmp,    PCOVPTOT, PRAINFRAC_TOPRFZ,&
-     & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
-     & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
-     & PFSQLTUR, PFSQITUR , &
-     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
-     & TENDENCY_LOC)
+if (write_reference == '1') then
+  call serialize_reference( KLON, KLEV, KFLDX, &
+   & PLUDE_tmp,    PCOVPTOT, PRAINFRAC_TOPRFZ,&
+   & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG,&
+   & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG,&
+   & PFSQLTUR, PFSQITUR , &
+   & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+   & TENDENCY_LOC)
+end if
 
 CALL saveref('PLUDE',PLUDE_tmp)
 DEALLOCATE(PLUDE_tmp)
