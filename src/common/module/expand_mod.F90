@@ -136,29 +136,26 @@ contains
 
     call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
     allocate(state(nblocks))
-    allocate(field(nproma, nlev, 6+ndim, nblocks))
-    allocate(buffer(size, nlev, 6+ndim))
+    allocate(field(nproma, nlev, 3+ndim, nblocks))
+    allocate(buffer(size, nlev, 3+ndim))
 
-    call load_array(name//'_T', start, end, size, nlon, nlev, buffer(:,:,3))
-    call load_array(name//'_A', start, end, size, nlon, nlev, buffer(:,:,5))
-    call load_array(name//'_Q', start, end, size, nlon, nlev, buffer(:,:,6))
-    call load_array(name//'_CLD', start, end, size, nlon, nlev, ndim, buffer(:,:,7:))
+    call load_array(name//'_T', start, end, size, nlon, nlev, buffer(:,:,1))
+    call load_array(name//'_A', start, end, size, nlon, nlev, buffer(:,:,2))
+    call load_array(name//'_Q', start, end, size, nlon, nlev, buffer(:,:,3))
+    call load_array(name//'_CLD', start, end, size, nlon, nlev, ndim, buffer(:,:,4:))
 
+    call expand(buffer(:,:,1), field(:,:,1,:), size, nproma, nlev, ngptot, nblocks)
+    call expand(buffer(:,:,2), field(:,:,2,:), size, nproma, nlev, ngptot, nblocks)
     call expand(buffer(:,:,3), field(:,:,3,:), size, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,5), field(:,:,5,:), size, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,6), field(:,:,6,:), size, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,7:), field(:,:,7:,:), size, nproma, nlev, ndim, ngptot, nblocks)
+    call expand(buffer(:,:,4:), field(:,:,4:,:), size, nproma, nlev, ndim, ngptot, nblocks)
     deallocate(buffer)
 
 !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
     do b=1, nblocks
-       ! state(b)%u => field(:,:,1,b)
-       ! state(b)%v => field(:,:,2,b)
-       state(b)%t => field(:,:,3,b)
-       ! state(b)%o3 => field(:,:,4,b)
-       state(b)%a => field(:,:,5,b)
-       state(b)%q => field(:,:,6,b)
-       state(b)%cld => field(:,:,7:6+ndim,b)
+       state(b)%t => field(:,:,1,b)
+       state(b)%a => field(:,:,2,b)
+       state(b)%q => field(:,:,3,b)
+       state(b)%cld => field(:,:,4:3+ndim,b)
     end do
 !$OMP end parallel do
 

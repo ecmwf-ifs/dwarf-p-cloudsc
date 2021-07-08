@@ -134,8 +134,8 @@ CONTAINS
        CALL CLOUDSC_SCC &
         & (1, ICEND, NPROMA, NLEV, PTSPHY,&
         & PT(:,:,IBL), PQ(:,:,IBL), &
-        & BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,6,IBL), BUFFER_TMP(:,:,5,IBL), BUFFER_TMP(:,:,7:11,IBL), &
-        & BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,6,IBL), BUFFER_LOC(:,:,5,IBL), BUFFER_LOC(:,:,7:11,IBL), &
+        & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
+        & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
         & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
         & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
         & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
