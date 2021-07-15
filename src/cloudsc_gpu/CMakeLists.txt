@@ -71,7 +71,7 @@ if( HAVE_CLOUDSC_GPU_SCC )
         SOURCES
             dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_scc_mod.F90
-            cloudsc.scc.F90
+            cloudsc_gpu_scc_mod.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
     )
     if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
@@ -93,7 +93,7 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
         SOURCES
             dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_scc_hoist_mod.F90
-            cloudsc.scc_hoist.F90
+            cloudsc_gpu_scc_hoist_mod.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
     )
     if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
