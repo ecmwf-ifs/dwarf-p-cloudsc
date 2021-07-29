@@ -150,7 +150,7 @@ contains
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
     integer(kind=jpim), intent(in) :: start, end, size, nlon
-    real(kind=jprd), intent(out) :: buffer(size)
+    real(kind=jprb), intent(out) :: buffer(size)
     real(kind=jprd), allocatable :: rbuf(:)
 
 #ifdef HAVE_SERIALBOX
@@ -159,7 +159,10 @@ contains
     buffer(:) = rbuf(start:end)
     deallocate(rbuf)
 #elif defined(HAVE_HDF5)
-    call input_file%load(name, buffer, start, size)
+    allocate(rbuf(size))
+    call input_file%load(name, rbuf, start, size)
+    buffer(:) = rbuf(:)
+    deallocate(rbuf)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
@@ -169,7 +172,7 @@ contains
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
     integer(kind=jpim), intent(in) :: start, end, size, nlon, nlev
-    real(kind=jprd), intent(out) :: buffer(size,nlev)
+    real(kind=jprb), intent(out) :: buffer(size,nlev)
     integer(kind=jpim) :: istart(2), isize(2)
     real(kind=jprd), allocatable :: rbuf(:,:)
 
@@ -183,7 +186,10 @@ contains
     istart(2) = 1
     isize(1) = size
     isize(2) = nlev
-    call input_file%load(name, buffer, istart, isize)
+    allocate(rbuf(size,nlev))
+    call input_file%load(name, rbuf, istart, isize)
+    buffer(:,:) = rbuf(:,:)
+    deallocate(rbuf)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
@@ -193,7 +199,7 @@ contains
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
     integer(kind=jpim), intent(in) :: start, end, size, nlon, nlev, ndim
-    real(kind=jprd), intent(out) :: buffer(size,nlev,ndim)
+    real(kind=jprb), intent(out) :: buffer(size,nlev,ndim)
     integer(kind=jpim) :: istart(3), isize(3)
     real(kind=jprd), allocatable :: rbuf(:,:,:)
 
@@ -209,7 +215,10 @@ contains
     isize(1) = size
     isize(2) = nlev
     isize(3) = ndim
-    call input_file%load(name, buffer, istart, isize)
+    allocate(rbuf(size,nlev,ndim))
+    call input_file%load(name, rbuf, istart, isize)
+    buffer(:,:,:) = rbuf(:,:,:)
+    deallocate(rbuf)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
