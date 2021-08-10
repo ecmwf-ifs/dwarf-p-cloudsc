@@ -124,6 +124,15 @@ As an alternative to Serialbox, versions dwarf-cloudsc-fortran as well as GPU
 and Loki versions can use HDF5 files for input and reference data. To enable this,
 use the `--with-hdf5` flag (note that this disables Serialbox support).
 
+The original input is provided as raw Fortran binary in prototype1, but
+input and reference data can be regenerated from this variant by running
+```
+CLOUDSC_WRITE_INPUT=1 ./bin/dwarf-P-cloudMicrophysics-IFSScheme 1 100 100
+CLOUDSC_WRITE_REFERENCE=1 ./bin/dwarf-P-cloudMicrophysics-IFSScheme 1 100 100
+```
+Note that this is only available via Serialbox at the moment. Updates to HDF5
+input or reference data have to be done via manual conversion.
+
 ### A64FX version of CLOUDSC
 
 Preliminary results for CLOUDSC have been generated for A64FX CPUs on

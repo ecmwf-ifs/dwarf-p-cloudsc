@@ -206,7 +206,7 @@ CONTAINS
     type(c_ptr) :: ptr
 
     if (present(start)) then
-      hstart(1) = start
+      hstart(1) = start - 1
     end if
     if (present(count)) then
       hcount(1) = count
@@ -235,7 +235,7 @@ CONTAINS
     type(c_ptr) :: ptr
 
     if (present(start)) then
-      hstart(1) = start
+      hstart(1) = start - 1
     end if
     if (present(count)) then
       hcount(1) = count
@@ -259,7 +259,7 @@ CONTAINS
     type(c_ptr) :: ptr
 
     if (present(start)) then
-      hstart(1) = start
+      hstart(1) = start - 1
     else
       hstart(1) = 0
     end if
@@ -285,7 +285,7 @@ CONTAINS
     type(c_ptr) :: ptr
 
     if (present(start)) then
-      hstart(:) = start(:)
+      hstart(:) = start(:) - 1
     else
       hstart(:) = 0
     end if
@@ -311,7 +311,7 @@ CONTAINS
     type(c_ptr) :: ptr
 
     if (present(start)) then
-      hstart(:) = start(:)
+      hstart(:) = start(:) - 1
     else
       hstart(:) = 0
     end if

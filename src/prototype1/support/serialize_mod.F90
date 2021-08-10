@@ -103,6 +103,8 @@ contains
     REAL(KIND=JPRB)   ,INTENT(INOUT)    :: PEXTRA(KLON,KLEV,KFLDX) ! extra fields
 
 #ifdef HAVE_SERIALBOX
+    print *, "[CLOUDSC] Serializing input data to Serialbox format"
+
     ! Initialize serializer for storing reference input
     call ppser_initialize(directory='data', prefix='input')
     call fs_create_savepoint('input', ppser_savepoint)
@@ -320,8 +322,8 @@ contains
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PSNDE', PSNDE)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PMFU', PMFU)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PMFD', PMFD)
-    call fs_write_field(ppser_serializer, ppser_savepoint, 'LDSLPHY', LDSLPHY)
-    call fs_write_field(ppser_serializer, ppser_savepoint, 'LDMAINCALL', LDMAINCALL)
+    call fs_add_serializer_metainfo(ppser_serializer, 'LDSLPHY', LDSLPHY)
+    call fs_add_serializer_metainfo(ppser_serializer, 'LDMAINCALL', LDMAINCALL)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PA', PA)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PCLV', PCLV)
     call fs_write_field(ppser_serializer, ppser_savepoint, 'PSUPSAT', PSUPSAT)
@@ -606,8 +608,8 @@ contains
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'PSNDE', PSNDE)
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'PMFU', PMFU)
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'PMFD', PMFD)
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'LDSLPHY', LDSLPHY)
-    call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'LDMAINCALL', LDMAINCALL)
+    call fs_get_serializer_metainfo(ppser_serializer_ref, 'LDSLPHY', LDSLPHY)
+    call fs_get_serializer_metainfo(ppser_serializer_ref, 'LDMAINCALL', LDMAINCALL)
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'PA', PA)
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'PCLV', PCLV)
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, 'PSUPSAT', PSUPSAT)
@@ -652,6 +654,8 @@ contains
     TYPE(STATE_TYPE),INTENT(INOUT) :: TENDENCY_LOC
 
 #ifdef HAVE_SERIALBOX
+    print *, "[CLOUDSC] Serializing reference data to Serialbox format"
+
     ! Initialize serializer for storing reference input
     call ppser_initialize(directory='data', prefix='reference')
     call fs_create_savepoint('reference', ppser_savepoint)

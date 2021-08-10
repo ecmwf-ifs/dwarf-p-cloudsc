@@ -144,150 +144,6 @@
    },
    "type_id": 1
   },
-  "LDMAINCALL": {
-   "dims": [
-    1
-   ],
-   "meta_info": {
-    "__bytesperelement": {
-     "type_id": 2,
-     "value": 1
-    },
-    "__elementtype": {
-     "type_id": 6,
-     "value": "bool"
-    },
-    "__iminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__iplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__isize": {
-     "type_id": 2,
-     "value": 1
-    },
-    "__jminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__jplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__jsize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__kminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__kplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__ksize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__lminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__lplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__lsize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__name": {
-     "type_id": 6,
-     "value": "LDMAINCALL"
-    },
-    "__rank": {
-     "type_id": 2,
-     "value": 1
-    }
-   },
-   "type_id": 1
-  },
-  "LDSLPHY": {
-   "dims": [
-    1
-   ],
-   "meta_info": {
-    "__bytesperelement": {
-     "type_id": 2,
-     "value": 1
-    },
-    "__elementtype": {
-     "type_id": 6,
-     "value": "bool"
-    },
-    "__iminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__iplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__isize": {
-     "type_id": 2,
-     "value": 1
-    },
-    "__jminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__jplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__jsize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__kminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__kplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__ksize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__lminushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__lplushalosize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__lsize": {
-     "type_id": 2,
-     "value": 0
-    },
-    "__name": {
-     "type_id": 6,
-     "value": "LDSLPHY"
-    },
-    "__rank": {
-     "type_id": 2,
-     "value": 1
-    }
-   },
-   "type_id": 1
-  },
   "PA": {
    "dims": [
     100,
@@ -3076,6 +2932,14 @@
    "type_id": 2,
    "value": 100
   },
+  "LDMAINCALL": {
+   "type_id": 1,
+   "value": true
+  },
+  "LDSLPHY": {
+   "type_id": 1,
+   "value": true
+  },
   "LSCMEC": {
    "type_id": 1,
    "value": false
@@ -3756,8 +3620,6 @@
     "input": {
      "KTYPE": 0,
      "LDCUM": 0,
-     "LDMAINCALL": 0,
-     "LDSLPHY": 0,
      "PA": 0,
      "PAP": 0,
      "PAPH": 0,
@@ -3806,5 +3668,5 @@
    }
   ]
  },
- "serialbox_version": 253
+ "serialbox_version": 255
 }
