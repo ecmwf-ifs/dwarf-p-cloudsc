@@ -27,63 +27,63 @@ MODULE CLOUDSC_GLOBAL_STATE_MOD
     REAL(KIND=JPRB)                      :: PTSPHY          ! Physics timestep
 
     ! Input field variables and tendencies
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLCRIT_AER(:,:,:) 
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PICRIT_AER(:,:,:) 
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PRE_ICE(:,:,:) 
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PCCN(:,:,:)     ! liquid cloud condensation nuclei
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PNICE(:,:,:)    ! ice number concentration (cf. CCN)
+    REAL(KIND=JPRB), ALLOCATABLE :: PLCRIT_AER(:,:,:) 
+    REAL(KIND=JPRB), ALLOCATABLE :: PICRIT_AER(:,:,:) 
+    REAL(KIND=JPRB), ALLOCATABLE :: PRE_ICE(:,:,:) 
+    REAL(KIND=JPRB), ALLOCATABLE :: PCCN(:,:,:)     ! liquid cloud condensation nuclei
+    REAL(KIND=JPRB), ALLOCATABLE :: PNICE(:,:,:)    ! ice number concentration (cf. CCN)
 
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PT(:,:,:)       ! T at start of callpar
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PQ(:,:,:)       ! Q at start of callpar
-    TYPE(STATE_TYPE), POINTER            :: TENDENCY_CML(:) ! cumulative tendency used for final output
-    TYPE(STATE_TYPE), POINTER            :: TENDENCY_TMP(:) ! cumulative tendency used as input
-    TYPE(STATE_TYPE), POINTER            :: TENDENCY_LOC(:) ! local tendency from cloud scheme
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVFA(:,:,:)     ! CC from VDF scheme
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVFL(:,:,:)     ! Liq from VDF scheme
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVFI(:,:,:)     ! Ice from VDF scheme
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PDYNA(:,:,:)    ! CC from Dynamics
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PDYNL(:,:,:)    ! Liq from Dynamics
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PDYNI(:,:,:)    ! Liq from Dynamics
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PHRSW(:,:,:)    ! Short-wave heating rate
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PHRLW(:,:,:)    ! Long-wave heating rate
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVERVEL(:,:,:)  ! Vertical velocity
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PAP(:,:,:)      ! Pressure on full levels
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PAPH(:,:,:)     ! Pressure on half levels
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLSM(:,:)       ! Land fraction (0-1) 
-    LOGICAL,         POINTER, CONTIGUOUS :: LDCUM(:,:)      ! Convection active
-    INTEGER(KIND=JPIM),POINTER,CONTIGUOUS:: KTYPE(:,:)      ! Convection type 0,1,2
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLU(:,:,:)      ! Conv. condensate
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLUDE(:,:,:)    ! Conv. detrained water 
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PSNDE(:,:,:)    ! Conv. detrained snow
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PMFU(:,:,:)     ! Conv. mass flux up
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PMFD(:,:,:)     ! Conv. mass flux down
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PA(:,:,:)       ! Original Cloud fraction (t)
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PEXTRA(:,:,:,:) ! extra fields
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PCLV(:,:,:,:) 
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PSUPSAT(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PT(:,:,:)       ! T at start of callpar
+    REAL(KIND=JPRB), ALLOCATABLE :: PQ(:,:,:)       ! Q at start of callpar
+    TYPE(STATE_TYPE), ALLOCATABLE :: TENDENCY_CML(:) ! cumulative tendency used for final output
+    TYPE(STATE_TYPE), ALLOCATABLE :: TENDENCY_TMP(:) ! cumulative tendency used as input
+    TYPE(STATE_TYPE), ALLOCATABLE :: TENDENCY_LOC(:) ! local tendency from cloud scheme
+    REAL(KIND=JPRB), ALLOCATABLE :: PVFA(:,:,:)     ! CC from VDF scheme
+    REAL(KIND=JPRB), ALLOCATABLE :: PVFL(:,:,:)     ! Liq from VDF scheme
+    REAL(KIND=JPRB), ALLOCATABLE :: PVFI(:,:,:)     ! Ice from VDF scheme
+    REAL(KIND=JPRB), ALLOCATABLE :: PDYNA(:,:,:)    ! CC from Dynamics
+    REAL(KIND=JPRB), ALLOCATABLE :: PDYNL(:,:,:)    ! Liq from Dynamics
+    REAL(KIND=JPRB), ALLOCATABLE :: PDYNI(:,:,:)    ! Liq from Dynamics
+    REAL(KIND=JPRB), ALLOCATABLE :: PHRSW(:,:,:)    ! Short-wave heating rate
+    REAL(KIND=JPRB), ALLOCATABLE :: PHRLW(:,:,:)    ! Long-wave heating rate
+    REAL(KIND=JPRB), ALLOCATABLE :: PVERVEL(:,:,:)  ! Vertical velocity
+    REAL(KIND=JPRB), ALLOCATABLE :: PAP(:,:,:)      ! Pressure on full levels
+    REAL(KIND=JPRB), ALLOCATABLE :: PAPH(:,:,:)     ! Pressure on half levels
+    REAL(KIND=JPRB), ALLOCATABLE :: PLSM(:,:)       ! Land fraction (0-1) 
+    LOGICAL,         ALLOCATABLE :: LDCUM(:,:)      ! Convection active
+    INTEGER(KIND=JPIM), ALLOCATABLE :: KTYPE(:,:)   ! Convection type 0,1,2
+    REAL(KIND=JPRB), ALLOCATABLE :: PLU(:,:,:)      ! Conv. condensate
+    REAL(KIND=JPRB), ALLOCATABLE :: PLUDE(:,:,:)    ! Conv. detrained water 
+    REAL(KIND=JPRB), ALLOCATABLE :: PSNDE(:,:,:)    ! Conv. detrained snow
+    REAL(KIND=JPRB), ALLOCATABLE :: PMFU(:,:,:)     ! Conv. mass flux up
+    REAL(KIND=JPRB), ALLOCATABLE :: PMFD(:,:,:)     ! Conv. mass flux down
+    REAL(KIND=JPRB), ALLOCATABLE :: PA(:,:,:)       ! Original Cloud fraction (t)
+    REAL(KIND=JPRB), ALLOCATABLE :: PEXTRA(:,:,:,:) ! extra fields
+    REAL(KIND=JPRB), ALLOCATABLE :: PCLV(:,:,:,:) 
+    REAL(KIND=JPRB), ALLOCATABLE :: PSUPSAT(:,:,:)
 
     ! Output fields used for validation
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PCOVPTOT(:,:,:) ! Precip fraction
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PRAINFRAC_TOPRFZ(:,:) 
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQLF(:,:,:)   ! Flux of liquid
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQIF(:,:,:)   ! Flux of ice
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQLNG(:,:,:)  ! -ve corr for liq
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQNNG(:,:,:)  ! -ve corr for ice
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQRF(:,:,:)   ! Flux diagnostics
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQSF(:,:,:)   ! for DDH, generic
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQRNG(:,:,:)  ! rain
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQSNG(:,:,:)  ! snow
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQLTUR(:,:,:) ! liquid flux due to VDF
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQITUR(:,:,:) ! ice flux due to VDF
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFPLSL(:,:,:)   ! liq+rain sedim flux
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFPLSN(:,:,:)   ! ice+snow sedim flux
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFHPSL(:,:,:)   ! Enthalpy flux for liq
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFHPSN(:,:,:)   ! Enthalp flux for ice
+    REAL(KIND=JPRB), ALLOCATABLE :: PCOVPTOT(:,:,:) ! Precip fraction
+    REAL(KIND=JPRB), ALLOCATABLE :: PRAINFRAC_TOPRFZ(:,:) 
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQLF(:,:,:)   ! Flux of liquid
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQIF(:,:,:)   ! Flux of ice
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQLNG(:,:,:)  ! -ve corr for liq
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQNNG(:,:,:)  ! -ve corr for ice
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQRF(:,:,:)   ! Flux diagnostics
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQSF(:,:,:)   ! for DDH, generic
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQRNG(:,:,:)  ! rain
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQSNG(:,:,:)  ! snow
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQLTUR(:,:,:) ! liquid flux due to VDF
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQITUR(:,:,:) ! ice flux due to VDF
+    REAL(KIND=JPRB), ALLOCATABLE :: PFPLSL(:,:,:)   ! liq+rain sedim flux
+    REAL(KIND=JPRB), ALLOCATABLE :: PFPLSN(:,:,:)   ! ice+snow sedim flux
+    REAL(KIND=JPRB), ALLOCATABLE :: PFHPSL(:,:,:)   ! Enthalpy flux for liq
+    REAL(KIND=JPRB), ALLOCATABLE :: PFHPSN(:,:,:)   ! Enthalp flux for ice
 
     ! Underlying data buffers for AOSOA allcoated STATE_TYPE arrays
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: B_CML(:,:,:,:)
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: B_TMP(:,:,:,:)
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: B_LOC(:,:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: B_CML(:,:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: B_TMP(:,:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: B_LOC(:,:,:,:)
   CONTAINS
     PROCEDURE :: LOAD => CLOUDSC_GLOBAL_STATE_LOAD
     PROCEDURE :: VALIDATE => CLOUDSC_GLOBAL_STATE_VALIDATE
@@ -97,7 +97,7 @@ CONTAINS
 
   SUBROUTINE FIELD_INIT_R1(FIELD, NPROMA,NBLOCKS)
     ! Allocate and initialize (zero) empty output fields
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: FIELD(:,:)
+    REAL(KIND=JPRB), ALLOCATABLE, INTENT(INOUT) :: FIELD(:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NBLOCKS
     INTEGER(KIND=JPIM) :: B
     ALLOCATE(FIELD(NPROMA, NBLOCKS))
@@ -111,7 +111,7 @@ CONTAINS
 
   SUBROUTINE FIELD_INIT_R2(FIELD, NPROMA, NLEV, NBLOCKS)
     ! Allocate and initialize (zero) empty output fields
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: FIELD(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE, INTENT(INOUT) :: FIELD(:,:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NLEV, NBLOCKS
     INTEGER(KIND=JPIM) :: B
     ALLOCATE(FIELD(NPROMA, NLEV, NBLOCKS))
@@ -125,7 +125,7 @@ CONTAINS
 
   SUBROUTINE FIELD_INIT_R3(FIELD, NPROMA, NLEV, NDIM, NBLOCKS)
     ! Allocate and initialize (zero) empty output fields
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: FIELD(:,:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE, INTENT(INOUT) :: FIELD(:,:,:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NLEV, NDIM, NBLOCKS
     INTEGER(KIND=JPIM) :: B
     ALLOCATE(FIELD(NPROMA, NLEV, NDIM, NBLOCKS))
@@ -142,24 +142,21 @@ CONTAINS
     !
     ! Note, the resulting AOSOA pattern is a pain to roll by hand in Fortran
     ! and could be done either via parameterized derived types or templating.
-    TYPE(STATE_TYPE), POINTER, INTENT(INOUT) :: STATE(:)
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: BUFFER(:,:,:,:)
+    TYPE(STATE_TYPE), ALLOCATABLE, INTENT(INOUT) :: STATE(:)
+    REAL(KIND=JPRB), ALLOCATABLE, TARGET, INTENT(INOUT) :: BUFFER(:,:,:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NLEV, NDIM, NBLOCKS
     INTEGER(KIND=JPIM) :: B, NFIELDS
 
-    NFIELDS = 6+NDIM
+    NFIELDS = 3+NDIM
     ALLOCATE(STATE(NBLOCKS))
     ALLOCATE(BUFFER(NPROMA, NLEV, NFIELDS, NBLOCKS))
 
 !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
     DO B=1, NBLOCKS
-       STATE(B)%U => BUFFER(:,:,1,B)
-       STATE(B)%V => BUFFER(:,:,2,B)
-       STATE(B)%T => BUFFER(:,:,3,B)
-       STATE(B)%O3 => BUFFER(:,:,4,B)
-       STATE(B)%A => BUFFER(:,:,5,B)
-       STATE(B)%Q => BUFFER(:,:,6,B)
-       STATE(B)%CLD => BUFFER(:,:,7:NFIELDS,B)
+       STATE(B)%T => BUFFER(:,:,1,B)
+       STATE(B)%A => BUFFER(:,:,2,B)
+       STATE(B)%Q => BUFFER(:,:,3,B)
+       STATE(B)%CLD => BUFFER(:,:,4:NFIELDS,B)
     END DO
 !$omp end parallel do 
   END SUBROUTINE FIELD_INIT_STATE
@@ -257,25 +254,25 @@ CONTAINS
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NGPTOT
     INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NGPTOTG
 
-    REAL(KIND=JPRB), POINTER :: PLUDE(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PCOVPTOT(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PRAINFRAC_TOPRFZ(:,:)
-    REAL(KIND=JPRB), POINTER :: PFSQLF(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFSQIF(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFCQLNG(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFCQNNG(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFSQRF(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFSQSF(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFCQRNG(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFCQSNG(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFSQLTUR(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFSQITUR(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFPLSL(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFPLSN(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFHPSL(:,:,:)
-    REAL(KIND=JPRB), POINTER :: PFHPSN(:,:,:)
-    TYPE(STATE_TYPE), POINTER :: TENDENCY_LOC(:)
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: B_LOC(:,:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PLUDE(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PCOVPTOT(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PRAINFRAC_TOPRFZ(:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQLF(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQIF(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQLNG(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQNNG(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQRF(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQSF(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQRNG(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFCQSNG(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQLTUR(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFSQITUR(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFPLSL(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFPLSN(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFHPSL(:,:,:)
+    REAL(KIND=JPRB), ALLOCATABLE :: PFHPSN(:,:,:)
+    TYPE(STATE_TYPE), ALLOCATABLE :: TENDENCY_LOC(:)
+    REAL(KIND=JPRB), ALLOCATABLE :: B_LOC(:,:,:,:)
 
     INTEGER(KIND=JPIM) :: NBLOCKS, KLON, KLEV, KFLDX
 
@@ -333,10 +330,10 @@ CONTAINS
     CALL VALIDATE('PFHPSL', PFHPSL, SELF%PFHPSL, NPROMA, SELF%KLEV+1, NGPTOT, NBLOCKS, NGPTOTG)
     CALL VALIDATE('PFHPSN', PFHPSN, SELF%PFHPSN, NPROMA, SELF%KLEV+1, NGPTOT, NBLOCKS, NGPTOTG)
     ! This is extremly hacky, but the array-of-struct-of-array layout demands it.
-    CALL VALIDATE('TENDENCY_LOC%A', B_LOC(:,:,5,:), SELF%B_LOC(:,:,5,:), NPROMA, SELF%KLEV, NGPTOT, NBLOCKS, NGPTOTG)
-    CALL VALIDATE('TENDENCY_LOC%Q', B_LOC(:,:,6,:), SELF%B_LOC(:,:,6,:), NPROMA, SELF%KLEV, NGPTOT, NBLOCKS, NGPTOTG)
-    CALL VALIDATE('TENDENCY_LOC%T', B_LOC(:,:,3,:), SELF%B_LOC(:,:,3,:), NPROMA, SELF%KLEV, NGPTOT, NBLOCKS, NGPTOTG)
-    CALL VALIDATE('TENDENCY_LOC%CLD', B_LOC(:,:,7:,:), SELF%B_LOC(:,:,7:,:), NPROMA, SELF%KLEV, NCLV, NGPTOT, NBLOCKS, NGPTOTG)
+    CALL VALIDATE('TENDENCY_LOC%A', B_LOC(:,:,2,:), SELF%B_LOC(:,:,2,:), NPROMA, SELF%KLEV, NGPTOT, NBLOCKS, NGPTOTG)
+    CALL VALIDATE('TENDENCY_LOC%Q', B_LOC(:,:,3,:), SELF%B_LOC(:,:,3,:), NPROMA, SELF%KLEV, NGPTOT, NBLOCKS, NGPTOTG)
+    CALL VALIDATE('TENDENCY_LOC%T', B_LOC(:,:,1,:), SELF%B_LOC(:,:,1,:), NPROMA, SELF%KLEV, NGPTOT, NBLOCKS, NGPTOTG)
+    CALL VALIDATE('TENDENCY_LOC%CLD', B_LOC(:,:,4:,:), SELF%B_LOC(:,:,4:,:), NPROMA, SELF%KLEV, NCLV, NGPTOT, NBLOCKS, NGPTOTG)
 
   END SUBROUTINE CLOUDSC_GLOBAL_STATE_VALIDATE
 

@@ -38,9 +38,9 @@ CONTAINS
     REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB), INTENT(IN)    :: PT(NPROMA, NLEV, NGPBLKS) ! T at start of callpar
     REAL(KIND=JPRB), INTENT(IN)    :: PQ(NPROMA, NLEV, NGPBLKS) ! Q at start of callpar
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS, INTENT(INOUT) :: BUFFER_CML(:,:,:,:) ! Storage buffer for TENDENCY_CML
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS, INTENT(INOUT) :: BUFFER_TMP(:,:,:,:) ! Storage buffer for TENDENCY_TMP
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS, INTENT(INOUT) :: BUFFER_LOC(:,:,:,:) ! Storage buffer for TENDENCY_LOC
+    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_CML(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
+    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_TMP(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_TMP
+    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_LOC(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_LOC
     REAL(KIND=JPRB), INTENT(IN)    :: PVFA(NPROMA, NLEV, NGPBLKS)     ! CC from VDF scheme
     REAL(KIND=JPRB), INTENT(IN)    :: PVFL(NPROMA, NLEV, NGPBLKS)     ! Liq from VDF scheme
     REAL(KIND=JPRB), INTENT(IN)    :: PVFI(NPROMA, NLEV, NGPBLKS)     ! Ice from VDF scheme
@@ -134,8 +134,8 @@ CONTAINS
        CALL CLOUDSC_SCC &
         & (1, ICEND, NPROMA, NLEV, PTSPHY,&
         & PT(:,:,IBL), PQ(:,:,IBL), &
-        & BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,6,IBL), BUFFER_TMP(:,:,5,IBL), BUFFER_TMP(:,:,7:11,IBL), &
-        & BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,6,IBL), BUFFER_LOC(:,:,5,IBL), BUFFER_LOC(:,:,7:11,IBL), &
+        & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
+        & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
         & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
         & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
         & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&

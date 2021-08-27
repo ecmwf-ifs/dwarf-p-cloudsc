@@ -21,28 +21,6 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
 )
 
 
-if( HAVE_CLOUDSC_GPU_KERNELS )
-    ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-kernels
-        SOURCES
-            dwarf_cloudsc_gpu.F90
-            cloudsc_driver_gpu_kernels_mod.F90
-            cloudsc_acc_kernels_mod.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_KERNELS
-    )
-    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-kernels PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-kernels PRIVATE cloudsc-common-lib-static )
-    else()
-        target_link_libraries( dwarf-cloudsc-gpu-kernels PRIVATE cloudsc-common-lib )
-    endif()
-
-    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-kernels PRIVATE MPI::MPI_Fortran )
-    endif()
-endif()
-
-
 if( HAVE_CLOUDSC_GPU_CLAW )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-claw
