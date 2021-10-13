@@ -14,7 +14,7 @@ if( HAVE_CLOUDSC_LOKI )
     set( COMMON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/../common/include" )
     set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
 
-    set( LOKI_FRONTEND "ofp" CACHE STRING "Frontend parser for Loki transforms" )
+    set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
 
     # Ensure xmod directory for OMNI frontend
     file(MAKE_DIRECTORY ${XMOD_DIR})
