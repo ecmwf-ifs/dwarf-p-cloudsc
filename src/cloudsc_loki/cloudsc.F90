@@ -624,8 +624,10 @@ ENDDO
 
 !-- These were uninitialized : meaningful only when we compare error differences
 DO JK=1,KLEV
-  PCOVPTOT(JL,JK) = 0.0_JPRB
-  TENDENCY_LOC_CLD(JL,JK,NCLV) = 0.0_JPRB
+  DO JL=KIDIA,KFDIA
+    PCOVPTOT(JL,JK) = 0.0_JPRB
+    TENDENCY_LOC_CLD(JL,JK,NCLV) = 0.0_JPRB
+  ENDDO
 ENDDO
 
 ! -------------------------
