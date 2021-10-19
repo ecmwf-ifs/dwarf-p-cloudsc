@@ -1,0 +1,1411 @@
+<OmniFortranModule version="1.0">
+  <name>cloudsc_mpi_mod</name>
+  <depends>
+    <name>parkind1</name>
+    <name>cloudsc_mpif</name>
+  </depends>
+  <typeTable>
+    <FbasicType type="I18fd3f0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I18fd620" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I18fd8b0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1914d20" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1914f50" ref="I1914d20"/>
+    <FbasicType type="I1915a50" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1915c80" ref="I1915a50"/>
+    <FfunctionType type="F195c300" return_type="Fvoid"/>
+    <FfunctionType type="F192e660" return_type="Fvoid">
+      <params>
+        <name type="A1931ce0">buf</name>
+        <name type="I1932860">nelem</name>
+        <name type="I19330d0">op</name>
+        <name type="I1933c50">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R1931a60" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1931ba0" intent="inout" ref="R1931a60"/>
+    <FbasicType type="A1931ce0" intent="inout" ref="R1931ba0">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1932720" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1932860" intent="in" ref="I1932720"/>
+    <FbasicType type="I19330d0" intent="in" ref="Fint"/>
+    <FbasicType type="I1933b10" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1933c50" intent="in" ref="I1933b10"/>
+    <FfunctionType type="F1930dc0" return_type="Fint"/>
+    <FfunctionType type="F1931790" return_type="Fint"/>
+    <FbasicType type="I1934510" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1934740" ref="I1934510"/>
+    <FfunctionType type="F19360b0" return_type="Fvoid"/>
+    <FfunctionType type="F19380e0" return_type="Fvoid"/>
+    <FfunctionType type="F1939c70" return_type="FnumericAll"/>
+    <FfunctionType type="F193a160" return_type="FnumericAll"/>
+    <FfunctionType type="F1927f20" return_type="FnumericAll"/>
+    <FfunctionType type="F193b650" return_type="Fvoid"/>
+    <FfunctionType type="F19238d0" return_type="Fvoid"/>
+    <FfunctionType type="F193cbc0" return_type="Fvoid">
+      <params>
+        <name type="A1940240">buf</name>
+        <name type="I1940dc0">nelem</name>
+        <name type="I1941630">op</name>
+        <name type="I19421b0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R193ffc0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1940100" intent="inout" ref="R193ffc0"/>
+    <FbasicType type="A1940240" intent="inout" ref="R1940100">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1940c80" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1940dc0" intent="in" ref="I1940c80"/>
+    <FbasicType type="I1941630" intent="in" ref="Fint"/>
+    <FbasicType type="I1942070" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I19421b0" intent="in" ref="I1942070"/>
+    <FfunctionType type="F193f320" return_type="Fint"/>
+    <FfunctionType type="F193fcf0" return_type="Fint"/>
+    <FbasicType type="I1942a70" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1942ca0" ref="I1942a70"/>
+    <FfunctionType type="F19445d0" return_type="Fvoid"/>
+    <FfunctionType type="F19464b0" return_type="Fvoid"/>
+    <FfunctionType type="F1947f70" return_type="FnumericAll"/>
+    <FfunctionType type="F1948460" return_type="FnumericAll"/>
+    <FfunctionType type="F1949980" return_type="Fvoid"/>
+    <FfunctionType type="F194af10" return_type="Fvoid">
+      <params>
+        <name type="A194cea0">buf</name>
+        <name type="I194d930">nelem</name>
+        <name type="I194e1a0">op</name>
+        <name type="I194ed20">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I194cd60" intent="inout" ref="Fint"/>
+    <FbasicType type="A194cea0" intent="inout" ref="I194cd60">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I194d7f0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I194d930" intent="in" ref="I194d7f0"/>
+    <FbasicType type="I194e1a0" intent="in" ref="Fint"/>
+    <FbasicType type="I194ebe0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I194ed20" intent="in" ref="I194ebe0"/>
+    <FbasicType type="I194f5e0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I194f810" ref="I194f5e0"/>
+    <FfunctionType type="F19511a0" return_type="Fvoid"/>
+    <FfunctionType type="F1953080" return_type="Fvoid"/>
+    <FfunctionType type="F1954b40" return_type="FnumericAll"/>
+    <FfunctionType type="F1955030" return_type="FnumericAll"/>
+    <FfunctionType type="F1956550" return_type="Fvoid"/>
+    <FfunctionType type="F1957a70" return_type="Fvoid">
+      <params>
+        <name type="A195a860">buf</name>
+        <name type="I195b5c0">nelem</name>
+        <name type="I195b700">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R195a5e0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R195a720" intent="inout" ref="R195a5e0"/>
+    <FbasicType type="A195a860" intent="inout" ref="R195a720">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I195b480" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I195b5c0" intent="in" ref="I195b480"/>
+    <FbasicType type="I195b700" intent="in" ref="I195b480"/>
+    <FfunctionType type="F1959940" return_type="Fint"/>
+    <FfunctionType type="F195a310" return_type="Fint"/>
+    <FfunctionType type="F195dae0" return_type="Fvoid">
+      <params>
+        <name type="A19608d0">buf</name>
+        <name type="I1961630">nelem</name>
+        <name type="I1961770">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R1960650" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1960790" intent="inout" ref="R1960650"/>
+    <FbasicType type="A19608d0" intent="inout" ref="R1960790">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I19614f0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1961630" intent="in" ref="I19614f0"/>
+    <FbasicType type="I1961770" intent="in" ref="I19614f0"/>
+    <FfunctionType type="F195f9b0" return_type="Fint"/>
+    <FfunctionType type="F1960380" return_type="Fint"/>
+    <FfunctionType type="F19638d0" return_type="Fvoid">
+      <params>
+        <name type="A1964f20">buf</name>
+        <name type="I1965c80">nelem</name>
+        <name type="I1965dc0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I1964de0" intent="inout" ref="Fint"/>
+    <FbasicType type="A1964f20" intent="inout" ref="I1964de0">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1965b40" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1965c80" intent="in" ref="I1965b40"/>
+    <FbasicType type="I1965dc0" intent="in" ref="I1965b40"/>
+    <FfunctionType type="F1988420" return_type="Fvoid">
+      <params>
+        <name type="A198b210">buf</name>
+        <name type="I198bf70">nelem</name>
+        <name type="I198c0b0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R198af90" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R198b0d0" intent="inout" ref="R198af90"/>
+    <FbasicType type="A198b210" intent="inout" ref="R198b0d0">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I198be30" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I198bf70" intent="in" ref="I198be30"/>
+    <FbasicType type="I198c0b0" intent="in" ref="I198be30"/>
+    <FfunctionType type="F198a2f0" return_type="Fint"/>
+    <FfunctionType type="F198acc0" return_type="Fint"/>
+    <FfunctionType type="F198d880" return_type="Fvoid">
+      <params>
+        <name type="A1990670">buf</name>
+        <name type="I19913d0">nelem</name>
+        <name type="I1991510">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R19903f0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1990530" intent="inout" ref="R19903f0"/>
+    <FbasicType type="A1990670" intent="inout" ref="R1990530">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1991290" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I19913d0" intent="in" ref="I1991290"/>
+    <FbasicType type="I1991510" intent="in" ref="I1991290"/>
+    <FfunctionType type="F198f750" return_type="Fint"/>
+    <FfunctionType type="F1990120" return_type="Fint"/>
+    <FfunctionType type="F1992ce0" return_type="Fvoid">
+      <params>
+        <name type="A1994330">buf</name>
+        <name type="I1995090">nelem</name>
+        <name type="I19951d0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I19941f0" intent="inout" ref="Fint"/>
+    <FbasicType type="A1994330" intent="inout" ref="I19941f0">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1994f50" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1995090" intent="in" ref="I1994f50"/>
+    <FbasicType type="I19951d0" intent="in" ref="I1994f50"/>
+    <FfunctionType type="F18f53f0" return_type="Fvoid"/>
+    <FfunctionType type="F1967f20" return_type="Fvoid">
+      <params>
+        <name type="A196ad10">buf</name>
+        <name type="I196ba70">nelem</name>
+        <name type="I196bbb0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R196aa90" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R196abd0" intent="inout" ref="R196aa90"/>
+    <FbasicType type="A196ad10" intent="inout" ref="R196abd0">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I196b930" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I196ba70" intent="in" ref="I196b930"/>
+    <FbasicType type="I196bbb0" intent="in" ref="I196b930"/>
+    <FfunctionType type="F1969df0" return_type="Fint"/>
+    <FfunctionType type="F196a7c0" return_type="Fint"/>
+    <FfunctionType type="F196dd50" return_type="Fvoid">
+      <params>
+        <name type="A1970b40">buf</name>
+        <name type="I19718a0">nelem</name>
+        <name type="I19719e0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R19708c0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1970a00" intent="inout" ref="R19708c0"/>
+    <FbasicType type="A1970b40" intent="inout" ref="R1970a00">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1971760" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I19718a0" intent="in" ref="I1971760"/>
+    <FbasicType type="I19719e0" intent="in" ref="I1971760"/>
+    <FfunctionType type="F196fc20" return_type="Fint"/>
+    <FfunctionType type="F19705f0" return_type="Fint"/>
+    <FfunctionType type="F1973b40" return_type="Fvoid">
+      <params>
+        <name type="A1975190">buf</name>
+        <name type="I1975ef0">nelem</name>
+        <name type="I1976030">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I1975050" intent="inout" ref="Fint"/>
+    <FbasicType type="A1975190" intent="inout" ref="I1975050">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1975db0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1975ef0" intent="in" ref="I1975db0"/>
+    <FbasicType type="I1976030" intent="in" ref="I1975db0"/>
+    <FfunctionType type="F18f7ad0" return_type="Fvoid"/>
+    <FfunctionType type="F1978190" return_type="Fvoid">
+      <params>
+        <name type="A197af80">buf</name>
+        <name type="I197bce0">nelem</name>
+        <name type="I197be20">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R197ad00" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R197ae40" intent="inout" ref="R197ad00"/>
+    <FbasicType type="A197af80" intent="inout" ref="R197ae40">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I197bba0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I197bce0" intent="in" ref="I197bba0"/>
+    <FbasicType type="I197be20" intent="in" ref="I197bba0"/>
+    <FfunctionType type="F197a060" return_type="Fint"/>
+    <FfunctionType type="F197aa30" return_type="Fint"/>
+    <FfunctionType type="F197dfc0" return_type="Fvoid">
+      <params>
+        <name type="A1980db0">buf</name>
+        <name type="I1981b10">nelem</name>
+        <name type="I1981c50">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R1980b30" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1980c70" intent="inout" ref="R1980b30"/>
+    <FbasicType type="A1980db0" intent="inout" ref="R1980c70">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I19819d0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1981b10" intent="in" ref="I19819d0"/>
+    <FbasicType type="I1981c50" intent="in" ref="I19819d0"/>
+    <FfunctionType type="F197fe90" return_type="Fint"/>
+    <FfunctionType type="F1980860" return_type="Fint"/>
+    <FfunctionType type="F1983db0" return_type="Fvoid">
+      <params>
+        <name type="A1985400">buf</name>
+        <name type="I1986160">nelem</name>
+        <name type="I19862a0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I19852c0" intent="inout" ref="Fint"/>
+    <FbasicType type="A1985400" intent="inout" ref="I19852c0">
+      <indexRange is_assumed_size="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1986020" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1986160" intent="in" ref="I1986020"/>
+    <FbasicType type="I19862a0" intent="in" ref="I1986020"/>
+    <FfunctionType type="F1919d70" return_type="Fvoid"/>
+    <FfunctionType type="F1996be0" return_type="Fvoid">
+      <params>
+        <name type="A199a2c0">sendbuf</name>
+        <name type="I199d7b0">sendcount</name>
+        <name type="A199c870">recvbuf</name>
+        <name type="I199d8f0">recvcount</name>
+        <name type="I199da30">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R1999f00" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R199a040" intent="in" ref="R1999f00"/>
+    <FbasicType type="A199a180" intent="in" ref="R199a040">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A199a2c0" intent="in" ref="R199a040">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I199d670" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I199d7b0" intent="in" ref="I199d670"/>
+    <FbasicType type="R199c370" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R199c4b0" intent="out" ref="R199c370"/>
+    <FbasicType type="A199c5f0" intent="out" ref="R199c4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A199c730" intent="out" ref="R199c4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A199c870" intent="out" ref="R199c4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I199d8f0" intent="in" ref="I199d670"/>
+    <FbasicType type="I199da30" intent="in" ref="I199d670"/>
+    <FfunctionType type="F1999260" return_type="Fint"/>
+    <FfunctionType type="F199c0a0" return_type="Fint"/>
+    <FbasicType type="I199e310" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I199e540" ref="I199e310"/>
+    <FfunctionType type="F19a0020" return_type="Fvoid"/>
+    <FfunctionType type="F19a1710" return_type="Fvoid"/>
+    <FfunctionType type="F19a21e0" return_type="FnumericAll"/>
+    <FfunctionType type="F19a3900" return_type="Fvoid"/>
+    <FfunctionType type="F19a9050" return_type="Fvoid">
+      <params>
+        <name type="A19ac730">sendbuf</name>
+        <name type="I19afc20">sendcount</name>
+        <name type="A19aece0">recvbuf</name>
+        <name type="I19afd60">recvcount</name>
+        <name type="I19afea0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R19ac370" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R19ac4b0" intent="in" ref="R19ac370"/>
+    <FbasicType type="A19ac5f0" intent="in" ref="R19ac4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19ac730" intent="in" ref="R19ac4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I19afae0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I19afc20" intent="in" ref="I19afae0"/>
+    <FbasicType type="R19ae7e0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R19ae920" intent="out" ref="R19ae7e0"/>
+    <FbasicType type="A19aea60" intent="out" ref="R19ae920">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19aeba0" intent="out" ref="R19ae920">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19aece0" intent="out" ref="R19ae920">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I19afd60" intent="in" ref="I19afae0"/>
+    <FbasicType type="I19afea0" intent="in" ref="I19afae0"/>
+    <FfunctionType type="F19ab6d0" return_type="Fint"/>
+    <FfunctionType type="F19ae510" return_type="Fint"/>
+    <FbasicType type="I19b0780" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I19b09b0" ref="I19b0780"/>
+    <FfunctionType type="F19b2490" return_type="Fvoid"/>
+    <FfunctionType type="F19b3b40" return_type="Fvoid"/>
+    <FfunctionType type="F19b4540" return_type="FnumericAll"/>
+    <FfunctionType type="F19b5c60" return_type="Fvoid"/>
+    <FfunctionType type="F19bb3b0" return_type="Fvoid">
+      <params>
+        <name type="A19bd2f0">sendbuf</name>
+        <name type="I19bf190">sendcount</name>
+        <name type="A19be250">recvbuf</name>
+        <name type="I19bf2d0">recvcount</name>
+        <name type="I19bf410">iroot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I19bd070" intent="in" ref="Fint"/>
+    <FbasicType type="A19bd1b0" intent="in" ref="I19bd070">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19bd2f0" intent="in" ref="I19bd070">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I19bf050" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I19bf190" intent="in" ref="I19bf050"/>
+    <FbasicType type="I19bde90" intent="out" ref="Fint"/>
+    <FbasicType type="A19bdfd0" intent="out" ref="I19bde90">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19be110" intent="out" ref="I19bde90">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19be250" intent="out" ref="I19bde90">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I19bf2d0" intent="in" ref="I19bf050"/>
+    <FbasicType type="I19bf410" intent="in" ref="I19bf050"/>
+    <FbasicType type="I19bfcf0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I19bff20" ref="I19bfcf0"/>
+    <FfunctionType type="F19c1a00" return_type="Fvoid"/>
+    <FfunctionType type="F19c30f0" return_type="Fvoid"/>
+    <FfunctionType type="F19c3af0" return_type="FnumericAll"/>
+    <FfunctionType type="F19c5210" return_type="Fvoid"/>
+    <FfunctionType type="F191b8c0" return_type="Fvoid"/>
+    <FfunctionType type="F191c7c0" return_type="Fvoid">
+      <params>
+        <name type="I191de30">numomp</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I191dcf0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I191de30" intent="in" is_optional="true" ref="I191dcf0"/>
+    <FbasicType type="I191eb40" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I191ed70" ref="I191eb40"/>
+    <FbasicType type="I191efa0" ref="I191eb40"/>
+    <FbasicType type="I191f1d0" ref="I191eb40"/>
+    <FfunctionType type="F1920900" return_type="Flogical"/>
+    <FfunctionType type="F1922240" return_type="Fvoid"/>
+    <FfunctionType type="F1925b20" return_type="Fvoid"/>
+    <FfunctionType type="F1927b10" return_type="Fvoid"/>
+    <FbasicType type="C1923ba0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">35</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1924bd0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">63</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1926f80" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">33</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C19292b0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">33</FintConstant>
+      </len>
+    </FbasicType>
+    <FfunctionType type="F192a280" return_type="Fvoid">
+      <params>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I192b230" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I192b460" ref="I192b230"/>
+    <FfunctionType type="F192bbe0" return_type="Fvoid"/>
+    <FfunctionType type="F192d0f0" return_type="Fvoid"/>
+    <FbasicType type="C192d2f0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">32</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C193b850" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">30</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1949b80" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">30</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1956750" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">30</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C19a3b00" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">30</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="A19a5c30" intent="out" ref="R199c4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19a5d70" intent="out" ref="R199c4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19a4b80" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19a4ea0" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19a6dd0" intent="in" ref="R199a040">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19a6f10" intent="in" ref="R199a040">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19a6210" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19a6530" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="C19b5e60" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">30</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="A19b7f90" intent="out" ref="R19ae920">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19b80d0" intent="out" ref="R19ae920">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19b6ee0" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19b7200" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19b9130" intent="in" ref="R19ac4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19b9270" intent="in" ref="R19ac4b0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19b8570" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19b8890" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="C19c5410" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">30</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="A19c7540" intent="out" ref="I19bde90">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19c7680" intent="out" ref="I19bde90">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19c6490" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19c67b0" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19c86e0" intent="in" ref="I19bd070">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19c8820" intent="in" ref="I19bd070">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19c7b20" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A19c7e40" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F19c9c90" return_type="Fvoid">
+      <params>
+        <name type="A19bd2f0">sendbuf</name>
+        <name type="I19bf190">sendcount</name>
+        <name type="A19be250">recvbuf</name>
+        <name type="I19bf2d0">recvcount</name>
+        <name type="I19bf410">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F19ba6e0" return_type="Fvoid">
+      <params>
+        <name type="A19ac730">sendbuf</name>
+        <name type="I19afc20">sendcount</name>
+        <name type="A19aece0">recvbuf</name>
+        <name type="I19afd60">recvcount</name>
+        <name type="I19afea0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F19a8380" return_type="Fvoid">
+      <params>
+        <name type="A199a2c0">sendbuf</name>
+        <name type="I199d7b0">sendcount</name>
+        <name type="A199c870">recvbuf</name>
+        <name type="I199d8f0">recvcount</name>
+        <name type="I199da30">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1995b70" return_type="Fvoid">
+      <params>
+        <name type="A1994330">buf</name>
+        <name type="I1995090">nelem</name>
+        <name type="I19951d0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1991eb0" return_type="Fvoid">
+      <params>
+        <name type="A1990670">buf</name>
+        <name type="I19913d0">nelem</name>
+        <name type="I1991510">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F19775e0" return_type="Fvoid">
+      <params>
+        <name type="A1975190">buf</name>
+        <name type="I1975ef0">nelem</name>
+        <name type="I1976030">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1972f90" return_type="Fvoid">
+      <params>
+        <name type="A1970b40">buf</name>
+        <name type="I19718a0">nelem</name>
+        <name type="I19719e0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F198ca50" return_type="Fvoid">
+      <params>
+        <name type="A198b210">buf</name>
+        <name type="I198bf70">nelem</name>
+        <name type="I198c0b0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F196d1a0" return_type="Fvoid">
+      <params>
+        <name type="A196ad10">buf</name>
+        <name type="I196ba70">nelem</name>
+        <name type="I196bbb0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F195cf50" return_type="Fvoid">
+      <params>
+        <name type="A195a860">buf</name>
+        <name type="I195b5c0">nelem</name>
+        <name type="I195b700">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1995cb0" return_type="Fvoid">
+      <params>
+        <name type="A1994330">buf</name>
+        <name type="I1995090">nelem</name>
+        <name type="I19951d0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1991ff0" return_type="Fvoid">
+      <params>
+        <name type="A1990670">buf</name>
+        <name type="I19913d0">nelem</name>
+        <name type="I1991510">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F198cb90" return_type="Fvoid">
+      <params>
+        <name type="A198b210">buf</name>
+        <name type="I198bf70">nelem</name>
+        <name type="I198c0b0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1967370" return_type="Fvoid">
+      <params>
+        <name type="A1964f20">buf</name>
+        <name type="I1965c80">nelem</name>
+        <name type="I1965dc0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1962d20" return_type="Fvoid">
+      <params>
+        <name type="A19608d0">buf</name>
+        <name type="I1961630">nelem</name>
+        <name type="I1961770">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F193bf80" return_type="Fvoid">
+      <params>
+        <name type="A1931ce0">buf</name>
+        <name type="I1932860">nelem</name>
+        <name type="I19330d0">op</name>
+        <name type="I1933c50">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1956ea0" return_type="Fvoid">
+      <params>
+        <name type="A194cea0">buf</name>
+        <name type="I194d930">nelem</name>
+        <name type="I194e1a0">op</name>
+        <name type="I194ed20">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F194a2d0" return_type="Fvoid">
+      <params>
+        <name type="A1940240">buf</name>
+        <name type="I1940dc0">nelem</name>
+        <name type="I1941630">op</name>
+        <name type="I19421b0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1987850" return_type="Fvoid">
+      <params>
+        <name type="A1985400">buf</name>
+        <name type="I1986160">nelem</name>
+        <name type="I19862a0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1983200" return_type="Fvoid">
+      <params>
+        <name type="A1980db0">buf</name>
+        <name type="I1981b10">nelem</name>
+        <name type="I1981c50">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F197d410" return_type="Fvoid">
+      <params>
+        <name type="A197af80">buf</name>
+        <name type="I197bce0">nelem</name>
+        <name type="I197be20">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1995df0" return_type="Fvoid">
+      <params>
+        <name type="A1994330">buf</name>
+        <name type="I1995090">nelem</name>
+        <name type="I19951d0">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F1992130" return_type="Fvoid">
+      <params>
+        <name type="A1990670">buf</name>
+        <name type="I19913d0">nelem</name>
+        <name type="I1991510">iroot</name>
+      </params>
+    </FfunctionType>
+    <FfunctionType type="F198ccd0" return_type="Fvoid">
+      <params>
+        <name type="A198b210">buf</name>
+        <name type="I198bf70">nelem</name>
+        <name type="I198c0b0">iroot</name>
+      </params>
+    </FfunctionType>
+  </typeTable>
+  <identifiers>
+    <id type="I18fd3f0" sclass="flocal" original_name="jpim" declared_in="parkind1">
+      <name>jpim</name>
+    </id>
+    <id type="I18fd620" sclass="flocal" original_name="jprs" declared_in="parkind1">
+      <name>jprs</name>
+    </id>
+    <id type="I18fd8b0" sclass="flocal" original_name="jprd" declared_in="parkind1">
+      <name>jprd</name>
+    </id>
+    <id type="I1914f50" sclass="flocal" original_name="numproc" declared_in="cloudsc_mpi_mod">
+      <name>numproc</name>
+    </id>
+    <id type="I1915c80" sclass="flocal" original_name="irank" declared_in="cloudsc_mpi_mod">
+      <name>irank</name>
+    </id>
+    <id type="F195c300" sclass="ffunc" original_name="cloudsc_mpi_reduce" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce</name>
+    </id>
+    <id type="F18f53f0" sclass="ffunc" original_name="cloudsc_mpi_reduce_sum" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_sum</name>
+    </id>
+    <id type="F18f7ad0" sclass="ffunc" original_name="cloudsc_mpi_reduce_min" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_min</name>
+    </id>
+    <id type="F1919d70" sclass="ffunc" original_name="cloudsc_mpi_reduce_max" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_max</name>
+    </id>
+    <id type="F191b8c0" sclass="ffunc" original_name="cloudsc_mpi_gather" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_gather</name>
+    </id>
+    <id type="F191c7c0" sclass="ffunc" original_name="cloudsc_mpi_init" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_init</name>
+    </id>
+    <id type="F192a280" sclass="ffunc" original_name="cloudsc_mpi_end" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_end</name>
+    </id>
+    <id type="F192e660" sclass="ffunc" original_name="cloudsc_mpi_reduce_jprd" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_jprd</name>
+    </id>
+    <id type="F193cbc0" sclass="ffunc" original_name="cloudsc_mpi_reduce_jprs" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_jprs</name>
+    </id>
+    <id type="F194af10" sclass="ffunc" original_name="cloudsc_mpi_reduce_int" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_int</name>
+    </id>
+    <id type="F1957a70" sclass="ffunc" original_name="cloudsc_mpi_reduce_sum_jprd" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_sum_jprd</name>
+    </id>
+    <id type="F195dae0" sclass="ffunc" original_name="cloudsc_mpi_reduce_sum_jprs" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_sum_jprs</name>
+    </id>
+    <id type="F19638d0" sclass="ffunc" original_name="cloudsc_mpi_reduce_sum_int" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_sum_int</name>
+    </id>
+    <id type="F1967f20" sclass="ffunc" original_name="cloudsc_mpi_reduce_min_jprd" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_min_jprd</name>
+    </id>
+    <id type="F196dd50" sclass="ffunc" original_name="cloudsc_mpi_reduce_min_jprs" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_min_jprs</name>
+    </id>
+    <id type="F1973b40" sclass="ffunc" original_name="cloudsc_mpi_reduce_min_int" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_min_int</name>
+    </id>
+    <id type="F1978190" sclass="ffunc" original_name="cloudsc_mpi_reduce_max_jprd" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_max_jprd</name>
+    </id>
+    <id type="F197dfc0" sclass="ffunc" original_name="cloudsc_mpi_reduce_max_jprs" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_max_jprs</name>
+    </id>
+    <id type="F1983db0" sclass="ffunc" original_name="cloudsc_mpi_reduce_max_int" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_max_int</name>
+    </id>
+    <id type="F1988420" sclass="ffunc" original_name="cloudsc_mpi_reduce_dummy_jprd" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_dummy_jprd</name>
+    </id>
+    <id type="F198d880" sclass="ffunc" original_name="cloudsc_mpi_reduce_dummy_jprs" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_dummy_jprs</name>
+    </id>
+    <id type="F1992ce0" sclass="ffunc" original_name="cloudsc_mpi_reduce_dummy_int" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_reduce_dummy_int</name>
+    </id>
+    <id type="F1996be0" sclass="ffunc" original_name="cloudsc_mpi_gather_jprd" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_gather_jprd</name>
+    </id>
+    <id type="F19a9050" sclass="ffunc" original_name="cloudsc_mpi_gather_jprs" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_gather_jprs</name>
+    </id>
+    <id type="F19bb3b0" sclass="ffunc" original_name="cloudsc_mpi_gather_int" declared_in="cloudsc_mpi_mod">
+      <name>cloudsc_mpi_gather_int</name>
+    </id>
+  </identifiers>
+  <declarations>
+    <varDecl>
+      <name type="I18fd3f0">jpim</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">9</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl>
+      <name type="I18fd620">jprs</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl>
+      <name type="I18fd8b0">jprd</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+  </declarations>
+  <interfaceDecls>
+    <FinterfaceDecl name="cloudsc_mpi_reduce" lineno="15" file="src/common/module/cloudsc_mpi_mod.F90">
+      <FmoduleProcedureDecl lineno="16" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F193bf80">cloudsc_mpi_reduce_jprd</name>
+        <name type="F1956ea0">cloudsc_mpi_reduce_int</name>
+        <name type="F194a2d0">cloudsc_mpi_reduce_jprs</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="16" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F193bf80">cloudsc_mpi_reduce_jprd</name>
+        <name type="F1956ea0">cloudsc_mpi_reduce_int</name>
+        <name type="F194a2d0">cloudsc_mpi_reduce_jprs</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="16" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F193bf80">cloudsc_mpi_reduce_jprd</name>
+        <name type="F1956ea0">cloudsc_mpi_reduce_int</name>
+        <name type="F194a2d0">cloudsc_mpi_reduce_jprs</name>
+      </FmoduleProcedureDecl>
+    </FinterfaceDecl>
+    <FinterfaceDecl name="cloudsc_mpi_reduce_sum" lineno="19" file="src/common/module/cloudsc_mpi_mod.F90">
+      <FmoduleProcedureDecl lineno="21" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F195cf50">cloudsc_mpi_reduce_sum_jprd</name>
+        <name type="F1995cb0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991ff0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198cb90">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F1967370">cloudsc_mpi_reduce_sum_int</name>
+        <name type="F1962d20">cloudsc_mpi_reduce_sum_jprs</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="21" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F195cf50">cloudsc_mpi_reduce_sum_jprd</name>
+        <name type="F1995cb0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991ff0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198cb90">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F1967370">cloudsc_mpi_reduce_sum_int</name>
+        <name type="F1962d20">cloudsc_mpi_reduce_sum_jprs</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="21" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F195cf50">cloudsc_mpi_reduce_sum_jprd</name>
+        <name type="F1995cb0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991ff0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198cb90">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F1967370">cloudsc_mpi_reduce_sum_int</name>
+        <name type="F1962d20">cloudsc_mpi_reduce_sum_jprs</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="23" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F195cf50">cloudsc_mpi_reduce_sum_jprd</name>
+        <name type="F1995cb0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991ff0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198cb90">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F1967370">cloudsc_mpi_reduce_sum_int</name>
+        <name type="F1962d20">cloudsc_mpi_reduce_sum_jprs</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="23" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F195cf50">cloudsc_mpi_reduce_sum_jprd</name>
+        <name type="F1995cb0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991ff0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198cb90">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F1967370">cloudsc_mpi_reduce_sum_int</name>
+        <name type="F1962d20">cloudsc_mpi_reduce_sum_jprs</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="23" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F195cf50">cloudsc_mpi_reduce_sum_jprd</name>
+        <name type="F1995cb0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991ff0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198cb90">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F1967370">cloudsc_mpi_reduce_sum_int</name>
+        <name type="F1962d20">cloudsc_mpi_reduce_sum_jprs</name>
+      </FmoduleProcedureDecl>
+    </FinterfaceDecl>
+    <FinterfaceDecl name="cloudsc_mpi_reduce_min" lineno="27" file="src/common/module/cloudsc_mpi_mod.F90">
+      <FmoduleProcedureDecl lineno="29" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1995b70">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991eb0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F19775e0">cloudsc_mpi_reduce_min_int</name>
+        <name type="F1972f90">cloudsc_mpi_reduce_min_jprs</name>
+        <name type="F198ca50">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F196d1a0">cloudsc_mpi_reduce_min_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="29" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1995b70">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991eb0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F19775e0">cloudsc_mpi_reduce_min_int</name>
+        <name type="F1972f90">cloudsc_mpi_reduce_min_jprs</name>
+        <name type="F198ca50">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F196d1a0">cloudsc_mpi_reduce_min_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="29" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1995b70">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991eb0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F19775e0">cloudsc_mpi_reduce_min_int</name>
+        <name type="F1972f90">cloudsc_mpi_reduce_min_jprs</name>
+        <name type="F198ca50">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F196d1a0">cloudsc_mpi_reduce_min_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="31" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1995b70">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991eb0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F19775e0">cloudsc_mpi_reduce_min_int</name>
+        <name type="F1972f90">cloudsc_mpi_reduce_min_jprs</name>
+        <name type="F198ca50">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F196d1a0">cloudsc_mpi_reduce_min_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="31" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1995b70">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991eb0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F19775e0">cloudsc_mpi_reduce_min_int</name>
+        <name type="F1972f90">cloudsc_mpi_reduce_min_jprs</name>
+        <name type="F198ca50">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F196d1a0">cloudsc_mpi_reduce_min_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="31" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1995b70">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1991eb0">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F19775e0">cloudsc_mpi_reduce_min_int</name>
+        <name type="F1972f90">cloudsc_mpi_reduce_min_jprs</name>
+        <name type="F198ca50">cloudsc_mpi_reduce_dummy_jprd</name>
+        <name type="F196d1a0">cloudsc_mpi_reduce_min_jprd</name>
+      </FmoduleProcedureDecl>
+    </FinterfaceDecl>
+    <FinterfaceDecl name="cloudsc_mpi_reduce_max" lineno="35" file="src/common/module/cloudsc_mpi_mod.F90">
+      <FmoduleProcedureDecl lineno="37" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1987850">cloudsc_mpi_reduce_max_int</name>
+        <name type="F1983200">cloudsc_mpi_reduce_max_jprs</name>
+        <name type="F197d410">cloudsc_mpi_reduce_max_jprd</name>
+        <name type="F1995df0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1992130">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198ccd0">cloudsc_mpi_reduce_dummy_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="37" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1987850">cloudsc_mpi_reduce_max_int</name>
+        <name type="F1983200">cloudsc_mpi_reduce_max_jprs</name>
+        <name type="F197d410">cloudsc_mpi_reduce_max_jprd</name>
+        <name type="F1995df0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1992130">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198ccd0">cloudsc_mpi_reduce_dummy_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="37" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1987850">cloudsc_mpi_reduce_max_int</name>
+        <name type="F1983200">cloudsc_mpi_reduce_max_jprs</name>
+        <name type="F197d410">cloudsc_mpi_reduce_max_jprd</name>
+        <name type="F1995df0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1992130">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198ccd0">cloudsc_mpi_reduce_dummy_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="39" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1987850">cloudsc_mpi_reduce_max_int</name>
+        <name type="F1983200">cloudsc_mpi_reduce_max_jprs</name>
+        <name type="F197d410">cloudsc_mpi_reduce_max_jprd</name>
+        <name type="F1995df0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1992130">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198ccd0">cloudsc_mpi_reduce_dummy_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="39" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1987850">cloudsc_mpi_reduce_max_int</name>
+        <name type="F1983200">cloudsc_mpi_reduce_max_jprs</name>
+        <name type="F197d410">cloudsc_mpi_reduce_max_jprd</name>
+        <name type="F1995df0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1992130">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198ccd0">cloudsc_mpi_reduce_dummy_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="39" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F1987850">cloudsc_mpi_reduce_max_int</name>
+        <name type="F1983200">cloudsc_mpi_reduce_max_jprs</name>
+        <name type="F197d410">cloudsc_mpi_reduce_max_jprd</name>
+        <name type="F1995df0">cloudsc_mpi_reduce_dummy_int</name>
+        <name type="F1992130">cloudsc_mpi_reduce_dummy_jprs</name>
+        <name type="F198ccd0">cloudsc_mpi_reduce_dummy_jprd</name>
+      </FmoduleProcedureDecl>
+    </FinterfaceDecl>
+    <FinterfaceDecl name="cloudsc_mpi_gather" lineno="43" file="src/common/module/cloudsc_mpi_mod.F90">
+      <FmoduleProcedureDecl lineno="44" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F19c9c90">cloudsc_mpi_gather_int</name>
+        <name type="F19ba6e0">cloudsc_mpi_gather_jprs</name>
+        <name type="F19a8380">cloudsc_mpi_gather_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="44" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F19c9c90">cloudsc_mpi_gather_int</name>
+        <name type="F19ba6e0">cloudsc_mpi_gather_jprs</name>
+        <name type="F19a8380">cloudsc_mpi_gather_jprd</name>
+      </FmoduleProcedureDecl>
+      <FmoduleProcedureDecl lineno="44" file="src/common/module/cloudsc_mpi_mod.F90">
+        <name type="F19c9c90">cloudsc_mpi_gather_int</name>
+        <name type="F19ba6e0">cloudsc_mpi_gather_jprs</name>
+        <name type="F19a8380">cloudsc_mpi_gather_jprd</name>
+      </FmoduleProcedureDecl>
+    </FinterfaceDecl>
+  </interfaceDecls>
+  <aux_info>
+  </aux_info>
+</OmniFortranModule>

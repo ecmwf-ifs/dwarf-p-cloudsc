@@ -100,8 +100,8 @@ CONTAINS
 
     IBL = 1  ! Useless statement to show the compiler that the sepcification part is over!
 
-1003 format(5x,'NUMPROC=',i0,'NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
     if (irank == 0) then
+1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
       write(0,1003) NUMPROC,NUMOMP,NGPTOTG,NPROMA,NGPBLKS
     end if
 
