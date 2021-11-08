@@ -123,6 +123,7 @@ mpirun -np 2 bash -c "CUDA_VISIBLE_DEVICES=\${OMPI_COMM_WORLD_RANK} bin/dwarf-cl
 As an alternative to Serialbox, versions dwarf-cloudsc-fortran as well as GPU
 and Loki versions can use HDF5 files for input and reference data. To enable this,
 use the `--with-hdf5` flag (note that this disables Serialbox support).
+Please note : the hdf5 installation needs to have the f03 interfaces installed.
 
 The original input is provided as raw Fortran binary in prototype1, but
 input and reference data can be regenerated from this variant by running

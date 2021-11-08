@@ -40,6 +40,9 @@ if( HAVE_CLOUDSC_GPU_CLAW )
     if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
         target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE MPI::MPI_Fortran )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-gpu-claw PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
 endif()
 
 
@@ -62,6 +65,9 @@ if( HAVE_CLOUDSC_GPU_SCC )
     if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
         target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE MPI::MPI_Fortran )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-gpu-scc PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
 endif()
 
 
@@ -83,6 +89,9 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
 
     if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
         target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE MPI::MPI_Fortran )
+    endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-gpu-scc-hoist PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
     endif()
 endif()
 
