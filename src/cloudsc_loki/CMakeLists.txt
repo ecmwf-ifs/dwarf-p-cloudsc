@@ -52,11 +52,16 @@ if( HAVE_CLOUDSC_LOKI )
         get_filename_component( _CLAWFC_LOCATION ${_CLAWFC_EXECUTABLE} DIRECTORY )
         set( _LOKI_TRANSFORM_ENV PATH=${_LOKI_TRANSFORM_LOCATION}:${_CLAWFC_LOCATION}:$ENV{PATH} )
         set( _LOKI_TRANSFORM ${CMAKE_COMMAND} -E env ${_LOKI_TRANSFORM_ENV} loki-transform.py )
+
+        # Also, now it breaks the dependency chain and we have to declare manual dependencies on
+        # loki-transform.py...
+        set( _LOKI_TRANSFORM_DEPENDENCY loki-transform.py )
     else()
         # This is how it is meant to be: We can rely on CMake's ability to set the correct
         # path of loki-transform.py if it was declared as an executable before (otherwise it
         # will assume it has been already on the path when CMake was called
         set( _LOKI_TRANSFORM loki-transform.py )
+        set( _LOKI_TRANSFORM_DEPENDENCY "" )
     endif()
 
     ####################################################
@@ -73,7 +78,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_LOKI_TRANSFORM_DEPENDENCY}
         COMMENT "[Loki] Pre-processing: mode=idem frontend=${LOKI_FRONTEND}"
     )
 
@@ -104,7 +109,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_LOKI_TRANSFORM_DEPENDENCY}
         COMMENT "[Loki] Pre-processing: mode=sca frontend=${LOKI_FRONTEND}"
     )
 
@@ -149,7 +154,7 @@ if( HAVE_CLOUDSC_LOKI )
                         -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                         -o loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
                         loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_LOKI_TRANSFORM_DEPENDENCY}
         COMMENT "[Loki] Pre-processing: mode=claw-cpu frontend=${LOKI_FRONTEND}"
         )
 
@@ -196,7 +201,7 @@ if( HAVE_CLOUDSC_LOKI )
                           -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                           -o loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
                           loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_LOKI_TRANSFORM_DEPENDENCY}
             COMMENT "[Loki] Pre-processing: mode=claw-gpu frontend=${LOKI_FRONTEND}"
         )
 
@@ -236,7 +241,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_LOKI_TRANSFORM_DEPENDENCY}
         COMMENT "[Loki] Pre-processing: mode=scc frontend=${LOKI_FRONTEND}"
     )
 
@@ -278,7 +283,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_LOKI_TRANSFORM_DEPENDENCY}
         COMMENT "[Loki] Pre-processing: mode=scc-hoist frontend=${LOKI_FRONTEND}"
     )
 
@@ -322,7 +327,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --cpp --include ${COMMON_INCLUDE}
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-c
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_LOKI_TRANSFORM_DEPENDENCY}
         COMMENT "[Loki] Pre-processing: mode=transpile frontend=${LOKI_FRONTEND}"
     )
 
