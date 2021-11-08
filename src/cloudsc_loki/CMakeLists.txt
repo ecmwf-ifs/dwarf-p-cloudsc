@@ -8,8 +8,12 @@
 
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_LOKI
-    DESCRIPTION "Use Loki/CLAW source-to-source transformations with CLOUDSC " DEFAULT OFF
+    DESCRIPTION "Use Loki source-to-source transformations with CLOUDSC " DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+ecbuild_add_option( FEATURE CLOUDSC_LOKI_CLAW
+    DESCRIPTION "Use CLAW-based Loki source-to-source transformations" DEFAULT ON
+    CONDITION HAVE_CLOUDSC_LOKI
 )
 
 if( HAVE_CLOUDSC_LOKI )
@@ -23,7 +27,6 @@ if( HAVE_CLOUDSC_LOKI )
     set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
 
     set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
-    set( ENABLE_CLOUDSC_LOKI_CLAW ON CACHE STRING "Enable Loki/CLAW source-to-source transformations" )
 
     # OFP frontend cannot deal with statement functions, so we toggle them here
     set( CLOUDSC_DEFINE_STMT_FUNC "" )
@@ -34,6 +37,27 @@ if( HAVE_CLOUDSC_LOKI )
     # Ensure xmod directory for OMNI frontend
     file(MAKE_DIRECTORY ${XMOD_DIR})
 
+    if ( TARGET clawfc AND ${LOKI_FRONTEND} STREQUAL "omni" )
+        # Ugly hack but I don't have a better solution: We need to add F_FRONT
+        # (which is installed in the same directory as clawfc) to the PATH, if
+        # OMNI is used as a frontend. Hence we have to update the environment in the below
+        # add_custom_command calls to loki-transform.py.
+        # Unfortunately, this environment updated breaks the CMake feature of recognizing
+        # the executable in add_custom_command and choosing the correct path if it was
+        # previously declared as an executable. Therefore, we have to insert also
+        # loki-transform.py into the PATH variable.
+        get_target_property( _LOKI_TRANSFORM_EXECUTABLE loki-transform.py IMPORTED_LOCATION )
+        get_filename_component( _LOKI_TRANSFORM_LOCATION ${_LOKI_TRANSFORM_EXECUTABLE} DIRECTORY )
+        get_target_property( _CLAWFC_EXECUTABLE clawfc IMPORTED_LOCATION )
+        get_filename_component( _CLAWFC_LOCATION ${_CLAWFC_EXECUTABLE} DIRECTORY )
+        set( _LOKI_TRANSFORM_ENV PATH=${_LOKI_TRANSFORM_LOCATION}:${_CLAWFC_LOCATION}:$ENV{PATH} )
+        set( _LOKI_TRANSFORM ${CMAKE_COMMAND} -E env ${_LOKI_TRANSFORM_ENV} loki-transform.py )
+    else()
+        # This is how it is meant to be: We can rely on CMake's ability to set the correct
+        # path of loki-transform.py if it was declared as an executable before (otherwise it
+        # will assume it has been already on the path when CMake was called
+        set( _LOKI_TRANSFORM loki-transform.py )
+    endif()
 
     ####################################################
     ##  Idempotence mode:                             ##
@@ -42,7 +66,7 @@ if( HAVE_CLOUDSC_LOKI )
     add_custom_command(
         OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
-        COMMAND loki-transform.py convert --mode idem --frontend ${LOKI_FRONTEND}
+        COMMAND ${_LOKI_TRANSFORM} convert --mode idem --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
@@ -73,7 +97,7 @@ if( HAVE_CLOUDSC_LOKI )
     add_custom_command(
         OUTPUT loki-sca/cloudsc.sca.F90 loki-sca/cloudsc_driver_loki_mod.sca.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
-        COMMAND loki-transform.py convert --mode sca --frontend ${LOKI_FRONTEND}
+        COMMAND ${_LOKI_TRANSFORM} convert --mode sca --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
@@ -102,11 +126,11 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (CPU layout and OpenMP)  ##
     ####################################################
-    if( ENABLE_CLOUDSC_LOKI_CLAW )
+    if( HAVE_CLOUDSC_LOKI_CLAW )
         add_custom_command(
             OUTPUT loki-claw-cpu/cloudsc.claw.cpu.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
             COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
-            COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
+            COMMAND ${_LOKI_TRANSFORM} convert --mode claw --frontend ${LOKI_FRONTEND}
                         --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                         --path ${CMAKE_CURRENT_SOURCE_DIR}
                         --header ${COMMON_MODULE}/yomphyder.F90
@@ -147,33 +171,34 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (GPU layout and OpenACC) ##
     ####################################################
-    add_custom_command(
-        OUTPUT loki-claw-gpu/cloudsc.claw.gpu.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
-        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
-        # Uses Loki-frontend CPP to switch to statement function variant again,
-        # but suppresses inlining of stmt funcs by omitting `--include`
-        COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
-                      --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-                      --path ${CMAKE_CURRENT_SOURCE_DIR}
-                      --header ${COMMON_MODULE}/yomphyder.F90
-                      --cpp --include ${COMMON_INCLUDE}
-                      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
-                      --data-offload --remove-openmp
-                      --xmod ${XMOD_DIR}
-                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
-        COMMAND clawfc -w 132 --target=gpu --directive=openacc
-                      --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
-                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o loki-claw-gpu/cloudsc.claw.gpu.F90
-                      loki-claw-gpu/cloudsc.claw.F90
-        COMMAND clawfc -w 132 --target=gpu --directive=openacc
-                      --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
-                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
-                      loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-        COMMENT "[Loki] Pre-processing: mode=claw-gpu frontend=${LOKI_FRONTEND}"
-    )
+    if( HAVE_CLOUDSC_LOKI_CLAW )
+        add_custom_command(
+            OUTPUT loki-claw-gpu/cloudsc.claw.gpu.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
+            COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
+            # Uses Loki-frontend CPP to switch to statement function variant again,
+            # but suppresses inlining of stmt funcs by omitting `--include`
+            COMMAND ${_LOKI_TRANSFORM} convert --mode claw --frontend ${LOKI_FRONTEND}
+                          --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+                          --path ${CMAKE_CURRENT_SOURCE_DIR}
+                          --header ${COMMON_MODULE}/yomphyder.F90
+                          --cpp --include ${COMMON_INCLUDE}
+                          --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+                          --data-offload --remove-openmp
+                          --xmod ${XMOD_DIR}
+                          --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
+            COMMAND clawfc -w 132 --target=gpu --directive=openacc
+                          --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
+                          -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                          -o loki-claw-gpu/cloudsc.claw.gpu.F90
+                          loki-claw-gpu/cloudsc.claw.F90
+            COMMAND clawfc -w 132 --target=gpu --directive=openacc
+                          --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
+                          -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                          -o loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
+                          loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+            COMMENT "[Loki] Pre-processing: mode=claw-gpu frontend=${LOKI_FRONTEND}"
+        )
 
         ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-gpu
             SOURCES
@@ -202,7 +227,7 @@ if( HAVE_CLOUDSC_LOKI )
     add_custom_command(
         OUTPUT loki-scc/cloudsc.scc.F90 loki-scc/cloudsc_driver_loki_mod.scc.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
-        COMMAND loki-transform.py convert --mode scc --frontend ${LOKI_FRONTEND}
+        COMMAND ${_LOKI_TRANSFORM} convert --mode scc --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
@@ -244,7 +269,7 @@ if( HAVE_CLOUDSC_LOKI )
             loki-scc-hoist/cloudsc.scc_hoist.F90
             loki-scc-hoist/cloudsc_driver_loki_mod.scc_hoist.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
-        COMMAND loki-transform.py convert --mode scc-hoist --frontend ${LOKI_FRONTEND}
+        COMMAND ${_LOKI_TRANSFORM} convert --mode scc-hoist --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
@@ -284,7 +309,7 @@ if( HAVE_CLOUDSC_LOKI )
                loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
                loki-c/yoecldp_fc.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-c
-        COMMAND loki-transform.py transpile --frontend=${LOKI_FRONTEND}
+        COMMAND ${_LOKI_TRANSFORM} transpile --frontend=${LOKI_FRONTEND}
                       --header ${COMMON_MODULE}/parkind1.F90
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --header ${COMMON_MODULE}/yomcst.F90

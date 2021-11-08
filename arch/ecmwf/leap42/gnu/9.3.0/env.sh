@@ -21,6 +21,7 @@ module_unload ecbuild
 module_unload openmpi
 module_unload hdf5
 module_unload python3
+module_unload java
 
 # Load modules
 module_load gnu/9.3.0
@@ -29,6 +30,7 @@ module_load cmake/3.19.5
 module_load openmpi/4.1.0
 module_load hdf5/1.10.6
 module_load python3/3.8.8-01
+module_load java/11
 
 set -x
 
@@ -39,3 +41,4 @@ ulimit -S -s unlimited
 if [[ -n "$tracing_" ]]; then set -x; else set +x; fi
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"
+export ANT_OPTS="-Dhttp.proxyHost=proxy.ecmwf.int -Dhttp.proxyPort=3333 -Dhttps.proxyHost=proxy.ecmwf.int -Dhttps.proxyPort=3333"

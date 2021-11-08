@@ -26,9 +26,9 @@ projects :
     - loki :
         git     : ${BITBUCKET}/rdx/loki
         version : nabr-cmake-install
-        require : claw-compiler ecbuild
+        require : ecbuild
         cmake   : >
-            EDITABLE=ON
+            LOKI_ENABLE_TESTS=OFF
 
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
@@ -65,6 +65,7 @@ options :
         help  : Disable CLAW-based source-to-source transformations
         cmake : >
             ENABLE_CLOUDSC_LOKI_CLAW=OFF
+            ENABLE_LOKI_CLAW=OFF
 
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations
