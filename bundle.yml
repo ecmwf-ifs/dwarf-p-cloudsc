@@ -61,6 +61,12 @@ options :
         help  : Enable Loki source-to-source transformations
         cmake : ENABLE_CLOUDSC_LOKI=ON
 
+    - without-loki-install :
+        help  : Skip installation of Loki (Requires Loki to be on the PATH)
+        cmake : >
+            BUILD_loki=OFF
+            CMAKE_DISABLE_FIND_PACKAGE_loki=TRUE
+
     - without-claw :
         help  : Disable CLAW-based source-to-source transformations
         cmake : >
