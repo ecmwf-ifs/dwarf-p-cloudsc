@@ -32,7 +32,7 @@ module use /opt/nvidia/hpc_sdk/modulefiles
 # module load nvhpc
 module load nvhpc-nompi/20.9
 module_load boost/1.61.0
-module_load cmake/3.14.5
+module_load cmake/3.19.5
 
 set -x
 
@@ -49,3 +49,4 @@ export PATH="/local/hdd/nabr/openmpi/nvhpc-nompi/20.9/bin:$PATH"
 if [[ -n "$tracing_" ]]; then set -x; else set +x; fi
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"
+export ANT_OPTS="-Dhttp.proxyHost=proxy.ecmwf.int -Dhttp.proxyPort=3333 -Dhttps.proxyHost=proxy.ecmwf.int -Dhttps.proxyPort=3333"
