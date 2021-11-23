@@ -16,6 +16,12 @@ if( HAVE_CLOUDSC_LOKI )
 
     set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
 
+    # OFP frontend cannot deal with statement functions, so we toggle them here
+    set( CLOUDSC_DEFINE_STMT_FUNC "" )
+    if(NOT "${LOKI_FRONTEND}" STREQUAL "ofp")
+      set( CLOUDSC_DEFINE_STMT_FUNC --define CLOUDSC_STMT_FUNC )
+    endif()
+
     # Ensure xmod directory for OMNI frontend
     file(MAKE_DIRECTORY ${XMOD_DIR})
 
@@ -140,7 +146,8 @@ if( HAVE_CLOUDSC_LOKI )
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --cpp --define CLOUDSC_GPU_TIMING --define CLOUDSC_STMT_FUNC
+                      --cpp --include ${COMMON_INCLUDE}
+		      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
       	              --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
@@ -188,7 +195,8 @@ if( HAVE_CLOUDSC_LOKI )
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --cpp --define CLOUDSC_GPU_TIMING --define CLOUDSC_STMT_FUNC
+                      --cpp --include ${COMMON_INCLUDE}
+		      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
                       --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
@@ -229,7 +237,8 @@ if( HAVE_CLOUDSC_LOKI )
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
-                      --cpp --define CLOUDSC_GPU_TIMING --define CLOUDSC_STMT_FUNC
+                      --cpp --include ${COMMON_INCLUDE}
+		      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
                       --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
