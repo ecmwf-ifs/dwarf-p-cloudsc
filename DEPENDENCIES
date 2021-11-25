@@ -1,8 +1,0 @@
-[ecbuild]
-  kind    : project
-  url     : ${STASH}/ESCAPE/ecbuild.git
-  version : develop
-  cmake   : -DENABLE_INSTALL=ON
-
-[dwarf-P-cloudMicrophysics-IFSScheme]
-  kind    : project
