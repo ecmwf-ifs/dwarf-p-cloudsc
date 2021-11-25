@@ -23,7 +23,7 @@ FIND_PROGRAM (HTLATEX
               PATHS /usr/local/share/apps/TeXLive/2014/bin/x86_64-linux/)
 
 if ( PDFLATEX AND BIBTEX AND MAKEINDEX AND HTLATEX ) 
-    set( LATEX_FOUND TRUE )
+    set( Latex_FOUND TRUE )
 endif()
 
 

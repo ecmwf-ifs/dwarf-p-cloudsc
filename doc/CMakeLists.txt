@@ -9,13 +9,15 @@
 set(DOCUMENTATIONSRC ${CMAKE_CURRENT_SOURCE_DIR})
 set(DOCUMENTATION ${CMAKE_CURRENT_BINARY_DIR})
 
+set( VERSION_STR ${${PROJECT_NAME}_VERSION_STR} )
+configure_file( version.tex.in version.tex )
 
 
 # HTML GENERATION =============================================================
 file(MAKE_DIRECTORY ${DOCUMENTATION}/html)
 
 add_custom_target(dwarf-P-cloudMicrophysics-IFSScheme-documentation-html
-   export TEXINPUTS=${CMAKE_SOURCE_DIR}//:${DOCUMENTATIONSRC}//: &&
+   export TEXINPUTS=${DOCUMENTATIONSRC}//:${CMAKE_CURRENT_BINARY_DIR}//: &&
    ${HTLATEX} ${DOCUMENTATIONSRC}/documentation.tex
    "${DOCUMENTATIONSRC}/styling.cfg,html,3,next,NoFonts"
    WORKING_DIRECTORY ${DOCUMENTATION}/html )
@@ -64,7 +66,7 @@ MARK_AS_ADVANCED(BIBTEX)
 
 # PDF GENERATION ==============================================================
 add_custom_target(dwarf-P-cloudMicrophysics-IFSScheme-documentation-pdf
-   export TEXINPUTS=${CMAKE_SOURCE_DIR}//: &&
+   export TEXINPUTS=${DOCUMENTATIONSRC}//:${CMAKE_CURRENT_BINARY_DIR}//: &&
    ${PDFLATEX} --output-directory ${DOCUMENTATION} ${DOCUMENTATIONSRC}/documentation.tex
    COMMAND TEXMFOUTPUT=${DOCUMENTATION} ${BIBTEX} ${DOCUMENTATION}/documentation.aux
    COMMAND export TEXINPUTS=${CMAKE_SOURCE_DIR}//: &&
