@@ -1,7 +1,6 @@
-Dwarf-P-cloudMicrophysics-IFSScheme
------------------------------------
+# Dwarf-P-cloudMicrophysics-IFSScheme
+
 Contact: Michael Lange (michael.lange@ecmwf.int),
-Sami Saarinen (sami.saarinen@ecmwf.int), 
 Willem Deconinck (willem.deconinck@ecmwf.int)
 
 Dwarf-P-cloudMicrophysics-IFSScheme is intended to test the cloud micro physics.
@@ -13,20 +12,20 @@ The code is written in Fortran 2003 and it has been tested using the various com
     PGI.
     INTEL. 
 
-This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands 
+This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands
 OpenMP directives. Fortran must be at least level F2003.
 
 Inside the dwarf directory you can find some example of outputs inside the example-outputs/ directory.
 
-In addition, to run the dwarf it is necessary to use an input file that can be found inside the config-files/ 
+In addition, to run the dwarf it is necessary to use an input file that can be found inside the config-files/
 directory winthin the dwarf folder.
 
-License
--------
-dwarf-P-cloudMicrophysics-IFSScheme is distributed under the Apache License Version 2.0. See LICENSE file for details.
+## License
 
-Prototypes available
---------------------
+Dwarf-P-cloudMicrophysics-IFSScheme is distributed under the Apache License Version 2.0. See [LICENSE](LICENSE) file for details.
+
+## Prototypes available
+
 - **dwarf-P-cloudMicrophysics-IFSScheme**: The original cloud scheme
   from IFS that is naturally suited to host-type machines and
   optimized on the Cray system at ECMWF.
@@ -59,12 +58,13 @@ Prototypes available
   multi-dimensional temporaries have been declared explicitly at the
   driver level.
 
-Download and Installation
--------------------------
+## Download and Installation
+
 The preferred method to install the CLOUDSC dwarf uses the bundle
 definition shipped in the main repository. For this please
-```
-git clone ssh://git@git.ecmwf.int/escape/dwarf-p-cloudmicrophysics-ifsscheme.git cloudsc_bundle
+
+```sh
+git clone https://github.com/ecmwf-ifs/dwarf-P-cloudMicrophysics-IFSScheme.git cloudsc_bundle
 cd cloudsc_bundle
 <git checkout develop>  # For the latest version please use the `develop` branch
 
@@ -72,12 +72,13 @@ cd cloudsc_bundle
 module load boost
 module load cmake
 ```
+
 Then simply install the bundle via:
-```
+
+```sh
 ./cloudsc-bundle create  # Checks out dependency packages
 ./cloudsc-bundle build [--build-type=debug|bit|release] [--arch=$PWD/arch/ecmwf/machine/compiler/version/env.sh]
 ```
-
 
 The individual prototype variants of the dwarf are managed as ECBuild features
 and can be enable or disabled via `--cloudsc-<feature>=[ON|OFF]` arguments to
@@ -93,7 +94,8 @@ has proven difficult with certain compiler toolchains.
 
 The GPU-enabled versions of the dwarf are by default disabled. To
 enable them use the `--with-gpu` flag. For example:
-```
+
+```sh
 ./cloudsc-bundle create  # Checks out dependency packages
 ./cloudsc-bundle build --clean --with-gpu --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
 ```
@@ -102,7 +104,8 @@ enable them use the `--with-gpu` flag. For example:
 
 Optionally, dwarf-cloudsc-fortran and the GPU versions can be built with
 MPI support by providing the `--with-mpi` flag. For example on volta:
-```
+
+```sh
 ./cloudsc-bundle create
 ./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
 ```
@@ -117,7 +120,7 @@ When running with multiple GPUs each rank needs to be assigned a different
 device. This can be achieved using the `CUDA_VISIBLE_DEVICES` environment
 variable:
 
-```
+```sh
 mpirun -np 2 bash -c "CUDA_VISIBLE_DEVICES=\${OMPI_COMM_WORLD_RANK} bin/dwarf-cloudsc-gpu-claw 1 163840 8192"
 ```
 
@@ -130,10 +133,12 @@ Please note : the hdf5 installation needs to have the f03 interfaces installed.
 
 The original input is provided as raw Fortran binary in prototype1, but
 input and reference data can be regenerated from this variant by running
-```
+
+```sh
 CLOUDSC_WRITE_INPUT=1 ./bin/dwarf-P-cloudMicrophysics-IFSScheme 1 100 100
 CLOUDSC_WRITE_REFERENCE=1 ./bin/dwarf-P-cloudMicrophysics-IFSScheme 1 100 100
 ```
+
 Note that this is only available via Serialbox at the moment. Updates to HDF5
 input or reference data have to be done via manual conversion.
 
@@ -144,28 +149,32 @@ Isambard. A set of arch and toolchain files and detailed installation
 and run instructions are provided
 [here](https://confluence.ecmwf.int/display/~nabr/3rd+Isambard+Hackathon).
 
-Running and testing
--------------------
+## Running and testing
 
 The different prototype variants of the dwarf create different binaries that all behave similar.
 The basic three arguments define (in this order):
-* Number of OpenMP threads
-* Size of overall working set in columns
-* Block size (NPROMA) in columns
+
+- Number of OpenMP threads
+- Size of overall working set in columns
+- Block size (NPROMA) in columns
 
 An example:
-```
+
+```sh
 cd build
 ./bin/dwarf-P-cloudMicrophysics-IFSScheme 4 16384 32  # The original
 ./bin/dwarf-cloudsc-fortran 4 16384 32   # The cleaned-up Fortran
 ./bin/dwarf-cloudsc-c 4 16384 32   # The standalone C version
 ```
+
 On the ATOS TEMS system, a high-watermark run on a single socket can be performed as follows:
-```
+
+```sh
 export OMP_NUM_THREADS=64
 OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS ./bin/dwarf-cloudsc-fortran $OMP_NUM_THREADS 163840 32
 ```
-For a build with the intel 2021.1.1 compiler, performance of ~74 GF is achieved. 
+
+For a build with the intel 2021.1.1 compiler, performance of ~74 GF is achieved.
 
 ### Loki transformations for CLOUDSC
 
@@ -183,7 +192,8 @@ _Please note that the in-house "volta" machine needs some manual workarounds for
 
 Once Loki and CLAW are installed and activated via `source loki-activate`,
 the following build flags enable the demonstrator build targets:
-```
+
+```sh
 # For general use on workstations with GNU
 # Please note that OpenACC needs to be disable with GNU,
 # since CLAW-generated code currently does not comply with GNU.
@@ -194,32 +204,35 @@ the following build flags enable the demonstrator build targets:
 ```
 
 The following Loki modes are included in the dwarf, each with a bespoke demonstrator build:
-* **cloudsc-loki-idem**: "Idempotence" mode that performs a full
+
+- **cloudsc-loki-idem**: "Idempotence" mode that performs a full
   parse-unparse cycle of the kernel and performs various housekeeping
   transformations, including the driver-level source injection
   mechanism currently facilitated by Loki.
-* **cloudsc-loki-sca**: Pure single-column mode that strips all horizontal
+- **cloudsc-loki-sca**: Pure single-column mode that strips all horizontal
   vector loops from the kernel and introduces an outer "column-loop"
   at the driver level.
-* **cloudsc-loki-claw-cpu**: Same as SCA, but also adds the necessary CLAW
+- **cloudsc-loki-claw-cpu**: Same as SCA, but also adds the necessary CLAW
   annotations. The resulting cloudsc.claw.F90 file is then processed
   by CLAW to re-insert vector loops for optimal CPU execution.
-* **cloudsc-loki-claw-gpu**: Creates the same CLAW-ready kernel file, but
+- **cloudsc-loki-claw-gpu**: Creates the same CLAW-ready kernel file, but
   triggers the GPU-specific optimizations in the CLAW compiler to
   insert OpenACC-offload instructions in the driver and an OpenACC
   parallel loop inside the kernel for each block. This needs to be run
   with large block sizes (eg. NPROMA=1024-8192).
-* **cloudsc-loki-c**: A prototype C transpilation pipeline that converts
+- **cloudsc-loki-c**: A prototype C transpilation pipeline that converts
   the kernel to C and calls it via iso_c_bindings interfaces from the
   driver.
 
 #### A note on frontends
+
 Loki currently supports three frontends to parse the Fortran source code:
-* [FParser](https://github.com/stfc/fparser) (`loki-frontend=fp`):
+
+- [FParser](https://github.com/stfc/fparser) (`loki-frontend=fp`):
   The preferred default; developed by STFC for PsyClone.
-* [OMNI](https://github.com/omni-compiler/omni-compiler) frontend (`loki-frontend=omni`):
+- [OMNI](https://github.com/omni-compiler/omni-compiler) frontend (`loki-frontend=omni`):
   Generates the same AST as used by CLAW.
-* [OFP](https://github.com/OpenFortranProject/open-fortran-parser),
+- [OFP](https://github.com/OpenFortranProject/open-fortran-parser),
   a Python wrapper around the ROSE frontend (`loki-frontend=ofp`):
   Supported, but bugged in some places and slow; use with care.
 
@@ -230,6 +243,7 @@ the OMNI frontend. These are stored in the source under
 `src/cloudsc_loki/xmod`.
 
 #### A note on accuracy in Loki variants
+
 The original CLOUDSC kernel contains a bug that forces the use of a single
 precision constant for an exponential computation. This has been corrected
 in the Loki-specific variants, resulting in small deviations in the final
