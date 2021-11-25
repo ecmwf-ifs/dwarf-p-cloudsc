@@ -9,8 +9,8 @@ cmake : >
 projects :
 
     - ecbuild :
-        git     : ${BITBUCKET}/escape/ecbuild
-        version : develop
+        git     : https://github.com/ecmwf/ecbuild 
+        version : 3.6.4 
         bundle  : false
 
     - serialbox :
