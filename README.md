@@ -21,6 +21,9 @@ Inside the dwarf directory you can find some example of outputs inside the examp
 In addition, to run the dwarf it is necessary to use an input file that can be found inside the config-files/ 
 directory winthin the dwarf folder.
 
+License
+-------
+dwarf-P-cloudMicrophysics-IFSScheme is distributed under the Apache License Version 2.0. See LICENSE file for details.
 
 Prototypes available
 --------------------
