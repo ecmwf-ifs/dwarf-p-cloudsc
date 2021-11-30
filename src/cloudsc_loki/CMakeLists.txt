@@ -130,6 +130,7 @@ if( HAVE_CLOUDSC_LOKI )
             XMOD ${XMOD_DIR}
             SOURCE loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
             OUTPUT loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
+            DEPENDS loki-claw-cpu/cloudsc.claw.cpu.F90
         )
 
         ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-cpu
@@ -183,6 +184,7 @@ if( HAVE_CLOUDSC_LOKI )
             XMOD ${XMOD_DIR}
             SOURCE loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
             OUTPUT loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
+            DEPENDS loki-claw-gpu/cloudsc.claw.gpu.F90
         )
 
         ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-gpu
