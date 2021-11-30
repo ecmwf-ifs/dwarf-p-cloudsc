@@ -25,7 +25,7 @@ projects :
 
     - loki :
         git     : ${BITBUCKET}/rdx/loki
-        version : nabr-cmake-install
+        version : nabr-cmake-functions
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
@@ -71,7 +71,7 @@ options :
         help  : Disable CLAW-based source-to-source transformations
         cmake : >
             ENABLE_CLOUDSC_LOKI_CLAW=OFF
-            ENABLE_LOKI_CLAW=OFF
+            LOKI_ENABLE_CLAW=OFF
 
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations
