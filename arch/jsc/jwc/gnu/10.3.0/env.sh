@@ -24,7 +24,7 @@ module_unload CMake
 # Load modules
 module_load CMake/3.18.0
 module_load GCC/10.3.0
-module_load ParaStationMPI/5.4.9-1
+module_load ParaStationMPI/5.4.10-1
 module_load Boost/1.74.0
 module_load HDF5/1.10.6
 module_load Python/3.8.5
@@ -37,4 +37,3 @@ ulimit -S -s unlimited
 if [[ -n "$tracing_" ]]; then set -x; else set +x; fi
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"
-export PSP_OPENIB=1 PSP_UCP=0
