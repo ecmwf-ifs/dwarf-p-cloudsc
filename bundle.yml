@@ -29,6 +29,7 @@ projects :
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
+            LOKI_ENABLE_NO_INSTALL=ON
 
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
@@ -59,13 +60,15 @@ options :
 
     - with-loki :
         help  : Enable Loki source-to-source transformations
-        cmake : ENABLE_CLOUDSC_LOKI=ON
+        cmake : >
+            ENABLE_CLOUDSC_LOKI=ON
+            ENABLE_CLOUDSC_LOKI_CLAW=ON
+            LOKI_ENABLE_NO_INSTALL=OFF
 
     - without-loki-install :
         help  : Skip installation of Loki (Requires Loki to be on the PATH)
         cmake : >
-            BUILD_loki=OFF
-            CMAKE_DISABLE_FIND_PACKAGE_loki=TRUE
+            LOKI_ENABLE_NO_INSTALL=ON
 
     - without-claw :
         help  : Disable CLAW-based source-to-source transformations
