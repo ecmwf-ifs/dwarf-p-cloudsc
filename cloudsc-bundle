@@ -45,7 +45,7 @@ if ! command_exists ${BOOTSTRAPPED} ; then
         git clone ${BITBUCKET}/escape/ecbundle.git ${BUNDLE_DIR}/ecbundle
         ( cd ${BUNDLE_DIR}/ecbundle && git checkout ${ecbundle_VERSION} )
     fi
-    export PATH=${BUNDLE_DIR}/ecbundle:${PATH}
+    export PATH=${BUNDLE_DIR}/ecbundle/bin:${PATH}
 fi
 
 ${BOOTSTRAPPED} "$@"
