@@ -109,7 +109,7 @@ CONTAINS
     POWER_COUNT = 0_JPIB
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
-1003 format(5x,'NUMPROC=',i0', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
+1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
     if (irank == 0) then
       write(0,1003) NUMPROC,NUMOMP,NGPTOTG,NPROMA,NGPBLKS
     end if
