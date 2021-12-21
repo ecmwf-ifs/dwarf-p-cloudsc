@@ -28,13 +28,15 @@ module_unload gnu
 module_unload ecbuild
 module_unload openmpi
 module_unload hdf5
+module_unload python3
 
 # Load modules
 module_load gnu/7.3.0
 module_load boost/1.61.0
-module_load cmake/3.15.0
+module_load cmake/3.19.5
 module_load openmpi/4.0.3
 module_load hdf5/1.10.6
+module_load python3/3.8.8-01
 
 set -x
 

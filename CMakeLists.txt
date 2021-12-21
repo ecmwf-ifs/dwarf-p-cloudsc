@@ -79,6 +79,8 @@ if( Serialbox_FOUND )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
 
+ecbuild_find_package( NAME loki )
+
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION
     DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF

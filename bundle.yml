@@ -23,11 +23,18 @@ projects :
             Serialbox_TARGETS_EXPORTED=TRUE
             CMAKE_CXX_EXTENSIONS=ON
 
+    - loki :
+        git     : ${BITBUCKET}/rdx/loki
+        version : nabr-cmake-install
+        require : claw-compiler ecbuild
+        cmake   : >
+            EDITABLE=ON
+
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
         dir     : $PWD
         version : develop
-        require : ecbuild
+        require : ecbuild serialbox loki
 
 options :
 
@@ -51,8 +58,13 @@ options :
         cmake : ENABLE_MPI=ON
 
     - with-loki :
-        help  : Enable Loki/CLAW source-to-source transformations
+        help  : Enable Loki source-to-source transformations
         cmake : ENABLE_CLOUDSC_LOKI=ON
+
+    - without-claw :
+        help  : Disable CLAW-based source-to-source transformations
+        cmake : >
+            ENABLE_CLOUDSC_LOKI_CLAW=OFF
 
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations

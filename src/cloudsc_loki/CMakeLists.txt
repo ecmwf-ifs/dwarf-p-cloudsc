@@ -23,6 +23,7 @@ if( HAVE_CLOUDSC_LOKI )
     set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
 
     set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
+    set( ENABLE_CLOUDSC_LOKI_CLAW ON CACHE STRING "Enable Loki/CLAW source-to-source transformations" )
 
     # OFP frontend cannot deal with statement functions, so we toggle them here
     set( CLOUDSC_DEFINE_STMT_FUNC "" )
@@ -49,7 +50,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=idem frontend=${LOKI_FRONTEND}"
+        COMMENT "[Loki] Pre-processing: mode=idem frontend=${LOKI_FRONTEND}"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem
@@ -80,7 +81,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=sca frontend=${LOKI_FRONTEND}"
+        COMMENT "[Loki] Pre-processing: mode=sca frontend=${LOKI_FRONTEND}"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-sca
@@ -101,44 +102,45 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (CPU layout and OpenMP)  ##
     ####################################################
-    add_custom_command(
-        OUTPUT loki-claw-cpu/cloudsc.claw.cpu.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
-        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
-        COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
-                      --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-                      --path ${CMAKE_CURRENT_SOURCE_DIR}
-                      --header ${COMMON_MODULE}/yomphyder.F90
-                      --cpp --include ${COMMON_INCLUDE}
-                      --xmod ${XMOD_DIR}
-                      --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
-        # We purposefully suppress CLAWs insertion of OpenMP loops,
-	# as their are already present in the outer driver.
-        COMMAND clawfc -w 132 --target=cpu --directive=none
-	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
-                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o loki-claw-cpu/cloudsc.claw.cpu.F90
-                      loki-claw-cpu/cloudsc.claw.F90
-        COMMAND clawfc -w 132 --target=cpu --directive=none
-	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
-                      -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
-                      -o loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
-                      loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=claw-cpu frontend=${LOKI_FRONTEND}"
-    )
+    if( ENABLE_CLOUDSC_LOKI_CLAW )
+        add_custom_command(
+            OUTPUT loki-claw-cpu/cloudsc.claw.cpu.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
+            COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
+            COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
+                        --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+                        --path ${CMAKE_CURRENT_SOURCE_DIR}
+                        --header ${COMMON_MODULE}/yomphyder.F90
+                        --cpp --include ${COMMON_INCLUDE}
+                        --xmod ${XMOD_DIR}
+                        --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
+            # We purposefully suppress CLAWs insertion of OpenMP loops,
+            # as their are already present in the outer driver.
+            COMMAND clawfc -w 132 --target=cpu --directive=none
+                    --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
+                        -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                        -o loki-claw-cpu/cloudsc.claw.cpu.F90
+                        loki-claw-cpu/cloudsc.claw.F90
+            COMMAND clawfc -w 132 --target=cpu --directive=none
+                    --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
+                        -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
+                        -o loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
+                        loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        COMMENT "[Loki] Pre-processing: mode=claw-cpu frontend=${LOKI_FRONTEND}"
+        )
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-cpu
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
-            loki-claw-cpu/cloudsc.claw.cpu.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE cloudsc-common-lib )
-    if( TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE OpenMP::OpenMP_Fortran )
+        ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-cpu
+            SOURCES
+                dwarf_cloudsc.F90
+                loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
+                loki-claw-cpu/cloudsc.claw.cpu.F90
+            DEFINITIONS ${CLOUDSC_DEFINITIONS}
+        )
+        target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE cloudsc-common-lib )
+        if( TARGET OpenMP::OpenMP_Fortran )
+            target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE OpenMP::OpenMP_Fortran )
+        endif()
     endif()
-
 
     ####################################################
     ##  CLAW-GPU mode:                                ##
@@ -148,46 +150,47 @@ if( HAVE_CLOUDSC_LOKI )
     add_custom_command(
         OUTPUT loki-claw-gpu/cloudsc.claw.gpu.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
         COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
-	# Uses Loki-frontend CPP to switch to statement function variant again,
-	# but suppresses inlining of stmt funcs by omitting `--include`
+        # Uses Loki-frontend CPP to switch to statement function variant again,
+        # but suppresses inlining of stmt funcs by omitting `--include`
         COMMAND loki-transform.py convert --mode claw --frontend ${LOKI_FRONTEND}
                       --config ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --cpp --include ${COMMON_INCLUDE}
-		      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
-      	              --data-offload --remove-openmp
+                      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+                      --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
         COMMAND clawfc -w 132 --target=gpu --directive=openacc
-	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
+                      --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                       -o loki-claw-gpu/cloudsc.claw.gpu.F90
                       loki-claw-gpu/cloudsc.claw.F90
         COMMAND clawfc -w 132 --target=gpu --directive=openacc
-	              --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
+                      --model-config=${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
                       -I ${COMMON_INCLUDE} -J ${XMOD_DIR}
                       -o loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
                       loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=claw-gpu frontend=${LOKI_FRONTEND}"
+        COMMENT "[Loki] Pre-processing: mode=claw-gpu frontend=${LOKI_FRONTEND}"
     )
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-gpu
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
-            loki-claw-gpu/cloudsc.claw.gpu.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    if( TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenMP::OpenMP_Fortran )
-    endif()
-    if( TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib-static )
-    else()
-        target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
+        ecbuild_add_executable( TARGET dwarf-cloudsc-loki-claw-gpu
+            SOURCES
+                dwarf_cloudsc.F90
+                loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
+                loki-claw-gpu/cloudsc.claw.gpu.F90
+            DEFINITIONS ${CLOUDSC_DEFINITIONS}
+        )
+        if( TARGET OpenMP::OpenMP_Fortran )
+            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenMP::OpenMP_Fortran )
+        endif()
+        if( TARGET OpenACC::OpenACC_Fortran )
+            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenACC::OpenACC_Fortran )
+            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib-static )
+        else()
+            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
+        endif()
     endif()
 
 
@@ -204,12 +207,12 @@ if( HAVE_CLOUDSC_LOKI )
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --cpp --include ${COMMON_INCLUDE}
-		      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+                      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
                       --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=scc frontend=${LOKI_FRONTEND}"
+        COMMENT "[Loki] Pre-processing: mode=scc frontend=${LOKI_FRONTEND}"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
@@ -246,12 +249,12 @@ if( HAVE_CLOUDSC_LOKI )
                       --path ${CMAKE_CURRENT_SOURCE_DIR}
                       --header ${COMMON_MODULE}/yomphyder.F90
                       --cpp --include ${COMMON_INCLUDE}
-		      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+                      --define CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
                       --data-offload --remove-openmp
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=scc-hoist frontend=${LOKI_FRONTEND}"
+        COMMENT "[Loki] Pre-processing: mode=scc-hoist frontend=${LOKI_FRONTEND}"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-hoist
@@ -276,7 +279,7 @@ if( HAVE_CLOUDSC_LOKI )
     # C-transpilation mode for generating vectorized C host code (experimental!)
     ##############################################################################
     add_custom_command(
-	OUTPUT loki-c/cloudsc_driver_loki_mod.c.F90
+        OUTPUT loki-c/cloudsc_driver_loki_mod.c.F90
                loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
                loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
                loki-c/yoecldp_fc.F90
@@ -295,7 +298,7 @@ if( HAVE_CLOUDSC_LOKI )
                       --xmod ${XMOD_DIR}
                       --out-path ${CMAKE_CURRENT_BINARY_DIR}/loki-c
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
-	COMMENT "[Loki] Pre-processing: mode=transpile frontend=${LOKI_FRONTEND}"
+        COMMENT "[Loki] Pre-processing: mode=transpile frontend=${LOKI_FRONTEND}"
     )
 
     # Define the CLAW-CPU build target for this variant
