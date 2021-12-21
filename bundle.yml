@@ -62,7 +62,6 @@ options :
         help  : Enable Loki source-to-source transformations
         cmake : >
             ENABLE_CLOUDSC_LOKI=ON
-            ENABLE_CLOUDSC_LOKI_CLAW=ON
             LOKI_ENABLE_NO_INSTALL=OFF
 
     - without-loki-install :

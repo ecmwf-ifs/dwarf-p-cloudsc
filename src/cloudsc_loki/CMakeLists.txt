@@ -13,7 +13,7 @@ ecbuild_add_option( FEATURE CLOUDSC_LOKI
 )
 ecbuild_add_option( FEATURE CLOUDSC_LOKI_CLAW
     DESCRIPTION "Use CLAW-based Loki source-to-source transformations" DEFAULT ON
-    CONDITION HAVE_CLOUDSC_LOKI
+    CONDITION HAVE_CLOUDSC_LOKI AND $<TARGET_EXISTS:clawfc>
 )
 
 if( HAVE_CLOUDSC_LOKI )
