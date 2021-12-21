@@ -11,10 +11,6 @@ ecbuild_add_option( FEATURE CLOUDSC_LOKI
     DESCRIPTION "Use Loki source-to-source transformations with CLOUDSC " DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
-ecbuild_add_option( FEATURE CLOUDSC_LOKI_CLAW
-    DESCRIPTION "Use CLAW-based Loki source-to-source transformations" DEFAULT ON
-    CONDITION HAVE_CLOUDSC_LOKI AND $<TARGET_EXISTS:clawfc>
-)
 
 if( HAVE_CLOUDSC_LOKI )
 
@@ -99,7 +95,7 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (CPU layout and OpenMP)  ##
     ####################################################
-    if( HAVE_CLOUDSC_LOKI_CLAW )
+    if( TARGET clawfc )
 
         loki_transform_convert(
             MODE claw FRONTEND ${LOKI_FRONTEND} CPP
@@ -151,7 +147,7 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (GPU layout and OpenACC) ##
     ####################################################
-    if( HAVE_CLOUDSC_LOKI_CLAW )
+    if( TARGET clawfc )
 
         # Uses Loki-frontend CPP to switch to statement function variant again,
         # but suppresses inlining of stmt funcs by omitting `--include`

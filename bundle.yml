@@ -69,12 +69,6 @@ options :
         cmake : >
             LOKI_ENABLE_NO_INSTALL=ON
 
-    - without-claw :
-        help  : Disable CLAW-based source-to-source transformations
-        cmake : >
-            ENABLE_CLOUDSC_LOKI_CLAW=OFF
-            LOKI_ENABLE_CLAW=OFF
-
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations
         cmake : LOKI_FRONTEND={{value}}
