@@ -25,7 +25,8 @@ projects :
 
     - loki :
         git     : ${BITBUCKET}/rdx/loki
-        version : nabr-cmake-functions
+        version : master
+        optional: true
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
