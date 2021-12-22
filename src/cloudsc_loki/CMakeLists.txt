@@ -30,6 +30,34 @@ if( HAVE_CLOUDSC_LOKI )
       set( CLOUDSC_DEFINE_STMT_FUNC CLOUDSC_STMT_FUNC )
     endif()
 
+    if( TARGET clawfc AND ${LOKI_FRONTEND} STREQUAL "omni" )
+
+        # Ugly hack: OMNI needs the xmod-file for cloudsc.F90 to be able to
+        # parse the driver file successfully. However, the scheduler currently
+        # doesn't take this into account and fails when parsing driver before
+        # kernel file.
+        # (Note: the problem vanishes in serial builds as there the C-transpile
+        # target is built first which doesn't use the scheduler and therefore
+        # creates the necessary xmod files for us)
+        # TODO: This can be removed once the scheduler is aware of these dependencies
+        # and parses files in the right order
+
+        generate_xmod(
+            OUTPUT ${XMOD_DIR}/cloudsc.xml
+            SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
+            XMOD ${XMOD_DIR}
+        )
+
+        # Use XML files as dependencies (not xmod) as they are updated by later calls of
+        # F_Front (and thus would trigger new execution rounds)
+        set( _OMNI_DEPENDENCIES ${XMOD_DIR}/cloudsc.xml )
+
+    else()
+
+        set( _OMNI_DEPENDENCIES )
+
+    endif()
+
     ####################################################
     ##  Idempotence mode:                             ##
     ##   * Internal "do-nothing" mode for Loki debug  ##
@@ -44,7 +72,7 @@ if( HAVE_CLOUDSC_LOKI )
         XMOD ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem
@@ -74,7 +102,7 @@ if( HAVE_CLOUDSC_LOKI )
         XMOD ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         OUTPUT loki-sca/cloudsc.sca.F90 loki-sca/cloudsc_driver_loki_mod.sca.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-sca
@@ -106,7 +134,7 @@ if( HAVE_CLOUDSC_LOKI )
             XMOD ${XMOD_DIR}
             OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
             OUTPUT loki-claw-cpu/cloudsc.claw.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
         )
 
         # We purposefully suppress CLAWs insertion of OpenMP loops,
@@ -162,7 +190,7 @@ if( HAVE_CLOUDSC_LOKI )
             XMOD ${XMOD_DIR}
             OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
             OUTPUT loki-claw-gpu/cloudsc.claw.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
         )
 
         claw_compile(
@@ -219,7 +247,7 @@ if( HAVE_CLOUDSC_LOKI )
         XMOD ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
         OUTPUT loki-scc/cloudsc.scc.F90 loki-scc/cloudsc_driver_loki_mod.scc.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
@@ -260,7 +288,7 @@ if( HAVE_CLOUDSC_LOKI )
         OUTPUT
             loki-scc-hoist/cloudsc.scc_hoist.F90
             loki-scc-hoist/cloudsc_driver_loki_mod.scc_hoist.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-hoist
@@ -305,7 +333,7 @@ if( HAVE_CLOUDSC_LOKI )
             loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
             loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
             loki-c/yoecldp_fc.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     # Define the CLAW-CPU build target for this variant
