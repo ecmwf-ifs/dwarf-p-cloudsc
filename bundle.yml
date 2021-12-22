@@ -16,6 +16,7 @@ projects :
     - serialbox :
         git     : ${BITBUCKET}/escape/serialbox
         version : v2.5.4/patched
+        optional: true
         cmake   : >
             SERIALBOX_BUILD_SHARED=ON
             SERIALBOX_ENABLE_FORTRAN=ON
