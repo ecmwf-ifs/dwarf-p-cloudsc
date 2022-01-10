@@ -42,21 +42,21 @@ jobs:
             compiler_fc: gfortran-10
             caching: true
 
-          - name: linux nvhpc-21.9
-            os: ubuntu-20.04
-            compiler: nvhpc-21.9
-            compiler_cc: nvc
-            compiler_cxx: nvc++
-            compiler_fc: nvfortran
-            caching: true
+          #- name: linux nvhpc-21.9
+          #  os: ubuntu-20.04
+          #  compiler: nvhpc-21.9
+          #  compiler_cc: nvc
+          #  compiler_cxx: nvc++
+          #  compiler_fc: nvfortran
+          #  caching: true
 
-          - name : linux intel
-            os: ubuntu-20.04
-            compiler: intel-oneapi
-            compiler_cc: icc
-            compiler_cxx: icpc
-            compiler_fc: ifort
-            caching: true
+          #- name : linux intel
+          #  os: ubuntu-20.04
+          #  compiler: intel-oneapi
+          #  compiler_cc: icc
+          #  compiler_cxx: icpc
+          #  compiler_fc: ifort
+          #  caching: true
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
