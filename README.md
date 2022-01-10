@@ -1,28 +1,20 @@
-# Dwarf-P-cloudMicrophysics-IFSScheme
+# dwarf-p-cloudsc
 
-Contact: Michael Lange (michael.lange@ecmwf.int),
+`dwarf-p-cloudsc` is intended to test the CLOUDSC cloud microphysics scheme of the IFS.
+
+*This package is made available to support research collaborations and is not
+officially supported by ECMWF*
+
+## Contact
+
+Michael Lange (michael.lange@ecmwf.int),
 Willem Deconinck (willem.deconinck@ecmwf.int)
+Balthasar Reuter (balthasar.reuter@ecmwf.int),
 
-Dwarf-P-cloudMicrophysics-IFSScheme is intended to test the cloud micro physics.
+## Licence
 
-The code is written in Fortran 2003 and it has been tested using the various compilers, including:
-
-    GCC 4.8.
-    Cray 8.4.
-    PGI.
-    INTEL. 
-
-This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands
-OpenMP directives. Fortran must be at least level F2003.
-
-Inside the dwarf directory you can find some example of outputs inside the example-outputs/ directory.
-
-In addition, to run the dwarf it is necessary to use an input file that can be found inside the config-files/
-directory winthin the dwarf folder.
-
-## License
-
-Dwarf-P-cloudMicrophysics-IFSScheme is distributed under the Apache License Version 2.0. See [LICENSE](LICENSE) file for details.
+`dwarf-p-cloudsc` is distributed under the Apache Licence Version 2.0. See
+[LICENSE](LICENSE) file for details.
 
 ## Prototypes available
 
@@ -60,20 +52,24 @@ Dwarf-P-cloudMicrophysics-IFSScheme is distributed under the Apache License Vers
 
 ## Download and Installation
 
+The code is written in Fortran 2003 and it has been tested using the various compilers, including:
+
+    GCC 7.3, 9.3
+    Cray 8.7.7
+    NVHPC 20.9
+    Intel
+
+This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands
+OpenMP directives. Fortran must be at least level F2003.
+
+Inside the dwarf directory you can find some example of outputs inside the example-outputs/ directory.
+
+In addition, to run the dwarf it is necessary to use an input file that can be found inside the config-files/
+directory winthin the dwarf folder.
+
 The preferred method to install the CLOUDSC dwarf uses the bundle
 definition shipped in the main repository. For this please
-
-```sh
-git clone https://github.com/ecmwf-ifs/dwarf-P-cloudMicrophysics-IFSScheme.git cloudsc_bundle
-cd cloudsc_bundle
-<git checkout develop>  # For the latest version please use the `develop` branch
-
-# On ECMWF workstations load boost and cmake
-module load boost
-module load cmake
-```
-
-Then simply install the bundle via:
+install the bundle via:
 
 ```sh
 ./cloudsc-bundle create  # Checks out dependency packages
@@ -151,8 +147,8 @@ and run instructions are provided
 
 ## Running and testing
 
-The different prototype variants of the dwarf create different binaries that all behave similar.
-The basic three arguments define (in this order):
+The different prototype variants of the dwarf create different binaries that
+all behave similarly. The basic three arguments define (in this order):
 
 - Number of OpenMP threads
 - Size of overall working set in columns
@@ -167,7 +163,7 @@ cd build
 ./bin/dwarf-cloudsc-c 4 16384 32   # The standalone C version
 ```
 
-On the ATOS TEMS system, a high-watermark run on a single socket can be performed as follows:
+On the Atos system, a high-watermark run on a single socket can be performed as follows:
 
 ```sh
 export OMP_NUM_THREADS=64
