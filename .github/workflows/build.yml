@@ -17,10 +17,10 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{matrix.name}}
+    name: Test on ${{ matrix.arch }}
     
     # The type of runner that the job will run on
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
   
     strategy:
       fail-fast: false  # false: try to complete all jobs
