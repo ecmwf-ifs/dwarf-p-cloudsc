@@ -26,37 +26,13 @@ jobs:
       fail-fast: false  # false: try to complete all jobs
       
       matrix:
-        build_type: [BIT]
-        name:
-          - linux gnu-10
-          #- linux nvhpc-21.9
-          #- linux intel
+      
+        arch:
+          - github/ubuntu/gnu/9.3.0
           
-        include:
-
-          - name: linux gnu-10
-            os: ubuntu-20.04
-            compiler: gnu-10
-            compiler_cc: gcc-10
-            compiler_cxx: g++-10
-            compiler_fc: gfortran-10
-            caching: true
-
-          #- name: linux nvhpc-21.9
-          #  os: ubuntu-20.04
-          #  compiler: nvhpc-21.9
-          #  compiler_cc: nvc
-          #  compiler_cxx: nvc++
-          #  compiler_fc: nvfortran
-          #  caching: true
-
-          #- name : linux intel
-          #  os: ubuntu-20.04
-          #  compiler: intel-oneapi
-          #  compiler_cc: icc
-          #  compiler_cxx: icpc
-          #  compiler_fc: ifort
-          #  caching: true
+        io_library_flag: ['', '--with-hdf5']  # Switch between Serialbox and HDF5
+        
+        mpi_flag: ['', '--with-mpi']
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -69,10 +45,7 @@ jobs:
         
       # Build the targets
       - name: Bundle build
-        run: ./cloudsc-bundle build
-        
-      # Run the binary as a sanity check
-      - name: Execute
         run: |
-          cd build
-          bin/dwarf-cloudsc-fortran
+          ./cloudsc-bundle build --retry-verbose \
+          --arch=arch/${{ matrix.arch }} \
+          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }}
