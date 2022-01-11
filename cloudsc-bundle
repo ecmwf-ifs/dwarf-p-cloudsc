@@ -34,15 +34,11 @@ shift
 
 BUNDLE_DIR="$( cd $( dirname "${BASH_SOURCE[0]}" ) && pwd -P )"
 
-if [[ -z "${BITBUCKET}" ]]; then
-   export BITBUCKET=ssh://git@git.ecmwf.int
-fi
-
 # Download ecbundle scripts if not already available
 command_exists () { type "$1" &> /dev/null ; }
 if ! command_exists ${BOOTSTRAPPED} ; then
     if [[ ! -d ${BUNDLE_DIR}/ecbundle ]]; then
-        git clone ${BITBUCKET}/escape/ecbundle.git ${BUNDLE_DIR}/ecbundle
+        git clone https://github.com/ecmwf/ecbundle.git ${BUNDLE_DIR}/ecbundle
         ( cd ${BUNDLE_DIR}/ecbundle && git checkout ${ecbundle_VERSION} )
     fi
     export PATH=${BUNDLE_DIR}/ecbundle/bin:${PATH}
