@@ -11,6 +11,7 @@ exit_code=0
 targets=(dwarf-P-cloudMicrophysics-IFSScheme)
 
 # Without HDF5/Serialbox, no other variants are currently available
+# FIXME: Add Serialbox builds and add dwarf-cloudsc-c
 if [[ "$io_library_flag" == "--with-hdf5" ]]
 then
   targets+=(dwarf-cloudsc-fortran)
@@ -24,7 +25,7 @@ fi
 #
 # Verify each target exists
 #
-echo "::notice title=Targets::Expected targets:\n${targets[@]}"
+echo "::debug::Expected targets: ${targets[@]}"
 
 for target in "${targets[@]}"
 do
@@ -43,7 +44,8 @@ if [[ ${#targets[@]} -lt $(ls build/bin | wc -l) ]]
 then
   exit_code=1
   echo "::error::Additional targets found in build/bin"
-  echo "::error::$(ls build/bin)"
+  echo "::error::Expected targets: ${targets[@]}"
+  echo "::error::Found targets: $(ls -1 build/bin | tr '\n' ' ')"
 fi
 
 exit $exit_code
