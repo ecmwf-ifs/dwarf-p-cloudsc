@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+set -x
 
 exit_code=0
 
@@ -22,7 +24,7 @@ fi
 #
 # Verify each target exists
 #
-echo "::notice title=Targets::Expected targets: $targets"
+echo "::notice title=Targets::Expected targets:\n${targets[@]}"
 
 for target in "${targets[@]}"
 do
