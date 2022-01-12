@@ -22,13 +22,14 @@ fi
 #
 # Verify each target exists
 #
+echo "::notice title=Targets::Expected targets: $targets"
 
 for target in "${targets[@]}"
 do
   if [[ ! -f build/bin/$target ]]
   then
     exit_code=1
-    echo "Missing target $target"
+    echo "::error::Missing target: $target"
   fi
 done
 
@@ -39,9 +40,8 @@ done
 if [[ ${#targets[@]} -lt $(ls build/bin | wc -l) ]]
 then
   exit_code=1
-  echo "Additional targets found in build/bin"
-  echo "Expected: $targets"
-  echo "Found: $(ls build/bin)"
+  echo "::error::Additional targets found in build/bin"
+  echo "::error::$(ls build/bin)"
 fi
 
 exit $exit_code
