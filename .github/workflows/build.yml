@@ -38,6 +38,12 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+
+      # Sets-up environment and installs required packages
+      - name: Environment setup
+        run: |
+          [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev
+          [[ "${{ matrix.io_library_flag }}" == "--with-hdf5" ]] && sudo apt install libhdf5-dev
       
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
