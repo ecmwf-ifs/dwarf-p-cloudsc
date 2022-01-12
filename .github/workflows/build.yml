@@ -42,8 +42,8 @@ jobs:
       # Sets-up environment and installs required packages
       - name: Environment setup
         run: |
-          [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev
-          [[ "${{ matrix.io_library_flag }}" == "--with-hdf5" ]] && sudo apt install libhdf5-dev
+          [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
+          [[ "${{ matrix.io_library_flag }}" == "--with-hdf5" ]] && sudo apt install libhdf5-dev || true
       
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
