@@ -9,11 +9,11 @@ exit_code=0
 targets=(dwarf-P-cloudMicrophysics-IFSScheme)
 
 # Without HDF5/Serialbox, no other variants are currently available
-if [[ "${{ io_library_flag }}" == "--with-hdf5" ]]
+if [[ "$io_library_flag" == "--with-hdf5" ]]
 then
   targets+=(dwarf-cloudsc-fortran)
 
-  if [[ "${{ gpu_flag }}" == "--with-gpu" ]]
+  if [[ "$gpu_flag" == "--with-gpu" ]]
   then
     targets+=(dwarf-cloudsc-gpu-claw dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist)
   fi
