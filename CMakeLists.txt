@@ -12,7 +12,7 @@ cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 find_package( ecbuild REQUIRED )
 
 # define the project
-project(dwarf-P-cloudMicrophysics-IFSScheme LANGUAGES C Fortran )
+project( dwarf-p-cloudsc LANGUAGES C Fortran )
 
 include( cmake/compat.cmake )
 
@@ -105,7 +105,7 @@ if(HAVE_DOCS)
 endif()
 
 # finalize
-ecbuild_install_project(NAME dwarf-P-cloudMicrophysics-IFSScheme)
+ecbuild_install_project(NAME dwarf-p-cloudsc)
 
 # print summary
 ecbuild_print_summary()
