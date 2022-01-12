@@ -57,8 +57,8 @@ jobs:
       - name: Bundle build
         run: |
           ./cloudsc-bundle build --retry-verbose \
-          --arch=arch/${{ matrix.arch }} \
-          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }}
+          --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
+          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }}
 
       # Verify targets exist
       - name: Verify targets
