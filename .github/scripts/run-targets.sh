@@ -2,6 +2,9 @@
 set -euo pipefail
 set -x
 
+# These targets don't have an MPI-parallel driver routine
+non_mpi_targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-c)
+
 exit_code=0
 cd build
 
@@ -11,7 +14,7 @@ cd build
 
 for target in $(ls bin)
 do
-  if [[ "$mpi_flag" == "--with-mpi" ]]
+  if [[ "$mpi_flag" == "--with-mpi" && ! " ${non_mpi_targets[*]} " =~ " $target " ]]
   then
     # Two ranks with one thread each
     mpirun -np 2 bin/$target 1
