@@ -32,7 +32,7 @@ INTEGER(KIND=JPIM) :: IARGS, LENARG, JARG, I
 
 INTEGER(KIND=JPIM) :: NUMOMP   = 1     ! Number of OpenMP threads for this run
 INTEGER(KIND=JPIM) :: NGPTOTG  = 16384 ! Number of grid points (as read from command line)
-INTEGER(KIND=JPIM) :: NPROMA   = 32    ! NPROMA blocking factor (currently active)
+INTEGER(KIND=JPIM) :: NPROMA   = 64   ! NPROMA blocking factor (currently active)
 INTEGER(KIND=JPIM) :: NGPTOT           ! Local number of grid points
 
 TYPE(CLOUDSC_GLOBAL_STATE) :: GLOBAL_STATE
