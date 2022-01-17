@@ -1,4 +1,6 @@
 # dwarf-p-cloudsc
+
+[![license](https://img.shields.io/github/license/ecmwf-ifs/dwarf-p-cloudsc)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![build](https://github.com/ecmwf-ifs/dwarf-p-cloudsc/actions/workflows/build.yml/badge.svg)](https://github.com/ecmwf-ifs/dwarf-p-cloudsc/actions/workflows/build.yml)
 
 `dwarf-p-cloudsc` is intended to test the CLOUDSC cloud microphysics scheme of the IFS.
