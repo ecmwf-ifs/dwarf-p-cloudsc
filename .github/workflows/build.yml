@@ -68,9 +68,10 @@ jobs:
           gpu_flag: ${{ matrix.gpu_flag }}
         run: .github/scripts/verify-targets.sh
 
-      # Run CPU targets
+      # Run double-precision targets
+      # (Mind the exclusions inside the script!)
       - name: Run targets
         env:
           mpi_flag: ${{ matrix.mpi_flag }}
-        if: ${{ matrix.prec_flag == '' && matrix.gpu_flag == '' }}
+        if: ${{ matrix.prec_flag == '' }}
         run: .github/scripts/run-targets.sh
