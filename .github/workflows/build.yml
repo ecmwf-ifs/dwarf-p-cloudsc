@@ -67,3 +67,9 @@ jobs:
           io_library_flag: ${{ matrix.io_library_flag }}
           gpu_flag: ${{ matrix.gpu_flag }}
         run: .github/scripts/verify-targets.sh
+
+      # Run targets
+      - name: Run targets
+        env:
+          mpi_flag: ${{ matrix.mpi_flag }}
+        run: .github/scripts/run-targets.sh
