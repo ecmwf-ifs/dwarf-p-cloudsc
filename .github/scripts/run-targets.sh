@@ -16,11 +16,11 @@ for target in $(ls bin)
 do
   if [[ "$mpi_flag" == "--with-mpi" && ! " ${non_mpi_targets[*]} " =~ " $target " ]]
   then
-    # Two ranks with one thread each
-    mpirun -np 2 bin/$target 1
+    # Two ranks with one thread each, default NPROMA
+    mpirun -np 2 bin/$target 1 100
   else
-    # Default arguments
-    bin/$target
+    # Two threads, default NPROMA
+    bin/$target 2 100
   fi
   exit_code=$((exit_code + $?))
 done
