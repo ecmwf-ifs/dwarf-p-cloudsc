@@ -109,14 +109,14 @@ CONTAINS
     ! Local copy of cloud parameters for offload
     TYPE(TECLDP) :: LOCAL_YRECLDP
 
-    ! XXX: pass module global variable as argument
+    ! XXX: pass global module variable as argument to the kernel
     REAL(KIND=JPRB) :: RG_, RD_, RCPD_, RETV_, RLVTT_, RLSTT_, RLMLT_, RTT_,   &
          RV_, R2ES_, R3LES_, R3IES_, R4LES_, R4IES_, R5LES_, R5IES_, R5ALVCP_, &
          R5ALSCP_, RALVDCP_, RALSDCP_, RALFDCP_, RTWAT_, RTICE_, RTICECU_,     &
          RTWAT_RTICE_R_, RTWAT_RTICECU_R_, RKOOP1_, RKOOP2_
     INTEGER(KIND=JPIM) :: NCLDQV_, NCLDQL_, NCLDQR_, NCLDQI_, NCLDQS_, NCLV_
 
-    ! XXX: declare private arrays here
+    ! XXX: declare thread private arrays here
     REAL(KIND=JPRB) :: ZLCUST(NCLV)
     INTEGER(KIND=JPIM) :: IPHASE(NCLV)
     INTEGER(KIND=JPIM) :: IMELT(NCLV)
@@ -140,7 +140,7 @@ CONTAINS
     REAL(KIND=JPRB) :: ZCONVSINK(NCLV)
     REAL(KIND=JPRB) :: ZPSUPSATSRCE(NCLV)
 
-    ! XXX: arrays that were not in any acc clause
+    ! XXX: arrays that were not in any acc clause, those are block private
     REAL(KIND=JPRB) :: ZFOEALFA(NPROMA, NLEV + 1, NGPBLKS)
     REAL(KIND=JPRB) :: ZTP1(NPROMA, NLEV, NGPBLKS)
     REAL(KIND=JPRB) :: ZLI(NPROMA, NLEV, NGPBLKS), ZA(NPROMA, NLEV, NGPBLKS)
@@ -263,7 +263,7 @@ CONTAINS
         & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
         & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
         & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-        ! XXX: module global variables
+        ! XXX: global module variables
         & RG_, RD_, RCPD_, RETV_, RLVTT_, RLSTT_, RLMLT_, RTT_,   &
         & RV_, R2ES_, R3LES_, R3IES_, R4LES_, R4IES_, R5LES_, R5IES_, R5ALVCP_, &
         & R5ALSCP_, RALVDCP_, RALSDCP_, RALFDCP_, RTWAT_, RTICE_, RTICECU_,     &
@@ -273,7 +273,7 @@ CONTAINS
         & ZLCUST, IPHASE, IMELT, LLFALL, LLINDEX1, LLINDEX3, IORDER, ZQXN, &
         & ZQXFG, ZQXNM1, ZFLUXQ, ZSOLQA, ZSOLQB, ZQLHS, ZVQX, ZRATIO, ZSINKSUM, &
         & ZFALLSINK, ZFALLSRCE, ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE, &
-        ! XXX: mising block private arrays
+        ! XXX: block private arrays
         & ZFOEALFA(:,:,IBL), ZTP1(:,:,IBL), ZLI(:,:,IBL), ZA(:,:,IBL), ZAORIG(:,:,IBL), &
         & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), &
         & ZPFPLSX(:,:,:,IBL), ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), &
