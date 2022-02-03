@@ -257,7 +257,7 @@ CONTAINS
     REAL(KIND=JPRB) :: ZLDEFR
     REAL(KIND=JPRB) :: ZLDIFDT
     REAL(KIND=JPRB) :: ZDTGDPF
-    !REAL(KIND=JPRB) :: ZLCUST(JL, NCLV)
+    !REAL(KIND=JPRB) :: ZLCUST(NCLV)
     REAL(KIND=JPRB) :: ZACUST
     REAL(KIND=JPRB) :: ZMF
 
@@ -331,34 +331,34 @@ CONTAINS
     !----------------------------
     ! Arrays for new microphysics
     !----------------------------
-    !INTEGER(KIND=JPIM) :: IPHASE(JL, NCLV)
+    !INTEGER(KIND=JPIM) :: IPHASE(NCLV)
     ! marker for water phase of each species
     ! 0=vapour, 1=liquid, 2=ice
 
-    !INTEGER(KIND=JPIM) :: IMELT(JL, NCLV)
+    !INTEGER(KIND=JPIM) :: IMELT(NCLV)
     ! marks melting linkage for ice categories
     ! ice->liquid, snow->rain
 
-    !LOGICAL :: LLFALL(JL, NCLV)
+    !LOGICAL :: LLFALL(NCLV)
     ! marks falling species
     ! LLFALL=0, cloud cover must > 0 for zqx > 0
     ! LLFALL=1, no cloud needed, zqx can evaporate
 
-    !LOGICAL :: LLINDEX1(JL, NCLV)    ! index variable
-    !LOGICAL :: LLINDEX3(JL, NCLV, NCLV)    ! index variable
+    !LOGICAL :: LLINDEX1(NCLV)    ! index variable
+    !LOGICAL :: LLINDEX3(NCLV, NCLV)    ! index variable
     REAL(KIND=JPRB) :: ZMAX
     REAL(KIND=JPRB) :: ZRAT
-    !INTEGER(KIND=JPIM) :: IORDER(JL, NCLV)
+    !INTEGER(KIND=JPIM) :: IORDER(NCLV)
     ! array for sorting explicit terms
 
     !REAL(KIND=JPRB) :: ZLIQFRAC(KLON, KLEV)    ! cloud liquid water fraction: ql/(ql+qi)
     !REAL(KIND=JPRB) :: ZICEFRAC(KLON, KLEV)    ! cloud ice water fraction: qi/(ql+qi)
     !REAL(KIND=JPRB) :: ZQX(KLON, KLEV, NCLV)    ! water variables
     !REAL(KIND=JPRB) :: ZQX0(KLON, KLEV, NCLV)    ! water variables at start of scheme
-    !REAL(KIND=JPRB) :: ZQXN(JL, NCLV)    ! new values for zqx at time+1
-    !REAL(KIND=JPRB) :: ZQXFG(JL, NCLV)    ! first guess values including precip
-    !REAL(KIND=JPRB) :: ZQXNM1(JL, NCLV)    ! new values for zqx at time+1 at level above
-    !REAL(KIND=JPRB) :: ZFLUXQ(JL, NCLV)
+    !REAL(KIND=JPRB) :: ZQXN(NCLV)    ! new values for zqx at time+1
+    !REAL(KIND=JPRB) :: ZQXFG(NCLV)    ! first guess values including precip
+    !REAL(KIND=JPRB) :: ZQXNM1(NCLV)    ! new values for zqx at time+1 at level above
+    !REAL(KIND=JPRB) :: ZFLUXQ(NCLV)
     ! fluxes convergence of species (needed?)
     ! Keep the following for possible future total water variance scheme?
     !REAL(KIND=JPRB) :: ZTL(KLON,KLEV)       ! liquid water temperature
@@ -408,35 +408,35 @@ CONTAINS
     !            |   Sink of this variable
     !            |   |
     !            V   V
-    ! ZSOLQA(JL, JL,IQa,IQb)  = explicit terms
-    ! ZSOLQB(JL, JL,IQa,IQb)  = implicit terms
+    ! ZSOLQA(JL,IQa,IQb)  = explicit terms
+    ! ZSOLQB(JL,IQa,IQb)  = implicit terms
     ! Thus if ZSOLAB(JL,NCLDQL,IQV)=K where K>0 then this is
     ! a source of NCLDQL and a sink of IQV
     ! put 'magic' source terms such as PLUDE from
     ! detrainment into explicit source/sink array diagnognal
-    ! ZSOLQA(JL, NCLDQL,NCLDQL)= -PLUDE
+    ! ZSOLQA(NCLDQL,NCLDQL)= -PLUDE
     ! i.e. A positive value is a sink!????? weird...
     !-------------------------------------------------------
 
-    !REAL(KIND=JPRB) :: ZSOLQA(JL, NCLV, NCLV)    ! explicit sources and sinks
-    !REAL(KIND=JPRB) :: ZSOLQB(JL, NCLV, NCLV)
+    !REAL(KIND=JPRB) :: ZSOLQA(NCLV, NCLV)    ! explicit sources and sinks
+    !REAL(KIND=JPRB) :: ZSOLQB(NCLV, NCLV)
     ! implicit sources and sinks
     ! e.g. microphysical pathways between ice variables.
-    !REAL(KIND=JPRB) :: ZQLHS(JL, NCLV, NCLV)    ! n x n matrix storing the LHS of implicit solver
-    !REAL(KIND=JPRB) :: ZVQX(JL, NCLV)    ! fall speeds of three categories
-    !REAL(KIND=JPRB) :: ZEXPLICIT, ZRATIO(JL, NCLV), ZSINKSUM(JL, NCLV)
+    !REAL(KIND=JPRB) :: ZQLHS(NCLV, NCLV)    ! n x n matrix storing the LHS of implicit solver
+    !REAL(KIND=JPRB) :: ZVQX(NCLV)    ! fall speeds of three categories
+    !REAL(KIND=JPRB) :: ZEXPLICIT, ZRATIO(NCLV), ZSINKSUM(NCLV)
     REAL(KIND=JPRB) :: ZEXPLICIT
 
     ! for sedimentation source/sink terms
-    !REAL(KIND=JPRB) :: ZFALLSINK(JL, NCLV)
-    !REAL(KIND=JPRB) :: ZFALLSRCE(JL, NCLV)
+    !REAL(KIND=JPRB) :: ZFALLSINK(NCLV)
+    !REAL(KIND=JPRB) :: ZFALLSRCE(NCLV)
 
     ! for convection detrainment source and subsidence source/sink terms
-    !REAL(KIND=JPRB) :: ZCONVSRCE(JL, NCLV)
-    !REAL(KIND=JPRB) :: ZCONVSINK(JL, NCLV)
+    !REAL(KIND=JPRB) :: ZCONVSRCE(NCLV)
+    !REAL(KIND=JPRB) :: ZCONVSINK(NCLV)
 
     ! for supersaturation source term from previous timestep
-    !REAL(KIND=JPRB) :: ZPSUPSATSRCE(JL, NCLV)
+    !REAL(KIND=JPRB) :: ZPSUPSATSRCE(NCLV)
 
     ! Numerical fit to wet bulb temperature
     REAL(KIND=JPRB), PARAMETER :: ZTW1 = 1329.31_JPRB
@@ -512,28 +512,28 @@ CONTAINS
 #include "fcttre.func.h"
 #include "fccld.func.h"
 
-    REAL(KIND=JPRB),intent(inout) :: ZLCUST(KLON, NCLV)
-    INTEGER(KIND=JPIM),intent(inout) :: IPHASE(KLON, NCLV)
-    INTEGER(KIND=JPIM),intent(inout) :: IMELT(KLON, NCLV)
-    LOGICAL,intent(inout) :: LLFALL(KLON, NCLV)
-    LOGICAL,intent(inout) :: LLINDEX1(KLON, NCLV)
-    LOGICAL,intent(inout) :: LLINDEX3(KLON, NCLV, NCLV) !
-    INTEGER(KIND=JPIM),intent(inout) :: IORDER(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZQXN(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZQXFG(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZQXNM1(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZFLUXQ(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZSOLQA(KLON, NCLV, NCLV) !
-    REAL(KIND=JPRB),intent(inout) :: ZSOLQB(KLON, NCLV, NCLV) !
-    REAL(KIND=JPRB),intent(inout) :: ZQLHS(KLON, NCLV, NCLV) !
-    REAL(KIND=JPRB),intent(inout) :: ZVQX(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZRATIO(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZSINKSUM(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZFALLSINK(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZFALLSRCE(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZCONVSRCE(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZCONVSINK(KLON, NCLV)
-    REAL(KIND=JPRB),intent(inout) :: ZPSUPSATSRCE(KLON, NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZLCUST(NCLV)
+    INTEGER(KIND=JPIM),intent(inout) :: IPHASE(NCLV)
+    INTEGER(KIND=JPIM),intent(inout) :: IMELT(NCLV)
+    LOGICAL,intent(inout) :: LLFALL(NCLV)
+    LOGICAL,intent(inout) :: LLINDEX1(NCLV)
+    LOGICAL,intent(inout) :: LLINDEX3(NCLV, NCLV) !
+    INTEGER(KIND=JPIM),intent(inout) :: IORDER(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZQXN(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZQXFG(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZQXNM1(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZFLUXQ(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZSOLQA(NCLV, NCLV) !
+    REAL(KIND=JPRB),intent(inout) :: ZSOLQB(NCLV, NCLV) !
+    REAL(KIND=JPRB),intent(inout) :: ZQLHS(NCLV, NCLV) !
+    REAL(KIND=JPRB),intent(inout) :: ZVQX(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZRATIO(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZSINKSUM(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZFALLSINK(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZFALLSRCE(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZCONVSRCE(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZCONVSINK(NCLV)
+    REAL(KIND=JPRB),intent(inout) :: ZPSUPSATSRCE(NCLV)
 
     REAL(KIND=JPRB),intent(inout) :: ZFOEALFA(KLON, KLEV + 1)
     REAL(KIND=JPRB),intent(inout) :: ZTP1(KLON, KLEV)
@@ -616,21 +616,21 @@ CONTAINS
       ! -----------------------------------------------
       ! Define species phase, 0=vapour, 1=liquid, 2=ice
       ! -----------------------------------------------
-      IPHASE(JL, NCLDQV) = 0
-      IPHASE(JL, NCLDQL) = 1
-      IPHASE(JL, NCLDQR) = 1
-      IPHASE(JL, NCLDQI) = 2
-      IPHASE(JL, NCLDQS) = 2
+      IPHASE(NCLDQV) = 0
+      IPHASE(NCLDQL) = 1
+      IPHASE(NCLDQR) = 1
+      IPHASE(NCLDQI) = 2
+      IPHASE(NCLDQS) = 2
 
       ! ---------------------------------------------------
       ! Set up melting/freezing index,
       ! if an ice category melts/freezes, where does it go?
       ! ---------------------------------------------------
-      IMELT(JL, NCLDQV) = -99
-      IMELT(JL, NCLDQL) = NCLDQI
-      IMELT(JL, NCLDQR) = NCLDQS
-      IMELT(JL, NCLDQI) = NCLDQR
-      IMELT(JL, NCLDQS) = NCLDQR
+      IMELT(NCLDQV) = -99
+      IMELT(NCLDQL) = NCLDQI
+      IMELT(NCLDQR) = NCLDQS
+      IMELT(NCLDQI) = NCLDQR
+      IMELT(NCLDQS) = NCLDQR
 
       ! -----------------------------------------------
       ! INITIALIZATION OF OUTPUT TENDENCIES
@@ -655,19 +655,19 @@ CONTAINS
       ! -------------------------
       ! set up fall speeds in m/s
       ! -------------------------
-      ZVQX(JL, NCLDQV) = 0.0_JPRB
-      ZVQX(JL, NCLDQL) = 0.0_JPRB
-      ZVQX(JL, NCLDQI) = YRECLDP%RVICE
-      ZVQX(JL, NCLDQR) = YRECLDP%RVRAIN
-      ZVQX(JL, NCLDQS) = YRECLDP%RVSNOW
-      LLFALL(JL, :) = .false.
+      ZVQX(NCLDQV) = 0.0_JPRB
+      ZVQX(NCLDQL) = 0.0_JPRB
+      ZVQX(NCLDQI) = YRECLDP%RVICE
+      ZVQX(NCLDQR) = YRECLDP%RVRAIN
+      ZVQX(NCLDQS) = YRECLDP%RVSNOW
+      LLFALL(:) = .false.
       DO JM=1,NCLV
-        IF (ZVQX(JL, JM) > 0.0_JPRB)         LLFALL(JL, JM) = .true.
+        IF (ZVQX(JM) > 0.0_JPRB)         LLFALL(JM) = .true.
         ! falling species
       END DO
       ! Set LLFALL to false for ice (but ice still sediments!)
       ! Need to rationalise this at some point
-      LLFALL(JL, NCLDQI) = .false.
+      LLFALL(NCLDQI) = .false.
 
 
       !######################################################################
@@ -755,8 +755,8 @@ CONTAINS
             ZLNEG(JL, JK, JM) = ZLNEG(JL, JK, JM) + ZQX(JL, JK, JM)
             ZQADJ = ZQX(JL, JK, JM)*ZQTMST
             TENDENCY_LOC_Q(JL, JK) = TENDENCY_LOC_Q(JL, JK) + ZQADJ
-            IF (IPHASE(JL, JM) == 1)             TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) - RALVDCP*ZQADJ
-            IF (IPHASE(JL, JM) == 2)             TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) - RALSDCP*ZQADJ
+            IF (IPHASE(JM) == 1)             TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) - RALVDCP*ZQADJ
+            IF (IPHASE(JM) == 2)             TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) - RALSDCP*ZQADJ
             ZQX(JL, JK, NCLDQV) = ZQX(JL, JK, NCLDQV) + ZQX(JL, JK, JM)
             ZQX(JL, JK, JM) = 0.0_JPRB
           END IF
@@ -873,7 +873,7 @@ CONTAINS
         ! First guess microphysics
         !---------------------------------
         DO JM=1,NCLV
-          ZQXFG(JL, JM) = ZQX(JL, JK, JM)
+          ZQXFG(JM) = ZQX(JL, JK, JM)
         END DO
 
         !---------------------------------
@@ -909,8 +909,8 @@ CONTAINS
         !------------------------------------------
         DO JM=1,NCLV
           DO JN=1,NCLV
-            ZSOLQB(JL, JN, JM) = 0.0_JPRB
-            ZSOLQA(JL, JN, JM) = 0.0_JPRB
+            ZSOLQB(JN, JM) = 0.0_JPRB
+            ZSOLQA(JN, JM) = 0.0_JPRB
           END DO
         END DO
 
@@ -918,12 +918,12 @@ CONTAINS
         ! reset new microphysics variables
         !----------------------------------
         DO JM=1,NCLV
-          ZFALLSRCE(JL, JM) = 0.0_JPRB
-          ZFALLSINK(JL, JM) = 0.0_JPRB
-          ZCONVSRCE(JL, JM) = 0.0_JPRB
-          ZCONVSINK(JL, JM) = 0.0_JPRB
-          ZPSUPSATSRCE(JL, JM) = 0.0_JPRB
-          ZRATIO(JL, JM) = 0.0_JPRB
+          ZFALLSRCE(JM) = 0.0_JPRB
+          ZFALLSINK(JM) = 0.0_JPRB
+          ZCONVSRCE(JM) = 0.0_JPRB
+          ZCONVSINK(JM) = 0.0_JPRB
+          ZPSUPSATSRCE(JM) = 0.0_JPRB
+          ZRATIO(JM) = 0.0_JPRB
         END DO
 
 
@@ -984,13 +984,13 @@ CONTAINS
         !------------------------------------------------
 
         IF (ZQX(JL, JK, NCLDQL) < YRECLDP%RLMIN) THEN
-          ZSOLQA(JL, NCLDQV, NCLDQL) = ZQX(JL, JK, NCLDQL)
-          ZSOLQA(JL, NCLDQL, NCLDQV) = -ZQX(JL, JK, NCLDQL)
+          ZSOLQA(NCLDQV, NCLDQL) = ZQX(JL, JK, NCLDQL)
+          ZSOLQA(NCLDQL, NCLDQV) = -ZQX(JL, JK, NCLDQL)
         END IF
 
         IF (ZQX(JL, JK, NCLDQI) < YRECLDP%RLMIN) THEN
-          ZSOLQA(JL, NCLDQV, NCLDQI) = ZQX(JL, JK, NCLDQI)
-          ZSOLQA(JL, NCLDQI, NCLDQV) = -ZQX(JL, JK, NCLDQI)
+          ZSOLQA(NCLDQV, NCLDQI) = ZQX(JL, JK, NCLDQI)
+          ZSOLQA(NCLDQI, NCLDQV) = -ZQX(JL, JK, NCLDQI)
         END IF
 
 
@@ -1049,16 +1049,16 @@ CONTAINS
 
           IF (ZTP1(JL, JK) > YRECLDP%RTHOMO) THEN
             ! Turn supersaturation into liquid water
-            ZSOLQA(JL, NCLDQL, NCLDQV) = ZSOLQA(JL, NCLDQL, NCLDQV) + ZSUPSAT
-            ZSOLQA(JL, NCLDQV, NCLDQL) = ZSOLQA(JL, NCLDQV, NCLDQL) - ZSUPSAT
+            ZSOLQA(NCLDQL, NCLDQV) = ZSOLQA(NCLDQL, NCLDQV) + ZSUPSAT
+            ZSOLQA(NCLDQV, NCLDQL) = ZSOLQA(NCLDQV, NCLDQL) - ZSUPSAT
             ! Include liquid in first guess
-            ZQXFG(JL, NCLDQL) = ZQXFG(JL, NCLDQL) + ZSUPSAT
+            ZQXFG(NCLDQL) = ZQXFG(NCLDQL) + ZSUPSAT
           ELSE
             ! Turn supersaturation into ice water
-            ZSOLQA(JL, NCLDQI, NCLDQV) = ZSOLQA(JL, NCLDQI, NCLDQV) + ZSUPSAT
-            ZSOLQA(JL, NCLDQV, NCLDQI) = ZSOLQA(JL, NCLDQV, NCLDQI) - ZSUPSAT
+            ZSOLQA(NCLDQI, NCLDQV) = ZSOLQA(NCLDQI, NCLDQV) + ZSUPSAT
+            ZSOLQA(NCLDQV, NCLDQI) = ZSOLQA(NCLDQV, NCLDQI) - ZSUPSAT
             ! Add ice to first guess for deposition term
-            ZQXFG(JL, NCLDQI) = ZQXFG(JL, NCLDQI) + ZSUPSAT
+            ZQXFG(NCLDQI) = ZQXFG(NCLDQI) + ZSUPSAT
           END IF
 
           ! Increase cloud amount using RKOOPTAU timescale
@@ -1073,17 +1073,17 @@ CONTAINS
         IF (PSUPSAT(JL, JK) > ZEPSEC) THEN
           IF (ZTP1(JL, JK) > YRECLDP%RTHOMO) THEN
             ! Turn supersaturation into liquid water
-            ZSOLQA(JL, NCLDQL, NCLDQL) = ZSOLQA(JL, NCLDQL, NCLDQL) + PSUPSAT(JL, JK)
-            ZPSUPSATSRCE(JL, NCLDQL) = PSUPSAT(JL, JK)
+            ZSOLQA(NCLDQL, NCLDQL) = ZSOLQA(NCLDQL, NCLDQL) + PSUPSAT(JL, JK)
+            ZPSUPSATSRCE(NCLDQL) = PSUPSAT(JL, JK)
             ! Add liquid to first guess for deposition term
-            ZQXFG(JL, NCLDQL) = ZQXFG(JL, NCLDQL) + PSUPSAT(JL, JK)
+            ZQXFG(NCLDQL) = ZQXFG(NCLDQL) + PSUPSAT(JL, JK)
             ! Store cloud budget diagnostics if required
           ELSE
             ! Turn supersaturation into ice water
-            ZSOLQA(JL, NCLDQI, NCLDQI) = ZSOLQA(JL, NCLDQI, NCLDQI) + PSUPSAT(JL, JK)
-            ZPSUPSATSRCE(JL, NCLDQI) = PSUPSAT(JL, JK)
+            ZSOLQA(NCLDQI, NCLDQI) = ZSOLQA(NCLDQI, NCLDQI) + PSUPSAT(JL, JK)
+            ZPSUPSATSRCE(NCLDQI) = PSUPSAT(JL, JK)
             ! Add ice to first guess for deposition term
-            ZQXFG(JL, NCLDQI) = ZQXFG(JL, NCLDQI) + PSUPSAT(JL, JK)
+            ZQXFG(NCLDQI) = ZQXFG(NCLDQI) + PSUPSAT(JL, JK)
             ! Store cloud budget diagnostics if required
           END IF
 
@@ -1115,10 +1115,10 @@ CONTAINS
             ZSOLAC = ZSOLAC + PLUDE(JL, JK) / PLU(JL, JK + 1)
             ! *diagnostic temperature split*
             ZALFAW = ZFOEALFA(JL, JK)
-            ZCONVSRCE(JL, NCLDQL) = ZALFAW*PLUDE(JL, JK)
-            ZCONVSRCE(JL, NCLDQI) = (1.0_JPRB - ZALFAW)*PLUDE(JL, JK)
-            ZSOLQA(JL, NCLDQL, NCLDQL) = ZSOLQA(JL, NCLDQL, NCLDQL) + ZCONVSRCE(JL, NCLDQL)
-            ZSOLQA(JL, NCLDQI, NCLDQI) = ZSOLQA(JL, NCLDQI, NCLDQI) + ZCONVSRCE(JL, NCLDQI)
+            ZCONVSRCE(NCLDQL) = ZALFAW*PLUDE(JL, JK)
+            ZCONVSRCE(NCLDQI) = (1.0_JPRB - ZALFAW)*PLUDE(JL, JK)
+            ZSOLQA(NCLDQL, NCLDQL) = ZSOLQA(NCLDQL, NCLDQL) + ZCONVSRCE(NCLDQL)
+            ZSOLQA(NCLDQI, NCLDQI) = ZSOLQA(NCLDQI, NCLDQI) + ZCONVSRCE(NCLDQI)
 
           ELSE
 
@@ -1126,7 +1126,7 @@ CONTAINS
 
           END IF
           ! *convective snow detrainment source
-          IF (LDCUM(JL))           ZSOLQA(JL, NCLDQS, NCLDQS) = ZSOLQA(JL, NCLDQS, NCLDQS) + PSNDE(JL, JK)*ZDTGDP
+          IF (LDCUM(JL))           ZSOLQA(NCLDQS, NCLDQS) = ZSOLQA(NCLDQS, NCLDQS) + PSNDE(JL, JK)*ZDTGDP
 
 
         END IF
@@ -1152,10 +1152,10 @@ CONTAINS
           ZACUST = ZMF*ZANEWM1
 
           DO JM=1,NCLV
-            IF (.not.LLFALL(JL, JM) .and. IPHASE(JL, JM) > 0) THEN
-              ZLCUST(JL, JM) = ZMF*ZQXNM1(JL, JM)
+            IF (.not.LLFALL(JM) .and. IPHASE(JM) > 0) THEN
+              ZLCUST(JM) = ZMF*ZQXNM1(JM)
               ! record total flux for enthalpy budget:
-              ZCONVSRCE(JL, JM) = ZCONVSRCE(JL, JM) + ZLCUST(JL, JM)
+              ZCONVSRCE(JM) = ZCONVSRCE(JM) + ZLCUST(JM)
             END IF
           END DO
 
@@ -1169,17 +1169,17 @@ CONTAINS
           ZDQS = ZANEWM1*ZDTFORC*ZDQSMIXDT
 
           DO JM=1,NCLV
-            IF (.not.LLFALL(JL, JM) .and. IPHASE(JL, JM) > 0) THEN
-              ZLFINAL = MAX(0.0_JPRB, ZLCUST(JL, JM) - ZDQS)                !lim to zero
+            IF (.not.LLFALL(JM) .and. IPHASE(JM) > 0) THEN
+              ZLFINAL = MAX(0.0_JPRB, ZLCUST(JM) - ZDQS)                !lim to zero
               ! no supersaturation allowed incloud ---V
-              ZEVAP = MIN((ZLCUST(JL, JM) - ZLFINAL), ZEVAPLIMMIX)
+              ZEVAP = MIN((ZLCUST(JM) - ZLFINAL), ZEVAPLIMMIX)
               !          ZEVAP=0.0_JPRB
-              ZLFINAL = ZLCUST(JL, JM) - ZEVAP
+              ZLFINAL = ZLCUST(JM) - ZEVAP
               ZLFINALSUM = ZLFINALSUM + ZLFINAL                ! sum
 
-              ZSOLQA(JL, JM, JM) = ZSOLQA(JL, JM, JM) + ZLCUST(JL, JM)                ! whole sum
-              ZSOLQA(JL, NCLDQV, JM) = ZSOLQA(JL, NCLDQV, JM) + ZEVAP
-              ZSOLQA(JL, JM, NCLDQV) = ZSOLQA(JL, JM, NCLDQV) - ZEVAP
+              ZSOLQA(JM, JM) = ZSOLQA(JM, JM) + ZLCUST(JM)                ! whole sum
+              ZSOLQA(NCLDQV, JM) = ZSOLQA(NCLDQV, JM) + ZEVAP
+              ZSOLQA(JM, NCLDQV) = ZSOLQA(JM, NCLDQV) - ZEVAP
             END IF
           END DO
 
@@ -1201,12 +1201,12 @@ CONTAINS
           ZMFDN = MAX(0.0_JPRB, (PMFU(JL, JK + 1) + PMFD(JL, JK + 1))*ZDTGDP)
 
           ZSOLAB = ZSOLAB + ZMFDN
-          ZSOLQB(JL, NCLDQL, NCLDQL) = ZSOLQB(JL, NCLDQL, NCLDQL) + ZMFDN
-          ZSOLQB(JL, NCLDQI, NCLDQI) = ZSOLQB(JL, NCLDQI, NCLDQI) + ZMFDN
+          ZSOLQB(NCLDQL, NCLDQL) = ZSOLQB(NCLDQL, NCLDQL) + ZMFDN
+          ZSOLQB(NCLDQI, NCLDQI) = ZSOLQB(NCLDQI, NCLDQI) + ZMFDN
 
           ! Record sink for cloud budget and enthalpy budget diagnostics
-          ZCONVSINK(JL, NCLDQL) = ZMFDN
-          ZCONVSINK(JL, NCLDQI) = ZMFDN
+          ZCONVSINK(NCLDQL) = ZMFDN
+          ZCONVSINK(NCLDQI) = ZMFDN
 
         END IF
 
@@ -1243,10 +1243,10 @@ CONTAINS
           ! Erosion is -ve LINEAR in L,A
           ZSOLAC = ZSOLAC - ZAEROS            !linear
 
-          ZSOLQA(JL, NCLDQV, NCLDQL) = ZSOLQA(JL, NCLDQV, NCLDQL) + ZLIQFRAC(JL, JK)*ZLEROS
-          ZSOLQA(JL, NCLDQL, NCLDQV) = ZSOLQA(JL, NCLDQL, NCLDQV) - ZLIQFRAC(JL, JK)*ZLEROS
-          ZSOLQA(JL, NCLDQV, NCLDQI) = ZSOLQA(JL, NCLDQV, NCLDQI) + ZICEFRAC(JL, JK)*ZLEROS
-          ZSOLQA(JL, NCLDQI, NCLDQV) = ZSOLQA(JL, NCLDQI, NCLDQV) - ZICEFRAC(JL, JK)*ZLEROS
+          ZSOLQA(NCLDQV, NCLDQL) = ZSOLQA(NCLDQV, NCLDQL) + ZLIQFRAC(JL, JK)*ZLEROS
+          ZSOLQA(NCLDQL, NCLDQV) = ZSOLQA(NCLDQL, NCLDQV) - ZLIQFRAC(JL, JK)*ZLEROS
+          ZSOLQA(NCLDQV, NCLDQI) = ZSOLQA(NCLDQV, NCLDQI) + ZICEFRAC(JL, JK)*ZLEROS
+          ZSOLQA(NCLDQI, NCLDQV) = ZSOLQA(NCLDQI, NCLDQV) - ZICEFRAC(JL, JK)*ZLEROS
 
         END IF
 
@@ -1327,11 +1327,11 @@ CONTAINS
           ZLEVAPL = ZLIQFRAC(JL, JK)*ZLEVAP
           ZLEVAPI = ZICEFRAC(JL, JK)*ZLEVAP
 
-          ZSOLQA(JL, NCLDQV, NCLDQL) = ZSOLQA(JL, NCLDQV, NCLDQL) + ZLIQFRAC(JL, JK)*ZLEVAP
-          ZSOLQA(JL, NCLDQL, NCLDQV) = ZSOLQA(JL, NCLDQL, NCLDQV) - ZLIQFRAC(JL, JK)*ZLEVAP
+          ZSOLQA(NCLDQV, NCLDQL) = ZSOLQA(NCLDQV, NCLDQL) + ZLIQFRAC(JL, JK)*ZLEVAP
+          ZSOLQA(NCLDQL, NCLDQV) = ZSOLQA(NCLDQL, NCLDQV) - ZLIQFRAC(JL, JK)*ZLEVAP
 
-          ZSOLQA(JL, NCLDQV, NCLDQI) = ZSOLQA(JL, NCLDQV, NCLDQI) + ZICEFRAC(JL, JK)*ZLEVAP
-          ZSOLQA(JL, NCLDQI, NCLDQV) = ZSOLQA(JL, NCLDQI, NCLDQV) - ZICEFRAC(JL, JK)*ZLEVAP
+          ZSOLQA(NCLDQV, NCLDQI) = ZSOLQA(NCLDQV, NCLDQI) + ZICEFRAC(JL, JK)*ZLEVAP
+          ZSOLQA(NCLDQI, NCLDQV) = ZSOLQA(NCLDQI, NCLDQV) - ZICEFRAC(JL, JK)*ZLEVAP
 
         END IF
 
@@ -1363,13 +1363,13 @@ CONTAINS
           ! remains at cold temperatures until next timestep.
           !-------------------------------------------------------------------------
           IF (ZTP1(JL, JK) > YRECLDP%RTHOMO) THEN
-            ZSOLQA(JL, NCLDQL, NCLDQV) = ZSOLQA(JL, NCLDQL, NCLDQV) + ZLCOND1
-            ZSOLQA(JL, NCLDQV, NCLDQL) = ZSOLQA(JL, NCLDQV, NCLDQL) - ZLCOND1
-            ZQXFG(JL, NCLDQL) = ZQXFG(JL, NCLDQL) + ZLCOND1
+            ZSOLQA(NCLDQL, NCLDQV) = ZSOLQA(NCLDQL, NCLDQV) + ZLCOND1
+            ZSOLQA(NCLDQV, NCLDQL) = ZSOLQA(NCLDQV, NCLDQL) - ZLCOND1
+            ZQXFG(NCLDQL) = ZQXFG(NCLDQL) + ZLCOND1
           ELSE
-            ZSOLQA(JL, NCLDQI, NCLDQV) = ZSOLQA(JL, NCLDQI, NCLDQV) + ZLCOND1
-            ZSOLQA(JL, NCLDQV, NCLDQI) = ZSOLQA(JL, NCLDQV, NCLDQI) - ZLCOND1
-            ZQXFG(JL, NCLDQI) = ZQXFG(JL, NCLDQI) + ZLCOND1
+            ZSOLQA(NCLDQI, NCLDQV) = ZSOLQA(NCLDQI, NCLDQV) + ZLCOND1
+            ZSOLQA(NCLDQV, NCLDQI) = ZSOLQA(NCLDQV, NCLDQI) - ZLCOND1
+            ZQXFG(NCLDQI) = ZQXFG(NCLDQI) + ZLCOND1
           END IF
         END IF
 
@@ -1458,14 +1458,14 @@ CONTAINS
             ! remains at cold temperatures until next timestep.
             !------------------------------------------------------------------------
             IF (ZTP1(JL, JK) > YRECLDP%RTHOMO) THEN
-              ZSOLQA(JL, NCLDQL, NCLDQV) = ZSOLQA(JL, NCLDQL, NCLDQV) + ZLCOND2
-              ZSOLQA(JL, NCLDQV, NCLDQL) = ZSOLQA(JL, NCLDQV, NCLDQL) - ZLCOND2
-              ZQXFG(JL, NCLDQL) = ZQXFG(JL, NCLDQL) + ZLCOND2
+              ZSOLQA(NCLDQL, NCLDQV) = ZSOLQA(NCLDQL, NCLDQV) + ZLCOND2
+              ZSOLQA(NCLDQV, NCLDQL) = ZSOLQA(NCLDQV, NCLDQL) - ZLCOND2
+              ZQXFG(NCLDQL) = ZQXFG(NCLDQL) + ZLCOND2
             ELSE
               ! homogeneous freezing
-              ZSOLQA(JL, NCLDQI, NCLDQV) = ZSOLQA(JL, NCLDQI, NCLDQV) + ZLCOND2
-              ZSOLQA(JL, NCLDQV, NCLDQI) = ZSOLQA(JL, NCLDQV, NCLDQI) - ZLCOND2
-              ZQXFG(JL, NCLDQI) = ZQXFG(JL, NCLDQI) + ZLCOND2
+              ZSOLQA(NCLDQI, NCLDQV) = ZSOLQA(NCLDQI, NCLDQV) + ZLCOND2
+              ZSOLQA(NCLDQV, NCLDQI) = ZSOLQA(NCLDQV, NCLDQI) - ZLCOND2
+              ZQXFG(NCLDQI) = ZQXFG(NCLDQI) + ZLCOND2
             END IF
 
           END IF
@@ -1509,7 +1509,7 @@ CONTAINS
           ! that can not model ice growth from vapour without additional
           ! in-cloud water vapour variable
           !--------------------------------------------------------------
-          IF (ZTP1(JL, JK) < RTT .and. ZQXFG(JL, NCLDQL) > YRECLDP%RLMIN) THEN
+          IF (ZTP1(JL, JK) < RTT .and. ZQXFG(NCLDQL) > YRECLDP%RLMIN) THEN
             ! T<273K
 
             ZVPICE = (FOEEICE(ZTP1(JL, JK))*RV) / RD
@@ -1548,7 +1548,7 @@ CONTAINS
             ! flux from the clear sky to the cloudy area. We thus rely on the
             ! supersaturation check to clean up any remaining supersaturation
             !--------------------------------------------------------------------
-            ZDEPOS = MIN(ZDEPOS, ZQXFG(JL, NCLDQL))              ! limit to liquid water amount
+            ZDEPOS = MIN(ZDEPOS, ZQXFG(NCLDQL))              ! limit to liquid water amount
 
             !--------------------------------------------------------------------
             ! At top of cloud, reduce deposition rate near cloud top to account for
@@ -1564,10 +1564,10 @@ CONTAINS
             !--------------
             ! add to matrix
             !--------------
-            ZSOLQA(JL, NCLDQI, NCLDQL) = ZSOLQA(JL, NCLDQI, NCLDQL) + ZDEPOS
-            ZSOLQA(JL, NCLDQL, NCLDQI) = ZSOLQA(JL, NCLDQL, NCLDQI) - ZDEPOS
-            ZQXFG(JL, NCLDQI) = ZQXFG(JL, NCLDQI) + ZDEPOS
-            ZQXFG(JL, NCLDQL) = ZQXFG(JL, NCLDQL) - ZDEPOS
+            ZSOLQA(NCLDQI, NCLDQL) = ZSOLQA(NCLDQI, NCLDQL) + ZDEPOS
+            ZSOLQA(NCLDQL, NCLDQI) = ZSOLQA(NCLDQL, NCLDQI) - ZDEPOS
+            ZQXFG(NCLDQI) = ZQXFG(NCLDQI) + ZDEPOS
+            ZQXFG(NCLDQL) = ZQXFG(NCLDQL) - ZDEPOS
 
           END IF
 
@@ -1596,7 +1596,7 @@ CONTAINS
           ! that can not model ice growth from vapour without additional
           ! in-cloud water vapour variable
           !--------------------------------------------------------------
-          IF (ZTP1(JL, JK) < RTT .and. ZQXFG(JL, NCLDQL) > YRECLDP%RLMIN) THEN
+          IF (ZTP1(JL, JK) < RTT .and. ZQXFG(NCLDQL) > YRECLDP%RLMIN) THEN
             ! T<273K
 
             ZVPICE = (FOEEICE(ZTP1(JL, JK))*RV) / RD
@@ -1635,7 +1635,7 @@ CONTAINS
             ! flux from the clear sky to the cloudy area. We thus rely on the
             ! supersaturation check to clean up any remaining supersaturation
             !--------------------------------------------------------------------
-            ZDEPOS = MIN(ZDEPOS, ZQXFG(JL, NCLDQL))              ! limit to liquid water amount
+            ZDEPOS = MIN(ZDEPOS, ZQXFG(NCLDQL))              ! limit to liquid water amount
 
             !--------------------------------------------------------------------
             ! At top of cloud, reduce deposition rate near cloud top to account for
@@ -1650,10 +1650,10 @@ CONTAINS
             !--------------
             ! add to matrix
             !--------------
-            ZSOLQA(JL, NCLDQI, NCLDQL) = ZSOLQA(JL, NCLDQI, NCLDQL) + ZDEPOS
-            ZSOLQA(JL, NCLDQL, NCLDQI) = ZSOLQA(JL, NCLDQL, NCLDQI) - ZDEPOS
-            ZQXFG(JL, NCLDQI) = ZQXFG(JL, NCLDQI) + ZDEPOS
-            ZQXFG(JL, NCLDQL) = ZQXFG(JL, NCLDQL) - ZDEPOS
+            ZSOLQA(NCLDQI, NCLDQL) = ZSOLQA(NCLDQI, NCLDQL) + ZDEPOS
+            ZSOLQA(NCLDQL, NCLDQI) = ZSOLQA(NCLDQL, NCLDQI) - ZDEPOS
+            ZQXFG(NCLDQI) = ZQXFG(NCLDQI) + ZDEPOS
+            ZQXFG(NCLDQL) = ZQXFG(NCLDQL) - ZDEPOS
           END IF
 
         END IF
@@ -1667,8 +1667,8 @@ CONTAINS
         ! revise in-cloud consensate amount
         !----------------------------------
         ZTMPA = 1.0_JPRB / MAX(ZA(JL, JK), ZEPSEC)
-        ZLIQCLD = ZQXFG(JL, NCLDQL)*ZTMPA
-        ZICECLD = ZQXFG(JL, NCLDQI)*ZTMPA
+        ZLIQCLD = ZQXFG(NCLDQL)*ZTMPA
+        ZICECLD = ZQXFG(NCLDQI)*ZTMPA
         ZLICLD = ZLIQCLD + ZICECLD
 
         !----------------------------------------------------------------------
@@ -1679,16 +1679,16 @@ CONTAINS
         !----------------------------------------------------------------------
 
         DO JM=1,NCLV
-          IF (LLFALL(JL, JM) .or. JM == NCLDQI) THEN
+          IF (LLFALL(JM) .or. JM == NCLDQI) THEN
             !------------------------
             ! source from layer above
             !------------------------
             IF (JK > YRECLDP%NCLDTOP) THEN
-              ZFALLSRCE(JL, JM) = ZPFPLSX(JL, JK, JM)*ZDTGDP
-              ZSOLQA(JL, JM, JM) = ZSOLQA(JL, JM, JM) + ZFALLSRCE(JL, JM)
-              ZQXFG(JL, JM) = ZQXFG(JL, JM) + ZFALLSRCE(JL, JM)
+              ZFALLSRCE(JM) = ZPFPLSX(JL, JK, JM)*ZDTGDP
+              ZSOLQA(JM, JM) = ZSOLQA(JM, JM) + ZFALLSRCE(JM)
+              ZQXFG(JM) = ZQXFG(JM) + ZFALLSRCE(JM)
               ! use first guess precip----------V
-              ZQPRETOT = ZQPRETOT + ZQXFG(JL, JM)
+              ZQPRETOT = ZQPRETOT + ZQXFG(JM)
             END IF
             !-------------------------------------------------
             ! sink to next layer, constant fall speed
@@ -1699,16 +1699,16 @@ CONTAINS
               ZRE_ICE = PRE_ICE(JL, JK)
               ! The exponent value is from
               ! Morrison et al. JAS 2005 Appendix
-              ZVQX(JL, NCLDQI) = 0.002_JPRB*ZRE_ICE**1.0_JPRB
+              ZVQX(NCLDQI) = 0.002_JPRB*ZRE_ICE**1.0_JPRB
             END IF
-            ZFALL = ZVQX(JL, JM)*ZRHO
+            ZFALL = ZVQX(JM)*ZRHO
             !-------------------------------------------------
             ! modified by Heymsfield and Iaquinta JAS 2000
             !-------------------------------------------------
             ! ZFALL = ZFALL*((PAP(JL,JK)*RICEHI1)**(-0.178_JPRB)) &
             !            &*((ZTP1(JL,JK)*RICEHI2)**(-0.394_JPRB))
 
-            ZFALLSINK(JL, JM) = ZDTGDP*ZFALL
+            ZFALLSINK(JM) = ZDTGDP*ZFALL
             ! Cloud budget diagnostic stored at end as implicit
             ! jl
           END IF
@@ -1737,8 +1737,8 @@ CONTAINS
           & - 1), 1.0_JPRB - 1.E-06_JPRB))
           ZCOVPTOT = MAX(ZCOVPTOT, YRECLDP%RCOVPMIN)
           ZCOVPCLR = MAX(0.0_JPRB, ZCOVPTOT - ZA(JL, JK))            ! clear sky proportion
-          ZRAINCLD = ZQXFG(JL, NCLDQR) / ZCOVPTOT
-          ZSNOWCLD = ZQXFG(JL, NCLDQS) / ZCOVPTOT
+          ZRAINCLD = ZQXFG(NCLDQR) / ZCOVPTOT
+          ZSNOWCLD = ZQXFG(NCLDQS) / ZCOVPTOT
           ZCOVPMAX = MAX(ZCOVPTOT, ZCOVPMAX)
         ELSE
           ZRAINCLD = 0.0_JPRB
@@ -1769,7 +1769,7 @@ CONTAINS
             END IF
 
             ZSNOWAUT = ZZCO*(1.0_JPRB - EXP(-(ZICECLD / ZLCRIT)**2))
-            ZSOLQB(JL, NCLDQS, NCLDQI) = ZSOLQB(JL, NCLDQS, NCLDQI) + ZSNOWAUT
+            ZSOLQB(NCLDQS, NCLDQI) = ZSOLQB(NCLDQS, NCLDQI) + ZSNOWAUT
 
           END IF
         END IF
@@ -1833,9 +1833,9 @@ CONTAINS
 
             ! rain freezes instantly
             IF (ZTP1(JL, JK) <= RTT) THEN
-              ZSOLQB(JL, NCLDQS, NCLDQL) = ZSOLQB(JL, NCLDQS, NCLDQL) + ZRAINAUT
+              ZSOLQB(NCLDQS, NCLDQL) = ZSOLQB(NCLDQS, NCLDQL) + ZRAINAUT
             ELSE
-              ZSOLQB(JL, NCLDQR, NCLDQL) = ZSOLQB(JL, NCLDQR, NCLDQL) + ZRAINAUT
+              ZSOLQB(NCLDQR, NCLDQL) = ZSOLQB(NCLDQR, NCLDQL) + ZRAINAUT
             END IF
 
             !--------------------------------------------------------
@@ -1859,12 +1859,12 @@ CONTAINS
 
               ZRAINAUT = 1.5_JPRB*ZA(JL, JK)*PTSPHY*YRECLDP%RCL_KKAAU*ZLIQCLD**YRECLDP%RCL_KKBAUQ*ZCONST**YRECLDP%RCL_KKBAUN
 
-              ZRAINAUT = MIN(ZRAINAUT, ZQXFG(JL, NCLDQL))
+              ZRAINAUT = MIN(ZRAINAUT, ZQXFG(NCLDQL))
               IF (ZRAINAUT < ZEPSEC)               ZRAINAUT = 0.0_JPRB
 
               ZRAINACC = 2.0_JPRB*ZA(JL, JK)*PTSPHY*YRECLDP%RCL_KKAAC*(ZLIQCLD*ZRAINCLD)**YRECLDP%RCL_KKBAC
 
-              ZRAINACC = MIN(ZRAINACC, ZQXFG(JL, NCLDQL))
+              ZRAINACC = MIN(ZRAINACC, ZQXFG(NCLDQL))
               IF (ZRAINACC < ZEPSEC)               ZRAINACC = 0.0_JPRB
 
             ELSE
@@ -1875,15 +1875,15 @@ CONTAINS
             ! If temperature < 0, then autoconversion produces snow rather than rain
             ! Explicit
             IF (ZTP1(JL, JK) <= RTT) THEN
-              ZSOLQA(JL, NCLDQS, NCLDQL) = ZSOLQA(JL, NCLDQS, NCLDQL) + ZRAINAUT
-              ZSOLQA(JL, NCLDQS, NCLDQL) = ZSOLQA(JL, NCLDQS, NCLDQL) + ZRAINACC
-              ZSOLQA(JL, NCLDQL, NCLDQS) = ZSOLQA(JL, NCLDQL, NCLDQS) - ZRAINAUT
-              ZSOLQA(JL, NCLDQL, NCLDQS) = ZSOLQA(JL, NCLDQL, NCLDQS) - ZRAINACC
+              ZSOLQA(NCLDQS, NCLDQL) = ZSOLQA(NCLDQS, NCLDQL) + ZRAINAUT
+              ZSOLQA(NCLDQS, NCLDQL) = ZSOLQA(NCLDQS, NCLDQL) + ZRAINACC
+              ZSOLQA(NCLDQL, NCLDQS) = ZSOLQA(NCLDQL, NCLDQS) - ZRAINAUT
+              ZSOLQA(NCLDQL, NCLDQS) = ZSOLQA(NCLDQL, NCLDQS) - ZRAINACC
             ELSE
-              ZSOLQA(JL, NCLDQR, NCLDQL) = ZSOLQA(JL, NCLDQR, NCLDQL) + ZRAINAUT
-              ZSOLQA(JL, NCLDQR, NCLDQL) = ZSOLQA(JL, NCLDQR, NCLDQL) + ZRAINACC
-              ZSOLQA(JL, NCLDQL, NCLDQR) = ZSOLQA(JL, NCLDQL, NCLDQR) - ZRAINAUT
-              ZSOLQA(JL, NCLDQL, NCLDQR) = ZSOLQA(JL, NCLDQL, NCLDQR) - ZRAINACC
+              ZSOLQA(NCLDQR, NCLDQL) = ZSOLQA(NCLDQR, NCLDQL) + ZRAINAUT
+              ZSOLQA(NCLDQR, NCLDQL) = ZSOLQA(NCLDQR, NCLDQL) + ZRAINACC
+              ZSOLQA(NCLDQL, NCLDQR) = ZSOLQA(NCLDQL, NCLDQR) - ZRAINAUT
+              ZSOLQA(NCLDQL, NCLDQR) = ZSOLQA(NCLDQL, NCLDQR) - ZRAINACC
             END IF
 
           END IF
@@ -1918,7 +1918,7 @@ CONTAINS
               ! Limit snow riming term
               ZSNOWRIME = MIN(ZSNOWRIME, 1.0_JPRB)
 
-              ZSOLQB(JL, NCLDQS, NCLDQL) = ZSOLQB(JL, NCLDQS, NCLDQL) + ZSNOWRIME
+              ZSOLQB(NCLDQS, NCLDQL) = ZSOLQB(NCLDQS, NCLDQL) + ZSNOWRIME
 
             END IF
 
@@ -1936,7 +1936,7 @@ CONTAINS
             !        ! Limit ice riming term
             !        ZSNOWRIME(JL)=MIN(ZSNOWRIME(JL),1.0_JPRB)
             !
-            !        ZSOLQB(JL, JL,NCLDQI,NCLDQL) = ZSOLQB(JL, JL,NCLDQI,NCLDQL) + ZSNOWRIME(JL)
+            !        ZSOLQB(JL,NCLDQI,NCLDQL) = ZSOLQB(JL,NCLDQI,NCLDQL) + ZSNOWRIME(JL)
             !
             !      ENDIF
           END IF
@@ -1953,7 +1953,7 @@ CONTAINS
         !       falling ice and snow: arrives by precipitation process
         !----------------------------------------------------------------------
 
-        ZICETOT = ZQXFG(JL, NCLDQI) + ZQXFG(JL, NCLDQS)
+        ZICETOT = ZQXFG(NCLDQI) + ZQXFG(NCLDQS)
         ZMELTMAX = 0.0_JPRB
 
         ! If there are frozen hydrometeors present and dry-bulb temperature > 0degC
@@ -1976,19 +1976,19 @@ CONTAINS
 
         ! Loop over frozen hydrometeors (ice, snow)
         DO JM=1,NCLV
-          IF (IPHASE(JL, JM) == 2) THEN
-            JN = IMELT(JL, JM)
+          IF (IPHASE(JM) == 2) THEN
+            JN = IMELT(JM)
             IF (ZMELTMAX > ZEPSEC .and. ZICETOT > ZEPSEC) THEN
               ! Apply melting in same proportion as frozen hydrometeor fractions
-              ZALFA = ZQXFG(JL, JM) / ZICETOT
-              ZMELT = MIN(ZQXFG(JL, JM), ZALFA*ZMELTMAX)
+              ZALFA = ZQXFG(JM) / ZICETOT
+              ZMELT = MIN(ZQXFG(JM), ZALFA*ZMELTMAX)
               ! needed in first guess
               ! This implies that zqpretot has to be recalculated below
               ! since is not conserved here if ice falls and liquid doesn't
-              ZQXFG(JL, JM) = ZQXFG(JL, JM) - ZMELT
-              ZQXFG(JL, JN) = ZQXFG(JL, JN) + ZMELT
-              ZSOLQA(JL, JN, JM) = ZSOLQA(JL, JN, JM) + ZMELT
-              ZSOLQA(JL, JM, JN) = ZSOLQA(JL, JM, JN) - ZMELT
+              ZQXFG(JM) = ZQXFG(JM) - ZMELT
+              ZQXFG(JN) = ZQXFG(JN) + ZMELT
+              ZSOLQA(JN, JM) = ZSOLQA(JN, JM) + ZMELT
+              ZSOLQA(JM, JN) = ZSOLQA(JM, JN) - ZMELT
             END IF
           END IF
         END DO
@@ -2042,8 +2042,8 @@ CONTAINS
 
             IF (ZFRZMAX > ZEPSEC) THEN
               ZFRZ = MIN(ZQX(JL, JK, NCLDQR), ZFRZMAX)
-              ZSOLQA(JL, NCLDQS, NCLDQR) = ZSOLQA(JL, NCLDQS, NCLDQR) + ZFRZ
-              ZSOLQA(JL, NCLDQR, NCLDQS) = ZSOLQA(JL, NCLDQR, NCLDQS) - ZFRZ
+              ZSOLQA(NCLDQS, NCLDQR) = ZSOLQA(NCLDQS, NCLDQR) + ZFRZ
+              ZSOLQA(NCLDQR, NCLDQS) = ZSOLQA(NCLDQR, NCLDQS) - ZFRZ
             END IF
           END IF
 
@@ -2057,11 +2057,11 @@ CONTAINS
         ZFRZMAX = MAX((YRECLDP%RTHOMO - ZTP1(JL, JK))*ZRLDCP, 0.0_JPRB)
 
         JM = NCLDQL
-        JN = IMELT(JL, JM)
-        IF (ZFRZMAX > ZEPSEC .and. ZQXFG(JL, JM) > ZEPSEC) THEN
-          ZFRZ = MIN(ZQXFG(JL, JM), ZFRZMAX)
-          ZSOLQA(JL, JN, JM) = ZSOLQA(JL, JN, JM) + ZFRZ
-          ZSOLQA(JL, JM, JN) = ZSOLQA(JL, JM, JN) - ZFRZ
+        JN = IMELT(JM)
+        IF (ZFRZMAX > ZEPSEC .and. ZQXFG(JM) > ZEPSEC) THEN
+          ZFRZ = MIN(ZQXFG(JM), ZFRZMAX)
+          ZSOLQA(JN, JM) = ZSOLQA(JN, JM) + ZFRZ
+          ZSOLQA(JM, JN) = ZSOLQA(JM, JN) - ZFRZ
         END IF
 
         !----------------------------------------------------------------------
@@ -2084,11 +2084,11 @@ CONTAINS
           ! humidity in moistest ZCOVPCLR part of domain
           !---------------------------------------------
           ZQE = MAX(0.0_JPRB, MIN(ZQE, ZQSLIQ(JL, JK)))
-          LLO1 = ZCOVPCLR > ZEPSEC .and. ZQXFG(JL, NCLDQR) > ZEPSEC .and. ZQE < ZZRH*ZQSLIQ(JL, JK)
+          LLO1 = ZCOVPCLR > ZEPSEC .and. ZQXFG(NCLDQR) > ZEPSEC .and. ZQE < ZZRH*ZQSLIQ(JL, JK)
 
           IF (LLO1) THEN
             ! note: zpreclr is a rain flux
-            ZPRECLR = (ZQXFG(JL, NCLDQR)*ZCOVPCLR) / SIGN(MAX(ABS(ZCOVPTOT*ZDTGDP), ZEPSILON), ZCOVPTOT*ZDTGDP)
+            ZPRECLR = (ZQXFG(NCLDQR)*ZCOVPCLR) / SIGN(MAX(ABS(ZCOVPTOT*ZDTGDP), ZEPSILON), ZCOVPTOT*ZDTGDP)
 
             !--------------------------------------
             ! actual microphysics formula in zbeta
@@ -2110,20 +2110,20 @@ CONTAINS
             !---------------------------------------------------------
 
             ! Evaporate rain
-            ZEVAP = MIN(ZDPEVAP, ZQXFG(JL, NCLDQR))
+            ZEVAP = MIN(ZDPEVAP, ZQXFG(NCLDQR))
 
-            ZSOLQA(JL, NCLDQV, NCLDQR) = ZSOLQA(JL, NCLDQV, NCLDQR) + ZEVAP
-            ZSOLQA(JL, NCLDQR, NCLDQV) = ZSOLQA(JL, NCLDQR, NCLDQV) - ZEVAP
+            ZSOLQA(NCLDQV, NCLDQR) = ZSOLQA(NCLDQV, NCLDQR) + ZEVAP
+            ZSOLQA(NCLDQR, NCLDQV) = ZSOLQA(NCLDQR, NCLDQV) - ZEVAP
 
             !-------------------------------------------------------------
             ! Reduce the total precip coverage proportional to evaporation
             ! to mimic the previous scheme which had a diagnostic
             ! 2-flux treatment, abandoned due to the new prognostic precip
             !-------------------------------------------------------------
-            ZCOVPTOT = MAX(YRECLDP%RCOVPMIN, ZCOVPTOT - MAX(0.0_JPRB, ((ZCOVPTOT - ZA(JL, JK))*ZEVAP) / ZQXFG(JL, NCLDQR)))
+            ZCOVPTOT = MAX(YRECLDP%RCOVPMIN, ZCOVPTOT - MAX(0.0_JPRB, ((ZCOVPTOT - ZA(JL, JK))*ZEVAP) / ZQXFG(NCLDQR)))
 
             ! Update fg field
-            ZQXFG(JL, NCLDQR) = ZQXFG(JL, NCLDQR) - ZEVAP
+            ZQXFG(NCLDQR) = ZQXFG(NCLDQR) - ZEVAP
 
           END IF
 
@@ -2156,7 +2156,7 @@ CONTAINS
 
           ZQE = MAX(0.0_JPRB, MIN(ZQX(JL, JK, NCLDQV), ZQSLIQ(JL, JK)))
 
-          LLO1 = ZCOVPCLR > ZEPSEC .and. ZQXFG(JL, NCLDQR) > ZEPSEC .and. ZQE < ZZRH*ZQSLIQ(JL, JK)
+          LLO1 = ZCOVPCLR > ZEPSEC .and. ZQXFG(NCLDQR) > ZEPSEC .and. ZQE < ZZRH*ZQSLIQ(JL, JK)
 
           IF (LLO1) THEN
 
@@ -2164,7 +2164,7 @@ CONTAINS
             ! Abel and Boutle (2012) evaporation
             !-------------------------------------------
             ! Calculate local precipitation (kg/kg)
-            ZPRECLR = ZQXFG(JL, NCLDQR) / ZCOVPTOT
+            ZPRECLR = ZQXFG(NCLDQR) / ZCOVPTOT
 
             ! Fallspeed air density correction
             ZFALLCORR = (YRECLDP%RDENSREF / ZRHO)**0.4
@@ -2199,20 +2199,20 @@ CONTAINS
             !---------------------------------------------------------
 
             ! Limit rain evaporation
-            ZEVAP = MIN(ZDPEVAP, ZQXFG(JL, NCLDQR))
+            ZEVAP = MIN(ZDPEVAP, ZQXFG(NCLDQR))
 
-            ZSOLQA(JL, NCLDQV, NCLDQR) = ZSOLQA(JL, NCLDQV, NCLDQR) + ZEVAP
-            ZSOLQA(JL, NCLDQR, NCLDQV) = ZSOLQA(JL, NCLDQR, NCLDQV) - ZEVAP
+            ZSOLQA(NCLDQV, NCLDQR) = ZSOLQA(NCLDQV, NCLDQR) + ZEVAP
+            ZSOLQA(NCLDQR, NCLDQV) = ZSOLQA(NCLDQR, NCLDQV) - ZEVAP
 
             !-------------------------------------------------------------
             ! Reduce the total precip coverage proportional to evaporation
             ! to mimic the previous scheme which had a diagnostic
             ! 2-flux treatment, abandoned due to the new prognostic precip
             !-------------------------------------------------------------
-            ZCOVPTOT = MAX(YRECLDP%RCOVPMIN, ZCOVPTOT - MAX(0.0_JPRB, ((ZCOVPTOT - ZA(JL, JK))*ZEVAP) / ZQXFG(JL, NCLDQR)))
+            ZCOVPTOT = MAX(YRECLDP%RCOVPMIN, ZCOVPTOT - MAX(0.0_JPRB, ((ZCOVPTOT - ZA(JL, JK))*ZEVAP) / ZQXFG(NCLDQR)))
 
             ! Update fg field
-            ZQXFG(JL, NCLDQR) = ZQXFG(JL, NCLDQR) - ZEVAP
+            ZQXFG(NCLDQR) = ZQXFG(NCLDQR) - ZEVAP
 
           END IF
 
@@ -2233,11 +2233,11 @@ CONTAINS
           ! humidity in moistest ZCOVPCLR part of domain
           !---------------------------------------------
           ZQE = MAX(0.0_JPRB, MIN(ZQE, ZQSICE(JL, JK)))
-          LLO1 = ZCOVPCLR > ZEPSEC .and. ZQXFG(JL, NCLDQS) > ZEPSEC .and. ZQE < ZZRH*ZQSICE(JL, JK)
+          LLO1 = ZCOVPCLR > ZEPSEC .and. ZQXFG(NCLDQS) > ZEPSEC .and. ZQE < ZZRH*ZQSICE(JL, JK)
 
           IF (LLO1) THEN
             ! note: zpreclr is a rain flux a
-            ZPRECLR = (ZQXFG(JL, NCLDQS)*ZCOVPCLR) / SIGN(MAX(ABS(ZCOVPTOT*ZDTGDP), ZEPSILON), ZCOVPTOT*ZDTGDP)
+            ZPRECLR = (ZQXFG(NCLDQS)*ZCOVPCLR) / SIGN(MAX(ABS(ZCOVPTOT*ZDTGDP), ZEPSILON), ZCOVPTOT*ZDTGDP)
 
             !--------------------------------------
             ! actual microphysics formula in zbeta
@@ -2259,20 +2259,20 @@ CONTAINS
             !---------------------------------------------------------
 
             ! Evaporate snow
-            ZEVAP = MIN(ZDPEVAP, ZQXFG(JL, NCLDQS))
+            ZEVAP = MIN(ZDPEVAP, ZQXFG(NCLDQS))
 
-            ZSOLQA(JL, NCLDQV, NCLDQS) = ZSOLQA(JL, NCLDQV, NCLDQS) + ZEVAP
-            ZSOLQA(JL, NCLDQS, NCLDQV) = ZSOLQA(JL, NCLDQS, NCLDQV) - ZEVAP
+            ZSOLQA(NCLDQV, NCLDQS) = ZSOLQA(NCLDQV, NCLDQS) + ZEVAP
+            ZSOLQA(NCLDQS, NCLDQV) = ZSOLQA(NCLDQS, NCLDQV) - ZEVAP
 
             !-------------------------------------------------------------
             ! Reduce the total precip coverage proportional to evaporation
             ! to mimic the previous scheme which had a diagnostic
             ! 2-flux treatment, abandoned due to the new prognostic precip
             !-------------------------------------------------------------
-            ZCOVPTOT = MAX(YRECLDP%RCOVPMIN, ZCOVPTOT - MAX(0.0_JPRB, ((ZCOVPTOT - ZA(JL, JK))*ZEVAP) / ZQXFG(JL, NCLDQS)))
+            ZCOVPTOT = MAX(YRECLDP%RCOVPMIN, ZCOVPTOT - MAX(0.0_JPRB, ((ZCOVPTOT - ZA(JL, JK))*ZEVAP) / ZQXFG(NCLDQS)))
 
             !Update first guess field
-            ZQXFG(JL, NCLDQS) = ZQXFG(JL, NCLDQS) - ZEVAP
+            ZQXFG(NCLDQS) = ZQXFG(NCLDQS) - ZEVAP
 
           END IF
           !---------------------------------------------------------
@@ -2327,8 +2327,8 @@ CONTAINS
             ZEVAP = MIN(ZEVAP, ZQX(JL, JK, NCLDQS))
 
 
-            ZSOLQA(JL, NCLDQV, NCLDQS) = ZSOLQA(JL, NCLDQV, NCLDQS) + ZEVAP
-            ZSOLQA(JL, NCLDQS, NCLDQV) = ZSOLQA(JL, NCLDQS, NCLDQV) - ZEVAP
+            ZSOLQA(NCLDQV, NCLDQS) = ZSOLQA(NCLDQV, NCLDQS) + ZEVAP
+            ZSOLQA(NCLDQS, NCLDQV) = ZSOLQA(NCLDQS, NCLDQV) - ZEVAP
 
             !-------------------------------------------------------------
             ! Reduce the total precip coverage proportional to evaporation
@@ -2338,7 +2338,7 @@ CONTAINS
             ZCOVPTOT = MAX(YRECLDP%RCOVPMIN, ZCOVPTOT - MAX(0.0_JPRB, ((ZCOVPTOT - ZA(JL, JK))*ZEVAP) / ZQX(JL, JK, NCLDQS)))
 
             !Update first guess field
-            ZQXFG(JL, NCLDQS) = ZQXFG(JL, NCLDQS) - ZEVAP
+            ZQXFG(NCLDQS) = ZQXFG(NCLDQS) - ZEVAP
 
           END IF
 
@@ -2349,10 +2349,10 @@ CONTAINS
         ! Evaporate small precipitation amounts
         !--------------------------------------
         DO JM=1,NCLV
-          IF (LLFALL(JL, JM)) THEN
-            IF (ZQXFG(JL, JM) < YRECLDP%RLMIN) THEN
-              ZSOLQA(JL, NCLDQV, JM) = ZSOLQA(JL, NCLDQV, JM) + ZQXFG(JL, JM)
-              ZSOLQA(JL, JM, NCLDQV) = ZSOLQA(JL, JM, NCLDQV) - ZQXFG(JL, JM)
+          IF (LLFALL(JM)) THEN
+            IF (ZQXFG(JM) < YRECLDP%RLMIN) THEN
+              ZSOLQA(NCLDQV, JM) = ZSOLQA(NCLDQV, JM) + ZQXFG(JM)
+              ZSOLQA(JM, NCLDQV) = ZSOLQA(JM, NCLDQV) - ZQXFG(JM)
             END IF
           END IF
         END DO
@@ -2388,9 +2388,9 @@ CONTAINS
         DO JM=1,NCLV
 !$claw nodep
           DO JN=1,NCLV
-            LLINDEX3(JL, JN, JM) = .false.
+            LLINDEX3(JN, JM) = .false.
           END DO
-          ZSINKSUM(JL, JM) = 0.0_JPRB
+          ZSINKSUM(JM) = 0.0_JPRB
         END DO
 
         !----------------------------
@@ -2398,7 +2398,7 @@ CONTAINS
         !----------------------------
         DO JM=1,NCLV
           DO JN=1,NCLV
-            ZSINKSUM(JL, JM) = ZSINKSUM(JL, JM) - ZSOLQA(JL, JM, JN)              ! +ve total is bad
+            ZSINKSUM(JM) = ZSINKSUM(JM) - ZSOLQA(JM, JN)              ! +ve total is bad
           END DO
         END DO
 
@@ -2407,8 +2407,8 @@ CONTAINS
         !---------------------------------------
         DO JM=1,NCLV
           ZMAX = MAX(ZQX(JL, JK, JM), ZEPSEC)
-          ZRAT = MAX(ZSINKSUM(JL, JM), ZMAX)
-          ZRATIO(JL, JM) = ZMAX / ZRAT
+          ZRAT = MAX(ZSINKSUM(JM), ZMAX)
+          ZRATIO(JM) = ZMAX / ZRAT
         END DO
 
         !--------------------------------------------
@@ -2416,7 +2416,7 @@ CONTAINS
         ! recalculating the scale factor each time
         !--------------------------------------------
         DO JM=1,NCLV
-          ZSINKSUM(JL, JM) = 0.0_JPRB
+          ZSINKSUM(JM) = 0.0_JPRB
         END DO
 
         !----------------
@@ -2425,26 +2425,26 @@ CONTAINS
         DO JM=1,NCLV
           PSUM_SOLQA = 0.0
           DO JN=1,NCLV
-            PSUM_SOLQA = PSUM_SOLQA + ZSOLQA(JL, JM, JN)
+            PSUM_SOLQA = PSUM_SOLQA + ZSOLQA(JM, JN)
           END DO
-          ! ZSINKSUM(JL, JL,JM)=ZSINKSUM(JL, JL,JM)-SUM(ZSOLQA(JL, JL,JM,1:NCLV))
-          ZSINKSUM(JL, JM) = ZSINKSUM(JL, JM) - PSUM_SOLQA
+          ! ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-SUM(ZSOLQA(JL,JM,1:NCLV))
+          ZSINKSUM(JM) = ZSINKSUM(JM) - PSUM_SOLQA
           !---------------------------
           ! recalculate scaling factor
           !---------------------------
           ZMM = MAX(ZQX(JL, JK, JM), ZEPSEC)
-          ZRR = MAX(ZSINKSUM(JL, JM), ZMM)
-          ZRATIO(JL, JM) = ZMM / ZRR
+          ZRR = MAX(ZSINKSUM(JM), ZMM)
+          ZRATIO(JM) = ZMM / ZRR
           !------
           ! scale
           !------
-          ZZRATIO = ZRATIO(JL, JM)
+          ZZRATIO = ZRATIO(JM)
           !DIR$ IVDEP
           !DIR$ PREFERVECTOR
           DO JN=1,NCLV
-            IF (ZSOLQA(JL, JM, JN) < 0.0_JPRB) THEN
-              ZSOLQA(JL, JM, JN) = ZSOLQA(JL, JM, JN)*ZZRATIO
-              ZSOLQA(JL, JN, JM) = ZSOLQA(JL, JN, JM)*ZZRATIO
+            IF (ZSOLQA(JM, JN) < 0.0_JPRB) THEN
+              ZSOLQA(JM, JN) = ZSOLQA(JM, JN)*ZZRATIO
+              ZSOLQA(JN, JM) = ZSOLQA(JN, JM)*ZZRATIO
             END IF
           END DO
         END DO
@@ -2462,15 +2462,15 @@ CONTAINS
             ! diagonals: microphysical sink terms+transport
             !----------------------------------------------
             IF (JN == JM) THEN
-              ZQLHS(JL, JN, JM) = 1.0_JPRB + ZFALLSINK(JL, JM)
+              ZQLHS(JN, JM) = 1.0_JPRB + ZFALLSINK(JM)
               DO JO=1,NCLV
-                ZQLHS(JL, JN, JM) = ZQLHS(JL, JN, JM) + ZSOLQB(JL, JO, JN)
+                ZQLHS(JN, JM) = ZQLHS(JN, JM) + ZSOLQB(JO, JN)
               END DO
               !------------------------------------------
               ! non-diagonals: microphysical source terms
               !------------------------------------------
             ELSE
-              ZQLHS(JL, JN, JM) = -ZSOLQB(JL, JN, JM)                ! here is the delta T - missing from doc.
+              ZQLHS(JN, JM) = -ZSOLQB(JN, JM)                ! here is the delta T - missing from doc.
             END IF
           END DO
         END DO
@@ -2484,9 +2484,9 @@ CONTAINS
           !---------------------------------
           ZEXPLICIT = 0.0_JPRB
           DO JN=1,NCLV
-            ZEXPLICIT = ZEXPLICIT + ZSOLQA(JL, JM, JN)              ! sum over middle index
+            ZEXPLICIT = ZEXPLICIT + ZSOLQA(JM, JN)              ! sum over middle index
           END DO
-          ZQXN(JL, JM) = ZQX(JL, JK, JM) + ZEXPLICIT
+          ZQXN(JM) = ZQX(JL, JK, JM) + ZEXPLICIT
         END DO
 
         !-----------------------------------
@@ -2505,10 +2505,10 @@ CONTAINS
           ! number of steps
           DO JM=JN + 1,NCLV
             ! row index
-            ZQLHS(JL, JM, JN) = ZQLHS(JL, JM, JN) / ZQLHS(JL, JN, JN)
+            ZQLHS(JM, JN) = ZQLHS(JM, JN) / ZQLHS(JN, JN)
             DO IK=JN + 1,NCLV
               ! column index
-              ZQLHS(JL, JM, IK) = ZQLHS(JL, JM, IK) - ZQLHS(JL, JM, JN)*ZQLHS(JL, JN, IK)
+              ZQLHS(JM, IK) = ZQLHS(JM, IK) - ZQLHS(JM, JN)*ZQLHS(JN, IK)
             END DO
           END DO
         END DO
@@ -2517,25 +2517,25 @@ CONTAINS
         !  step 1
         DO JN=2,NCLV
           DO JM=1,JN - 1
-            ZQXN(JL, JN) = ZQXN(JL, JN) - ZQLHS(JL, JN, JM)*ZQXN(JL, JM)
+            ZQXN(JN) = ZQXN(JN) - ZQLHS(JN, JM)*ZQXN(JM)
           END DO
         END DO
         !  step 2
-        ZQXN(JL, NCLV) = ZQXN(JL, NCLV) / ZQLHS(JL, NCLV, NCLV)
+        ZQXN(NCLV) = ZQXN(NCLV) / ZQLHS(NCLV, NCLV)
         DO JN=NCLV - 1,1,-1
           DO JM=JN + 1,NCLV
-            ZQXN(JL, JN) = ZQXN(JL, JN) - ZQLHS(JL, JN, JM)*ZQXN(JL, JM)
+            ZQXN(JN) = ZQXN(JN) - ZQLHS(JN, JM)*ZQXN(JM)
           END DO
-          ZQXN(JL, JN) = ZQXN(JL, JN) / ZQLHS(JL, JN, JN)
+          ZQXN(JN) = ZQXN(JN) / ZQLHS(JN, JN)
         END DO
 
         ! Ensure no small values (including negatives) remain in cloud variables nor
         ! precipitation rates.
         ! Evaporate l,i,r,s to water vapour. Latent heating taken into account below
         DO JN=1,NCLV - 1
-          IF (ZQXN(JL, JN) < ZEPSEC) THEN
-            ZQXN(JL, NCLDQV) = ZQXN(JL, NCLDQV) + ZQXN(JL, JN)
-            ZQXN(JL, JN) = 0.0_JPRB
+          IF (ZQXN(JN) < ZEPSEC) THEN
+            ZQXN(NCLDQV) = ZQXN(NCLDQV) + ZQXN(JN)
+            ZQXN(JN) = 0.0_JPRB
           END IF
         END DO
 
@@ -2543,8 +2543,8 @@ CONTAINS
         ! variables needed for next level
         !--------------------------------
         DO JM=1,NCLV
-          ZQXNM1(JL, JM) = ZQXN(JL, JM)
-          ZQXN2D(JL, JK, JM) = ZQXN(JL, JM)
+          ZQXNM1(JM) = ZQXN(JM)
+          ZQXN2D(JL, JK, JM) = ZQXN(JM)
         END DO
 
         !------------------------------------------------------------------------
@@ -2554,7 +2554,7 @@ CONTAINS
         !------------------------------------------------------------------------
 
         DO JM=1,NCLV
-          ZPFPLSX(JL, JK + 1, JM) = ZFALLSINK(JL, JM)*ZQXN(JL, JM)*ZRDTGDP
+          ZPFPLSX(JL, JK + 1, JM) = ZFALLSINK(JM)*ZQXN(JM)*ZRDTGDP
         END DO
 
         ! Ensure precipitation fraction is zero if no precipitation
@@ -2574,14 +2574,14 @@ CONTAINS
         DO JM=1,NCLV - 1
 
           ! calculate fluxes in and out of box for conservation of TL
-          ZFLUXQ(JL, JM) = ZPSUPSATSRCE(JL, JM) + ZCONVSRCE(JL, JM) + ZFALLSRCE(JL, JM) - (ZFALLSINK(JL, JM) + ZCONVSINK(JL, JM))*ZQXN(JL, JM)
+          ZFLUXQ(JM) = ZPSUPSATSRCE(JM) + ZCONVSRCE(JM) + ZFALLSRCE(JM) - (ZFALLSINK(JM) + ZCONVSINK(JM))*ZQXN(JM)
 
-          IF (IPHASE(JL, JM) == 1) THEN
-            TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) + RALVDCP*(ZQXN(JL, JM) - ZQX(JL, JK, JM) - ZFLUXQ(JL, JM))*ZQTMST
+          IF (IPHASE(JM) == 1) THEN
+            TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) + RALVDCP*(ZQXN(JM) - ZQX(JL, JK, JM) - ZFLUXQ(JM))*ZQTMST
           END IF
 
-          IF (IPHASE(JL, JM) == 2) THEN
-            TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) + RALSDCP*(ZQXN(JL, JM) - ZQX(JL, JK, JM) - ZFLUXQ(JL, JM))*ZQTMST
+          IF (IPHASE(JM) == 2) THEN
+            TENDENCY_LOC_T(JL, JK) = TENDENCY_LOC_T(JL, JK) + RALSDCP*(ZQXN(JM) - ZQX(JL, JK, JM) - ZFLUXQ(JM))*ZQTMST
           END IF
 
           !----------------------------------------------------------------------
@@ -2590,14 +2590,14 @@ CONTAINS
           !       uses ZQX. This is due to clipping at start of cloudsc which
           !       include the tendency already in TENDENCY_LOC_T and TENDENCY_LOC_q. ZQX was reset
           !----------------------------------------------------------------------
-          TENDENCY_LOC_CLD(JL, JK, JM) = TENDENCY_LOC_CLD(JL, JK, JM) + (ZQXN(JL, JM) - ZQX0(JL, JK, JM))*ZQTMST
+          TENDENCY_LOC_CLD(JL, JK, JM) = TENDENCY_LOC_CLD(JL, JK, JM) + (ZQXN(JM) - ZQX0(JL, JK, JM))*ZQTMST
 
         END DO
 
         !----------------------
         ! 6.2 Humidity budget
         !----------------------
-        TENDENCY_LOC_q(JL, JK) = TENDENCY_LOC_Q(JL, JK) + (ZQXN(JL, NCLDQV) - ZQX(JL, JK, NCLDQV))*ZQTMST
+        TENDENCY_LOC_q(JL, JK) = TENDENCY_LOC_Q(JL, JK) + (ZQXN(NCLDQV) - ZQX(JL, JK, NCLDQV))*ZQTMST
 
         !-------------------
         ! 6.3 cloud cover
