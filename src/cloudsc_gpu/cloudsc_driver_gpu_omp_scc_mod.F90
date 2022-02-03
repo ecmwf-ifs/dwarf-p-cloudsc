@@ -208,36 +208,36 @@ CONTAINS
     NCLDQS_=NCLDQS
     NCLV_=NCLV
 
-!$omp target data &
-!$omp map(to: &
-!$omp   PT,PQ,BUFFER_CML,BUFFER_TMP,PVFA, &
-!$omp   PVFL,PVFI,PDYNA,PDYNL,PDYNI,PHRSW,PHRLW,PVERVEL, &
-!$omp   PAP,PAPH,PLSM,LDCUM,KTYPE,PLU,PSNDE, &
-!$omp   PMFU,PMFD,PA,PCLV,PSUPSAT,PLCRIT_AER,PICRIT_AER, &
-!$omp   PRE_ICE,PCCN,PNICE, yrecldp) &
-!$omp map(tofrom: &
-!$omp   BUFFER_LOC,PLUDE,PCOVPTOT,PRAINFRAC_TOPRFZ) &
-!$omp map(from: &
-!$omp   PFSQLF,PFSQIF,PFCQNNG, &
-!$omp   PFCQLNG ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
-!$omp   PFSQITUR,PFPLSL,PFPLSN,PFHPSL,PFHPSN) &
-!$omp map(alloc: &
-!$omp   ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0, &
-!$omp   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT, ZFOEEW, ZFOEELIQT)
+!$acc data &
+!$acc copyin(&
+!$acc   PT,PQ,BUFFER_CML,BUFFER_TMP,PVFA, &
+!$acc   PVFL,PVFI,PDYNA,PDYNL,PDYNI,PHRSW,PHRLW,PVERVEL, &
+!$acc   PAP,PAPH,PLSM,LDCUM,KTYPE,PLU,PSNDE, &
+!$acc   PMFU,PMFD,PA,PCLV,PSUPSAT,PLCRIT_AER,PICRIT_AER, &
+!$acc   PRE_ICE,PCCN,PNICE, yrecldp) &
+!$acc copy(&
+!$acc   BUFFER_LOC,PLUDE,PCOVPTOT,PRAINFRAC_TOPRFZ) &
+!$acc copyout(&
+!$acc   PFSQLF,PFSQIF,PFCQNNG, &
+!$acc   PFCQLNG ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
+!$acc   PFSQITUR,PFPLSL,PFPLSN,PFHPSL,PFHPSN) &
+!$acc create(&
+!$acc   ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0, &
+!$acc   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT, ZFOEEW, ZFOEELIQT)
 
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-!$omp target teams distribute
+!$acc parallel loop gang
 
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-!$omp parallel do private(ZLCUST, IPHASE, IMELT, LLFALL, LLINDEX1, LLINDEX3, &
-!$omp IORDER, ZQXN, ZQXFG, ZQXNM1, ZFLUXQ, ZSOLQA, ZSOLQB, ZQLHS, ZVQX, ZRATIO,&
-!$omp ZSINKSUM, ZFALLSINK, ZFALLSRCE, ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE)
+!$acc loop vector private(ZLCUST, IPHASE, IMELT, LLFALL, LLINDEX1, LLINDEX3, &
+!$acc IORDER, ZQXN, ZQXFG, ZQXNM1, ZFLUXQ, ZSOLQA, ZSOLQB, ZQLHS, ZVQX, ZRATIO,&
+!$acc ZSINKSUM, ZFALLSINK, ZFALLSRCE, ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE)
 
       DO JL=1, ICEND
 
@@ -286,13 +286,13 @@ CONTAINS
         & LOCAL_YRECLDP)
 
       ENDDO
-!$omp end parallel do
+!$acc end loop
     ENDDO
-!$omp end target teams distribute
+!$acc end parallel loop
 
     CALL TIMER%THREAD_END(TID)
 
-!$omp end target data
+!$acc end data
 
     CALL TIMER%END()
 

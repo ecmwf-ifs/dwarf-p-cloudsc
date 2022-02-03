@@ -26,9 +26,9 @@ set( OpenMP_Fortran_FLAGS       "-mp -mp=bind,allcores,numa" )
 # OpenAcc FLAGS
 ####################################################################
 
-#set( OpenACC_Fortran_FLAGS "-acc -ta=tesla:lineinfo,deepcopy,fastmath" )
+set( OpenACC_Fortran_FLAGS "-acc -ta=tesla:lineinfo,deepcopy,fastmath" )
 #set( OpenACC_Fortran_FLAGS "-mp=gpu -ta=tesla:lineinfo,fastmath" )
-set( OpenACC_Fortran_FLAGS "-mp=gpu -gpu=cc70,fastmath,lineinfo" )
+#set( OpenACC_Fortran_FLAGS "-mp=gpu -gpu=cc70,fastmath,lineinfo" )
 set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
 ####################################################################
