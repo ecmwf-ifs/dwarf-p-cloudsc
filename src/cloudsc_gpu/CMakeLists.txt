@@ -56,25 +56,48 @@ endif()
 
 if( HAVE_CLOUDSC_GPU_SCC )
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc
+        TARGET dwarf-cloudsc-gpu-acc-scc
         SOURCES
             dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_scc_mod.F90
             cloudsc_gpu_scc_mod.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC CLOUDSC_GPU_ACC_SCC
     )
     if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE cloudsc-common-lib-static )
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc PRIVATE OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc PRIVATE cloudsc-common-lib-static )
     else()
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE cloudsc-common-lib )
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc PRIVATE cloudsc-common-lib )
     endif()
 
     if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE MPI::MPI_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc PRIVATE MPI::MPI_Fortran )
     endif()
     if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-gpu-scc PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+        target_include_directories( dwarf-cloudsc-gpu-acc-scc PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
+
+    # SCC_V2 from OpenMP5 version
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-acc-scc-v2
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_acc_scc_v2_mod.F90
+            cloudsc_gpu_acc_scc_v2_mod.F90
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC CLOUDSC_GPU_ACC_SCC_V2
+    )
+    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc-v2 PRIVATE OpenACC::OpenACC_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc-v2 PRIVATE cloudsc-common-lib-static )
+    else()
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc-v2 PRIVATE cloudsc-common-lib )
+    endif()
+
+    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+        target_link_libraries( dwarf-cloudsc-gpu-acc-scc-v2 PRIVATE MPI::MPI_Fortran )
+    endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-gpu-acc-scc-v2 PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
     endif()
 
     # OpenMP5
@@ -84,10 +107,9 @@ if( HAVE_CLOUDSC_GPU_SCC )
             dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_omp_scc_mod.F90
             cloudsc_gpu_omp_scc_mod.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC CLOUDSC_GPU_OMP_SCC
     )
     if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
-        target_compile_definitions( dwarf-cloudsc-gpu-omp-scc PRIVATE CLOUDSC_GPU_OMP5)
         target_link_libraries( dwarf-cloudsc-gpu-omp-scc PRIVATE OpenACC::OpenACC_Fortran )
         target_link_libraries( dwarf-cloudsc-gpu-omp-scc PRIVATE cloudsc-common-lib-static )
     else()
