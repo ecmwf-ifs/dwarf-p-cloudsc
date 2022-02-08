@@ -12,6 +12,9 @@
 
 set( ECBUILD_FIND_MPI ON )
 
+# Disable OpenACC for Leap42/GNU CPU builds
+set( ENABLE_ACC OFF )
+
 ####################################################################
 # Compiler FLAGS
 ####################################################################
