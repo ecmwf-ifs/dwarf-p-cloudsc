@@ -30,7 +30,7 @@ jobs:
         arch:
           - github/ubuntu/gnu/9.3.0
           
-        io_library_flag: ['--with-hdf5']  # Switch between Serialbox and HDF5
+        io_library_flag: ['']  # Switch between Serialbox and HDF5
         # FIXME: serialbox builds are currently disabled until a compatible serialbox version is available to Github actions
         
         mpi_flag: ['', '--with-mpi']  # Enable MPI-parallel build
@@ -48,7 +48,7 @@ jobs:
       - name: Environment setup
         run: |
           [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
-          [[ "${{ matrix.io_library_flag }}" == "--with-hdf5" ]] && sudo apt install libhdf5-dev || true
+          [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || true
       
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
