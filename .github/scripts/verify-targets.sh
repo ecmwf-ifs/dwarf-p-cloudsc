@@ -8,18 +8,11 @@ exit_code=0
 # Build the list of targets
 #
 
-targets=(dwarf-P-cloudMicrophysics-IFSScheme)
+targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-fortran)
 
-# Without HDF5/Serialbox, no other variants are currently available
-# FIXME: Add Serialbox builds and add dwarf-cloudsc-c
-if [[ "$io_library_flag" == "--with-hdf5" ]]
+if [[ "$gpu_flag" == "--with-gpu" ]]
 then
-  targets+=(dwarf-cloudsc-fortran)
-
-  if [[ "$gpu_flag" == "--with-gpu" ]]
-  then
-    targets+=(dwarf-cloudsc-gpu-claw dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist)
-  fi
+  targets+=(dwarf-cloudsc-gpu-claw dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist)
 fi
 
 #
