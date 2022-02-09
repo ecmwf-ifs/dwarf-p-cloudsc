@@ -45,6 +45,9 @@ export BOOST_INCLUDEDIR="/usr/local/apps/boost/1.61.0/PGI/17.1/include/"
 # Include local OpenMPI in the path for discovery in build
 export PATH="/local/hdd/nabr/openmpi/nvhpc-nompi/20.9/bin:$PATH"
 
+# Custom HDF5 library build with F03 interfaces
+export HDF5_ROOT="/local/hdd/nabr/hdf5/nvhpc/20.9"
+
 # Restore tracing to stored setting
 if [[ -n "$tracing_" ]]; then set -x; else set +x; fi
 
