@@ -93,7 +93,7 @@ options :
         cmake : ENABLE_CLOUDSC_GPU_CLAW={{value}}
 
     - cloudsc-loki :
-        help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
+        help  : Build the optimized Loki-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_LOKI={{value}}
 
     - hdf5 :
