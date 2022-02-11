@@ -97,6 +97,9 @@ if( HAVE_CLOUDSC_LOKI )
     if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-idem PRIVATE OpenMP::OpenMP_Fortran )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-idem PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
 
 
     ####################################################
@@ -128,6 +131,9 @@ if( HAVE_CLOUDSC_LOKI )
     target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE cloudsc-common-lib )
     if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE OpenMP::OpenMP_Fortran )
+    endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-sca PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
     endif()
 
 
@@ -183,6 +189,9 @@ if( HAVE_CLOUDSC_LOKI )
         if( TARGET OpenMP::OpenMP_Fortran )
             target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE OpenMP::OpenMP_Fortran )
         endif()
+ 	if ( HAVE_HDF5 )
+          target_include_directories( dwarf-cloudsc-loki-claw-cpu PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+	endif()
     endif()
 
     ####################################################
@@ -244,6 +253,9 @@ if( HAVE_CLOUDSC_LOKI )
         else()
             target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
         endif()
+	if ( HAVE_HDF5 )
+          target_include_directories( dwarf-cloudsc-loki-claw-gpu PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+	endif()
     endif()
 
 
@@ -284,6 +296,9 @@ if( HAVE_CLOUDSC_LOKI )
         target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE cloudsc-common-lib-static )
     else()
         target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE cloudsc-common-lib )
+    endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-scc PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
     endif()
 
 
@@ -327,6 +342,9 @@ if( HAVE_CLOUDSC_LOKI )
         target_link_libraries( dwarf-cloudsc-loki-scc-hoist PRIVATE cloudsc-common-lib-static )
     else()
         target_link_libraries( dwarf-cloudsc-loki-scc-hoist PRIVATE cloudsc-common-lib )
+    endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-scc-hoist PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
     endif()
 
 
@@ -376,6 +394,10 @@ if( HAVE_CLOUDSC_LOKI )
         target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_C )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-c PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
+
 
     # Create symlink for the input data
     if( HAVE_SERIALBOX )

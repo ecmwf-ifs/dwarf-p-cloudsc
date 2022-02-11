@@ -76,7 +76,7 @@ install the bundle via:
 
 ```sh
 ./cloudsc-bundle create  # Checks out dependency packages
-./cloudsc-bundle build [--build-type=debug|bit|release] [--arch=$PWD/arch/ecmwf/machine/compiler/version/env.sh]
+./cloudsc-bundle build [--build-type=debug|bit|release] [--arch=./arch/ecmwf/machine/compiler/version]
 ```
 
 The individual prototype variants of the dwarf are managed as ECBuild features
@@ -97,7 +97,7 @@ volta machine:
 
 ```sh
 ./cloudsc-bundle create  # Checks out dependency packages
-./cloudsc-bundle build --clean --with-gpu --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
+./cloudsc-bundle build --clean --with-gpu --arch=./arch/ecmwf/volta/nvhpc/20.9
 ```
 
 ### MPI-enabled versions of CLOUDSC
@@ -107,7 +107,7 @@ MPI support by providing the `--with-mpi` flag. For example on volta:
 
 ```sh
 ./cloudsc-bundle create
-./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
+./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=./arch/ecmwf/volta/nvhpc/20.9
 ```
 
 Running with MPI parallelization distributes the columns of the working set
@@ -216,10 +216,10 @@ the following build flags enable the demonstrator build targets:
 # For general use on workstations with GNU
 # Please note that OpenACC needs to be disable with GNU,
 # since CLAW-generated code currently does not comply with GNU.
-./cloudsc-bundle build --clean --with-loki --loki-frontend=fp --arch=$PWD/arch/ecmwf/leap42/gnu/7.3.0/env.sh
+./cloudsc-bundle build --clean --with-loki --loki-frontend=fp --arch=./arch/ecmwf/leap42/gnu/7.3.0
 
 # For GPU exploration on volta
-./cloudsc-bundle build --clean [--with-gpu]--with-loki --loki-frontend=fp --arch=$PWD/arch/ecmwf/volta/pgi-gpu/20.9/env.sh
+./cloudsc-bundle build --clean [--with-gpu]--with-loki --loki-frontend=fp --arch=./arch/ecmwf/volta/nvhpc/20.9
 ```
 
 The following Loki modes are included in the dwarf, each with a bespoke demonstrator build:
