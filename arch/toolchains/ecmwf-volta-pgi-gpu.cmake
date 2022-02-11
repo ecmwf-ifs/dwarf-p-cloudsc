@@ -25,7 +25,8 @@ set( OpenMP_Fortran_FLAGS       "-mp -mp=bind,allcores,numa" )
 ####################################################################
 
 set( OpenACC_Fortran_FLAGS "-acc -ta=tesla:lineinfo,deepcopy,fastmath" )
-set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
+# Enable this to get more detailed compiler output
+# set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
 ####################################################################
 # COMMON FLAGS

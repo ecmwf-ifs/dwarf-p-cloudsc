@@ -12,7 +12,7 @@ cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 find_package( ecbuild REQUIRED )
 
 # define the project
-project(dwarf-P-cloudMicrophysics-IFSScheme LANGUAGES C Fortran )
+project( dwarf-p-cloudsc LANGUAGES C Fortran )
 
 include( cmake/compat.cmake )
 
@@ -62,20 +62,22 @@ if( MPI_Fortran_FOUND AND ENABLE_MPI )
 endif()
 
 ### HDF5
-if( NOT DEFINED ENABLE_HDF5 OR ENABLE_HDF5 )
-    ecbuild_find_package( NAME HDF5
-        COMPONENTS Fortran )
-endif()
-if( HDF5_FOUND AND ENABLE_HDF5 )
-    ecbuild_add_option( FEATURE HDF5
-        DESCRIPTION "HDF5" DEFAULT OFF
-        CONDITION HDF5_FOUND )
+ecbuild_add_option( FEATURE HDF5
+    DESCRIPTION "Use HDF5 to read input and reference data"
+    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran"
+    CONDITION NOT DEFINED ENABLE_HDF5 OR ENABLE_HDF5
+    DEFAULT ON )
+if( HDF5_FOUND )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 ${HDF5_Fortran_DEFINITIONS})
 endif()
 
 # Add Serialbox utility package for platform-agnostic file I/O
-find_package( Serialbox )
-if( Serialbox_FOUND )
+ecbuild_add_option( FEATURE SERIALBOX
+    DESCRIPTION "Use Serialbox to read input and reference data"
+    REQUIRED_PACKAGES "Serialbox"
+    CONDITION (NOT DEFINED ENABLE_SERIALBOX OR ENABLE_SERIALBOX) AND NOT HDF5_FOUND
+    DEFAULT OFF )
+if( SERIALBOX_FOUND )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
 
@@ -105,7 +107,7 @@ if(HAVE_DOCS)
 endif()
 
 # finalize
-ecbuild_install_project(NAME dwarf-P-cloudMicrophysics-IFSScheme)
+ecbuild_install_project(NAME dwarf-p-cloudsc)
 
 # print summary
 ecbuild_print_summary()

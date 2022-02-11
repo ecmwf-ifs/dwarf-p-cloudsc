@@ -12,6 +12,43 @@ ecbuild_add_option( FEATURE CLOUDSC_LOKI
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+function( cloudsc_xmod _TARGET )
+
+    if( TARGET clawfc AND ${LOKI_FRONTEND} STREQUAL "omni" )
+
+        # Ugly hack: OMNI needs the xmod-file for cloudsc.F90 to be able to
+        # parse the driver file successfully. However, the scheduler currently
+        # doesn't take this into account and fails when parsing driver before
+        # kernel file.
+        # (Note: the problem vanishes in serial builds as there the C-transpile
+        # target is built first which doesn't use the scheduler and therefore
+        # creates the necessary xmod files for us)
+        # TODO: This can be removed once the scheduler is aware of these dependencies
+        # and parses files in the right order
+
+        set( _TARGET_XMOD_DIR "${CMAKE_CURRENT_BINARY_DIR}/${_TARGET}" )
+        set( _TARGET_XMOD_DIR ${_TARGET_XMOD_DIR} PARENT_SCOPE )
+        file( MAKE_DIRECTORY ${_TARGET_XMOD_DIR} )
+
+        generate_xmod(
+            OUTPUT ${_TARGET_XMOD_DIR}/cloudsc.xml
+            SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        )
+
+        # Use XML files as dependencies (not xmod) as they are updated by later calls of
+        # F_Front (and thus would trigger new execution rounds)
+        set( _OMNI_DEPENDENCIES ${_TARGET_XMOD_DIR}/cloudsc.xml PARENT_SCOPE )
+
+    else()
+
+        set( _TARGET_XMOD_DIR "" PARENT_SCOPE)
+        set( _OMNI_DEPENDENCIES "" PARENT_SCOPE )
+
+    endif()
+
+endfunction()
+
 if( HAVE_CLOUDSC_LOKI )
 
     ####################################################
@@ -30,38 +67,12 @@ if( HAVE_CLOUDSC_LOKI )
       set( CLOUDSC_DEFINE_STMT_FUNC CLOUDSC_STMT_FUNC )
     endif()
 
-    if( TARGET clawfc AND ${LOKI_FRONTEND} STREQUAL "omni" )
-
-        # Ugly hack: OMNI needs the xmod-file for cloudsc.F90 to be able to
-        # parse the driver file successfully. However, the scheduler currently
-        # doesn't take this into account and fails when parsing driver before
-        # kernel file.
-        # (Note: the problem vanishes in serial builds as there the C-transpile
-        # target is built first which doesn't use the scheduler and therefore
-        # creates the necessary xmod files for us)
-        # TODO: This can be removed once the scheduler is aware of these dependencies
-        # and parses files in the right order
-
-        generate_xmod(
-            OUTPUT ${XMOD_DIR}/cloudsc.xml
-            SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-            XMOD ${XMOD_DIR}
-        )
-
-        # Use XML files as dependencies (not xmod) as they are updated by later calls of
-        # F_Front (and thus would trigger new execution rounds)
-        set( _OMNI_DEPENDENCIES ${XMOD_DIR}/cloudsc.xml )
-
-    else()
-
-        set( _OMNI_DEPENDENCIES )
-
-    endif()
-
     ####################################################
     ##  Idempotence mode:                             ##
     ##   * Internal "do-nothing" mode for Loki debug  ##
     ####################################################
+
+    cloudsc_xmod( loki-idem )
 
     loki_transform_convert(
         MODE idem FRONTEND ${LOKI_FRONTEND} CPP
@@ -69,7 +80,7 @@ if( HAVE_CLOUDSC_LOKI )
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
         HEADER ${COMMON_MODULE}/yomphyder.F90
         INCLUDE ${COMMON_INCLUDE}
-        XMOD ${XMOD_DIR}
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
@@ -86,6 +97,9 @@ if( HAVE_CLOUDSC_LOKI )
     if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-idem PRIVATE OpenMP::OpenMP_Fortran )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-idem PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
 
 
     ####################################################
@@ -93,13 +107,15 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Extract de-vectorized SCA format code      ##
     ####################################################
 
+    cloudsc_xmod( loki-sca )
+
     loki_transform_convert(
         MODE sca FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
         HEADER ${COMMON_MODULE}/yomphyder.F90
         INCLUDE ${COMMON_INCLUDE}
-        XMOD ${XMOD_DIR}
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         OUTPUT loki-sca/cloudsc.sca.F90 loki-sca/cloudsc_driver_loki_mod.sca.F90
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
@@ -116,6 +132,9 @@ if( HAVE_CLOUDSC_LOKI )
     if( TARGET OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE OpenMP::OpenMP_Fortran )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-sca PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
 
 
     ####################################################
@@ -125,13 +144,15 @@ if( HAVE_CLOUDSC_LOKI )
     ####################################################
     if( TARGET clawfc )
 
+        cloudsc_xmod( loki-claw-cpu )
+
         loki_transform_convert(
             MODE claw FRONTEND ${LOKI_FRONTEND} CPP
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
             PATH ${CMAKE_CURRENT_SOURCE_DIR}
             HEADER ${COMMON_MODULE}/yomphyder.F90
             INCLUDE ${COMMON_INCLUDE}
-            XMOD ${XMOD_DIR}
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
             OUTPUT loki-claw-cpu/cloudsc.claw.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
             DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
@@ -143,7 +164,7 @@ if( HAVE_CLOUDSC_LOKI )
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET cpu DIRECTIVE none
             INCLUDE ${COMMON_INCLUDE}
-            XMOD ${XMOD_DIR}
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-cpu/cloudsc.claw.F90
             OUTPUT loki-claw-cpu/cloudsc.claw.cpu.F90
         )
@@ -151,7 +172,7 @@ if( HAVE_CLOUDSC_LOKI )
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET cpu DIRECTIVE none
             INCLUDE ${COMMON_INCLUDE}
-            XMOD ${XMOD_DIR}
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
             OUTPUT loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
             DEPENDS loki-claw-cpu/cloudsc.claw.cpu.F90
@@ -168,6 +189,9 @@ if( HAVE_CLOUDSC_LOKI )
         if( TARGET OpenMP::OpenMP_Fortran )
             target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE OpenMP::OpenMP_Fortran )
         endif()
+ 	if ( HAVE_HDF5 )
+          target_include_directories( dwarf-cloudsc-loki-claw-cpu PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+	endif()
     endif()
 
     ####################################################
@@ -176,6 +200,8 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Process with CLAW (GPU layout and OpenACC) ##
     ####################################################
     if( TARGET clawfc )
+
+        cloudsc_xmod( loki-claw-gpu )
 
         # Uses Loki-frontend CPP to switch to statement function variant again,
         # but suppresses inlining of stmt funcs by omitting `--include`
@@ -187,7 +213,7 @@ if( HAVE_CLOUDSC_LOKI )
             INCLUDE ${COMMON_INCLUDE}
             DEFINE CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
             DATA_OFFLOAD REMOVE_OPENMP
-            XMOD ${XMOD_DIR}
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
             OUTPUT loki-claw-gpu/cloudsc.claw.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
             DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
@@ -197,7 +223,7 @@ if( HAVE_CLOUDSC_LOKI )
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET gpu DIRECTIVE openacc
             INCLUDE ${COMMON_INCLUDE}
-            XMOD ${XMOD_DIR}
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-gpu/cloudsc.claw.F90
             OUTPUT loki-claw-gpu/cloudsc.claw.gpu.F90
         )
@@ -205,7 +231,7 @@ if( HAVE_CLOUDSC_LOKI )
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET gpu DIRECTIVE openacc
             INCLUDE ${COMMON_INCLUDE}
-            XMOD ${XMOD_DIR}
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
             OUTPUT loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
             DEPENDS loki-claw-gpu/cloudsc.claw.gpu.F90
@@ -227,6 +253,9 @@ if( HAVE_CLOUDSC_LOKI )
         else()
             target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
         endif()
+	if ( HAVE_HDF5 )
+          target_include_directories( dwarf-cloudsc-loki-claw-gpu PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+	endif()
     endif()
 
 
@@ -236,6 +265,8 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Invokes compute kernel as `!$acc vector`   ##
     ####################################################
 
+    cloudsc_xmod( loki-scc )
+
     loki_transform_convert(
         MODE scc FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
@@ -244,7 +275,7 @@ if( HAVE_CLOUDSC_LOKI )
         INCLUDE ${COMMON_INCLUDE}
         DEFINE CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
         DATA_OFFLOAD REMOVE_OPENMP
-        XMOD ${XMOD_DIR}
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
         OUTPUT loki-scc/cloudsc.scc.F90 loki-scc/cloudsc_driver_loki_mod.scc.F90
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
@@ -266,6 +297,9 @@ if( HAVE_CLOUDSC_LOKI )
     else()
         target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE cloudsc-common-lib )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-scc PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
 
 
     ####################################################
@@ -275,6 +309,8 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Temporary arrays hoisted to driver         ##
     ####################################################
 
+    cloudsc_xmod( loki-scc-hoist )
+
     loki_transform_convert(
         MODE scc-hoist FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
@@ -283,7 +319,7 @@ if( HAVE_CLOUDSC_LOKI )
         INCLUDE ${COMMON_INCLUDE}
         DEFINE CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
         DATA_OFFLOAD REMOVE_OPENMP
-        XMOD ${XMOD_DIR}
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
         OUTPUT
             loki-scc-hoist/cloudsc.scc_hoist.F90
@@ -307,11 +343,16 @@ if( HAVE_CLOUDSC_LOKI )
     else()
         target_link_libraries( dwarf-cloudsc-loki-scc-hoist PRIVATE cloudsc-common-lib )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-scc-hoist PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
 
 
     ##############################################################################
     # C-transpilation mode for generating vectorized C host code (experimental!)
     ##############################################################################
+
+    cloudsc_xmod( loki-c )
 
     loki_transform_transpile(
         FRONTEND ${LOKI_FRONTEND} CPP
@@ -326,7 +367,7 @@ if( HAVE_CLOUDSC_LOKI )
         DRIVER ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
         SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
         INCLUDE ${COMMON_INCLUDE}
-        XMOD ${XMOD_DIR}
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c
         OUTPUT
             loki-c/cloudsc_driver_loki_mod.c.F90
@@ -353,6 +394,10 @@ if( HAVE_CLOUDSC_LOKI )
         target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_Fortran )
         target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_C )
     endif()
+    if ( HAVE_HDF5 )
+        target_include_directories( dwarf-cloudsc-loki-c PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+    endif()
+
 
     # Create symlink for the input data
     if( HAVE_SERIALBOX )
