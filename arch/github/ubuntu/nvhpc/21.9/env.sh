@@ -24,6 +24,8 @@ export PATH=${MPI_HOME}/bin:${PATH}
 
 ### HDF5
 export HDF5_DIR=${GITHUB_WORKSPACE}/hdf5-install
+export LD_LIBRARY_PATH=${HDF5_DIR}/lib:${LD_LIBRARY_PATH}
+export PATH=${HDF5_DIR}/bin:${PATH}
 
 ### Compiler variables
 export CC=nvc
