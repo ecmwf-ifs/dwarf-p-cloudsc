@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v2
 
       # Install MPI
-      - name: Install MPI
+      - name: Install MPI via Apt
         if: contains( matrix.mpi_flag, 'with-mpi' )
         run: sudo apt-get install libopenmpi-dev
 
@@ -63,14 +63,14 @@ jobs:
         run: .github/scripts/bootstrap-nvhpc.sh
 
       # Install HDF5
-      - name: Install HDF5
-        if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
-        run: source ${{ matrix.arch }} && .github/scripts/install-hdf5.sh
-
-      - name: Install HDF5
+      - name: Install HDF5 via Apt
         if: contains( matrix.arch, 'gnu' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
         run: sudo apt-get install libhdf5-dev
       
+      - name: Install HDF5 from source
+        if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
+        run: source arch/${{ matrix.arch }} && .github/scripts/install-hdf5.sh
+
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
         run: ./cloudsc-bundle create
