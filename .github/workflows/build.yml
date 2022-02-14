@@ -29,7 +29,6 @@ jobs:
       
         arch:
           - github/ubuntu/gnu/9.3.0
-          - github/ubuntu/nvhpc/21.9
           
         io_library_flag: ['']  # Switch between Serialbox and HDF5
         # FIXME: serialbox builds are currently disabled until a compatible serialbox version is available to Github actions
@@ -40,10 +39,13 @@ jobs:
 
         gpu_flag: ['', '--with-gpu']  # GPU-variants enabled
 
-        exclude:
-          # Do not build nvhpc without gpu variants
+        include:
+          # Add a single nvhpc build configuration
           - arch: github/ubuntu/nvhpc/21.9
-            gpu_flag: ''
+            io_library_flag: ''
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: '--with-gpu'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
