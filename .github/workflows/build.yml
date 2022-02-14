@@ -54,21 +54,21 @@ jobs:
 
       # Install MPI
       - name: Install MPI
-        if: matrix.mpi_flag == "--with-mpi"
+        if: contains( matrix.mpi_flag, 'with-mpi' )
         run: sudo apt-get install libopenmpi-dev
 
       # Install Compiler
       - name: Install nvhpc
-        if: contains(matrix.arch, 'nvhpc')
+        if: contains( matrix.arch, 'nvhpc' )
         run: .github/scripts/bootstrap-nvhpc.sh
 
       # Install HDF5
       - name: Install HDF5
-        if: contains(matrix.arch, 'nvhpc') and matrix.io_library_flag != '--with-serialbox'
+        if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
         run: source ${{ matrix.arch }} && .github/scripts/install-hdf5.sh
 
       - name: Install HDF5
-        if: contains(matrix.arch, 'gnu') and matrix.io_library_flag != '--with-serialbox'
+        if: contains( matrix.arch, 'gnu' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
         run: sudo apt-get install libhdf5-dev
       
       # Check-out dependencies as part of the bundle creation
