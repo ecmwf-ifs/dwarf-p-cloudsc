@@ -29,6 +29,7 @@ jobs:
       
         arch:
           - github/ubuntu/gnu/9.3.0
+          - github/ubuntu/nvhpc/21.9
           
         io_library_flag: ['']  # Switch between Serialbox and HDF5
         # FIXME: serialbox builds are currently disabled until a compatible serialbox version is available to Github actions
@@ -38,6 +39,11 @@ jobs:
         prec_flag: ['', '--single-precision']  # Switch single/double precision
 
         gpu_flag: ['', '--with-gpu']  # GPU-variants enabled
+
+        exclude:
+          # Do not build nvhpc without gpu variants
+          - arch: github/ubuntu/nvhpc/21.9
+            gpu_flag: ''
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -49,6 +55,7 @@ jobs:
         run: |
           [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
           [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || true
+          [[ "${{ matrix.arch }}" == *"nvhpc"* ]] && .github/scripts/bootstrap-nvhpc.sh || true
       
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
