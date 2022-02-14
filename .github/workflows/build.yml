@@ -69,7 +69,7 @@ jobs:
       
       - name: Install HDF5 from source
         if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
-        run: source arch/${{ matrix.arch }} && .github/scripts/install-hdf5.sh
+        run: source arch/${{ matrix.arch }}/env.sh && .github/scripts/install-hdf5.sh
 
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
