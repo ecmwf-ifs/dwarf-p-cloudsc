@@ -28,8 +28,8 @@ export LD_LIBRARY_PATH=${HDF5_DIR}/lib:${LD_LIBRARY_PATH}
 export PATH=${HDF5_DIR}/bin:${PATH}
 
 ### Compiler variables
-export CC=nvc
-export CXX=nvc++
-export FC=nvfortran
+export CC=pgcc
+export CXX=pgc++
+export FC=pgf90
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"

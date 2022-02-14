@@ -52,12 +52,24 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Sets-up environment and installs required packages
-      - name: Environment setup
-        run: |
-          [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
-          [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || true
-          [[ "${{ matrix.arch }}" == *"nvhpc"* ]] && .github/scripts/bootstrap-nvhpc.sh || true
+      # Install MPI
+      - name: Install MPI
+        if: matrix.mpi_flag == "--with-mpi"
+        run: sudo apt-get install libopenmpi-dev
+
+      # Install Compiler
+      - name: Install nvhpc
+        if: contains(matrix.arch, 'nvhpc')
+        run: .github/scripts/bootstrap-nvhpc.sh
+
+      # Install HDF5
+      - name: Install HDF5
+        if: contains(matrix.arch, 'nvhpc') and matrix.io_library_flag != '--with-serialbox'
+        run: source ${{ matrix.arch }} && .github/scripts/install-hdf5.sh
+
+      - name: Install HDF5
+        if: contains(matrix.arch, 'gnu') and matrix.io_library_flag != '--with-serialbox'
+        run: sudo apt-get install libhdf5-dev
       
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
