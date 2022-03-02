@@ -43,6 +43,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 
 if( HAVE_CLOUDSC_GPU_CLAW )
     ecbuild_add_executable(
@@ -211,6 +216,28 @@ if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
         OMP 1
     )
 
+endif()
+
+
+if( HAVE_CLOUDSC_GPU_SCC_FIELD )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-field
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_field_mod.F90
+            cloudsc_gpu_scc_mod.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_FIELD
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-field
+        COMMAND bin/dwarf-cloudsc-gpu-scc-field
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
 endif()
 
 
