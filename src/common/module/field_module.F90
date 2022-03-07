@@ -19,6 +19,8 @@ USE PARKIND1, ONLY: JPIM, JPRB
 USE OML_MOD, ONLY: OML_MAX_THREADS, OML_MY_THREAD
 USE IEEE_ARITHMETIC, ONLY: IEEE_SIGNALING_NAN
 
+USE CUDAFOR
+
 IMPLICIT NONE
 
 TYPE FIELD_2D
@@ -42,7 +44,8 @@ TYPE FIELD_2D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   REAL(KIND=JPRB), POINTER :: PTR(:,:) => NULL()
-  REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:)
+  ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:)
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -106,7 +109,9 @@ TYPE FIELD_3D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   REAL(KIND=JPRB), POINTER :: PTR(:,:,:) => NULL()
-  REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:)
+  ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:)
+  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:,:)
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -170,7 +175,8 @@ TYPE FIELD_4D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:) => NULL()
-  REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:,:)
+  ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:,:)
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -235,7 +241,8 @@ TYPE FIELD_INT2D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   INTEGER(KIND=JPIM), POINTER :: PTR(:,:) => NULL()
-  INTEGER(KIND=JPIM), ALLOCATABLE :: DATA(:,:)
+  ! INTEGER(KIND=JPIM), ALLOCATABLE :: DATA(:,:)
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DATA(:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -300,7 +307,8 @@ TYPE FIELD_LOG2D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   LOGICAL, POINTER :: PTR(:,:) => NULL()
-  LOGICAL, ALLOCATABLE :: DATA(:,:)
+  ! LOGICAL, ALLOCATABLE :: DATA(:,:)
+  LOGICAL, POINTER, CONTIGUOUS :: DATA(:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -799,6 +807,9 @@ CONTAINS
     LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
     INTEGER(KIND=JPIM) :: NBLK
 
+    INTEGER(KIND=JPIM) :: istat, arrsize
+    type(c_ptr) :: hptr
+
     ! By default we allocate thread-local temporaries
     SELF%THREAD_BUFFER = .TRUE.
     NBLK = OML_MAX_THREADS()
@@ -814,7 +825,13 @@ CONTAINS
     END IF
 
     ! Allocate storage array and store metadata
-    ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
+    ! ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
+
+    arrsize = SHAPE(1) * NBLK * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    call c_f_pointer(hptr, self%data, [SHAPE(1), NBLK] )
+
     SELF%PTR => SELF%DATA
     SELF%ACTIVE = .TRUE.
     SELF%OWNED = .TRUE.
@@ -833,6 +850,9 @@ CONTAINS
     LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
     INTEGER(KIND=JPIM) :: NBLK
 
+    INTEGER(KIND=JPIM) :: istat, arrsize
+    type(c_ptr) :: hptr
+
     ! By default we allocate thread-local temporaries
     SELF%THREAD_BUFFER = .TRUE.
     NBLK = OML_MAX_THREADS()
@@ -848,7 +868,13 @@ CONTAINS
     END IF
 
     ! Allocate storage array and store metadata
-    ALLOCATE(SELF%DATA(SHAPE(1),SHAPE(2),NBLK))
+    ! ALLOCATE(SELF%DATA(SHAPE(1),SHAPE(2),NBLK))
+
+    arrsize = SHAPE(1) * SHAPE(2) * NBLK * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    call c_f_pointer(hptr, self%data, [SHAPE(1), SHAPE(2), NBLK] )
+
     SELF%PTR => SELF%DATA
     SELF%ACTIVE = .TRUE.
     SELF%OWNED = .TRUE.
@@ -867,6 +893,9 @@ CONTAINS
     LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
     INTEGER(KIND=JPIM) :: NBLK
 
+    INTEGER(KIND=JPIM) :: istat, arrsize
+    type(c_ptr) :: hptr
+
     ! By default we allocate thread-local temporaries
     SELF%THREAD_BUFFER = .TRUE.
     NBLK = OML_MAX_THREADS()
@@ -882,7 +911,13 @@ CONTAINS
     END IF
 
     ! Allocate storage array and store metadata
-    ALLOCATE(SELF%DATA(SHAPE(1),SHAPE(2),SHAPE(3),NBLK))
+    ! ALLOCATE(SELF%DATA(SHAPE(1),SHAPE(2),SHAPE(3),NBLK))
+
+    arrsize = SHAPE(1) * SHAPE(2) * SHAPE(3) * NBLK * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    call c_f_pointer(hptr, self%data, [SHAPE(1), SHAPE(2), SHAPE(3), NBLK] )
+
     SELF%PTR => SELF%DATA
     SELF%ACTIVE = .TRUE.
     SELF%OWNED = .TRUE.
@@ -901,6 +936,9 @@ CONTAINS
     LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
     INTEGER(KIND=JPIM) :: NBLK
 
+    INTEGER(KIND=JPIM) :: istat, arrsize
+    type(c_ptr) :: hptr
+
     ! By default we allocate thread-local temporaries
     SELF%THREAD_BUFFER = .TRUE.
     NBLK = OML_MAX_THREADS()
@@ -916,7 +954,13 @@ CONTAINS
     END IF
 
     ! Allocate storage array and store metadata
-    ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
+    ! ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
+
+    arrsize = SHAPE(1) * NBLK * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    call c_f_pointer(hptr, self%data, [SHAPE(1), NBLK] )
+
     SELF%PTR => SELF%DATA
     SELF%ACTIVE = .TRUE.
     SELF%OWNED = .TRUE.
@@ -935,6 +979,9 @@ CONTAINS
     LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
     INTEGER(KIND=JPIM) :: NBLK
 
+    INTEGER(KIND=JPIM) :: istat, arrsize
+    type(c_ptr) :: hptr
+
     ! By default we allocate thread-local temporaries
     SELF%THREAD_BUFFER = .TRUE.
     NBLK = OML_MAX_THREADS()
@@ -950,7 +997,13 @@ CONTAINS
     END IF
 
     ! Allocate storage array and store metadata
-    ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
+    ! ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
+
+    arrsize = SHAPE(1) * NBLK * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    call c_f_pointer(hptr, self%data, [SHAPE(1), NBLK] )
+
     SELF%PTR => SELF%DATA
     SELF%ACTIVE = .TRUE.
     SELF%OWNED = .TRUE.
@@ -1625,9 +1678,7 @@ CONTAINS
 
     IF (SELF%OWNED) THEN
       !$acc enter data create(SELF%DATA)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DATA(:,IBL))
-      END DO
+      !$acc update device(SELF%DATA(:,:))
       !$acc wait
       SELF%DEVPTR => SELF%DATA
     ELSE
@@ -1648,9 +1699,7 @@ CONTAINS
 
     IF (SELF%OWNED) THEN
       !$acc enter data create(SELF%DATA)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DATA(:,:,IBL))
-      END DO
+      !$acc update device(SELF%DATA(:,:,:))
       !$acc wait
       SELF%DEVPTR => SELF%DATA
     ELSE
@@ -1671,9 +1720,7 @@ CONTAINS
 
     IF (SELF%OWNED) THEN
       !$acc enter data create(SELF%DATA)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DATA(:,:,:,IBL))
-      END DO
+      !$acc update device(SELF%DATA(:,:,:,:))
       !$acc wait
       SELF%DEVPTR => SELF%DATA
     ELSE
@@ -1694,9 +1741,7 @@ CONTAINS
 
     IF (SELF%OWNED) THEN
       !$acc enter data create(SELF%DATA)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DATA(:,IBL))
-      END DO
+      !$acc update device(SELF%DATA(:,:))
       !$acc wait
       SELF%DEVPTR => SELF%DATA
     ELSE
@@ -1717,9 +1762,7 @@ CONTAINS
 
     IF (SELF%OWNED) THEN
       !$acc enter data create(SELF%DATA)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DATA(:,IBL))
-      END DO
+      !$acc update device(SELF%DATA(:,:))
       !$acc wait
       SELF%DEVPTR => SELF%DATA
     ELSE
@@ -1739,9 +1782,7 @@ CONTAINS
     INTEGER(KIND=JPIM) :: IBL
 
     IF (SELF%OWNED) THEN
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DATA(:,IBL))
-      END DO
+      !$acc update host(SELF%DATA(:,:))
       !$acc wait
       !$acc exit data delete(SELF%DATA)
     ELSE
@@ -1762,9 +1803,7 @@ CONTAINS
     INTEGER(KIND=JPIM) :: IBL
 
     IF (SELF%OWNED) THEN
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DATA(:,:,IBL))
-      END DO
+      !$acc update host(SELF%DATA(:,:,:))
       !$acc wait
       !$acc exit data delete(SELF%DATA)
     ELSE

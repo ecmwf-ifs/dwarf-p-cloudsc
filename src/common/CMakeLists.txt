@@ -42,6 +42,7 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/fcttre_mod.cuf.F90
     module/yoethf.cuf.F90
     module/yomcst.cuf.F90
+    module/field_module.F90
 )
 
 if( HAVE_CUDA )
@@ -94,3 +95,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
 )
+
+if( HAVE_CUDA )
+    target_link_options( cloudsc-common-lib INTERFACE "-Mcuda" )
+endif()

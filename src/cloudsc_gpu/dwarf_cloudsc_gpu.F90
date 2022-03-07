@@ -98,9 +98,7 @@ print '(1X,A42)', 'Executing CLOUDSC-GPU, "SCC" variant with FIELD API'
  ! Call the driver to perform the parallel loop over our kernel
 CALL CLOUDSC_DRIVER_GPU_SCC_FIELD( &
      & NUMOMP, NPROMA, FIELD_STATE%KLEV, NGPTOT, FIELD_STATE%NBLOCKS, NGPTOTG, &
-     & FIELD_STATE%KFLDX, FIELD_STATE%PTSPHY, &
-     & FIELD_STATE, &
-     & FIELD_STATE%B_CML, FIELD_STATE%B_TMP, FIELD_STATE%B_LOC &
+     & FIELD_STATE%KFLDX, FIELD_STATE%PTSPHY, FIELD_STATE &
      & )
 #else
 
