@@ -338,7 +338,7 @@ CONTAINS
     CALL GET_OFFSETS(START, END, SIZE, KLON, SELF%KLEV, NCLV, NGPTOT, NGPTOTG)
 
     ! Use this toggle to switch between standalone fields and bulk-allocated ones.
-    USE_PACKED = .FALSE.
+    USE_PACKED = .TRUE.
 
     IF (USE_PACKED) THEN
       ! Allocate bulk buffers for read-only input 3D fields

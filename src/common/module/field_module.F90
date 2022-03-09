@@ -21,6 +21,10 @@ USE IEEE_ARITHMETIC, ONLY: IEEE_SIGNALING_NAN
 
 USE CUDAFOR
 
+use openacc
+
+use iso_c_binding
+
 IMPLICIT NONE
 
 TYPE FIELD_2D
@@ -120,10 +124,12 @@ TYPE FIELD_3D
   REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:) => NULL()
   INTEGER(KIND=JPIM) :: FIDX
 
-  ! A separate data pointer that can be used to create
-  ! a contiguous chunk of host memory to cleanly map to
-  ! device, should the %DATA pointer be discontiguous.
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:) => NULL()
+  ! ! A separate data pointer that can be used to create
+  ! ! a contiguous chunk of host memory to cleanly map to
+  ! ! device, should the %DATA pointer be discontiguous.
+  ! REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:) => NULL()
+
+  REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:)
 
   ! Number of blocks used in the data layout
   INTEGER :: NBLOCKS
@@ -1558,9 +1564,12 @@ CONTAINS
   SUBROUTINE FIELD_3D_CREATE_DEVICE(SELF)
     ! Initialize a copy of this field on GPU device
     CLASS(FIELD_3D), TARGET :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
 
-    SELF%DEVPTR => SELF%DATA
-    !$acc enter data create(SELF%DATA)
+    ARRSIZE = SIZE(SELF%PTR) * SIZEOF(1.0_JPRB)
+    ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+    CALL ACC_MAP_DATA(SELF%PTR, SELF%DEVDATA, ARRSIZE)
+
     SELF%ON_DEVICE = .TRUE.
   END SUBROUTINE FIELD_3D_CREATE_DEVICE
 
@@ -1612,6 +1621,8 @@ CONTAINS
     CLASS(FIELD_3D), TARGET :: SELF
     REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:)
 
+    type(c_ptr) :: hptr
+
     IF (.NOT. SELF%ON_DEVICE) THEN
       CALL SELF%UPDATE_DEVICE()
     END IF
@@ -1619,7 +1630,8 @@ CONTAINS
     IF (SELF%OWNED) THEN
       DEVPTR => SELF%DATA
     ELSE
-      DEVPTR => SELF%DEVPTR
+      hptr = acc_hostptr(self%devdata)
+      call c_f_pointer(hptr, devptr, shape(self%devdata))
     END IF
   END FUNCTION FIELD_3D_GET_DEVICE_DATA
 
@@ -1697,18 +1709,30 @@ CONTAINS
     CLASS(FIELD_3D), TARGET :: SELF
     INTEGER(KIND=JPIM) :: IBL
 
+    INTEGER(KIND=JPIM) :: istat, arrsize, blksize
+    type(c_ptr) :: hptr
+    integer(kind=jpim) :: shape(3)
+
+    logical :: pres
+
+    arrsize = size(self%ptr) * sizeof(1.0_JPRB)
+    blksize = arrsize / self%nblocks
+    ALLOCATE(SELF%DEVDATA, mold=SELF%PTR)
+
     IF (SELF%OWNED) THEN
-      !$acc enter data create(SELF%DATA)
-      !$acc update device(SELF%DATA(:,:,:))
-      !$acc wait
-      SELF%DEVPTR => SELF%DATA
+      call acc_map_data(self%data, self%devdata, arrsize)
+      call acc_memcpy_to_device(self%devdata(:,:,:), self%data(:,:,:), arrsize)
+
     ELSE
-      ALLOCATE(SELF%DEVPTR, SOURCE=SELF%PTR)
-      !$acc enter data create(SELF%DEVPTR)
+      ! TODO: This is a dirty trick to fool the OpenACC runtime!
+      ! We allocate the associated data array (full size), so that we can
+      ! add it to the OpenACC host-device map (it's contiguous!)
+      ! Then, we copy the data in a strided fashio from the discontiguous pointer.
+      ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+      call acc_map_data(self%data, self%devdata, arrsize)
       DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DEVPTR(:,:,IBL))
+        call acc_memcpy_to_device(self%devdata(:,:,ibl), self%base_ptr(:,:,self%fidx,ibl), blksize)
       END DO
-      !$acc wait
     END IF
     SELF%ON_DEVICE = .TRUE.
   END SUBROUTINE FIELD_3D_UPDATE_DEVICE
@@ -1802,19 +1826,25 @@ CONTAINS
     CLASS(FIELD_3D) :: SELF
     INTEGER(KIND=JPIM) :: IBL
 
+    INTEGER(KIND=JPIM) :: istat, arrsize, blksize
+    type(c_ptr) :: hptr
+
+    arrsize = size(self%ptr) * sizeof(1.0_JPRB)
+    blksize = arrsize / self%nblocks
+
     IF (SELF%OWNED) THEN
-      !$acc update host(SELF%DATA(:,:,:))
-      !$acc wait
-      !$acc exit data delete(SELF%DATA)
+      call acc_memcpy_from_device(self%data(:,:,:), self%devdata(:,:,:), arrsize)
+      call acc_unmap_data(self%data)
+
     ELSE
       DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DEVPTR(:,:,IBL))
+        call acc_memcpy_from_device(self%ptr(:,:,ibl), self%devdata(:,:,ibl), blksize)
       END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DEVPTR)
-      SELF%PTR(:,:,:) = SELF%DEVPTR(:,:,:)
-      DEALLOCATE(SELF%DEVPTR)
+      call acc_unmap_data(self%data)
+      DEALLOCATE(SELF%DATA)
     END IF
+
+    DEALLOCATE(SELF%DEVDATA)
     SELF%ON_DEVICE = .FALSE.
   END SUBROUTINE FIELD_3D_UPDATE_HOST
 
@@ -1904,12 +1934,12 @@ CONTAINS
     ! Initialize a copy of this field on GPU device
     CLASS(FIELD_3D), TARGET :: SELF
 
-    !$acc exit data delete(SELF%DEVPTR)
     IF (SELF%OWNED) THEN
-      NULLIFY(SELF%DEVPTR)
+      CALL ACC_UNMAP_DATA(SELF%DATA)
     ELSE
-      DEALLOCATE(SELF%DEVPTR)
+      CALL ACC_UNMAP_DATA(SELF%PTR)
     END IF
+    DEALLOCATE(SELF%DEVDATA)
     SELF%ON_DEVICE = .FALSE.
   END SUBROUTINE FIELD_3D_DELETE_DEVICE
 
