@@ -23,6 +23,7 @@ module_unload() {
 # Unload all modules to be certain
 module_unload intel
 module_unload openmpi
+module_unload hpcx-openmpi
 module_unload boost
 module_unload hdf5
 module_unload cmake
@@ -32,7 +33,7 @@ module_unload java
 # Load modules
 module_load prgenv/intel
 module_load intel/2021.4.0
-module_load openmpi/4.1.1.1
+module_load hpcx-openmpi/2.10.0
 module_load boost/1.71.0
 module_load hdf5/1.10.6
 module_load cmake/3.20.2

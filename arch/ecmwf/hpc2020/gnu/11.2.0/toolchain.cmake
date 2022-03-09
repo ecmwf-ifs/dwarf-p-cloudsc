@@ -12,7 +12,7 @@
 
 set( ECBUILD_FIND_MPI ON )
 
-# Disable OpenACC for Leap42/GNU CPU builds
+# Disable OpenACC for GNU CPU builds
 set( ENABLE_ACC OFF )
 
 ####################################################################
@@ -28,3 +28,6 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fno-second-underscore")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -ffree-form")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -ffast-math")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fno-unsafe-math-optimizations")
+
+# This is dangerous! But GNU 10+ complains about argument mismatch for MPI routines
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fallow-argument-mismatch")
