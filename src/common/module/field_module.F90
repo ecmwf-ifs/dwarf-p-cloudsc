@@ -50,6 +50,7 @@ TYPE FIELD_2D
   REAL(KIND=JPRB), POINTER :: PTR(:,:) => NULL()
   ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:)
   REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:)
+  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -114,8 +115,8 @@ TYPE FIELD_3D
   ! the outermost one is the block index.
   REAL(KIND=JPRB), POINTER :: PTR(:,:,:) => NULL()
   ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:)
-  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:,:)
   REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:)
+  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -183,6 +184,7 @@ TYPE FIELD_4D
   REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:) => NULL()
   ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:,:)
   REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:,:)
+  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:,:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -249,6 +251,7 @@ TYPE FIELD_INT2D
   INTEGER(KIND=JPIM), POINTER :: PTR(:,:) => NULL()
   ! INTEGER(KIND=JPIM), ALLOCATABLE :: DATA(:,:)
   INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DATA(:,:)
+  ! INTEGER(KIND=JPIM), ALLOCATABLE, PINNED :: DATA(:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -315,6 +318,7 @@ TYPE FIELD_LOG2D
   LOGICAL, POINTER :: PTR(:,:) => NULL()
   ! LOGICAL, ALLOCATABLE :: DATA(:,:)
   LOGICAL, POINTER, CONTIGUOUS :: DATA(:,:)
+  ! LOGICAL, ALLOCATABLE, PINNED :: DATA(:,:)
 
   ! For wrapping discontiguous fields in co-allocated storage
   ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
@@ -487,6 +491,53 @@ INTERFACE FIELD_ENSURE_HOST
 END INTERFACE FIELD_ENSURE_HOST
 
 CONTAINS
+
+  function malloc_host_pinned_2d(shape, nblocks) result(ptr)
+    integer(kind=jpim), intent(in) :: shape(1)
+    integer(kind=jpim), intent(in), optional :: nblocks
+    real(kind=jprb), pointer, contiguous :: ptr(:,:)
+
+    integer(kind=jpim) :: istat, arrsize
+    type(c_ptr) :: hptr
+
+    arrsize = shape(1) * nblocks * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    if (istat /= 0) print *, "ERROR: Failed to allocate pinned host memory!"
+    call c_f_pointer(hptr, ptr, [shape(1), nblocks] )
+  end function malloc_host_pinned_2d
+
+  function malloc_host_pinned_3d(shape, nblocks) result(ptr)
+    integer(kind=jpim), intent(in) :: shape(2)
+    integer(kind=jpim), intent(in), optional :: nblocks
+    real(kind=jprb), pointer, contiguous :: ptr(:,:,:)
+
+    integer(kind=jpim) :: istat, arrsize
+    type(c_ptr) :: hptr
+
+    arrsize = shape(1) * shape(2) * nblocks * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    if (istat /= 0) print *, "ERROR: Failed to allocate pinned host memory!"
+    call c_f_pointer(hptr, ptr, [shape(1), shape(2), nblocks] )
+  end function malloc_host_pinned_3d
+
+  function malloc_host_pinned_4d(shape, nblocks) result(ptr)
+    integer(kind=jpim), intent(in) :: shape(3)
+    integer(kind=jpim), intent(in), optional :: nblocks
+    real(kind=jprb), pointer, contiguous :: ptr(:,:,:,:)
+
+    integer(kind=jpim) :: istat, arrsize
+    type(c_ptr) :: hptr
+
+    arrsize = shape(1) * shape(2) * shape(3) * nblocks * sizeof(1.0_JPRB)
+    istat = cudaSetDeviceFlags(cudadevicemaphost)
+    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    if (istat /= 0) print *, "ERROR: Failed to allocate pinned host memory!"
+    call c_f_pointer(hptr, ptr, [shape(1), shape(2), shape(3), nblocks] )
+  end function malloc_host_pinned_4d
+
+
   SUBROUTINE FILL_BUFFER_2D(BUFFER, INDEX)
     ! Utility routine to fill data buffers (views)
     REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: BUFFER(:)
@@ -746,6 +797,9 @@ CONTAINS
     REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: IDX
 
+    integer(kind=jpim) :: arrsize, istat
+    type(c_ptr) :: hptr
+
     SELF%PTR => DATA(:,:,IDX,:)
     SELF%ACTIVE = .TRUE.
     SELF%THREAD_BUFFER = .FALSE.
@@ -753,6 +807,12 @@ CONTAINS
     SELF%NBLOCKS = SIZE(SELF%PTR, 3)
     SELF%BASE_PTR => DATA
     SELF%FIDX = IDX
+
+    ! arrsize = SIZE(SELF%PTR, 1) * SIZE(SELF%PTR, 2) * SELF%NBLOCKS * sizeof(1.0_JPRB)
+    ! istat = cudaSetDeviceFlags(cudadevicemaphost)
+    ! istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
+    ! call c_f_pointer(hptr, self%data, [SIZE(SELF%PTR, 1), SIZE(SELF%PTR, 2), SELF%NBLOCKS] )
+
   END FUNCTION FIELD_3D_WRAP_PACKED
 
   FUNCTION FIELD_4D_WRAP_PACKED(DATA, IDX) RESULT(SELF)
@@ -1837,8 +1897,12 @@ CONTAINS
       call acc_unmap_data(self%data)
 
     ELSE
+      ! call acc_memcpy_from_device(self%data(:,:,:), self%devdata(:,:,:), arrsize)
       DO IBL=1, SELF%NBLOCKS
-        call acc_memcpy_from_device(self%ptr(:,:,ibl), self%devdata(:,:,ibl), blksize)
+        ! self%base_ptr(:,:,self%fidx,ibl) = self%data(:,:,ibl)
+        
+        ! call acc_memcpy_from_device(self%ptr(:,:,ibl), self%devdata(:,:,ibl), blksize)
+        call acc_memcpy_from_device(self%base_ptr(:,:,self%fidx,ibl), self%devdata(:,:,ibl), blksize)
       END DO
       call acc_unmap_data(self%data)
       DEALLOCATE(SELF%DATA)
