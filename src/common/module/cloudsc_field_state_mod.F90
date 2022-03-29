@@ -320,16 +320,21 @@ CONTAINS
 !$omp end parallel do 
   END SUBROUTINE FIELD_INIT_STATE
 
-  SUBROUTINE CLOUDSC_FIELD_STATE_LOAD(SELF, NPROMA, NGPTOT, NGPTOTG)
+  SUBROUTINE CLOUDSC_FIELD_STATE_LOAD(SELF, NPROMA, NGPTOT, NGPTOTG, USE_PACKED)
     ! Load reference input data via serialbox
     CLASS(CLOUDSC_FIELD_STATE) :: SELF
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NGPTOT
     INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NGPTOTG
+    ! Use this toggle to switch between standalone fields and bulk-allocated ones.
+    LOGICAL, INTENT(IN), OPTIONAL :: USE_PACKED
 
     INTEGER(KIND=JPIM) :: KLON, NFIELDS
     INTEGER(KIND=JPIM) :: START, END, SIZE
 
-    LOGICAL :: USE_PACKED
+    LOGICAL :: LLPACKED
+
+    LLPACKED = .FALSE.
+    IF (PRESENT(USE_PACKED)) LLPACKED = USE_PACKED
 
     CALL INPUT_INITIALIZE(NAME='input')
 
@@ -340,10 +345,7 @@ CONTAINS
 
     CALL GET_OFFSETS(START, END, SIZE, KLON, SELF%KLEV, NCLV, NGPTOT, NGPTOTG)
 
-    ! Use this toggle to switch between standalone fields and bulk-allocated ones.
-    USE_PACKED = .TRUE.
-
-    IF (USE_PACKED) THEN
+    IF (LLPACKED) THEN
       ! Allocate bulk buffers for read-only input 3D fields
       NFIELDS = 24
       ! ALLOCATE(SELF%DATA_RDONLY(NPROMA, SELF%KLEV, NFIELDS, SELF%NBLOCKS))
