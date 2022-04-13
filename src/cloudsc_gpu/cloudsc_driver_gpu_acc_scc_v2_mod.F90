@@ -265,18 +265,18 @@ CONTAINS
         & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
         & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
         ! XXX: global module variables
-        & RG_, RD_, RCPD_, RETV_, RLVTT_, RLSTT_, RLMLT_, RTT_,   &
-        & RV_, R2ES_, R3LES_, R3IES_, R4LES_, R4IES_, R5LES_, R5IES_, R5ALVCP_, &
-        & R5ALSCP_, RALVDCP_, RALSDCP_, RALFDCP_, RTWAT_, RTICE_, RTICECU_,     &
-        & RTWAT_RTICE_R_, RTWAT_RTICECU_R_, RKOOP1_, RKOOP2_, &
-        & NCLDQV_, NCLDQL_, NCLDQR_, NCLDQI_, NCLDQS_, NCLV_, &
+        ! & RG_, RD_, RCPD_, RETV_, RLVTT_, RLSTT_, RLMLT_, RTT_,   &
+        ! & RV_, R2ES_, R3LES_, R3IES_, R4LES_, R4IES_, R5LES_, R5IES_, R5ALVCP_, &
+        ! & R5ALSCP_, RALVDCP_, RALSDCP_, RALFDCP_, RTWAT_, RTICE_, RTICECU_,     &
+        ! & RTWAT_RTICE_R_, RTWAT_RTICECU_R_, RKOOP1_, RKOOP2_, &
+        ! & NCLDQV_, NCLDQL_, NCLDQR_, NCLDQI_, NCLDQS_, NCLV_, &
         ! XXX: thread private arrays
-        & ZLCUST, IPHASE, IMELT, LLFALL, &
-        & LLINDEX1, LLINDEX3, IORDER, ZQXN, &
-        & ZQXFG, ZQXNM1, ZFLUXQ, ZSOLQA, &
-        & ZSOLQB, ZQLHS, ZVQX, ZRATIO, &
-        & ZSINKSUM, ZFALLSINK, ZFALLSRCE, &
-        & ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE, &
+        ! & ZLCUST, IPHASE, IMELT, LLFALL, &
+        ! & LLINDEX1, LLINDEX3, IORDER, ZQXN, &
+        ! & ZQXFG, ZQXNM1, ZFLUXQ, ZSOLQA, &
+        ! & ZSOLQB, ZQLHS, ZVQX, ZRATIO, &
+        ! & ZSINKSUM, ZFALLSINK, ZFALLSRCE, &
+        ! & ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE, &
         ! XXX: block private arrays
         & ZFOEALFA(:,:,IBL), ZTP1(:,:,IBL), ZLI(:,:,IBL), ZA(:,:,IBL), ZAORIG(:,:,IBL), &
         & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), &
