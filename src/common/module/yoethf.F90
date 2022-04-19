@@ -72,6 +72,10 @@ REAL(KIND=JPRB) :: RKOOP2
 !$acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
 !$acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
 
+!$omp declare target(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
+!$omp   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+!$omp   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+
 !       ----------------------------------------------------------------
 
 CONTAINS
