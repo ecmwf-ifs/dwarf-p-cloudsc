@@ -57,10 +57,10 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
 
 The code is written in Fortran 2003 and it has been tested using the various compilers, including:
 
-    GCC 7.3, 9.3
+    GCC 7.3, 9.3, 11.2
     Cray 8.7.7
     NVHPC 20.9
-    Intel
+    Intel (classic)
 
 This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands
 OpenMP directives. Fortran must be at least level F2003.
@@ -140,7 +140,7 @@ The default build configuration relies on HDF5 input and reference data for
 dwarf-cloudsc-fortran as well as GPU and Loki versions. The original
 dwarf-P-cloudMicrophysics-IFSScheme always uses raw Fortran binary format.
 
-**Please note:** The HDF55 installation needs to have the f03 interfaces installed.
+**Please note:** The HDF55 installation needs to have the f03 interfaces installed (default with HDF5 1.10+).
 
 As an alternative to HDF5, the [Serialbox](https://github.com/GridTools/serialbox)
 library can be used to load input and reference data. This, however, requires
@@ -160,6 +160,20 @@ Note that this is only available via Serialbox at the moment. Updates to HDF5
 input or reference data have to be done via manual conversion. A small
 Python script for this with usage instructions can be found in the
 [serialbox2hdf5](serialbox2hdf5/README.md) directory.
+
+### Building on ECMWF's Atos BullSequana XH2000
+
+To build on ECMWF's Atos BullSequana XH2000 supercomputer, run the following commands:
+
+```sh
+./cloudsc-bundle create
+./cloudsc-bundle build --arch arch/ecmwf/hpc2020/compiler/version [--single-precision] [--with-mpi]
+```
+
+Currently available `compiler/version` selections are:
+
+* `gnu/9.3.0` and `gnu/11.2.0`
+* `intel/2021.4.0`
 
 ### A64FX version of CLOUDSC
 
@@ -186,6 +200,8 @@ cd build
 ./bin/dwarf-cloudsc-c 4 16384 32   # The standalone C version
 ```
 
+### Running on ECMWF's Atos BullSequana XH2000
+
 On the Atos system, a high-watermark run on a single socket can be performed as follows:
 
 ```sh
@@ -193,7 +209,7 @@ export OMP_NUM_THREADS=64
 OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS ./bin/dwarf-cloudsc-fortran $OMP_NUM_THREADS 163840 32
 ```
 
-For a build with the Intel 2021.1.1 compiler, performance of ~74 GF is achieved.
+For a double-precision build with the GNU 11.2.0 compiler, performance of ~73 GF is achieved.
 
 ## Loki transformations for CLOUDSC
 
