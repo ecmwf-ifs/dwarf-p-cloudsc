@@ -174,6 +174,7 @@ Currently available `compiler/version` selections are:
 
 * `gnu/9.3.0` and `gnu/11.2.0`
 * `intel/2021.4.0`
+* `nvhpc/22.1` (use with `--with-gpu` on ac's GPU partition)
 
 ### A64FX version of CLOUDSC
 
@@ -210,6 +211,29 @@ OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 
 ```
 
 For a double-precision build with the GNU 11.2.0 compiler, performance of ~73 GF is achieved.
+
+To run the GPU variant on ac, the easiest option is currently to allocate a GPU node
+
+```sh
+salloc -N 1 --tasks-per-node 4 -q ng -p gpu --gres=gpu:4 --mem 200G
+...
+salloc: Nodes ac6-3xx are ready for job
+```
+
+and then to connect to that node via SSH to execute the dwarf:
+
+```sh
+ssh ac6-3xx
+bin/dwarf-cloudsc-gpu-scc-hoist 1 262144 128
+```
+
+For a double-precision build with NVHPC 22.1, performance of ~340 GF on a single GPU is achieved.
+
+A multi-GPU run requires an MPI run (build with `--with-mpi`) with a dedicated MPI task for each GPU and (at the moment) manually assigning CUDA devices to each rank, e.g. for four GPUs:
+
+```sh
+srun -n 4 bash -c "CUDA_VISIBLE_DEVICES=\$SLURM_LOCALID bin/dwarf-cloudsc-gpu-scc-hoist 1 $((4*262144)) 128"
+```
 
 ## Loki transformations for CLOUDSC
 
