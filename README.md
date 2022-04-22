@@ -176,6 +176,14 @@ Currently available `compiler/version` selections are:
 * `intel/2021.4.0`
 * `nvhpc/22.1` (use with `--with-gpu` on ac's GPU partition)
 
+*Please note: at the moment GPU-builds need to be done on the compute node.*
+
+On ac, an interactive session on one GPU-node can be allocated with the following command:
+
+```sh
+srun -N1 -q ng -p gpu --gres=gpu:4 --mem 200G --pty /bin/bash
+```
+
 ### A64FX version of CLOUDSC
 
 Preliminary results for CLOUDSC have been generated for A64FX CPUs on
@@ -212,28 +220,30 @@ OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 
 
 For a double-precision build with the GNU 11.2.0 compiler, performance of ~73 GF is achieved.
 
-To run the GPU variant on ac, the easiest option is currently to allocate a GPU node
+To run the GPU variant on ac, allocate an interactive session on a GPU node and run the binary as usual:
 
 ```sh
-salloc -N 1 --tasks-per-node 4 -q ng -p gpu --gres=gpu:4 --mem 200G
-...
-salloc: Nodes ac6-3xx are ready for job
-```
-
-and then to connect to that node via SSH to execute the dwarf:
-
-```sh
-ssh ac6-3xx
+srun -N1 -q ng -p gpu --gres=gpu:4 --mem 200G --pty /bin/bash
 bin/dwarf-cloudsc-gpu-scc-hoist 1 262144 128
 ```
 
 For a double-precision build with NVHPC 22.1, performance of ~340 GF on a single GPU is achieved.
 
-A multi-GPU run requires an MPI run (build with `--with-mpi`) with a dedicated MPI task for each GPU and (at the moment) manually assigning CUDA devices to each rank, e.g. for four GPUs:
+A multi-GPU run requires MPI (build with `--with-mpi`) with a dedicated MPI task for each GPU and (at the moment)
+manually assigning CUDA devices to each rank, as Slurm is not yet fully configured for the GPU partition.
+
+To use four GPUs on one node, allocate the relevant resources
+```sh
+salloc -N 1 --tasks-per-node 4 -q ng -p gpu --gres=gpu:4 --mem 200G
+```
+
+and then run the binary like this:
 
 ```sh
-srun -n 4 bash -c "CUDA_VISIBLE_DEVICES=\$SLURM_LOCALID bin/dwarf-cloudsc-gpu-scc-hoist 1 $((4*262144)) 128"
+srun bash -c "CUDA_VISIBLE_DEVICES=\$SLURM_LOCALID bin/dwarf-cloudsc-gpu-scc-hoist 1 \$((\$SLURM_NPROCS*262144)) 128"
 ```
+
+In principle, the same should work for multi-node execution (`-N 2`, `-N 4` etc.) once interconnect issues are resolved.
 
 ## Loki transformations for CLOUDSC
 
