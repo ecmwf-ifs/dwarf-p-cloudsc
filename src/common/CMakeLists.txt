@@ -71,6 +71,8 @@ if( HAVE_ACC )
   # https://www.pgroup.com/userforum/viewtopic.php?t=7296
   # ========================================================================
 
+  ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module-static)
+
   ecbuild_add_library( TARGET cloudsc-common-lib-static
     SOURCES ${CLOUDSC_COMMON_SOURCES}
     TYPE STATIC

@@ -15,6 +15,12 @@ find_package( ecbuild REQUIRED )
 project( dwarf-p-cloudsc LANGUAGES C Fortran )
 
 include( cmake/compat.cmake )
+if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+  ecbuild_add_fortran_flags("-ffree-line-length-none")
+  if( CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
+    ecbuild_add_fortran_flags("-fallow-argument-mismatch")
+  endif()
+endif()
 
 ### OpenACC
 if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
