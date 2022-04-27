@@ -174,15 +174,7 @@ Currently available `compiler/version` selections are:
 
 * `gnu/9.3.0` and `gnu/11.2.0`
 * `intel/2021.4.0`
-* `nvhpc/22.1` (use with `--with-gpu` on ac's GPU partition)
-
-*Please note: at the moment GPU-builds need to be done on the compute node.*
-
-On ac, an interactive session on one GPU-node can be allocated with the following command:
-
-```sh
-srun -N1 -q ng -p gpu --gres=gpu:4 --mem 200G --pty /bin/bash
-```
+* `nvhpc/22.1` (use with `--with-gpu` on AC's GPU partition)
 
 ### A64FX version of CLOUDSC
 
@@ -218,19 +210,23 @@ export OMP_NUM_THREADS=64
 OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS ./bin/dwarf-cloudsc-fortran $OMP_NUM_THREADS 163840 32
 ```
 
-For a double-precision build with the GNU 11.2.0 compiler, performance of ~73 GF is achieved.
+For a double-precision build with the GNU 11.2.0 compiler, performance of
+~73 GF/s is achieved.
 
-To run the GPU variant on ac, allocate an interactive session on a GPU node and run the binary as usual:
+To run the GPU variant on AC, which includes some GPU nodes, allocate
+an interactive session on a GPU node and run the binary as usual:
 
 ```sh
 srun -N1 -q ng -p gpu --gres=gpu:4 --mem 200G --pty /bin/bash
 bin/dwarf-cloudsc-gpu-scc-hoist 1 262144 128
 ```
 
-For a double-precision build with NVHPC 22.1, performance of ~340 GF on a single GPU is achieved.
+For a double-precision build with NVHPC 22.1, performance of ~340 GF/s
+on a single GPU is achieved.
 
-A multi-GPU run requires MPI (build with `--with-mpi`) with a dedicated MPI task for each GPU and (at the moment)
-manually assigning CUDA devices to each rank, as Slurm is not yet fully configured for the GPU partition.
+A multi-GPU run requires MPI (build with `--with-mpi`) with a dedicated MPI
+task for each GPU and (at the moment) manually assigning CUDA devices to each
+rank, as Slurm is not yet fully configured for the GPU partition.
 
 To use four GPUs on one node, allocate the relevant resources
 ```sh
