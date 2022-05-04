@@ -12,6 +12,10 @@
 
 set( ECBUILD_FIND_MPI ON )
 
+set( CMAKE_C_COMPILER mpicc )
+set( CMAKE_CXX_COMPILER mpicxx )
+set( CMAKE_Fortran_COMPILER mpifort )
+
 ####################################################################
 # OpenMP FLAGS
 ####################################################################
