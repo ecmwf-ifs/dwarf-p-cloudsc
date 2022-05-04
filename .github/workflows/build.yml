@@ -47,7 +47,6 @@ jobs:
       # Sets-up environment and installs required packages
       - name: Environment setup
         run: |
-          sudo apt install gcc-offload-nvptx
           [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
           [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || true
 
