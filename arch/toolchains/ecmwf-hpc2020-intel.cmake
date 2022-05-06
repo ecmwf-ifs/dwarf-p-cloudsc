@@ -112,7 +112,7 @@ set( ENABLE_RELATIVE_RPATHS OFF CACHE STRING "Disable relative rpaths" FORCE )
 # COMPILER
 ####################################################################
 
-set( ECBUILD_FIND_MPI OFF )
+set( ECBUILD_FIND_MPI ON )
 set( ECBUILD_TRUST_FLAGS ON )
 
 ####################################################################

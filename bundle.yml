@@ -18,6 +18,7 @@ projects :
         version : v2.5.4/patched
         optional: true
         cmake   : >
+            BUILD_serialbox=OFF
             SERIALBOX_BUILD_SHARED=ON
             SERIALBOX_ENABLE_FORTRAN=ON
             SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
@@ -92,25 +93,23 @@ options :
         cmake : ENABLE_CLOUDSC_GPU_CLAW={{value}}
 
     - cloudsc-loki :
-        help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
+        help  : Build the optimized Loki-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_LOKI={{value}}
 
     - hdf5 :
         help : Enable use of HDF5 input file [ON|OFF]
         cmake : ENABLE_HDF5={{value}}
 
-    - with-hdf5 :
-        help : Enable use of HDF5 input file (disables Serialbox)
-        cmake : >
-            ENABLE_HDF5=ON
-            CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
-            BUILD_serialbox=OFF
+    - without-hdf5 :
+        help : Disable use of HDF5 input file
+        cmake : ENABLE_HDF5=OFF
 
-    - without-serialbox :
-        help  : Disable Serialbox utility for platform-agnostic file I/O
+    - with-serialbox :
+        help  : Enable Serialbox utility for platform-agnostic file I/O (disables HDF5)
         cmake : >
-            CMAKE_DISABLE_FIND_PACKAGE_Serialbox=TRUE
-            BUILD_serialbox=OFF
+            ENABLE_HDF5=OFF
+            ENABLE_SERIALBOX=ON
+            BUILD_serialbox=ON
 
     - serialbox-experimental :
         help  : Enable Serialbox experimental filesystem [ON|OFF]

@@ -20,33 +20,33 @@ module_unload() {
   module unload $1
 }
 
-# Unload to be certain
+# Unload all modules to be certain
+module_unload nvidia
+module_unload intel-mpi
+module_unload openmpi
+module_unload hpcx-openmpi
 module_unload boost
+module_unload hdf5
 module_unload cmake
-module_unload intel
-module_unload pgi
-module_unload gnu
+module_unload python3
+module_unload java
 
 # Load modules
-module use /opt/nvidia/hpc_sdk/modulefiles
-# module load nvhpc
-module load nvhpc-nompi/20.9
-module_load boost/1.61.0
-module_load cmake/3.19.5
-
-set -x
+module_load prgenv/nvidia
+module_load nvidia/22.1
+module_load hpcx-openmpi/2.10.0
+# module_load boost/1.71.0
+module_load hdf5/1.10.6
+module_load cmake/3.20.2
+module_load python3/3.8.8-01
+module_load java/11.0.6
 
 # Increase stack size to maximum
 ulimit -S -s unlimited
 
-# Fix boost header location
-export BOOST_INCLUDEDIR="/usr/local/apps/boost/1.61.0/PGI/17.1/include/"
-
-# Include local OpenMPI in the path for discovery in build
-export PATH="/local/hdd/nabr/openmpi/nvhpc-nompi/20.9/bin:$PATH"
+set -x
 
 # Restore tracing to stored setting
-if [[ -n "$tracing_" ]]; then set -x; else set +x; fi
+{ if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"
-export ANT_OPTS="-Dhttp.proxyHost=proxy.ecmwf.int -Dhttp.proxyPort=3333 -Dhttps.proxyHost=proxy.ecmwf.int -Dhttps.proxyPort=3333"

@@ -24,9 +24,9 @@ set( OpenMP_Fortran_FLAGS       "-mp -mp=bind,allcores,numa" )
 # OpenAcc FLAGS
 ####################################################################
 
-set( OpenACC_Fortran_FLAGS "-acc -mp=gpu -gpu=cc70,fastmath,lineinfo" )
+set( OpenACC_Fortran_FLAGS "-acc=gpu -gpu=lineinfo,fastmath" )
 # Enable this to get more detailed compiler output
-set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
+# set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
 ####################################################################
 # COMMON FLAGS
@@ -46,7 +46,3 @@ set( ECBUILD_Fortran_FLAGS_BIT "-O2 -gopt" )
 set( ECBUILD_C_FLAGS "-O2 -gopt -traceback" )
 
 set( ECBUILD_CXX_FLAGS "-O2 -gopt" )
-
-# Fix for C++ template headers needed for Serialbox
-set( GNU_HEADER_INCLUDE "-I/usr/local/apps/gcc/7.3.0/lib/gcc/x86_64-linux-gnu/7.3.0/include-fixed" )
-set( ECBUILD_CXX_FLAGS "${ECBUILD_CXX_FLAGS} ${GNU_HEADER_INCLUDE}" )

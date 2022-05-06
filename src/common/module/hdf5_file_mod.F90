@@ -157,7 +157,7 @@ CONTAINS
   end subroutine hdf5_dataset_load
 
   subroutine hdf5_file_load_l0(self, name, val)
-    use iso_c_binding, only: c_loc
+    use iso_c_binding, only: c_ptr, c_loc
 
     class(hdf5_file) :: self
     character(len=*), intent(in) :: name
