@@ -161,14 +161,14 @@ CONTAINS
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-!$omp target teams loop bind(teams)
-!!$omp target teams distribute
+!!$omp target teams loop bind(teams)
+!$omp target teams distribute
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-!$omp loop bind(parallel)
-!!$omp parallel do num_threads(128)
+!!$omp loop bind(parallel)
+!$omp parallel do
       DO JL=1,ICEND
         CALL CLOUDSC_SCC_HOIST &
          & (1, ICEND, NPROMA, NLEV, PTSPHY,&
@@ -199,9 +199,9 @@ CONTAINS
          & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
          & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), JL=JL)
       ENDDO
-!!$omp end parallel do
+!$omp end parallel do
     ENDDO
-!!$omp end target teams distribute
+!$omp end target teams distribute
     
     CALL TIMER%THREAD_END(TID)
 
