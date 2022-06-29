@@ -9,12 +9,12 @@ cmake : >
 projects :
 
     - ecbuild :
-        git     : https://github.com/ecmwf/ecbuild 
-        version : 3.6.4 
+        git     : https://github.com/ecmwf/ecbuild
+        version : 3.6.4
         bundle  : false
 
     - serialbox :
-        git     : ${BITBUCKET}/escape/serialbox
+        git     : https://github.com/reuterbal/serialbox
         version : v2.5.4/patched
         optional: true
         cmake   : >
