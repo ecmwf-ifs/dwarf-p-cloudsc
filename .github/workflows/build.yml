@@ -47,7 +47,7 @@ jobs:
       - name: Environment setup
         run: |
           [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
-          [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || true
+          [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || sudo apt install libboost-filesystem-dev libboost-system-dev
 
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
