@@ -12,8 +12,17 @@
 
 set( ECBUILD_FIND_MPI ON )
 
-# Disable OpenACC for GNU CPU builds
-set( ENABLE_ACC OFF )
+####################################################################
+# OpenMP FLAGS
+####################################################################
+
+# set( OpenMP_Fortran_FLAGS       "-fopenmp -foffload=nvptx-none" )
+
+####################################################################
+# OpenAcc FLAGS
+####################################################################
+
+# set( OpenACC_Fortran_FLAGS "-fopenacc -foffload=nvptx-none" )
 
 ####################################################################
 # Compiler FLAGS

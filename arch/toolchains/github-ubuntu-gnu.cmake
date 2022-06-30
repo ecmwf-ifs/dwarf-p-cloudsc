@@ -11,7 +11,6 @@
 ####################################################################
 
 set( ECBUILD_FIND_MPI ON )
-set( ENABLE_ACC OFF )
 
 ####################################################################
 # Compiler FLAGS
@@ -26,3 +25,4 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fno-second-underscore")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -ffree-form")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -ffast-math")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fno-unsafe-math-optimizations")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -foffload=disable")

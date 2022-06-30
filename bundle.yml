@@ -9,8 +9,8 @@ cmake : >
 projects :
 
     - ecbuild :
-        git     : https://github.com/ecmwf/ecbuild 
-        version : 3.6.4 
+        git     : https://github.com/ecmwf/ecbuild
+        version : 3.6.4
         bundle  : false
 
     - serialbox :
@@ -22,6 +22,8 @@ projects :
             SERIALBOX_BUILD_SHARED=ON
             SERIALBOX_ENABLE_FORTRAN=ON
             SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
+            SERIALBOX_ENABLE_SDB=OFF
+            SERIALBOX_EXAMPLES=OFF
             Serialbox_TARGETS_EXPORTED=TRUE
             CMAKE_CXX_EXTENSIONS=ON
 
@@ -56,6 +58,7 @@ options :
             ENABLE_CLOUDSC_GPU_CLAW=ON
             ENABLE_CLOUDSC_GPU_SCC=ON
             ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
+            ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel

@@ -24,9 +24,11 @@ set( OpenMP_Fortran_FLAGS       "-mp -mp=bind,allcores,numa" )
 # OpenAcc FLAGS
 ####################################################################
 
-set( OpenACC_Fortran_FLAGS "-acc -mp=gpu -gpu=cc70,fastmath,lineinfo" )
+# NB: We have to add `-mp` again to avoid undefined symbols during linking
+# (smells like an Nvidia bug)
+set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc70,fastmath,lineinfo" )
 # Enable this to get more detailed compiler output
-set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
+# set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
 ####################################################################
 # COMMON FLAGS
