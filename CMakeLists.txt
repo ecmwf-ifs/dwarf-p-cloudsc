@@ -26,7 +26,7 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 endif()
 
 ### OpenACC
-if ( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
+if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
     # Incredibly inconvenient: FindOpenACC does _not_ set OpenACC_FOUND, only
     # the language-specific components OpenACC_Fortran_FOUND and OpenACC_C_FOUND.
     # This means, even internally CMake considers OpenACC as not found.
