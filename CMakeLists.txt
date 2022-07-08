@@ -9,6 +9,9 @@
 # define minimum version of cmake required
 cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
 
+# Disable warnings about setting `ENABLE_ACC` variable for ecbuild_add_option
+cmake_policy( SET CMP0077 NEW )
+
 find_package( ecbuild REQUIRED )
 
 # define the project
