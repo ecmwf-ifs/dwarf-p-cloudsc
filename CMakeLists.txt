@@ -55,8 +55,7 @@ ecbuild_add_option( FEATURE MPI
     DESCRIPTION "MPI" DEFAULT OFF
     REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
 if( HAVE_MPI )
-    ecbuild_enable_mpi( COMPONENTS Fortran )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_MPI ${MPI_DEFINITIONS})
+    list(APPEND CLOUDSC_DEFINITIONS HAVE_MPI )
 endif()
 
 ### HDF5
@@ -65,7 +64,7 @@ ecbuild_add_option( FEATURE HDF5
     REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran"
     DEFAULT ON )
 if( HAVE_HDF5 )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 ${HDF5_Fortran_DEFINITIONS})
+    list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 )
 endif()
 
 # Add Serialbox utility package for platform-agnostic file I/O
