@@ -5,3 +5,5 @@ build/*
 source/*
 serialbox2hdf5/venv
 serialbox2hdf5/serialbox
+benchmark/venv
+benchmark/rundir
