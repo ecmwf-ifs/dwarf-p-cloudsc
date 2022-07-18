@@ -38,6 +38,14 @@ jobs:
 
         gpu_flag: ['', '--with-gpu']  # GPU-variants enabled
 
+        include:
+          # Add a single nvhpc build configuration
+          - arch: github/ubuntu/nvhpc/21.9
+            io_library_flag: ''
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: '--with-gpu'
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -48,6 +56,25 @@ jobs:
         run: |
           [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
           [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || sudo apt install libboost-filesystem-dev libboost-system-dev
+
+      # Install MPI
+      - name: Install MPI via Apt
+        if: contains( matrix.mpi_flag, 'with-mpi' )
+        run: sudo apt-get install libopenmpi-dev
+
+      # Install Compiler
+      - name: Install nvhpc
+        if: contains( matrix.arch, 'nvhpc' )
+        run: .github/scripts/bootstrap-nvhpc.sh
+
+      # Install HDF5
+      - name: Install HDF5 via Apt
+        if: contains( matrix.arch, 'gnu' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
+        run: sudo apt-get install libhdf5-dev
+      
+      - name: Install HDF5 from source
+        if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
+        run: source arch/${{ matrix.arch }}/env.sh && .github/scripts/install-hdf5.sh
 
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
@@ -72,5 +99,6 @@ jobs:
       - name: Run targets
         env:
           mpi_flag: ${{ matrix.mpi_flag }}
+          arch: ${{ matrix.arch }}
         if: ${{ matrix.prec_flag == '' }}
         run: .github/scripts/run-targets.sh
