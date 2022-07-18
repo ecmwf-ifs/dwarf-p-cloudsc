@@ -14,7 +14,7 @@ projects :
         bundle  : false
 
     - serialbox :
-        git     : ${BITBUCKET}/escape/serialbox
+        git     : https://github.com/reuterbal/serialbox
         version : v2.5.4/patched
         optional: true
         cmake   : >

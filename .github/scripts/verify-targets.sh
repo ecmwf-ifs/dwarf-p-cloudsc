@@ -10,6 +10,11 @@ exit_code=0
 
 targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-fortran)
 
+if [[ "$io_library_flag" == "--with-serialbox" ]]
+then
+  targets+=(dwarf-cloudsc-c)
+fi
+
 if [[ "$gpu_flag" == "--with-gpu" ]]
 then
   targets+=(dwarf-cloudsc-gpu-claw dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-omp-scc-hoist)
