@@ -18,7 +18,7 @@ exit_code=0
 cd build
 
 #
-# Run each of the binaries with default NPROMA and validate exit codes
+# Run each of the binaries with a safe NPROMA value and validate exit codes
 #
 
 for target in $(ls bin)
@@ -31,11 +31,11 @@ do
 
   if [[ "$mpi_flag" == "--with-mpi" && ! " ${non_mpi_targets[*]} " =~ " $target " ]]
   then
-    # Two ranks with one thread each, default NPROMA
-    mpirun -np 2 bin/$target 1 100
+    # Two ranks with one thread each, safe NPROMA
+    mpirun -np 2 bin/$target 1 100 64
   else
-    # Single thread, default NPROMA
-    bin/$target 1 100
+    # Single thread, safe NPROMA
+    bin/$target 1 100 64
   fi
   exit_code=$((exit_code + $?))
 done
