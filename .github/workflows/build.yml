@@ -39,9 +39,14 @@ jobs:
         gpu_flag: ['', '--with-gpu']  # GPU-variants enabled
 
         include:
-          # Add a single nvhpc build configuration
+          # Add nvhpc build configurations with serialbox and HDF5
           - arch: github/ubuntu/nvhpc/21.9
-            io_library_flag: ['','--with-serialbox']
+            io_library_flag: ''
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: '--with-gpu'
+          - arch: github/ubuntu/nvhpc/21.9
+            io_library_flag: '--with-serialbox'
             mpi_flag: ''
             prec_flag: ''
             gpu_flag: '--with-gpu'
@@ -68,10 +73,6 @@ jobs:
         run: .github/scripts/bootstrap-nvhpc.sh
 
       # Install HDF5
-      - name: Install HDF5 via Apt
-        if: contains( matrix.arch, 'gnu' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
-        run: sudo apt-get install libhdf5-dev
-
       - name: Install HDF5 from source
         if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
         run: source arch/${{ matrix.arch }}/env.sh && .github/scripts/install-hdf5.sh
