@@ -1,0 +1,42 @@
+# The operations to carry out as part of the benchmark
+
+# Each step is executed for every item of the "used" parameter spaces
+
+step:
+  # Creating the bundle
+  - name: create
+    shared: shared
+    use: generic_set
+    work_dir: $cloudsc_home
+    do: ./cloudsc-bundle create
+
+  # Compiling the code
+  - name: build
+    depend: create
+    use:
+      - arch_set
+      - build_template
+      - build_script
+      - build_set
+    do: ./mybuild.sh
+
+  # Running the dwarf
+  - name: run
+    depend: build
+    use:
+      - run_template
+      - run_script
+      - arch_set
+      - build_set
+      - run_set
+    do: ./run.sh
+      # bash -c '
+      # set -x
+      # cd build/build
+      # source env.sh
+      # if [[ "$mpi" -eq "1" ]]; then
+        # OMP_STACKSIZE=8G mpirun -np $nproc bin/$target $numomp $ngptot $nproma
+      # else
+        # PGI_ACC_CUDA_HEAPSIZE=16G OMP_STACKSIZE=8G bin/$target $numomp $ngptot $nproma
+      # fi
+      # set +x'

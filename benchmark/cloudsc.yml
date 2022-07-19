@@ -1,0 +1,46 @@
+include-path:
+#  - path: arch/hpc2020/gnu/9.3.0
+#    tag: hpc2020-gnu-9.3.0
+#  - path: arch/hpc2020/intel/2021.4.0
+#    tag: hpc2020-intel-2021.4.0
+  - path: include
+
+# Global parameter set
+parameterset:
+- name: generic_set
+  init_with: include_parameterset.yml
+
+# Script templates
+fileset: !include include_fileset_substituteset.yml:["fileset"]
+substituteset: !include include_fileset_substituteset.yml:["substituteset"]
+
+benchmark:
+  - name: cpu
+    outpath: rundir_cpu
+    comment: Run CPU variants of cloudsc
+
+    # Benchmark parameters
+    parameterset:
+    - name: build_set
+      init_with: include_parameterset.yml
+    - name: arch_set
+      init_with: include_arch.yml
+    - name: run_set
+      init_with: include_run.yml
+      parameter:
+      - name: target
+        mode: python
+        _: |
+          ','.join(
+            ['dwarf-cloudsc-fortran'] +
+            {'hdf5': [], 'serialbox': ['dwarf-cloudsc-c']}['$io_library']
+          )
+
+
+    # Benchmark execution steps
+    step: !include include_step.yml:["step"]
+
+    # Parse output and compile results table
+    patternset: !include include_patternset.yml:["patternset"]
+    analyser: !include include_analyser.yml:["analyser"]
+    result: !include include_result.yml:["result"]

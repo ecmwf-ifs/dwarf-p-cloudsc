@@ -1,0 +1,202 @@
+# The regex patterns to parse the output with
+patternset:
+  - name: results_pattern
+    pattern:
+      # All max abs err
+      - {name: abs_max_err, type: float, _: '(?:P[A-Z_]+|tendency_loc%\w+)\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: max_rel_err, type: float, _: '(?:P[A-Z_]+|tendency_loc%\w+)\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # All max rel err
+      # PLUDE
+      - {name: plude_min, type: float, _: 'PLUDE\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: plude_max, type: float, _: 'PLUDE\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: plude_abs_max_err, type: float, _: 'PLUDE\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: plude_avg_abs_err, type: float, _: 'PLUDE\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: plude_max_rel_err, type: float, _: 'PLUDE\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PCOVPTOT
+      - {name: pcovptot_min, type: float, _: 'PCOVPTOT\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pcovptot_max, type: float, _: 'PCOVPTOT\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pcovptot_abs_max_err, type: float, _: 'PCOVPTOT\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pcovptot_avg_abs_err, type: float, _: 'PCOVPTOT\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pcovptot_max_rel_err, type: float, _: 'PCOVPTOT\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PRAINFRAC_TOPRFZ
+      - {name: prainfrac_toprfz_min, type: float, _: 'PRAINFRAC_TOPRFZ\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: prainfrac_toprfz_max, type: float, _: 'PRAINFRAC_TOPRFZ\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: prainfrac_toprfz_abs_max_err, type: float, _: 'PRAINFRAC_TOPRFZ\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: prainfrac_toprfz_avg_abs_err, type: float, _: 'PRAINFRAC_TOPRFZ\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: prainfrac_toprfz_max_rel_err, type: float, _: 'PRAINFRAC_TOPRFZ\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFSQLF
+      - {name: pfsqlf_min, type: float, _: 'PFSQLF\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqlf_max, type: float, _: 'PFSQLF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqlf_abs_max_err, type: float, _: 'PFSQLF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqlf_avg_abs_err, type: float, _: 'PFSQLF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfsqlf_max_rel_err, type: float, _: 'PFSQLF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFSQIF
+      - {name: pfsqif_min, type: float, _: 'PFSQIF\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqif_max, type: float, _: 'PFSQIF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqif_abs_max_err, type: float, _: 'PFSQIF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqif_avg_abs_err, type: float, _: 'PFSQIF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfsqif_max_rel_err, type: float, _: 'PFSQIF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFCQLNG
+      - {name: pfcqlng_min, type: float, _: 'PFCQLNG\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqlng_max, type: float, _: 'PFCQLNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqlng_abs_max_err, type: float, _: 'PFCQLNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqlng_avg_abs_err, type: float, _: 'PFCQLNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfcqlng_max_rel_err, type: float, _: 'PFCQLNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFCQNNG
+      - {name: pfcqnng_min, type: float, _: 'PFCQNNG\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqnng_max, type: float, _: 'PFCQNNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqnng_abs_max_err, type: float, _: 'PFCQNNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqnng_avg_abs_err, type: float, _: 'PFCQNNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfcqnng_max_rel_err, type: float, _: 'PFCQNNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFSQRF
+      - {name: pfsqrf_min, type: float, _: 'PFSQRF\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqrf_max, type: float, _: 'PFSQRF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqrf_abs_max_err, type: float, _: 'PFSQRF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqrf_avg_abs_err, type: float, _: 'PFSQRF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfsqrf_max_rel_err, type: float, _: 'PFSQRF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFSQSF
+      - {name: pfsqsf_min, type: float, _: 'PFSQSF\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqsf_max, type: float, _: 'PFSQSF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqsf_abs_max_err, type: float, _: 'PFSQSF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqsf_avg_abs_err, type: float, _: 'PFSQSF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfsqsf_max_rel_err, type: float, _: 'PFSQSF\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFCQRNG
+      - {name: pfcqrng_min, type: float, _: 'PFCQRNG\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqrng_max, type: float, _: 'PFCQRNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqrng_abs_max_err, type: float, _: 'PFCQRNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqrng_avg_abs_err, type: float, _: 'PFCQRNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfcqrng_max_rel_err, type: float, _: 'PFCQRNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFCQSNG
+      - {name: pfcqsng_min, type: float, _: 'PFCQSNG\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqsng_max, type: float, _: 'PFCQSNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqsng_abs_max_err, type: float, _: 'PFCQSNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfcqsng_avg_abs_err, type: float, _: 'PFCQSNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfcqsng_max_rel_err, type: float, _: 'PFCQSNG\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFSQLTUR
+      - {name: pfsqltur_min, type: float, _: 'PFSQLTUR\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqltur_max, type: float, _: 'PFSQLTUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqltur_abs_max_err, type: float, _: 'PFSQLTUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqltur_avg_abs_err, type: float, _: 'PFSQLTUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfsqltur_max_rel_err, type: float, _: 'PFSQLTUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFSQITUR
+      - {name: pfsqitur_min, type: float, _: 'PFSQITUR\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqitur_max, type: float, _: 'PFSQITUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqitur_abs_max_err, type: float, _: 'PFSQITUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfsqitur_avg_abs_err, type: float, _: 'PFSQITUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfsqitur_max_rel_err, type: float, _: 'PFSQITUR\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFPLSL
+      - {name: pfplsl_min, type: float, _: 'PFPLSL\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfplsl_max, type: float, _: 'PFPLSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfplsl_abs_max_err, type: float, _: 'PFPLSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfplsl_avg_abs_err, type: float, _: 'PFPLSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfplsl_max_rel_err, type: float, _: 'PFPLSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFPLSN
+      - {name: pfplsn_min, type: float, _: 'PFPLSN\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfplsn_max, type: float, _: 'PFPLSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfplsn_abs_max_err, type: float, _: 'PFPLSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfplsn_avg_abs_err, type: float, _: 'PFPLSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfplsn_max_rel_err, type: float, _: 'PFPLSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFHPSL
+      - {name: pfhpsl_min, type: float, _: 'PFHPSL\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfhpsl_max, type: float, _: 'PFHPSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfhpsl_abs_max_err, type: float, _: 'PFHPSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfhpsl_avg_abs_err, type: float, _: 'PFHPSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfhpsl_max_rel_err, type: float, _: 'PFHPSL\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # PFHPSN
+      - {name: pfhpsn_min, type: float, _: 'PFHPSN\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfhpsn_max, type: float, _: 'PFHPSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfhpsn_abs_max_err, type: float, _: 'PFHPSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: pfhpsn_avg_abs_err, type: float, _: 'PFHPSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: pfhpsn_max_rel_err, type: float, _: 'PFHPSN\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # tendency_loc%a
+      - {name: tendency_loc_a_min, type: float, _: 'tendency_loc%a\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_a_max, type: float, _: 'tendency_loc%a\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_a_abs_max_err, type: float, _: 'tendency_loc%a\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_a_avg_abs_err, type: float, _: 'tendency_loc%a\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_a_max_rel_err, type: float, _: 'tendency_loc%a\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # tendency_loc%q
+      - {name: tendency_loc_q_min, type: float, _: 'tendency_loc%q\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_q_max, type: float, _: 'tendency_loc%q\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_q_abs_max_err, type: float, _: 'tendency_loc%q\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_q_avg_abs_err, type: float, _: 'tendency_loc%q\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_q_max_rel_err, type: float, _: 'tendency_loc%q\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # tendency_loc%T
+      - {name: tendency_loc_t_min, type: float, _: 'tendency_loc%T\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_t_max, type: float, _: 'tendency_loc%T\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_t_abs_max_err, type: float, _: 'tendency_loc%T\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_t_avg_abs_err, type: float, _: 'tendency_loc%T\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_t_max_rel_err, type: float, _: 'tendency_loc%T\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+      # tendency_loc%cld
+      - {name: tendency_loc_cld_min, type: float, _: 'tendency_loc%cld\s+\dD\d\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_cld_max, type: float, _: 'tendency_loc%cld\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_cld_abs_max_err, type: float, _: 'tendency_loc%cld\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_cld_avg_abs_err, type: float, _: 'tendency_loc%cld\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp\s+$jube_pat_nfp'}
+      - {name: tendency_loc_cld_max_rel_err, type: float, _: 'tendency_loc%cld\s+\dD\d\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_nfp\s+$jube_pat_fp'}
+
+      #             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%
+      #                PLUDE 2D1  0.0000000000000E+00  0.1026720108982E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #             PCOVPTOT 2D1  0.0000000000000E+00  0.1000000000000E+01  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #     PRAINFRAC_TOPRFZ 1D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFSQLF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFSQIF 2D1 -0.2810873821405E-05  0.3887836598167E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #              PFCQLNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #              PFCQNNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFSQRF 2D1 -0.2581756360133E-05  0.4080862802485E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFSQSF 2D1 -0.2768876986308E-05  0.3860349895496E-05  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #              PFCQRNG 2D1 -0.3555564290808E-07  0.1413389467871E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #              PFCQSNG 2D1 -0.5285014021662E-06  0.8788562329576E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #             PFSQLTUR 2D1 -0.8115949343062E-06  0.2653456385227E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #             PFSQITUR 2D1 -0.2651690301090E-05  0.3864567769232E-06  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFPLSL 2D1  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFPLSN 2D1  0.0000000000000E+00  0.2969958004108E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFHPSL 2D1 -0.0000000000000E+00 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #               PFHPSN 2D1 -0.8418345962643E+02 -0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #       tendency_loc%a 2D1 -0.2777777777778E-03  0.2631309809623E-03  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #       tendency_loc%q 2D1 -0.1997382404851E-07  0.1495580073796E-07  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #       tendency_loc%T 2D1 -0.4132200394167E-04  0.5435278446361E-04  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+      #     tendency_loc%cld 3D1 -0.1222481036148E-07  0.9816546352324E-08  0.0000000000000E+00  0.0000000000000E+00  0.0000000000000E+00
+
+  - name: timing_pattern
+    pattern:
+      - {name: thread_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}  # C-version doesn't print core number?
+      - {name: thread_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}
+      - {name: rank_time,     type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
+      - {name: rank_mflops,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
+      - {name: total_time,    type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+(?::\s+)?TOTAL(?!\s@)'}
+      - {name: total_mflops,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+(?::\s+)?TOTAL(?!\s@)'}
+      - {name: total_nproc,   type: int, _: '$jube_pat_int\s*x\s*(?:$jube_pat_nint\s+){6}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: total_numomp,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_int\s+(?:$jube_pat_nint\s+){5}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: total_ngptot,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_nint\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){4}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: total_ngpblks, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){3}$jube_pat_int\s+(?:$jube_pat_nint\s+){2}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: total_nproma,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){4}$jube_pat_int\s+$jube_pat_nint\s+:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+
+      # NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+      #      8     16384      2048       128        16    0 :        295       866 @ core#22
+      #      8     16384      2048       128        16    1 :        284       899 @ core#4
+      #      8     16384      2048       128        16    2 :        282       905 @ core#16
+      #      8     16384      2048       128        16    3 :        239      1067 @ core#1
+      #      8     16384      2048       128        16    4 :        261       975 @ core#2
+      #      8     16384      2048       128        16    5 :        266       959 @ core#3
+      #      8     16384      2048       128        16    6 :        267       955 @ core#21
+      #      8     16384      2048       128        16    7 :        273       934 @ core#23
+      #      8     16384     16384      1024        16   -1 :        295      6931 : TOTAL
+
+      # NUMPROC=8, NUMOMP=1, NGPTOTG=16384, NPROMA=16, NGPBLKS=128
+      # NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
+      #      1      2048      2048       128        16    0 :        237      1075 @ rank#0:core#20
+      #      1      2048      2048       128        16   -1 :        237      1075 : TOTAL @ rank#0
+      #      1      2048      2048       128        16    0 :        230      1109 @ rank#1:core#11
+      #      1      2048      2048       128        16   -1 :        230      1109 : TOTAL @ rank#1
+      #      1      2048      2048       128        16    0 :        281       906 @ rank#2:core#6
+      #      1      2048      2048       128        16   -1 :        281       906 : TOTAL @ rank#2
+      #      1      2048      2048       128        16    0 :        254      1002 @ rank#3:core#24
+      #      1      2048      2048       128        16   -1 :        254      1002 : TOTAL @ rank#3
+      #      1      2048      2048       128        16    0 :        271       940 @ rank#4:core#3
+      #      1      2048      2048       128        16   -1 :        271       940 : TOTAL @ rank#4
+      #      1      2048      2048       128        16    0 :        249      1025 @ rank#5:core#25
+      #      1      2048      2048       128        16   -1 :        249      1025 : TOTAL @ rank#5
+      #      1      2048      2048       128        16    0 :        235      1086 @ rank#6:core#1
+      #      1      2048      2048       128        16   -1 :        235      1086 : TOTAL @ rank#6
+      #      1      2048      2048       128        16    0 :        243      1050 @ rank#7:core#15
+      #      1      2048      2048       128        16   -1 :        243      1050 : TOTAL @ rank#7
+      #  8 x 1     16384     16384      1024        16   -1 :        281      8193 : TOTAL

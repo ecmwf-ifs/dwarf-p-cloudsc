@@ -1,53 +1,58 @@
-# JUBE benchmarking environment
+# CLOUDSC benchmark setup for JUBE
 
-## JUBE
+This provides three different benchmarks:
 
-JUBE is a benchmarking environment that provides a script-based framework
-to create benchmark sets, run them and evaluate the results. It is developed
-at Forschungszentrum Juelich, Germany.
+- cpu
+- gpu
+- loki
 
-Further information: https://www.fz-juelich.de/jsc/jube
+They used the JUBE benchmarking environment to automate their execution for a
+range of different build and run configurations. See [JUBE.md](JUBE.md) for
+an introduction.
 
-Documentation: https://apps.fz-juelich.de/jsc/jube/jube2/docu/
+The benchmarks are defined in the main configuration file
+[`cloudsc.yml`](cloudsc.yml) and use external include files that provide the
+bits and pieces to configure their execution, with bespoke overrides for each
+benchmark in the main configuration file. The most relevant include files for
+users are:
 
-## Installation
+- [`include_arch.yml`](include/include_arch.yml):
+  Hardware configuration and `arch` file to use
+- [`include_parameterset.yml`](include/include_parameters.yml):
+  Defines the matrix of active build options
+- [`include_run.yml`](include/include_run.yml):
+  Defines the matrix of execution options for each build
+
+Probably less likely to require user editing are the following files, that
+implement the mechanics of the benchmark execution:
+
+- [`include_step.yml`](include/include_step.yml):
+  Implementation of the benchmark steps
+- [`include_fileset_substituteset.yml`](include/include_fileset_substituteset.yml):
+  Required script file templates and required substitutions for each of them
+- [`include_patternset.yml`](include/include_patternset.yml):
+  Regular expressions to parse output
+- [`include_analyser.yml`](include/include_analyser.yml):
+  Application of regex patterns to execution stdout to collect output data
+- [`include_result.yml`](include/include_result.yml):
+  Compilation of result tables from analyser output data
+
+## Usage
+
+If it does not exist, yet, create target platform specific include files that
+overwrite relevant configuration values. Typically, this means at least a
+bespoke copy of `include_arch.yml` in something like
+`arch/<site>/<platform>/<toolchain>/<version>/include_arch.yml` but may also
+include any of the other include files.
 
 ```bash
-# Python 3 module loaded
+# Create a virtual environment and install JUBE
 python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+venv/bin/pip install -r requirements.txt
 
-## Running a benchmark
+# Execute the benchmark with the correct architecture file
+venv/bin/jube run cloudsc.yml --include arch/<site>/<platform>/<toolchain>/<version> [--only-bench=<cpu|gpu|loki>]
 
-```bash
-# Virtual environment loaded
-jube run <benchmark>.yml
-```
-
-## Analysing and displaying results
-
-```bash
-# Virtual environment loaded
-jube analyse <benchmark run directory> --id <benchmark id>
-jube result <benchmark run directory> --id <benchmark id> | less -S
-```
-
-or, both in one:
-
-```bash
-# Virtual environment loaded
-jube result -a <benchmark run directory> --id <benchmark id> | less -S
-```
-
-Skipping the benchmark id is equivalent to using the latest benchmark run.
-
-## Useful commands
-
-Update benchmark results after modifying patterns or result table, without re-running the benchmark:
-
-```bash
-# Virtual environment loaded
-jube result -a -u <benchmark>.yml <benchmark run directory> --id <benchmark id> | less -S
+# Analyse output and create results table
+venv/bin/jube result -a cloudsc --id=<benchmark id> | less -S
 ```
