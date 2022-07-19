@@ -129,7 +129,7 @@ CONTAINS
 1000  format(1x,5a10,1x,a4,' : ',2a10)
 1001  format(1x,5i10,1x,i4,' : ',2i10,:,' @ rank#',i0,':core#',i0)
 1002  format(1x,5i10,1x,i4,' : ',2i10,  ' : TOTAL @ rank#', i0)
-1003  format(1x,i6,' x',i2,4i10,1x,i4,' : ',2i10,' : TOTAL')
+1003  format(1x,i4,' x',i4,4i10,1x,i4,' : ',2i10,' : TOTAL')
       DO TID=0, SELF%NUMOMP-1
          TLOC = SELF%TTHREAD(TID)
          ZFRAC = REAL(SELF%IGPC(TID),JPRB)/REAL(NGPTOT,JPRB)
