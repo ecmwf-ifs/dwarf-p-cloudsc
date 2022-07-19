@@ -33,7 +33,7 @@ set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 
 # NB: We have to add `-mp` again to avoid undefined symbols during linking
 # (smells like an Nvidia bug)
-set( OpenACC_Fortran_FLAGS "-acc=host -mp" CACHE STRING "" )
+set( OpenACC_Fortran_FLAGS "-acc -mp" CACHE STRING "" )
 # Enable this to get more detailed compiler output
 # set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eu
 set -x
 
 # These targets don't have an MPI-parallel driver routine
@@ -8,10 +8,11 @@ non_mpi_targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-c)
 # These targets currently cause issues and are therefore not tested
 skipped_targets=(dwarf-cloudsc-gpu-claw)
 
-# Skip GPU targets if built with nvhpc (don't have GPU in test runner)
 if [[ "$arch" == *"nvhpc"* ]]
 then
-  skipped_targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist)
+  # Skip GPU targets if built with nvhpc (don't have GPU in test runner)
+  skipped_targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-omp-scc-hoist)
+
 fi
 
 exit_code=0
