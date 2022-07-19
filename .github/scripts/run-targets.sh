@@ -32,7 +32,8 @@ do
   if [[ "$mpi_flag" == "--with-mpi" && ! " ${non_mpi_targets[*]} " =~ " $target " ]]
   then
     # Two ranks with one thread each, safe NPROMA
-    mpirun -np 2 bin/$target 1 100 64
+    # NB: Use oversubscribe to run, even if we end up on a single core agent
+    mpirun --oversubscribe -np 2 bin/$target 1 100 64
   else
     # Single thread, safe NPROMA
     bin/$target 1 100 64
