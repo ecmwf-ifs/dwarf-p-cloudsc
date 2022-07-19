@@ -1,0 +1,41 @@
+parameterset:
+  # The runtime options
+  - name: run_set
+    parameter:
+      # Number of MPI ranks to launch (or iterate over NUMA domains)
+      - name: nproc
+        type: int
+        mode: python
+        _: |  # Powers of two until total number of available cores
+          ','.join(
+            [
+              str(2**i)
+              for i in range(int($numa_domains*$cores_per_numa_domain).bit_length()-1)
+            ] + [str($numa_domains*$cores_per_numa_domain)]
+            if $mpi == 1 else [
+              str(i+1) for i in range($numa_domains)
+            ]
+          )
+
+      # Number of OpenMP threads to use (per rank)
+      - name: numomp
+        type: int
+        mode: python
+        _: "$numa_domains*$cores_per_numa_domain//$nproc"
+
+      # Number of horizontal columns
+      - {name: ngptotg, type: int, _: 163840}
+
+      # NPROMA block size
+      - {name: nproma, type: int, _: "16,32"}
+
+      # MPI launch command to use
+      - name: launch_cmd
+        mode: python
+        _: "'mpirun -np $nproc' if $mpi == 1 else ''"
+      - name: launch_cmd_end
+        _: ""
+
+      # Executable(s) to benchmark
+      - name: target
+        _: "dwarf-cloudsc-fortran"

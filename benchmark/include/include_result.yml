@@ -1,0 +1,35 @@
+# Create a table with analyser results
+
+result:
+  use: analyse_results
+  table:
+    - name: compact
+      style: pretty
+      sort: jube_wp_id
+      column:
+        - jube_wp_id
+        - target
+        - precision
+        - io_library
+        - mpi
+        - total_nproc
+        - total_numomp
+        - total_ngptot
+        - total_nproma
+        - total_ngpblks
+        - total_time
+        - total_mflops
+        - thread_time_min
+        - thread_time_max
+        - thread_time_avg
+        - thread_mflops_min
+        - thread_mflops_max
+        - thread_mflops_avg
+        - rank_time_min
+        - rank_time_max
+        - rank_time_avg
+        - rank_mflops_min
+        - rank_mflops_max
+        - rank_mflops_avg
+        - abs_max_err_max
+        - max_rel_err_max
