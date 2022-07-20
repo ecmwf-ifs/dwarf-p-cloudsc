@@ -20,9 +20,9 @@ substituteset:
   - name: run_script
     iofile: {in: run-template.sh, out: run.sh}
     sub:
-    - {source: "${{ RUN_ENV }}", dest: $run_env}
     - {source: "${{ LAUNCH_CMD }}", dest: $launch_cmd}
     - {source: "${{ LAUNCH_CMD_END }}", dest: $launch_cmd_end}
+    - {source: "${{ NPROC }}", dest: $nproc}
     - {source: "${{ TARGET }}", dest: $target}
     - {source: "${{ NUMOMP }}", dest: $numomp}
     - {source: "${{ NGPTOTG }}", dest: $ngptotg}

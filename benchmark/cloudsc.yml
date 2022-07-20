@@ -68,13 +68,8 @@ benchmark:
         type: int
         mode: python
         _: "','.join(str(i+1) for i in range($gpus)) if $mpi == 1 else '1'"
-      # MPI launch command to use (inject CUDA_VISIBLE_DEVICES)
-      - name: launch_cmd
-        mode: python
-        _: "'mpirun -np $nproc bash -c \"CUDA_VISIBLE_DEVICES=\\${OMPI_COMM_WORLD_RANK}' if $mpi == 1 else ''"
-      - name: launch_cmd_end
-        mode: python
-        _: "'\"' if $mpi == 1 else ''"
+      # Always run without multi-threading
+      - {name: numomp, type: int, _: 1}
       # Increase NPROMA value for GPU variants
       - name: nproma
         mode: python

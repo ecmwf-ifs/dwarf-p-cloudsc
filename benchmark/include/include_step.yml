@@ -30,13 +30,3 @@ step:
       - build_set
       - run_set
     do: ./run.sh
-      # bash -c '
-      # set -x
-      # cd build/build
-      # source env.sh
-      # if [[ "$mpi" -eq "1" ]]; then
-        # OMP_STACKSIZE=8G mpirun -np $nproc bin/$target $numomp $ngptot $nproma
-      # else
-        # PGI_ACC_CUDA_HEAPSIZE=16G OMP_STACKSIZE=8G bin/$target $numomp $ngptot $nproma
-      # fi
-      # set +x'
