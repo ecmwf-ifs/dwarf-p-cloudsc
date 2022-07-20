@@ -16,3 +16,10 @@ parameterset:
 
       # Increase OpenMP stacksize for larger column counts
       - {name: OMP_STACKSIZE, export: true, _: 8G}
+
+      # MPI launch command to use (in the form `$launch_cmd <exe> <args> $launch_cmd_end`)
+      - name: launch_cmd
+        mode: python
+        _: "'mpirun -np ${{ NPROC }}' if $mpi == 1 else ''"
+      - name: launch_cmd_end
+        _: ""

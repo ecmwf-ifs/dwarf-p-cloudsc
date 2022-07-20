@@ -17,3 +17,11 @@ parameterset:
 
       # Set CUDA runtime heap size on GPU for SCC variant
       - {name: PGI_ACC_CUDA_HEAPSIZE, export: true, _: 9G}
+
+      # MPI launch command to use (inject CUDA_VISIBLE_DEVICES)
+      - name: launch_cmd
+        mode: python
+        _: "'srun -n ${{ NPROC }} bash -c \"CUDA_VISIBLE_DEVICES=\\${SLURM_LOCALID}' if $mpi == 1 else ''"
+      - name: launch_cmd_end
+        mode: python
+        _: "'\"' if $mpi == 1 else ''"
