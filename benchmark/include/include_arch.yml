@@ -13,3 +13,6 @@ parameterset:
 
       # Number of GPUs available on a node
       - {name: gpus, type: int, _: 0}
+
+      # Increase OpenMP stacksize for larger column counts
+      - {name: OMP_STACKSIZE, export: true, _: 8G}

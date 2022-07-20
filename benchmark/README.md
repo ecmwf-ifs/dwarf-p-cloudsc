@@ -41,8 +41,23 @@ implement the mechanics of the benchmark execution:
 If it does not exist, yet, create target platform specific include files that
 overwrite relevant configuration values. Typically, this means at least a
 bespoke copy of `include_arch.yml` in something like
-`arch/<site>/<platform>/<toolchain>/<version>/include_arch.yml` but may also
-include any of the other include files.
+`arch/<site>/<platform>/<toolchain>/<version>/include_arch.yml` but may for certain
+scenarios also require customization of the other include files.
+
+Note that the parametersets can be initialized with the default values from the
+`include` directory by providing the `init_with` option. This allows to only
+overwrite values that need to be changed, e.g.
+
+```yaml
+parameterset:
+  - name: arch_set
+    init_with: include/include_arch.yml
+    parameter:
+    - {name: arch, _: arch/hpc2020/gnu/9.3.0}
+```
+
+With platform-specific overrides in place, JUBE can be installed and the benchmark
+executed using the following steps:
 
 ```bash
 # Create a virtual environment and install JUBE
@@ -50,8 +65,21 @@ python3 -m venv venv
 venv/bin/pip install -r requirements.txt
 
 # Execute the benchmark with the correct architecture file
-venv/bin/jube run cloudsc.yml --include arch/<site>/<platform>/<toolchain>/<version> [--only-bench=<cpu|gpu>]
+venv/bin/jube run cloudsc.yml --include arch/<site>/<platform>/<toolchain>/<version> [--only-bench=<cpu|gpu>] [-t <tag> [-t <tag> ...]]
 
 # Analyse output and create results table
 venv/bin/jube result -a rundir_<cpu|gpu> --id=<benchmark id> | less -S
 ```
+
+Note the following options to the `run` command:
+
+- `--include`: This should point to the directory with the platform-specific
+  include files to override parameters. This takes precedence (but does not
+  replace) the default include path. Multiple include paths can be specified.
+- `--only-bench`: By specifying `cpu` or `gpu`, only the relevant benchmark
+  variant is being executed.
+- `-t`: This allows to provide a "tag" to select certain readily available
+  variations of parameters. Multiple tags can be supplied. Currently available:
+  - `dp`/`sp` to switch between double (the default) and single precision
+  - `serialbox` to use Serialbox instead of HDF5 as input library
+  - `mpi` to build with MPI support

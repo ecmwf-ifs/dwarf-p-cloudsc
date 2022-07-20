@@ -1,6 +1,7 @@
 parameterset:
   # System architecture specification
   - name: arch_set
+    init_with: include/include_arch.yml
     parameter:
       # Architecture definition to pass to bundle build command
       - {name: arch, _: "arch/ecmwf/hpc2020/gnu/9.3.0"}  # Choose from arch
@@ -10,6 +11,3 @@ parameterset:
 
       # Number of cores per NUMA domain (e.g., number of cores per CPU)
       - {name: cores_per_numa_domain, type: int, _: 64}
-
-      # Number of GPUs available on a node
-      - {name: gpus, type: int, _: 0}
