@@ -1,12 +1,11 @@
 # CLOUDSC benchmark setup for JUBE
 
-This provides three different benchmarks:
+This provides different benchmarks:
 
 - cpu
 - gpu
-- loki
 
-They used the JUBE benchmarking environment to automate their execution for a
+They use the JUBE benchmarking environment to automate their execution for a
 range of different build and run configurations. See [JUBE.md](JUBE.md) for
 an introduction.
 
@@ -51,8 +50,8 @@ python3 -m venv venv
 venv/bin/pip install -r requirements.txt
 
 # Execute the benchmark with the correct architecture file
-venv/bin/jube run cloudsc.yml --include arch/<site>/<platform>/<toolchain>/<version> [--only-bench=<cpu|gpu|loki>]
+venv/bin/jube run cloudsc.yml --include arch/<site>/<platform>/<toolchain>/<version> [--only-bench=<cpu|gpu>]
 
 # Analyse output and create results table
-venv/bin/jube result -a cloudsc --id=<benchmark id> | less -S
+venv/bin/jube result -a rundir_<cpu|gpu> --id=<benchmark id> | less -S
 ```
