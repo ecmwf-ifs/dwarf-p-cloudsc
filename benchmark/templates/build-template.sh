@@ -1,4 +1,4 @@
-#!/usr/bin/env -S bash -xeo pipefail
+#!/usr/bin/env -S bash -lxeo pipefail
 set -u
 
 cd ${{ CLOUDSC_HOME }}

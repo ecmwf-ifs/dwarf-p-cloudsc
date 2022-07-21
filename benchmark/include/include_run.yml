@@ -35,7 +35,7 @@ parameterset:
             'dwarf-cloudsc-fortran': {'sp': 32, 'dp': 16}['$precision'],
             'dwarf-cloudsc-c': {'sp': 32, 'dp': 16}['$precision'],
             'dwarf-cloudsc-gpu-claw': 8192,
-            'dwarf-cloudsc-gpu-scc': 128,
+            'dwarf-cloudsc-gpu-scc': 256,
             'dwarf-cloudsc-gpu-scc-hoist': 128,
             'dwarf-cloudsc-gpu-omp-scc-hoist': 128,
           }['$target']
