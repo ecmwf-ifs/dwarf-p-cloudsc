@@ -70,17 +70,6 @@ benchmark:
         _: "','.join(str(i+1) for i in range($gpus)) if $mpi == 1 else '1'"
       # Always run without multi-threading
       - {name: numomp, type: int, _: 1}
-      # Increase NPROMA value for GPU variants
-      - name: default_nproma
-        mode: python
-        type: int
-        _: >
-          {
-            'dwarf-cloudsc-gpu-claw': 8192,
-            'dwarf-cloudsc-gpu-scc': 128,
-            'dwarf-cloudsc-gpu-scc-hoist': 128,
-            'dwarf-cloudsc-gpu-omp-scc-hoist': 128,
-          }['$target'] * {'sp': 2, 'dp': 1}['$precision']
 
     # Benchmark execution steps
     step: !include include_step.yml:["step"]

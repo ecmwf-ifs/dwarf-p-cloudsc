@@ -15,5 +15,6 @@ parameterset:
       # MPI launch command to use
       - name: launch_cmd
         mode: python
-        _: "'srun -n ${{ NPROC }} --cpus-per-task=${{ NUMOMP }}' if $mpi == 1 else ''"
-      - {name: launch_cmd_end, _: ""}
+        separator: ;
+        _: "'srun -n ${{ NPROC }} --cpus-per-task=${{ NUMOMP }} --hint nomultithread bash -c \"OMP_PLACES={\\$(seq -s \\'},{\\' \\$((\\$SLURM_LOCALID*${{ NUMOMP }})) \\$(((\\$SLURM_LOCALID+1)*${{ NUMOMP }}-1)) )}' if $mpi == 1 else 'OMP_PLACES={$(seq -s \\'},{\\' 0 $((${{ NUMOMP }}-1)) )}'"
+      - {name: launch_cmd_end, mode: python, _: "'\"' if $mpi == 1 else ''"}
