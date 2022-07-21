@@ -158,17 +158,17 @@ patternset:
 
   - name: timing_pattern
     pattern:
-      - {name: thread_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}  # C-version doesn't print core number?
-      - {name: thread_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}
-      - {name: rank_time,     type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
-      - {name: rank_mflops,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
-      - {name: total_time,    type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+(?::\s+)?TOTAL(?!\s@)'}
-      - {name: total_mflops,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+(?::\s+)?TOTAL(?!\s@)'}
-      - {name: total_nproc,   type: int, _: '$jube_pat_int\s*x\s*(?:$jube_pat_nint\s+){6}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: total_numomp,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_int\s+(?:$jube_pat_nint\s+){5}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: total_ngptot,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_nint\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){4}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: total_ngpblks, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){3}$jube_pat_int\s+(?:$jube_pat_nint\s+){2}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: total_nproma,  type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){4}$jube_pat_int\s+$jube_pat_nint\s+:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: thr_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}  # C-version doesn't print core number?
+      - {name: thr_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}
+      - {name: rnk_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
+      - {name: rnk_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
+      - {name: tot_time,   type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_mflops, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_nproc,  type: int, _: '$jube_pat_int\s*x\s*(?:$jube_pat_nint\s+){6}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_numomp, type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_int\s+(?:$jube_pat_nint\s+){5}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_ngptot, type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_nint\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){4}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_ngpblks,type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){3}$jube_pat_int\s+(?:$jube_pat_nint\s+){2}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_nproma, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){4}$jube_pat_int\s+$jube_pat_nint\s+:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
 
       # NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
       #      8     16384      2048       128        16    0 :        295       866 @ core#22
