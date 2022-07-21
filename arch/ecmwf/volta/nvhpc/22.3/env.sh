@@ -25,14 +25,14 @@ module_unload boost
 module_unload cmake
 module_unload intel
 module_unload pgi
-module_unload nvhpc
 module_unload nvhpc-nompi
+module_unload nvhpc
 module_unload gnu
 
 # Load modules
-module use /opt/nvidia/hpc_sdk/modulefiles
-# module load nvhpc
-module_load nvhpc-nompi/20.9
+module use /local/hdd/daom/hpc_sdk_22.3/modulefiles/
+module_load nvhpc/22.3
+#module_load nvhpc-nompi/22.3
 module_load boost/1.61.0
 module_load cmake/3.19.5
 
@@ -44,11 +44,8 @@ ulimit -S -s unlimited
 # Fix boost header location
 export BOOST_INCLUDEDIR="/usr/local/apps/boost/1.61.0/PGI/17.1/include/"
 
-# Include local OpenMPI in the path for discovery in build
-export PATH="/local/hdd/nabr/openmpi/nvhpc-nompi/20.9/bin:$PATH"
-
 # Custom HDF5 library build with F03 interfaces
-export HDF5_ROOT="/local/hdd/nabr/hdf5/nvhpc/20.9"
+export HDF5_ROOT="/local/hdd/nabr/hdf5/nvhpc/22.3"
 
 # Restore tracing to stored setting
 if [[ -n "$tracing_" ]]; then set -x; else set +x; fi
