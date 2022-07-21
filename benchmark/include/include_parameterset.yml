@@ -16,9 +16,8 @@ parameterset:
   - name: build_set
     parameter:
       # Build single (sp) or double (dp) precision (or both by choosing `dp,sp`)
-      - {name: precision, _: "dp"}
       - {name: precision, tag: "sp+dp" , _: "dp,sp"}
-      - {name: precision, tag: "!sp+dp" , _: "dp"}
+      - {name: precision, tag: "!sp" , _: "dp"}
       - {name: precision, tag: "sp+!dp", _: "sp"}
       - name: precision_flag
         mode: python

@@ -16,7 +16,7 @@ parameterset:
       - {name: gpus, type: int, _: 4}
 
       # Set CUDA runtime heap size on GPU for SCC variant
-      - {name: PGI_ACC_CUDA_HEAPSIZE, export: true, _: 9G}
+      - {name: PGI_ACC_CUDA_HEAPSIZE, export: true, _: 12G}
 
       # MPI launch command to use (inject CUDA_VISIBLE_DEVICES)
       - name: launch_cmd

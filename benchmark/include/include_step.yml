@@ -29,4 +29,5 @@ step:
       - arch_set
       - build_set
       - run_set
+    iterations: 3
     do: ./run.sh

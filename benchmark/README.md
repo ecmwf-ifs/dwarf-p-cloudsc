@@ -80,8 +80,9 @@ Note the following options to the `run` command:
 - `--only-bench`: By specifying `cpu` or `gpu`, only the relevant benchmark
   variant is being executed.
 - `-t`: This allows to provide a "tag" to select certain readily available
-  variations of parameters. Multiple tags can be supplied. Currently available:
-  - `dp`/`sp` to switch between double (the default) and single precision
+  variations of parameters. Multiple tags can be supplied, separated by
+  white space. Currently available:
+  - `dp`/`sp` to enable double (the default) and single precision builds
   - `serialbox` to use Serialbox instead of HDF5 as input library
   - `mpi` to build with MPI support
   - `sweep_nproma` varies the `default_nproma` value specified for the benchmark

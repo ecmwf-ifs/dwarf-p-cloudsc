@@ -21,15 +21,15 @@ result:
         - tot_mflops
         - thr_time_min
         - thr_time_max
-        - thr_time_sum
+        - thr_time_avg
         - thr_mflops_min
         - thr_mflops_max
-        - thr_mflops_sum
+        - thr_mflops_avg
         - rnk_time_min
         - rnk_time_max
-        - rnk_time_sum
+        - rnk_time_avg
         - rnk_mflops_min
         - rnk_mflops_max
-        - rnk_mflops_sum
+        - rnk_mflops_avg
         - abs_max_err_max
         - max_rel_err_max

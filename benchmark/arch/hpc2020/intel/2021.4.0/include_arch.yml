@@ -11,3 +11,10 @@ parameterset:
 
       # Number of cores per NUMA domain (e.g., number of cores per CPU)
       - {name: cores_per_numa_domain, type: int, _: 64}
+
+      # MPI launch command to use
+      - name: launch_cmd
+        mode: python
+        separator: ;
+        _: "'srun -n ${{ NPROC }} --cpus-per-task=${{ NUMOMP }} --hint nomultithread bash -c \"OMP_PLACES={\\$(seq -s \\'},{\\' \\$((\\$SLURM_LOCALID*${{ NUMOMP }})) \\$(((\\$SLURM_LOCALID+1)*${{ NUMOMP }}-1)) )}' if $mpi == 1 else 'OMP_PLACES={$(seq -s \\'},{\\' 0 $((${{ NUMOMP }}-1)) )}'"
+      - {name: launch_cmd_end, mode: python, _: "'\"' if $mpi == 1 else ''"}

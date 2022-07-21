@@ -24,13 +24,21 @@ parameterset:
         _: "$numa_domains*$cores_per_numa_domain//$nproc"
 
       # Number of horizontal columns
-      - {name: ngptotg, type: int, _: 262144}
+      - {name: ngptotg, type: int, _: 163840}
 
-      # Default NPROMA block size
+      # Default NPROMA value per variant
       - name: default_nproma
-        type: int
         mode: python
-        _: "{'sp': 16, 'dp': 8}['$precision']"
+        type: int
+        _: >
+          {
+            'dwarf-cloudsc-fortran': {'sp': 32, 'dp': 16}['$precision'],
+            'dwarf-cloudsc-c': {'sp': 32, 'dp': 16}['$precision'],
+            'dwarf-cloudsc-gpu-claw': 8192,
+            'dwarf-cloudsc-gpu-scc': 128,
+            'dwarf-cloudsc-gpu-scc-hoist': 128,
+            'dwarf-cloudsc-gpu-omp-scc-hoist': 128,
+          }['$target']
 
       # Optionally sweep neighbouring NPROMA values
       - name: nproma
