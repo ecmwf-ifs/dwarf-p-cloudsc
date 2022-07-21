@@ -62,7 +62,7 @@ benchmark:
       parameter:
       # Available binaries
       - name: target
-        _: 'dwarf-cloudsc-gpu-claw,dwarf-cloudsc-gpu-omp-scc-hoist,dwarf-cloudsc-gpu-scc,dwarf-cloudsc-gpu-scc-hoist'
+        _: 'dwarf-cloudsc-gpu-omp-scc-hoist,dwarf-cloudsc-gpu-scc,dwarf-cloudsc-gpu-scc-hoist'
       # Number of MPI ranks to launch (to target multiple GPUs, if available)
       - name: nproc
         type: int
