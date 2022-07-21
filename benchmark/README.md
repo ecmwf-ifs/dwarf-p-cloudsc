@@ -65,7 +65,8 @@ python3 -m venv venv
 venv/bin/pip install -r requirements.txt
 
 # Execute the benchmark with the correct architecture file
-venv/bin/jube run cloudsc.yml --include arch/<site>/<platform>/<toolchain>/<version> [--only-bench=<cpu|gpu>] [-t <tag> [-t <tag> ...]]
+venv/bin/jube run cloudsc.yml --include arch/<site>/<platform>/<toolchain>/<version> \
+  [--only-bench=<cpu|gpu>] [-t <tag> [-t <tag> ...]] [-m "<description>"]
 
 # Analyse output and create results table
 venv/bin/jube result -a rundir_<cpu|gpu> --id=<benchmark id> | less -S
@@ -83,3 +84,20 @@ Note the following options to the `run` command:
   - `dp`/`sp` to switch between double (the default) and single precision
   - `serialbox` to use Serialbox instead of HDF5 as input library
   - `mpi` to build with MPI support
+  - `sweep_nproma` varies the `default_nproma` value specified for the benchmark
+    by running with 1/4, 1/2, 1, 2, 4 times that value to find the optimum
+- `-m`: This allows to provide a description for the benchmark execution to
+  help identify a specific run later on
+
+To view information about the performed benchmark runs, use the `info` command:
+
+```bash
+venv/bin/jube info rundir_<cpu|gpu> [--id=<benchmark id>]
+```
+
+Without `--id`, this lists all past runs and includes the description provided
+via `-m`. When a benchmark id is specified, it gives a summary of that specific
+benchmark run.
+
+To postprocess the result tables, the output format can be changed to CSV by
+adding `-s csv` to the `result` command.

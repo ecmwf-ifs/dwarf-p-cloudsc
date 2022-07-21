@@ -71,7 +71,7 @@ benchmark:
       # Always run without multi-threading
       - {name: numomp, type: int, _: 1}
       # Increase NPROMA value for GPU variants
-      - name: nproma
+      - name: default_nproma
         mode: python
         type: int
         _: >
@@ -80,7 +80,7 @@ benchmark:
             'dwarf-cloudsc-gpu-scc': 128,
             'dwarf-cloudsc-gpu-scc-hoist': 128,
             'dwarf-cloudsc-gpu-omp-scc-hoist': 128,
-          }['$target']
+          }['$target'] * {'sp': 2, 'dp': 1}['$precision']
 
     # Benchmark execution steps
     step: !include include_step.yml:["step"]
