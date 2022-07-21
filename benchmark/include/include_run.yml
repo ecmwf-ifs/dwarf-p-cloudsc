@@ -24,7 +24,7 @@ parameterset:
         _: "$numa_domains*$cores_per_numa_domain//$nproc"
 
       # Number of horizontal columns
-      - {name: ngptotg, type: int, _: 524288}
+      - {name: ngptotg, type: int, _: 262144}
 
       # NPROMA block size
       - {name: nproma, type: int, _: "16,32"}

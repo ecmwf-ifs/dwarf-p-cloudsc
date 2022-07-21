@@ -12,24 +12,24 @@ result:
         - precision
         - io_library
         - mpi
-        - total_nproc
-        - total_numomp
-        - total_ngptot
-        - total_nproma
-        - total_ngpblks
-        - total_time
-        - total_mflops
-        - thread_time_min
-        - thread_time_max
-        - thread_time_avg
-        - thread_mflops_min
-        - thread_mflops_max
-        - thread_mflops_avg
-        - rank_time_min
-        - rank_time_max
-        - rank_time_avg
-        - rank_mflops_min
-        - rank_mflops_max
-        - rank_mflops_avg
+        - tot_nproc
+        - tot_numomp
+        - tot_ngptot
+        - tot_nproma
+        - tot_ngpblks
+        - tot_time
+        - tot_mflops
+        - thr_time_min
+        - thr_time_max
+        - thr_time_sum
+        - thr_mflops_min
+        - thr_mflops_max
+        - thr_mflops_sum
+        - rnk_time_min
+        - rnk_time_max
+        - rnk_time_sum
+        - rnk_mflops_min
+        - rnk_mflops_max
+        - rnk_mflops_sum
         - abs_max_err_max
         - max_rel_err_max
