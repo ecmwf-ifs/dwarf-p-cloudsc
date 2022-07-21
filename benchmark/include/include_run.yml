@@ -26,8 +26,19 @@ parameterset:
       # Number of horizontal columns
       - {name: ngptotg, type: int, _: 262144}
 
-      # NPROMA block size
-      - {name: nproma, type: int, _: "16,32"}
+      # Default NPROMA block size
+      - name: default_nproma
+        type: int
+        mode: python
+        _: "{'sp': 16, 'dp': 8}['$precision']"
+
+      # Optionally sweep neighbouring NPROMA values
+      - name: nproma
+        tag: "sweep_nproma"
+        type: int
+        mode: python
+        _: "','.join(str(int($default_nproma * 2**i)) for i in range(-2, 3))"
+      - {name: nproma, tag: "!sweep_nproma", _: $default_nproma}
 
       # Executable(s) to benchmark
       - name: target
