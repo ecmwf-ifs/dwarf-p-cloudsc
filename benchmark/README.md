@@ -102,3 +102,22 @@ benchmark run.
 
 To postprocess the result tables, the output format can be changed to CSV by
 adding `-s csv` to the `result` command.
+
+## Typical benchmarking workflow
+
+A typical benchmarking workflow for a new CPU platform may look like this:
+
+1. Create a platform-specific `include_arch.yml` file
+2. Install JUBE
+3. Run an `NPROMA` sweep for single and double precision:
+   `venv/bin/jube run cloudsc.yml --only-bench=cpu --include <path/to/dir/with/include_arch.yml> -t sp dp sweep_nproma -m "<Compiler> NPROMA sweep for platform xyz"`
+4. View results to select optimum NPROMA value:
+   `venv/bin/jube result rundir_cpu -a | less -S`
+5. If required: Create platform-specific `include_run.yml` file that changes
+   `default_nproma` value to optimum. Repeat NPROMA sweep, if necessary.
+6. Run benchmark (optionally with MPI across NUMA domains), e.g. as follows:
+   `venv/bin/jube run cloudsc.yml --only-bench=cpu --include <path/to/dir/with/include_arch.yml> -t sp dp mpi -m "<Compiler> MPI platform xyz"`
+7. View results:
+   `venv/bin/jube result rundir_cpu -a | less -S`
+8. Optional: dump results to CSV:
+   `venv/bin/jube result rundir_cpu -s csv > results.csv`
