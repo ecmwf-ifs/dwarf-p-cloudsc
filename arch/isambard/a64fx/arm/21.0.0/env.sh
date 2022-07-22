@@ -21,7 +21,12 @@ export FC_INCLUDES=-I$HDF5_DIR/include
 export CC=armclang
 export CXX=armclang++
 export FC=armflang
- 
+
+# ARM PL math library
+module use /software/aarch64/tools/arm-compiler/21.0/modulefiles
+module load arm21
+module load armpl-AArch64-SVE/21.0.0
+
 module load openmpi/4.1.0/arm-21.0
 module load cmake
 

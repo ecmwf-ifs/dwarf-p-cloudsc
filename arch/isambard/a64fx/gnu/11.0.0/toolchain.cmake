@@ -13,25 +13,13 @@
 set( ECBUILD_FIND_MPI ON )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if( ENABLE_MPI )
-set(CMAKE_C_COMPILER "mpifcc")
-set(CMAKE_CXX_COMPILER "mpiFCC")
-set(CMAKE_Fortran_COMPILER "mpifrt")
-else()
-set(CMAKE_C_COMPILER "fcc")
-set(CMAKE_CXX_COMPILER "FCC")
-set(CMAKE_Fortran_COMPILER "frt")
-endif()
-
 ####################################################################
 # OpenMP FLAGS
 ####################################################################
 
-set( OpenMP_C_FLAGS   "-Kopenmp -Nfjomplib" CACHE STRING "" )
-set( OpenMP_C_LIB_NAMES   "" CACHE STRING "" )
-set( OpenMP_CXX_FLAGS   "-Kopenmp -Nfjomplib" CACHE STRING "" )
-set( OpenMP_CXX_LIB_NAMES   "" CACHE STRING "" )
-set( OpenMP_Fortran_FLAGS   "-Kopenmp -Nfjomplib" CACHE STRING "" )
+set( OpenMP_C_FLAGS   "-fopenmp" CACHE STRING "" )
+set( OpenMP_CXX_FLAGS   "-fopenmp" CACHE STRING "" )
+set( OpenMP_Fortran_FLAGS   "-fopenmp" CACHE STRING "" )
 
 ####################################################################
 # COMMON FLAGS
@@ -39,16 +27,14 @@ set( OpenMP_Fortran_FLAGS   "-Kopenmp -Nfjomplib" CACHE STRING "" )
 
 foreach(LANG IN ITEMS C CXX Fortran LINKER)
     set(ECBUILD_${LANG}_FLAGS "${ECBUILD_${LANG}_FLAGS} -fpic")
-    set(ECBUILD_${LANG}_FLAGS "${ECBUILD_${LANG}_FLAGS} -Klto")
-    set(ECBUILD_${LANG}_FLAGS "${ECBUILD_${LANG}_FLAGS} -SSL2")
-    set(ECBUILD_${LANG}_FLAGS "${ECBUILD_${LANG}_FLAGS} -Kopenmp")
-    set(ECBUILD_${LANG}_FLAGS "${ECBUILD_${LANG}_FLAGS} -Nfjomplib")
+#    set(ECBUILD_${LANG}_FLAGS "${ECBUILD_${LANG}_FLAGS} -flto")
 endforeach()
+
+set(ECBUILD_Fortran_FLAGS_BIT "-Ofast -mtune=native -mcpu=a64fx -march=armv8.2-a+sve -fstack-arrays -fallow-argument-mismatch -fconvert=big-endian -fno-second-underscore -ffast-math -DNDEBUG -funroll-all-loops -finline-functions -I$ENV{ARMPL_INCLUDES}")
+set(ECBUILD_LINKER_FLAGS "${ECBUILD_LINKER_FLAGS} -L$ENV{ARMPL_LIBRARIES} -larmpl_mp -lamath -lm")
 
 set(CMAKE_EXE_LINKER_FLAGS "${ECBUILD_LINKER_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${ECBUILD_LINKER_FLAGS}")
-
-set( ECBUILD_Fortran_FLAGS_BIT "-Kfast -O3 -KA64FX -KSVE -KARMV8_3_A -Ksimd=2 -Kassume=notime_saving_compilation -DNDEBUG" )
 
 # Compatibility with HDF5 1.12
 set(H5_USE_110_API ON)
