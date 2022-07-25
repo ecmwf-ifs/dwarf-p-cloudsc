@@ -1,0 +1,20 @@
+parameterset:
+  # System architecture specification
+  - name: arch_set
+    init_with: include/include_arch.yml
+    parameter:
+      # Architecture definition to pass to bundle build command
+      - {name: arch, _: "arch/isambard/p3/intel/2021.4.0"}  # Choose from arch
+
+      # Number of NUMA domains on a node (e.g., the number of sockets)
+      - {name: numa_domains, type: int, _: 2}
+
+      # Number of cores per NUMA domain (e.g., number of cores per CPU)
+      - {name: cores_per_numa_domain, type: int, _: 64}
+
+      # MPI launch command to use
+      - name: launch_cmd
+        mode: python
+        separator: ;
+        _: "'I_MPI_PIN=off mpirun -n ' + ('${{ NPROC }}' if $mpi == 1 else '1') + ' bash -c \"OMP_PLACES={\\$(seq -s \\'},{\\' \\$((\\$MPI_LOCALRANKID*${{ NUMOMP }})) \\$(((\\$MPI_LOCALRANKID+1)*${{ NUMOMP }}-1)) )}'"
+      - {name: launch_cmd_end, _: "\""}
