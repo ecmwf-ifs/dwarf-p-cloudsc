@@ -78,8 +78,8 @@ if( HAVE_CLOUDSC_LOKI )
         MODE idem FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADER ${COMMON_MODULE}/yomphyder.F90
-        INCLUDE ${COMMON_INCLUDE}
+        HEADERS ${COMMON_MODULE}/yomphyder.F90
+        INCLUDES ${COMMON_INCLUDE}
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
         OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
@@ -91,15 +91,10 @@ if( HAVE_CLOUDSC_LOKI )
             dwarf_cloudsc.F90
             loki-idem/cloudsc_driver_loki_mod.idem.F90
             loki-idem/cloudsc.idem.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    target_link_libraries( dwarf-cloudsc-loki-idem PRIVATE cloudsc-common-lib )
-    if( TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-idem PRIVATE OpenMP::OpenMP_Fortran )
-    endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-loki-idem PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
 
 
     ####################################################
@@ -113,8 +108,8 @@ if( HAVE_CLOUDSC_LOKI )
         MODE sca FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADER ${COMMON_MODULE}/yomphyder.F90
-        INCLUDE ${COMMON_INCLUDE}
+        HEADERS ${COMMON_MODULE}/yomphyder.F90
+        INCLUDES ${COMMON_INCLUDE}
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
         OUTPUT loki-sca/cloudsc.sca.F90 loki-sca/cloudsc_driver_loki_mod.sca.F90
@@ -126,15 +121,10 @@ if( HAVE_CLOUDSC_LOKI )
             dwarf_cloudsc.F90
             loki-sca/cloudsc_driver_loki_mod.sca.F90
             loki-sca/cloudsc.sca.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE cloudsc-common-lib )
-    if( TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-sca PRIVATE OpenMP::OpenMP_Fortran )
-    endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-loki-sca PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
 
 
     ####################################################
@@ -150,8 +140,8 @@ if( HAVE_CLOUDSC_LOKI )
             MODE claw FRONTEND ${LOKI_FRONTEND} CPP
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
             PATH ${CMAKE_CURRENT_SOURCE_DIR}
-            HEADER ${COMMON_MODULE}/yomphyder.F90
-            INCLUDE ${COMMON_INCLUDE}
+            HEADERS ${COMMON_MODULE}/yomphyder.F90
+            INCLUDES ${COMMON_INCLUDE}
             XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
             OUTPUT loki-claw-cpu/cloudsc.claw.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
@@ -163,7 +153,7 @@ if( HAVE_CLOUDSC_LOKI )
         claw_compile(
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET cpu DIRECTIVE none
-            INCLUDE ${COMMON_INCLUDE}
+            INCLUDES ${COMMON_INCLUDE}
             XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-cpu/cloudsc.claw.F90
             OUTPUT loki-claw-cpu/cloudsc.claw.cpu.F90
@@ -171,7 +161,7 @@ if( HAVE_CLOUDSC_LOKI )
         claw_compile(
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET cpu DIRECTIVE none
-            INCLUDE ${COMMON_INCLUDE}
+            INCLUDES ${COMMON_INCLUDE}
             XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
             OUTPUT loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
@@ -183,15 +173,10 @@ if( HAVE_CLOUDSC_LOKI )
                 dwarf_cloudsc.F90
                 loki-claw-cpu/cloudsc_driver_loki_mod.claw.cpu.F90
                 loki-claw-cpu/cloudsc.claw.cpu.F90
+            LIBS
+                cloudsc-common-lib
             DEFINITIONS ${CLOUDSC_DEFINITIONS}
         )
-        target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE cloudsc-common-lib )
-        if( TARGET OpenMP::OpenMP_Fortran )
-            target_link_libraries( dwarf-cloudsc-loki-claw-cpu PRIVATE OpenMP::OpenMP_Fortran )
-        endif()
- 	if ( HAVE_HDF5 )
-          target_include_directories( dwarf-cloudsc-loki-claw-cpu PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-	endif()
     endif()
 
     ####################################################
@@ -209,9 +194,9 @@ if( HAVE_CLOUDSC_LOKI )
             MODE claw FRONTEND ${LOKI_FRONTEND} CPP
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
             PATH ${CMAKE_CURRENT_SOURCE_DIR}
-            HEADER ${COMMON_MODULE}/yomphyder.F90
-            INCLUDE ${COMMON_INCLUDE}
-            DEFINE CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+            HEADERS ${COMMON_MODULE}/yomphyder.F90
+            INCLUDES ${COMMON_INCLUDE}
+            DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
             DATA_OFFLOAD REMOVE_OPENMP
             XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
@@ -222,7 +207,7 @@ if( HAVE_CLOUDSC_LOKI )
         claw_compile(
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET gpu DIRECTIVE openacc
-            INCLUDE ${COMMON_INCLUDE}
+            INCLUDES ${COMMON_INCLUDE}
             XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-gpu/cloudsc.claw.F90
             OUTPUT loki-claw-gpu/cloudsc.claw.gpu.F90
@@ -230,7 +215,7 @@ if( HAVE_CLOUDSC_LOKI )
         claw_compile(
             MODEL_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/claw_cloudsc.config
             TARGET gpu DIRECTIVE openacc
-            INCLUDE ${COMMON_INCLUDE}
+            INCLUDES ${COMMON_INCLUDE}
             XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             SOURCE loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
             OUTPUT loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
@@ -242,20 +227,10 @@ if( HAVE_CLOUDSC_LOKI )
                 dwarf_cloudsc.F90
                 loki-claw-gpu/cloudsc_driver_loki_mod.claw.gpu.F90
                 loki-claw-gpu/cloudsc.claw.gpu.F90
+            LIBS
+                cloudsc-common-lib
             DEFINITIONS ${CLOUDSC_DEFINITIONS}
         )
-        if( TARGET OpenMP::OpenMP_Fortran )
-            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenMP::OpenMP_Fortran )
-        endif()
-        if( TARGET OpenACC::OpenACC_Fortran )
-            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE OpenACC::OpenACC_Fortran )
-            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib-static )
-        else()
-            target_link_libraries( dwarf-cloudsc-loki-claw-gpu PRIVATE cloudsc-common-lib )
-        endif()
-	if ( HAVE_HDF5 )
-          target_include_directories( dwarf-cloudsc-loki-claw-gpu PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-	endif()
     endif()
 
 
@@ -271,9 +246,9 @@ if( HAVE_CLOUDSC_LOKI )
         MODE scc FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADER ${COMMON_MODULE}/yomphyder.F90
-        INCLUDE ${COMMON_INCLUDE}
-        DEFINE CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+        HEADERS ${COMMON_MODULE}/yomphyder.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
@@ -286,20 +261,10 @@ if( HAVE_CLOUDSC_LOKI )
             dwarf_cloudsc.F90
             loki-scc/cloudsc_driver_loki_mod.scc.F90
             loki-scc/cloudsc.scc.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    if( TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE OpenMP::OpenMP_Fortran )
-    endif()
-    if( TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE cloudsc-common-lib-static )
-    else()
-        target_link_libraries( dwarf-cloudsc-loki-scc PRIVATE cloudsc-common-lib )
-    endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-loki-scc PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
 
 
     ####################################################
@@ -315,9 +280,9 @@ if( HAVE_CLOUDSC_LOKI )
         MODE scc-hoist FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADER ${COMMON_MODULE}/yomphyder.F90
-        INCLUDE ${COMMON_INCLUDE}
-        DEFINE CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+        HEADERS ${COMMON_MODULE}/yomphyder.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
@@ -332,20 +297,10 @@ if( HAVE_CLOUDSC_LOKI )
             dwarf_cloudsc.F90
             loki-scc-hoist/cloudsc_driver_loki_mod.scc_hoist.F90
             loki-scc-hoist/cloudsc.scc_hoist.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    if( TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-scc-hoist PRIVATE OpenMP::OpenMP_Fortran )
-    endif()
-    if( TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-scc-hoist PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-scc-hoist PRIVATE cloudsc-common-lib-static )
-    else()
-        target_link_libraries( dwarf-cloudsc-loki-scc-hoist PRIVATE cloudsc-common-lib )
-    endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-loki-scc-hoist PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
 
 
     ##############################################################################
@@ -356,7 +311,7 @@ if( HAVE_CLOUDSC_LOKI )
 
     loki_transform_transpile(
         FRONTEND ${LOKI_FRONTEND} CPP
-        HEADER
+        HEADERS
             ${COMMON_MODULE}/parkind1.F90
             ${COMMON_MODULE}/yomphyder.F90
             ${COMMON_MODULE}/yomcst.F90
@@ -366,7 +321,7 @@ if( HAVE_CLOUDSC_LOKI )
             ${COMMON_MODULE}/fccld_mod.F90
         DRIVER ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
         SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-        INCLUDE ${COMMON_INCLUDE}
+        INCLUDES ${COMMON_INCLUDE}
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c
         OUTPUT
@@ -387,17 +342,10 @@ if( HAVE_CLOUDSC_LOKI )
             loki-c/yoethf_fc.F90
             loki-c/yomcst_fc.F90
             loki-c/yoecldp_fc.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    target_link_libraries( dwarf-cloudsc-loki-c PRIVATE cloudsc-common-lib )
-    if( TARGET OpenMP::OpenMP_Fortran AND TARGET OpenMP::OpenMP_C )
-        target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-loki-c PRIVATE OpenMP::OpenMP_C )
-    endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-loki-c PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
-
 
     # Create symlink for the input data
     if( HAVE_SERIALBOX )

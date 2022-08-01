@@ -14,17 +14,22 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_KERNELS
 
 # Define the CLAW-based GPU dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_GPU_CLAW
-    DESCRIPTION "Build optimized GPU version of CLOUDSC derived from CLAW" DEFAULT OFF
+    DESCRIPTION "Build optimized GPU version of CLOUDSC derived from CLAW using OpenACC" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout" DEFAULT OFF
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout and OpenACC" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays" DEFAULT OFF
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenACC" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenMP offload" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
@@ -36,21 +41,10 @@ if( HAVE_CLOUDSC_GPU_CLAW )
             dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_claw_mod.F90
             cloudsc.claw.gpu.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_CLAW
     )
-    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE cloudsc-common-lib-static )
-    else()
-        target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE cloudsc-common-lib )
-    endif()
-
-    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-claw PRIVATE MPI::MPI_Fortran )
-    endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-gpu-claw PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
 endif()
 
 
@@ -61,21 +55,10 @@ if( HAVE_CLOUDSC_GPU_SCC )
             dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_scc_mod.F90
             cloudsc_gpu_scc_mod.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
     )
-    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE cloudsc-common-lib-static )
-    else()
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE cloudsc-common-lib )
-    endif()
-
-    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc PRIVATE MPI::MPI_Fortran )
-    endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-gpu-scc PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
 endif()
 
 
@@ -86,21 +69,33 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
             dwarf_cloudsc_gpu.F90
             cloudsc_driver_gpu_scc_hoist_mod.F90
             cloudsc_gpu_scc_hoist_mod.F90
+        LIBS
+            cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
     )
-    if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE OpenACC::OpenACC_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE cloudsc-common-lib-static )
-    else()
-        target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE cloudsc-common-lib )
+endif()
+
+
+if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
+    list( APPEND CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS CLOUDSC_GPU_OMP_SCC_HOIST )
+    if( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
+        list( APPEND CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT )
     endif()
 
-    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-gpu-scc-hoist PRIVATE MPI::MPI_Fortran )
+    if( NOT (HAVE_OMP_TARGET_TEAMS_DISTRIBUTE OR HAVE_OMP_TARGET_LOOP_CONSTRUCT) )
+        ecbuild_warn( "No support for OpenMP target offload, binary will be CPU-only" )
     endif()
-    if ( HAVE_HDF5 )
-        target_include_directories( dwarf-cloudsc-gpu-scc-hoist PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    endif()
+
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-omp-scc-hoist
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_hoist_mod.F90
+            cloudsc_gpu_omp_scc_hoist_mod.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS}
+    )
 endif()
 
 

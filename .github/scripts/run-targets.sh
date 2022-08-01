@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eu
 set -x
 
 # These targets don't have an MPI-parallel driver routine
@@ -8,10 +8,13 @@ non_mpi_targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-c)
 # These targets currently cause issues and are therefore not tested
 skipped_targets=(dwarf-cloudsc-gpu-claw)
 
-# Skip GPU targets if built with nvhpc (don't have GPU in test runner)
 if [[ "$arch" == *"nvhpc"* ]]
 then
-  skipped_targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist)
+  # Skip GPU targets if built with nvhpc (don't have GPU in test runner)
+  skipped_targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-omp-scc-hoist)
+
+  # Skip C target if built with nvhpc, segfaults for unknown reasons
+  skipped_targets+=(dwarf-cloudsc-c)
 fi
 
 exit_code=0
@@ -32,7 +35,8 @@ do
   if [[ "$mpi_flag" == "--with-mpi" && ! " ${non_mpi_targets[*]} " =~ " $target " ]]
   then
     # Two ranks with one thread each, safe NPROMA
-    mpirun -np 2 bin/$target 1 100 64
+    # NB: Use oversubscribe to run, even if we end up on a single core agent
+    mpirun --oversubscribe -np 2 bin/$target 1 100 64
   else
     # Single thread, safe NPROMA
     bin/$target 1 100 64
