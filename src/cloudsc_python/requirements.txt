@@ -1,0 +1,7 @@
+click
+gt4py@git+https://github.com/gridtools/gt4py.git#egg=gt4py
+h5py
+numpy
+pandas
+sympl@git+https://github.com/stubbiali/sympl.git@oop#egg=sympl
+xarray
