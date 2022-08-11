@@ -5,3 +5,9 @@ build/*
 source/*
 serialbox2hdf5/venv
 serialbox2hdf5/serialbox
+venv/
+.dace.conf
+.gt_cache/
+.idea/
+.python-version
+*.egg-info/
