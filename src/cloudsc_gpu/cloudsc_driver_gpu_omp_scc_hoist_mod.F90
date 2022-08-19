@@ -170,8 +170,10 @@ CONTAINS
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
+#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
 !$omp loop bind(parallel)
+#elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
+!$omp loop bind(thread)
 #else
 !$omp parallel do
 #endif

@@ -1,4 +1,4 @@
-PROGRAM OMP_TARGET_LOOP_CONSTRUCT
+PROGRAM OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD
 USE iso_fortran_env
 IMPLICIT NONE
 
@@ -11,7 +11,7 @@ REAL(KIND=REAL32) :: TMP(N, NB)
 
 !$omp target teams loop
 DO I=1,NB
-!$omp loop bind(parallel)
+!$omp loop bind(thread)
     DO J=1,N
         TMP(J, I) = REAL(J * I, KIND=REAL32)
     ENDDO
@@ -19,4 +19,4 @@ ENDDO
 
 !$omp end target data
 
-END PROGRAM OMP_TARGET_LOOP_CONSTRUCT
+END PROGRAM OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD
