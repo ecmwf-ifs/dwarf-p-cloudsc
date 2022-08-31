@@ -58,22 +58,34 @@ if( HAVE_CLOUDSC_PROTOTYPE1 )
             ${dwarf_P_cloudMicrophysics_IFSScheme_srcs}
             ${dwarf_P_cloudMicrophysics_IFSScheme_support_srcs}
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    PUBLIC_LIBS
+        $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
+        $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
     )
-
-    if( TARGET Serialbox::Serialbox_Fortran )
-        target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE Serialbox::Serialbox_Fortran )
-    endif()
-
-    if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme-libs PRIVATE OpenMP::OpenMP_Fortran )
-    endif()
 
     ecbuild_add_executable(TARGET dwarf-P-cloudMicrophysics-IFSScheme
         SOURCES cloudsc_dwarf.F90
+        LIBS dwarf-P-cloudMicrophysics-IFSScheme-libs
     )
-    target_link_libraries( dwarf-P-cloudMicrophysics-IFSScheme dwarf-P-cloudMicrophysics-IFSScheme-libs )
 
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/cloudsc.bin ${CMAKE_CURRENT_BINARY_DIR}/../../../cloudsc.bin )
+
+    ecbuild_add_test(
+        TARGET dwarf-P-cloudMicrophysics-IFSScheme-serial
+        COMMAND bin/dwarf-P-cloudMicrophysics-IFSScheme
+        ARGS 1 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-P-cloudMicrophysics-IFSScheme-omp
+        COMMAND bin/dwarf-P-cloudMicrophysics-IFSScheme
+        ARGS 4 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 4
+        CONDITION HAVE_OMP
+    )
 endif()

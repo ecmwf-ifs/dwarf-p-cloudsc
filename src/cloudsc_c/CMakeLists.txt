@@ -52,6 +52,22 @@ if( HAVE_CLOUDSC_C )
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
 
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-c-serial
+        COMMAND bin/dwarf-cloudsc-c
+        ARGS 1 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-c-omp
+        COMMAND bin/dwarf-cloudsc-c
+        ARGS 4 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 4
+        CONDITION HAVE_OMP
+    )
+
 else()
     ecbuild_info( "Serialbox not found, disabling C prototype" )
 endif()

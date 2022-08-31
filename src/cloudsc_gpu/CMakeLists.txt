@@ -45,6 +45,14 @@ if( HAVE_CLOUDSC_GPU_CLAW )
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_CLAW
     )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-claw-serial
+        COMMAND bin/dwarf-cloudsc-gpu-claw
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
 endif()
 
 
@@ -59,6 +67,14 @@ if( HAVE_CLOUDSC_GPU_SCC )
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
     )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-serial
+        COMMAND bin/dwarf-cloudsc-gpu-scc
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
 endif()
 
 
@@ -72,6 +88,14 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-hoist-serial
+        COMMAND bin/dwarf-cloudsc-gpu-scc-hoist
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
     )
 endif()
 
@@ -95,6 +119,14 @@ if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS}
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-omp-scc-hoist-serial
+        COMMAND bin/dwarf-cloudsc-gpu-omp-scc-hoist
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
     )
 endif()
 
