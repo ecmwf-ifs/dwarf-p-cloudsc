@@ -8,6 +8,12 @@
 
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
+# Compile CUDA fortran files with -MCuda. 
+#  cloudsc_add_compile_options(
+#      SOURCES module/fccld_mod.F90  module/fcttre_mod.F90  module/yoethf.F90  module/yomcst.F90
+#      FLAGS   "-Mcuda")
+
+
 list(APPEND CLOUDSC_COMMON_SOURCES
     module/parkind1.F90
     module/yoecldp.F90
@@ -27,6 +33,7 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/validate_mod.F90
     module/cloudsc_global_state_mod.F90
     module/cloudsc_mpi_mod.F90
+    module/yomcst_initialise.F90
 )
 
 if( HAVE_ACC )

@@ -15,7 +15,7 @@ cmake_policy( SET CMP0077 NEW )
 find_package( ecbuild REQUIRED )
 
 # define the project
-project( dwarf-p-cloudsc LANGUAGES C Fortran )
+project( dwarf-p-cloudsc LANGUAGES C Fortran CUDA)
 
 include( cmake/compat.cmake )
 if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
@@ -27,6 +27,8 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     set( ENABLE_ACC OFF )
   endif()
 endif()
+
+include( cloudsc_compile_options )
 
 ### OpenACC
 if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )

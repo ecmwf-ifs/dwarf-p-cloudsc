@@ -23,6 +23,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_C
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout in CUDA" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenACC" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
@@ -76,6 +81,25 @@ if( HAVE_CLOUDSC_GPU_SCC )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
         ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
+    )
+endif()
+
+if( HAVE_CLOUDSC_GPU_SCC_C )
+    # Compile CUDA fortran files with -MCuda. 
+    #    cloudsc_add_compile_options(
+    #	    SOURCES cloudsc_gpu_scc_cuf_mod.F90  cloudsc_driver_gpu_scc_cuf_mod.F90
+    #       FLAGS   "-Mcuda")
+
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-cuf
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+	    cloudsc_driver_gpu_scc_cuf_mod.F90
+	    cloudsc_gpu_scc_cuf_mod.F90
+	    nlev_mod.F90
+        LIBS
+           cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_C
     )
 endif()
 
