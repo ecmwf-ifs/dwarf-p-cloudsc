@@ -130,7 +130,7 @@ REAL(KIND=JPRB) :: RLSTT, rlstt_h
 REAL(KIND=JPRB) :: RLMLT, rlmlt_h
 !**REAL(KIND=JPRB) :: RDT
 
-ATTRIBUTES(DEVICE) :: RG, RCPD, RD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV 
+ATTRIBUTES(CONSTANT) :: RG, RCPD, RD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV 
 ! A1.8 Curve of saturation
 ! * RESTT        : es(Tt) = saturation vapour tension at T=Tt
 ! * RGAMW        : Rgamw = (Cw-Cp_vap)/R_vap

@@ -111,38 +111,38 @@ CONTAINS
     TYPE(DIM3) :: GRIDDIM, BLOCKDIM
 
 !!  device variables
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PT_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS) ! T at start of callpar
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PQ_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS) ! Q at start of callpar
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: BUFFER_CML_D(:,:,:,:) !!(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: BUFFER_TMP_D(:,:,:,:) !!(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_TMP
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: BUFFER_LOC_D(:,:,:,:) !!(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_LOC
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVFA_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! CC from VDF scheme
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVFL_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Liq from VDF scheme
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVFI_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Ice from VDF scheme
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PDYNA_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! CC from Dynamics
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PDYNL_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PDYNI_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PHRSW_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Short-wave heating rate
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PHRLW_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Long-wave heating rate
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVERVEL_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)  !Vertical velocity
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PAP_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)      ! Pressure on full levels
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PAPH_D(:,:,:) !!(NPROMA, NLEV+1, NGPBLKS) ! Pressure on half levels
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLSM_D(:,:) !!(NPROMA, NGPBLKS)    ! Land fraction (0-1)
-    LOGICAL,            DEVICE, ALLOCATABLE :: LDCUM_D(:,:) !!(NPROMA, NGPBLKS)    ! Convection active
-    INTEGER(KIND=JPIM), DEVICE, ALLOCATABLE :: KTYPE_D(:,:) !!(NPROMA, NGPBLKS)    ! Convection type 0,1,2
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLU_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)      ! Conv. condensate
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLUDE_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained water
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PSNDE_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained snow
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PMFU_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux up
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PMFD_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux down
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PA_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)       ! Original Cloud fraction (t)
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PCLV_D(:,:,:,:) !!(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PSUPSAT_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLCRIT_AER_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PICRIT_AER_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PRE_ICE_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PCCN_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! liquid cloud condensation nuclei
-    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PNICE_D(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! ice number concentration (cf. CCN)
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PT_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS) ! T at start of callpar
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PQ_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS) ! Q at start of callpar
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: BUFFER_CML_d(:,:,:,:) !!(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: BUFFER_TMP_d(:,:,:,:) !!(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_TMP
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: BUFFER_LOC_d(:,:,:,:) !!(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_LOC
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVFA_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! CC from VDF scheme
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVFL_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Liq from VDF scheme
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVFI_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Ice from VDF scheme
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PDYNA_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! CC from Dynamics
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PDYNL_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PDYNI_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PHRSW_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Short-wave heating rate
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PHRLW_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Long-wave heating rate
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PVERVEL_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)  !Vertical velocity
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PAP_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)      ! Pressure on full levels
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PAPH_d(:,:,:) !!(NPROMA, NLEV+1, NGPBLKS) ! Pressure on half levels
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLSM_d(:,:) !!(NPROMA, NGPBLKS)    ! Land fraction (0-1)
+    LOGICAL,            DEVICE, ALLOCATABLE :: LDCUM_d(:,:) !!(NPROMA, NGPBLKS)    ! Convection active
+    INTEGER(KIND=JPIM), DEVICE, ALLOCATABLE :: KTYPE_d(:,:) !!(NPROMA, NGPBLKS)    ! Convection type 0,1,2
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLU_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)      ! Conv. condensate
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLUDE_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained water
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PSNDE_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained snow
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PMFU_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux up
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PMFD_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux down
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PA_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)       ! Original Cloud fraction (t)
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PCLV_d(:,:,:,:) !!(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PSUPSAT_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PLCRIT_AER_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PICRIT_AER_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PRE_ICE_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PCCN_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)     ! liquid cloud condensation nuclei
+    REAL(KIND=JPRB),    DEVICE, ALLOCATABLE :: PNICE_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! ice number concentration (cf. CCN)
 
     REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: PCOVPTOT_d(:,:,:) !!(NPROMA, NLEV, NGPBLKS)    ! Precip fraction
     REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: PRAINFRAC_TOPRFZ_d(:,:) !!(NPROMA, NGPBLKS)
@@ -223,38 +223,38 @@ CONTAINS
     GRIDDIM = DIM3(1,1,CEILING(REAL(NGPTOT)/REAL(NPROMA)))
     BLOCKDIM = DIM3(NPROMA,1,1)
 
-    CALL CLOUDSC_SCC_CUF<<<GRIDDIM,BLOCKDIM , (nproma+1)*(25*8*3+1)>>> &
-        & (ICSTART, ICEND, NPROMA, ngpblks, PTSPHY,&
-        & pt_d,pq_d, &
-        & buffer_tmp_d, &
-        & buffer_loc_d, &
-        & pvfa_d, pvfl_d, pvfi_d, pdyna_d, pdynl_d, pdyni_d, &
-        & phrsw_d, phrlw_d, &
-        & pvervel_d, pap_d, paph_d, &
-        & plsm_d, ldcum_d, ktype_d, &
-        & plu_d, plude_d, psnde_d, pmfu_d, pmfd_d, &
+    CALL CLOUDSC_SCC_CUF<<<GRIDDIM,BLOCKDIM >>> &
+        & (ICSTART, ICEND, NPROMA, NGPBLKS, PTSPHY,&
+        & PT_D,PQ_D, &
+        & BUFFER_TMP_D, &
+        & BUFFER_LOC_D, &
+        & PVFA_D, PVFL_D, PVFI_D, PDYNA_D, PDYNL_D, PDYNI_D, &
+        & PHRSW_D, PHRLW_D, &
+        & PVERVEL_D, PAP_D, PAPH_D, &
+        & PLSM_D, LDCUM_D, KTYPE_D, &
+        & PLU_D, PLUDE_D, PSNDE_D, PMFU_D, PMFD_D, &
         !---prognostic fields
-        & pa_d, pclv_d, psupsat_d, &
+        & PA_D, PCLV_D, PSUPSAT_D, &
         !-- arrays for aerosol-cloud interactions
-        & plcrit_aer_d, picrit_aer_d, &
-        & pre_ice_d, &
-        & pccn_d, pnice_d, &
+        & PLCRIT_AER_D, PICRIT_AER_D, &
+        & PRE_ICE_D, &
+        & PCCN_D, PNICE_D, &
         !---diagnostic output
-        & pcovptot_d, prainfrac_toprfz_d, &
+        & PCOVPTOT_D, PRAINFRAC_TOPRFZ_D, &
         !---resulting fluxes
-        & pfsqlf_d, pfsqif_d, pfcqnng_d, pfcqlng_d, &
-        & pfsqrf_d, pfsqsf_d, pfcqrng_d, pfcqsng_d, &
-        & pfsqltur_d, pfsqitur_d, &
-        & pfplsl_d, pfplsn_d, pfhpsl_d, pfhpsn_d, &
-        &  YRECLDP=LOCAL_YRECLDP_d)
+        & PFSQLF_D, PFSQIF_D, PFCQNNG_D, PFCQLNG_D, &
+        & PFSQRF_D, PFSQSF_D, PFCQRNG_D, PFCQSNG_D, &
+        & PFSQLTUR_D, PFSQITUR_D, &
+        & PFPLSL_D, PFPLSN_D, PFHPSL_D, PFHPSN_D &
+        &  )
 
-    istat = cudaDeviceSynchronize()
+    ISTAT = cudaDeviceSynchronize()
     
     CALL TIMER%THREAD_END(TID)
 
     print *, 'In driver after cloudsc !!!'
     buffer_tmp=buffer_tmp_d; buffer_loc = buffer_loc_d; 
-    plude=plude_d; 
+    plude=plude_d;
     pcovptot=pcovptot_d;
     pfsqlf=pfsqlf_d; pfsqif=pfsqif_d; pfcqnng=pfcqnng_d; pfcqlng=pfcqlng_d; pfsqrf=pfsqrf_d; pfsqsf=pfsqsf_d; pfcqrng=pfcqrng_d; 
     pfcqsng=pfcqsng_d; pfsqltur=pfsqltur_d; pfsqitur=pfsqitur_d; pfplsl=pfplsl_d; pfplsn=pfplsn_d; pfhpsl=pfhpsl_d; pfhpsn=pfhpsn_d;
