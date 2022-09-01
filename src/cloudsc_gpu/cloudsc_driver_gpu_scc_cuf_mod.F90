@@ -223,7 +223,7 @@ CONTAINS
     GRIDDIM = DIM3(1,1,CEILING(REAL(NGPTOT)/REAL(NPROMA)))
     BLOCKDIM = DIM3(NPROMA,1,1)
 
-    CALL CLOUDSC_SCC_CUF<<<GRIDDIM,BLOCKDIM >>> &
+    CALL CLOUDSC_SCC_CUF<<<GRIDDIM,BLOCKDIM , (nproma+1)*(25*8*3+1)>>> &
         & (ICSTART, ICEND, NPROMA, ngpblks, PTSPHY,&
         & pt_d,pq_d, &
         & buffer_tmp_d, &
