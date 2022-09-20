@@ -52,6 +52,7 @@ if( HAVE_CLOUDSC_GPU_CLAW )
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
+        ENABLED OFF  # CLAW variant is currently broken
     )
 endif()
 
