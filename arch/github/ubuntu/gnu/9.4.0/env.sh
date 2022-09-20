@@ -2,6 +2,6 @@
 
 export CC=gcc
 export CXX=g++
-export FC=gfortran
+export FC=gfortran-9
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"

@@ -28,7 +28,7 @@ jobs:
       matrix:
 
         arch:
-          - github/ubuntu/gnu/9.3.0
+          - github/ubuntu/gnu/9.4.0
 
         io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
 
