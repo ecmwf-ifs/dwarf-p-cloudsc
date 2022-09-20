@@ -364,6 +364,7 @@ if( HAVE_CLOUDSC_LOKI )
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
     )
 
     ####################################################
