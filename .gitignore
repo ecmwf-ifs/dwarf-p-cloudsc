@@ -6,6 +6,7 @@ source/*
 serialbox2hdf5/venv
 serialbox2hdf5/serialbox
 venv/
+__pycache__/
 .dace.conf
 .gt_cache/
 .idea/
