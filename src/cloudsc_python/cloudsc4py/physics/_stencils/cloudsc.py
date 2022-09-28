@@ -430,6 +430,7 @@ def cloudsc(
         RCOVPMIN,
         RCPD,
         RD,
+        RDCP,
         RDENSREF,
         RDEPLIQREFDEPTH,
         RDEPLIQREFRATE,
@@ -439,6 +440,7 @@ def cloudsc(
         RKCONV,
         RKOOPTAU,
         RLCRITSNOW,
+        RLDCP,
         RLMIN,
         RLSTT,
         RLVTT,
@@ -488,14 +490,6 @@ def cloudsc(
         tmp_trpaus[0, 0] = 0.0
 
     with computation(FORWARD), interval(0, -1):
-        # set up constants
-        # epsilon = 100 * EPSILON
-        # gdcp = RG / RCPD
-        rdcp = RD / RCPD
-        # cons1a = RCPD / (RLMLT * RG * RTAUMEL)
-        rg_r = 1 / RG
-        rldcp = 1 / (RALSDCP - RALVDCP)
-
         # initialization of output tendencies
         out_tnd_loc_t[0, 0, 0] = 0
         out_tnd_loc_a[0, 0, 0] = 0
@@ -931,7 +925,7 @@ def cloudsc(
                     convsrce_qv += lcust_qv
 
                 # work out how much liquid evaporates at arrival point
-                dtdp = rdcp * 0.5 * (t[0, 0, -1] + t[0, 0, 0]) / in_aph[0, 0, 0]
+                dtdp = RDCP * 0.5 * (t[0, 0, -1] + t[0, 0, 0]) / in_aph[0, 0, 0]
                 dtforc = dtdp[0, 0, 0] * (in_ap[0, 0, 0] - in_ap[0, 0, -1])
                 dqs = tmp_anewm1[0, 0] * dtforc * dqsmixdt
 
@@ -1014,7 +1008,7 @@ def cloudsc(
                 solqa_qi_qv -= icefrac * leros
 
             # condensation/evaporation due to dqsat/dT
-            dtdp = rdcp * t / in_ap[0, 0, 0]
+            dtdp = RDCP * t / in_ap[0, 0, 0]
             dpmxdt = dp / dt
             mfdn = in_mfu[0, 0, 1] + in_mfd[0, 0, 1] if tmp_klevel[0] < NLEV - 1 else 0.0
             wtot = in_w[0, 0, 0] + 0.5 * RG * (in_mfu[0, 0, 0] + in_mfd[0, 0, 0] + mfdn)
@@ -1478,7 +1472,7 @@ def cloudsc(
 
                 # ensure cons1 is positive
                 cons1 = abs(dt * (1 + 0.5 * tdmtw0) / RTAUMEL)
-                meltmax = max(tdmtw0 * cons1 * rldcp, 0.0)
+                meltmax = max(tdmtw0 * cons1 * RLDCP, 0.0)
 
             if meltmax > EPSEC and icetot > EPSEC:
                 # apply melting in same proportion as frozen hydrometeor fractions
@@ -1518,7 +1512,7 @@ def cloudsc(
                     else:
                         # majority of raindrops only partially melted
                         cons1 = abs(dt * (1 + 0.5 * (RTT - t)) / RTAUMEL)
-                        frzmax = max((RTT - t) * cons1 * rldcp, 0.0)
+                        frzmax = max((RTT - t) * cons1 * RLDCP, 0.0)
 
                     if frzmax > EPSEC:
                         frz = min(qr, frzmax)
@@ -1526,7 +1520,7 @@ def cloudsc(
                         solqa_qr_qs -= frz
 
             # freezing of liquid
-            frzmax = max((RTHOMO - t) * rldcp, 0.0)
+            frzmax = max((RTHOMO - t) * RLDCP, 0.0)
             if frzmax > EPSEC and qlfg > EPSEC:
                 frz = min(qlfg, frzmax)
                 solqa_qi_ql += frz
@@ -2832,7 +2826,7 @@ def cloudsc(
             out_fsqitur[0, 0, 0] = 0.0
 
         with interval(1, None):
-            gdph_r = -rg_r[0, 0, -1] * (in_aph[0, 0, 0] - in_aph[0, 0, -1]) / dt
+            gdph_r = -(in_aph[0, 0, 0] - in_aph[0, 0, -1]) / (RG * dt)
             out_fsqlf[0, 0, 0] = out_fsqlf[0, 0, -1]
             out_fsqif[0, 0, 0] = out_fsqif[0, 0, -1]
             out_fsqrf[0, 0, 0] = out_fsqlf[0, 0, -1]

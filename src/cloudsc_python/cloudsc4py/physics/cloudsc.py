@@ -69,6 +69,8 @@ class Cloudsc(ImplicitTendencyComponent):
                 "PHASEQI": 2,
                 "PHASEQR": 1,
                 "PHASEQS": 2,
+                "RDCP": yomcst_parameters.RD / yomcst_parameters.RCPD,
+                "RLDCP": 1 / (yoethf_parameters.RALSDCP - yoethf_parameters.RALVDCP),
                 "TW1": 1329.31,
                 "TW2": 0.0074615,
                 "TW3": 0.85e5,
