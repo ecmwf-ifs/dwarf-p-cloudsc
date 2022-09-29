@@ -15,259 +15,7 @@ from cloudsc4py.physics._stencils.fcttre import (
     f_foeewm,
     f_foeldcpm,
 )
-
-
-@function
-def f_helper_0(
-    order,
-    index1_qv,
-    index1_ql,
-    index1_qi,
-    index1_qr,
-    index1_qs,
-    ratio_qv,
-    ratio_ql,
-    ratio_qi,
-    ratio_qr,
-    ratio_qs,
-):
-    minimum = 1e-32
-
-    if index1_ql and ratio_ql < minimum:
-        order = 1
-        minimum = ratio_ql
-    if index1_qi and ratio_qi < minimum:
-        order = 2
-        minimum = ratio_qi
-    if index1_qr and ratio_qr < minimum:
-        order = 3
-        minimum = ratio_qr
-    if index1_qs and ratio_qs < minimum:
-        order = 4
-        minimum = ratio_qs
-    if index1_qv and ratio_qv < minimum:
-        order = 0
-
-    if order == 0:
-        index1_qv = False
-    if order == 1:
-        index1_ql = False
-    if order == 2:
-        index1_qi = False
-    if order == 3:
-        index1_qr = False
-    if order == 4:
-        index1_qs = False
-
-    return index1_qv, index1_ql, index1_qi, index1_qr, index1_qs
-
-
-@function
-def f_helper_1(
-    order,
-    index3_qv_qv,
-    index3_qv_ql,
-    index3_qv_qi,
-    index3_qv_qr,
-    index3_qv_qs,
-    index3_ql_qv,
-    index3_ql_ql,
-    index3_ql_qi,
-    index3_ql_qr,
-    index3_ql_qs,
-    index3_qi_qv,
-    index3_qi_ql,
-    index3_qi_qi,
-    index3_qi_qr,
-    index3_qi_qs,
-    index3_qr_qv,
-    index3_qr_ql,
-    index3_qr_qi,
-    index3_qr_qr,
-    index3_qr_qs,
-    index3_qs_qv,
-    index3_qs_ql,
-    index3_qs_qi,
-    index3_qs_qr,
-    index3_qs_qs,
-    qv,
-    ql,
-    qi,
-    qr,
-    qs,
-    ratio_qv,
-    ratio_ql,
-    ratio_qi,
-    ratio_qr,
-    ratio_qs,
-    sinksum_qv,
-    sinksum_ql,
-    sinksum_qi,
-    sinksum_qr,
-    sinksum_qs,
-    solqa_qv_qv,
-    solqa_qv_ql,
-    solqa_qv_qi,
-    solqa_qv_qr,
-    solqa_qv_qs,
-    solqa_ql_qv,
-    solqa_ql_ql,
-    solqa_ql_qi,
-    solqa_ql_qr,
-    solqa_ql_qs,
-    solqa_qi_qv,
-    solqa_qi_ql,
-    solqa_qi_qi,
-    solqa_qi_qr,
-    solqa_qi_qs,
-    solqa_qr_qv,
-    solqa_qr_ql,
-    solqa_qr_qi,
-    solqa_qr_qr,
-    solqa_qr_qs,
-    solqa_qs_qv,
-    solqa_qs_ql,
-    solqa_qs_qi,
-    solqa_qs_qr,
-    solqa_qs_qs,
-):
-    from __externals__ import EPSEC
-
-    # recalculate sum and scaling factor: ql
-    if order == 1:
-        index3_ql_qv = solqa_ql_qv < 0.0
-        index3_ql_ql = solqa_ql_ql < 0.0
-        index3_ql_qi = solqa_ql_qi < 0.0
-        index3_ql_qr = solqa_ql_qr < 0.0
-        index3_ql_qs = solqa_ql_qs < 0.0
-        sinksum_ql -= solqa_ql_qv + solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs
-        mm = max(ql, EPSEC)
-        rr = max(sinksum_ql, mm)
-        ratio_ql = mm / rr
-    elif order == 2:
-        index3_qi_qv = solqa_qi_qv < 0.0
-        index3_qi_ql = solqa_qi_ql < 0.0
-        index3_qi_qi = solqa_qi_qi < 0.0
-        index3_qi_qr = solqa_qi_qr < 0.0
-        index3_qi_qs = solqa_qi_qs < 0.0
-        sinksum_qi -= solqa_qi_qv + solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs
-        mm = max(qi, EPSEC)
-        rr = max(sinksum_qi, mm)
-        ratio_qi = mm / rr
-    elif order == 3:
-        index3_qr_qv = solqa_qr_qv < 0.0
-        index3_qr_ql = solqa_qr_ql < 0.0
-        index3_qr_qi = solqa_qr_qi < 0.0
-        index3_qr_qr = solqa_qr_qr < 0.0
-        index3_qr_qs = solqa_qr_qs < 0.0
-        sinksum_qr -= solqa_qr_qv + solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs
-        mm = max(qr, EPSEC)
-        rr = max(sinksum_qr, mm)
-        ratio_qr = mm / rr
-    elif order == 4:
-        index3_qs_qv = solqa_qs_qv < 0.0
-        index3_qs_ql = solqa_qs_ql < 0.0
-        index3_qs_qi = solqa_qs_qi < 0.0
-        index3_qs_qr = solqa_qs_qr < 0.0
-        index3_qs_qs = solqa_qs_qs < 0.0
-        sinksum_qs -= solqa_qs_qv + solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs
-        mm = max(qs, EPSEC)
-        rr = max(sinksum_qs, mm)
-        ratio_qs = mm / rr
-    elif order == 0:
-        index3_qv_qv = solqa_qv_qv < 0.0
-        index3_qv_ql = solqa_qv_ql < 0.0
-        index3_qv_qi = solqa_qv_qi < 0.0
-        index3_qv_qr = solqa_qv_qr < 0.0
-        index3_qv_qs = solqa_qv_qs < 0.0
-        sinksum_qv -= solqa_qv_qv + solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs
-        mm = max(qv, EPSEC)
-        rr = max(sinksum_qv, mm)
-        ratio_qv = mm / rr
-
-    # scale: ql
-    if order == 1:
-        if index3_ql_ql:
-            solqa_ql_ql *= ratio_ql
-            solqa_ql_ql *= ratio_ql
-        if index3_ql_qi:
-            solqa_qi_ql *= ratio_ql
-            solqa_ql_qi *= ratio_ql
-        if index3_ql_qr:
-            solqa_qr_ql *= ratio_ql
-            solqa_ql_qr *= ratio_ql
-        if index3_ql_qs:
-            solqa_qs_ql *= ratio_ql
-            solqa_ql_qs *= ratio_ql
-        if index3_ql_qv:
-            solqa_qv_ql *= ratio_ql
-            solqa_ql_qv *= ratio_ql
-    elif order == 2:
-        if index3_qi_ql:
-            solqa_qi_ql *= ratio_qi
-            solqa_ql_qi *= ratio_qi
-        if index3_qi_qi:
-            solqa_qi_qi *= ratio_qi
-            solqa_qi_qi *= ratio_qi
-        if index3_qi_qr:
-            solqa_qi_qr *= ratio_qi
-            solqa_qr_qi *= ratio_qi
-        if index3_qi_qs:
-            solqa_qi_qs *= ratio_qi
-            solqa_qs_qi *= ratio_qi
-        if index3_qi_qv:
-            solqa_qi_qv *= ratio_qi
-            solqa_qv_qi *= ratio_qi
-    elif order == 3:
-        if index3_qr_ql:
-            solqa_qr_ql *= ratio_qr
-            solqa_ql_qr *= ratio_qr
-        if index3_qr_qi:
-            solqa_qr_qi *= ratio_qr
-            solqa_qi_qr *= ratio_qr
-        if index3_qr_qr:
-            solqa_qr_qr *= ratio_qr
-            solqa_qr_qr *= ratio_qr
-        if index3_qr_qs:
-            solqa_qr_qs *= ratio_qr
-            solqa_qs_qr *= ratio_qr
-        if index3_qr_qv:
-            solqa_qr_qv *= ratio_qr
-            solqa_qv_qr *= ratio_qr
-    elif order == 4:
-        if index3_qs_ql:
-            solqa_qs_ql *= ratio_qs
-            solqa_ql_qs *= ratio_qs
-        if index3_qs_qi:
-            solqa_qs_qi *= ratio_qs
-            solqa_qi_qs *= ratio_qs
-        if index3_qs_qr:
-            solqa_qs_qi *= ratio_qs
-            solqa_qi_qs *= ratio_qs
-        if index3_qs_qs:
-            solqa_qs_qs *= ratio_qs
-            solqa_qs_qs *= ratio_qs
-        if index3_qs_qv:
-            solqa_qs_qv *= ratio_qs
-            solqa_qv_qs *= ratio_qs
-    elif order == 0:
-        if index3_qv_ql:
-            solqa_qv_ql *= ratio_qv
-            solqa_ql_qv *= ratio_qv
-        if index3_qv_qi:
-            solqa_qv_qi *= ratio_qv
-            solqa_qi_qv *= ratio_qv
-        if index3_qv_qr:
-            solqa_qv_qr *= ratio_qv
-            solqa_qr_qv *= ratio_qv
-        if index3_qv_qs:
-            solqa_qv_qs *= ratio_qv
-            solqa_qs_qv *= ratio_qv
-        if index3_qv_qv:
-            solqa_qv_qv *= ratio_qv
-            solqa_qv_qv *= ratio_qv
-
-    return ratio_qv, ratio_ql, ratio_qi, ratio_qr, ratio_qs
+from cloudsc4py.physics._stencils.helpers import f_helper_0, f_helper_1
 
 
 @stencil_collection("cloudsc")
@@ -490,7 +238,8 @@ def cloudsc(
         tmp_trpaus[0, 0] = 0.0
 
     with computation(FORWARD), interval(0, -1):
-        # initialization of output tendencies
+        # === 1: initial values for variables
+        # --- initialization of output tendencies
         out_tnd_loc_t[0, 0, 0] = 0
         out_tnd_loc_a[0, 0, 0] = 0
         out_tnd_loc_ql[0, 0, 0] = 0
@@ -499,12 +248,12 @@ def cloudsc(
         out_tnd_loc_qs[0, 0, 0] = 0
         out_tnd_loc_qv[0, 0, 0] = 0
 
-        # non CLV initialization
+        # --- non CLV initialization
         t = in_t[0, 0, 0] + dt * in_tnd_tmp_t[0, 0, 0]
         a = in_a[0, 0, 0] + dt * in_tnd_tmp_a[0, 0, 0]
         a0 = a
 
-        # initialization for CLV family
+        # --- initialization for CLV family
         ql = in_ql[0, 0, 0] + dt * in_tnd_tmp_ql[0, 0, 0]
         ql0 = ql
         qi = in_qi[0, 0, 0] + dt * in_tnd_tmp_qi[0, 0, 0]
@@ -515,13 +264,13 @@ def cloudsc(
         qs0 = qs
         qv = in_qv[0, 0, 0] + dt * in_tnd_tmp_qv[0, 0, 0]
 
-        # zero arrays
+        # --- zero arrays
         lneg_ql = 0.0
         lneg_qi = 0.0
         lneg_qr = 0.0
         lneg_qs = 0.0
 
-        # tidy up very small cloud cover or total cloud water
+        # --- tidy up very small cloud cover or total cloud water
         expr1 = ql + qi
         if expr1 < RLMIN or a < RAMIN:
             # evaporate small cloud liquid water amounts
@@ -543,7 +292,7 @@ def cloudsc(
             # set cloud cover to zero
             a = 0.0
 
-        # tidy up small ql
+        # --- tidy up small CLV variables: ql
         if ql < RLMIN:
             lneg_ql += ql
             qadj = ql / dt
@@ -555,7 +304,7 @@ def cloudsc(
             qv += ql
             ql = 0.0
 
-        # tidy up small qi
+        # --- tidy up small CLV variables: qi
         if qi < RLMIN:
             lneg_qi += qi
             qadj = qi / dt
@@ -567,7 +316,7 @@ def cloudsc(
             qv += qi
             qi = 0.0
 
-        # tidy up small qr
+        # --- tidy up small CLV variables: qr
         if qr < RLMIN:
             lneg_qr += qr
             qadj = qr / dt
@@ -579,7 +328,7 @@ def cloudsc(
             qv += qr
             qr = 0.0
 
-        # tidy up small qs
+        # --- tidy up small CLV variables: qs
         if qs < RLMIN:
             lneg_qs += qs
             qadj = qs / dt
@@ -591,26 +340,26 @@ def cloudsc(
             qv += qs
             qs = 0.0
 
-        # define saturation values
-        # old *diagnostic* mixed phase saturation
+        # --- define saturation values
+        # --- old *diagnostic* mixed phase saturation
         foealfa = f_foealfa(t)
         foeewmt = min(f_foeewm(t) / in_ap[0, 0, 0], 0.5)
         qsmix = foeewmt / (1 - RETV * foeewmt)
 
-        # ice saturation T < 273K
-        # liquid water saturation for T > 273K
+        # --- ice saturation T < 273K
+        # --- liquid water saturation for T > 273K
         alfa = f_foedelta(t)
         foeew = min((alfa * f_foeeliq(t) + (1 - alfa) * f_foeeice(t)) / in_ap[0, 0, 0], 0.5)
         qsice = foeew / (1 - RETV * foeew)
 
-        # liquid water saturation
+        # --- liquid water saturation
         foeeliqt = min(f_foeeliq(t) / in_ap[0, 0, 0], 0.5)
         qsliq = foeeliqt / (1 - RETV * foeeliqt)
 
-        # ensure cloud fraction is between 0 and 1
+        # --- ensure cloud fraction is between 0 and 1
         a = max(0, min(1, a))
 
-        # calculate liq/ice fractions (no longer a diagnostic relationship)
+        # --- calculate liq/ice fractions (no longer a diagnostic relationship)
         li = ql + qi
         if li > RLMIN:
             liqfrac = ql / li
@@ -619,6 +368,8 @@ def cloudsc(
             liqfrac = 0.0
             icefrac = 0.0
 
+    # === 2: constants and parameters
+    # --- find tropopause level
     with computation(FORWARD), interval(0, 1):
         tmp_trpaus[0, 0] = 0.1
         tmp_paphd[0, 0] = 1 / tmp_aph_s[0, 0]
@@ -627,9 +378,11 @@ def cloudsc(
         if sig > 0.1 and sig < 0.4 and t[0, 0, 0] > t[0, 0, 1]:
             tmp_trpaus[0, 0] = sig
 
-    # main vertical loop
+    # === 3: physics
+    # --- main vertical loop
     with computation(FORWARD):
         with interval(0, NCLDTOP - 1):
+            # --- initialize variables
             lude = in_lude[0, 0, 0]
             pfplsl = 0.0
             pfplsi = 0.0
@@ -642,14 +395,14 @@ def cloudsc(
             qsn = 0.0
             qvn = 0.0
         with interval(NCLDTOP - 1, -1):
-            # first guess microphysics
-            qvfg = qv + 0  # todo
-            qlfg = ql + 0  # todo
-            qifg = qi + 0  # todo
-            qrfg = qr + 0  # todo
-            qsfg = qs + 0  # todo
+            # *** 3.0: initialize variables
+            # --- first guess microphysics
+            qlfg = ql
+            qifg = qi
+            qrfg = qr
+            qsfg = qs
+            qvfg = qv
 
-            # initialize variables
             convsink_ql = 0.0
             convsink_qi = 0.0
             convsink_qr = 0.0
@@ -693,7 +446,6 @@ def cloudsc(
             index3_qv_qr = False
             index3_qv_qs = False
             index3_qv_qv = False
-            lcond2 = 0.0
             lcust_ql = 0.0
             lcust_qi = 0.0
             lcust_qr = 0.0
@@ -778,7 +530,7 @@ def cloudsc(
             dtgdp = dt * gdp
             rdtgdp = dp / (RG * dt)
 
-            # calculate dqs/dT correction factor
+            # --- calculate dqs/dT correction factor
             # liquid
             facw = R5LES / (t - R4LES) ** 2
             cor = 1 / (1 - RETV * foeeliqt)
@@ -792,34 +544,33 @@ def cloudsc(
             corqsice = 1 + RALSDCP * dqsicedt
 
             # diagnostic mixed
-            alfaw = foealfa + 0  # todo
-            fac = alfaw * facw + (1 - alfaw) * faci
+            fac = foealfa * facw + (1 - foealfa) * faci
             cor = 1 / (1 - RETV * foeewmt)
             dqsmixdt = fac * cor * qsmix
             corqsmix = 1 + f_foeldcpm(t) * dqsmixdt
 
             # evaporation/sublimation limits
             evaplimmix = max((qsmix - qv) / corqsmix, 0.0)
-            evaplimliq = max((qsliq - qv) / corqsliq, 0.0)
             evaplimice = max((qsice - qv) / corqsice, 0.0)
 
-            # in-cloud condensate amount
+            # --- in-cloud condensate amount
             tmpa = 1 / max(a, EPSEC)
             liqcld = ql * tmpa
             icecld = qi * tmpa
             licld = liqcld + icecld
 
-            # evaporate very small amounts of liquid...
+            # --- evaporate very small amounts of liquid...
             if ql < RLMIN:
                 solqa_qv_ql += ql
                 solqa_ql_qv -= ql
 
-            # ... and ice
+            # --- ...and ice
             if qi < RLMIN:
                 solqa_qv_qi += qi
                 solqa_qi_qv -= qi
 
-            # supersaturation limit (from Koop)
+            # *** 3.1: ice supersaturation adjustment
+            # --- supersaturation limit (from Koop)
             fokoop = f_fokoop(t)
 
             if t >= RTT or NSSOPT == 0:
@@ -837,7 +588,7 @@ def cloudsc(
                 qp1env = (qv - a * qsice) / max(1 - a, EPSILON)
                 supsat = max((1 - a) * (qp1env - fac * qsice) / corqsice, 0.0)
 
-            # here the supersaturation is turned into liquid water
+            # --- here the supersaturation is turned into liquid water
             if supsat > EPSEC:
                 if t > RTHOMO:
                     # turn supersaturation into liquid water
@@ -855,34 +606,33 @@ def cloudsc(
                 # increase cloud amount using RKOOPTAU timescale
                 solac = (1 - a) * faci
 
-            # include supersaturation from previous timestep
+            # --- include supersaturation from previous timestep
             if in_supsat[0, 0, 0] > EPSEC:
                 if t > RTHOMO:
                     # turn supersaturation into liquid water
                     solqa_ql_ql += in_supsat[0, 0, 0]
-                    psupsatsrce_ql = in_supsat[0, 0, 0] + 0  # todo
+                    psupsatsrce_ql = in_supsat[0, 0, 0]
                     # add liquid to first guess for deposition term
                     qlfg += in_supsat[0, 0, 0]
                 else:
                     # turn supersaturation into ice water
                     solqa_qi_qi += in_supsat[0, 0, 0]
-                    psupsatsrce_qi = in_supsat[0, 0, 0] + 0  # todo
+                    psupsatsrce_qi = in_supsat[0, 0, 0]
                     # add ice to first guess for deposition term
                     qifg += in_supsat[0, 0, 0]
 
                 # increase cloud amount using RKOOPTAU timescale
                 solac = (1 - a) * faci
 
-            # detrainment from convection
+            # *** 3.2: detrainment from convection
             if tmp_klevel[0] < NLEV - 1:
                 lude = in_lude[0, 0, 0] * dtgdp
 
                 if in_convection_on[0, 0] and lude[0, 0, 0] > RLMIN and in_lu[0, 0, 1] > EPSEC:
                     solac += lude[0, 0, 0] / in_lu[0, 0, 1]
                     # diagnostic temperature split
-                    alfaw = foealfa
-                    convsrce_ql = alfaw * lude
-                    convsrce_qi = (1 - alfaw) * lude
+                    convsrce_ql = foealfa * lude
+                    convsrce_qi = (1 - foealfa) * lude
                     solqa_ql_ql += convsrce_ql
                     solqa_qi_qi += convsrce_qi
                 else:
@@ -894,7 +644,8 @@ def cloudsc(
             else:
                 lude = in_lude[0, 0, 0]
 
-            # subsidence source from layer above and evaporation of cloud within the layer
+            # *** 3.3: subsidence compensating convective updraughts
+            # --- subsidence source from layer above and evaporation of cloud within the layer
             if tmp_klevel[0] > NCLDTOP - 1:
                 mf = max(0.0, (in_mfu + in_mfd) * dtgdp)
                 acust = mf * tmp_anewm1[0, 0]
@@ -977,7 +728,7 @@ def cloudsc(
                     acust = 0.0
                 solac += acust
 
-            # subsidence sink of cloud to the layer below
+            # --- subsidence sink of cloud to the layer below
             if tmp_klevel[0] < NLEV - 1:
                 mfdn = max(0.0, (in_mfu[0, 0, 1] + in_mfd[0, 0, 1]) * dtgdp)
                 solab += mfdn
@@ -985,11 +736,11 @@ def cloudsc(
                 solqb_qi_qi += mfdn
 
                 # record sink for cloud budget and enthalpy budget diagnostics
-                convsink_ql = mfdn + 0  # todo
-                convsink_qi = mfdn + 0  # todo
+                convsink_ql = mfdn
+                convsink_qi = mfdn
 
-            # erosion of clouds by turbulent mixing
-            # define turbulent erosion rate
+            # *** 3.4: erosion of clouds by turbulent mixing
+            # --- define turbulent erosion rate
             ldifdt = RCLDIFF * dt
             if in_convection_type[0, 0] > 0 and lude > EPSEC:
                 ldifdt *= RCLDIFF_CONVI
@@ -1000,14 +751,14 @@ def cloudsc(
                 leros = min(min(a * e, evaplimmix), li)
                 aeros = leros / licld
 
-                # erosion is -ve linear in l,a
+                # erosion is -ve linear in L, A
                 solac -= aeros
                 solqa_qv_ql += liqfrac * leros
                 solqa_ql_qv -= liqfrac * leros
                 solqa_qv_qi += icefrac * leros
                 solqa_qi_qv -= icefrac * leros
 
-            # condensation/evaporation due to dqsat/dT
+            # *** 3.5: condensation/evaporation due to dqsat/dT
             dtdp = RDCP * t / in_ap[0, 0, 0]
             dpmxdt = dp / dt
             mfdn = in_mfu[0, 0, 1] + in_mfd[0, 0, 1] if tmp_klevel[0] < NLEV - 1 else 0.0
@@ -1016,44 +767,25 @@ def cloudsc(
             zzdt = in_hrsw[0, 0, 0] + in_hrlw[0, 0, 0]
             dtdiab = min(dpmxdt * dtdp, max(-dpmxdt * dtdp, zzdt)) * dt + RALFDCP * ldefr
             dtforc = dtdp * wtot * dt + dtdiab
-            qold = qsmix + 0  # todo
-            told = t + 0  # todo
+            qold = qsmix
+            told = t
             t = max(t + dtforc, 160.0)
 
-            # formerly a call to cuadjtq
-            # qsmix, t = f_cuadjtq(in_ap, qsmix, t)  # todo
-            qp = 1 / in_ap[0, 0, 0]
-            qsat = min(0.5, f_foeewm(t) * qp)
-            cor = 1 / (1 - RETV * qsat)
-            qsat *= cor
-            cond = (qsmix - qsat) / (1 + qsat * cor * f_foedem(t))
-            t += f_foeldcpm(t) * cond
-            qsmix -= cond
-            qsat = min(0.5, f_foeewm(t) * qp)
-            cor = 1 / (1 - RETV * qsat)
-            qsat *= cor
-            cond = (qsmix - qsat) / (1 + qsat * cor * f_foedem(t))
-            t += f_foeldcpm(t) * cond
-            qsmix -= cond
+            qsmix, t = f_cuadjtq(in_ap, qsmix, t)
 
             dqs = qsmix - qold
-            qsmix = qold + 0  # todo
-            t = told + 0  # todo
+            qsmix = qold
+            t = told
 
-            # evaporation fo clouds
+            # ***: 3.5a: evaporation of clouds
             if dqs > 0:
                 levap = min(min(a * min(dqs, licld), evaplimmix), max(qsmix - qv, 0.0))
-
-                # for first guess call
-                levapl = liqfrac * levap
-                levapi = icefrac * levap
-
                 solqa_qv_ql += liqfrac * levap
                 solqa_ql_qv -= liqfrac * levap
                 solqa_qv_qi += icefrac * levap
                 solqa_qi_qv -= icefrac * levap
 
-            # formation of clouds
+            # *** 3.5b: formation of clouds
             # increase of cloud water in existing clouds
             if a > EPSEC and dqs <= -RLMIN:
                 lcond1 = max(-dqs, 0.0)
@@ -1069,7 +801,7 @@ def cloudsc(
                 if lcond1 < RLMIN:
                     lcond1 = 0.0
 
-                # all increase goes into liquid unless so cold cloud homogeneously freezes
+                # --- all increase goes into liquid unless so cold cloud homogeneously freezes
                 if t > RTHOMO:
                     solqa_ql_qv += lcond1
                     solqa_qv_ql -= lcond1
@@ -1081,24 +813,24 @@ def cloudsc(
 
             # generation of new clouds (da/dt > 0)
             if dqs <= -RLMIN and a < 1 - EPSEC:
-                # critical relative humidity
+                # --- critical relative humidity
                 rhc = RAMID
                 sigk = in_ap[0, 0, 0] / tmp_aph_s[0, 0]
                 if sigk > 0.8:
                     rhc += (1 - RAMID) * ((sigk - 0.8) / 0.2) ** 2
 
-                # supersaturation option
+                # --- supersaturation options
                 if __INLINED(NSSOPT == 0):
                     # no scheme
                     qe = max(0.0, (qv - a * qsice) / max(EPSEC, 1 - a))
                 elif __INLINED(NSSOPT == 1):
-                    # tompkins
+                    # Tompkins
                     qe = max(0.0, (qv - a * qsice) / max(EPSEC, 1 - a))
                 elif __INLINED(NSSOPT == 2):
-                    # lohmann and karcher
-                    qe = qv + 0  # todo
+                    # Lohmann and Karcher
+                    qe = qv
                 else:
-                    # gierens
+                    # Gierens
                     qe = qv + li
 
                 if t >= RTT or NSSOPT == 0:
@@ -1106,7 +838,7 @@ def cloudsc(
                     fac = 1.0
                 else:
                     # ice supersaturation
-                    fac = fokoop + 0  # todo
+                    fac = fokoop
 
                 if qe >= rhc * qsice * fac and qe < qsice * fac:
                     acond = -(1 - a) * fac * dqs / max(2 * (fac * qsice - qe), EPSEC)
@@ -1133,7 +865,7 @@ def cloudsc(
                     # large-scale generation is linear in A and linear in L
                     solac += acond
 
-                    # all increase goes into liquid unless so cold cloud homogeneously freezes
+                    # --- all increase goes into liquid unless so cold cloud homogeneously freezes
                     if t > RTHOMO:
                         solqa_ql_qv += lcond2
                         solqa_qv_ql -= lcond2
@@ -1143,22 +875,22 @@ def cloudsc(
                         solqa_qv_qi -= lcond2
                         qifg += lcond2
 
-            # growth of ice by vapour deposition
-            if __INLINED(DEPICE == 1):
-                # calculate distance from cloud top
+            # *** 3.6: growth of ice by vapour deposition
+            if __INLINED(DEPICE == 1):  # --- ice deposition following Rotstayn et al. (2001)
+                # --- calculate distance from cloud top
                 if a[0, 0, -1] < RCLDTOPCF and a[0, 0, 0] >= RCLDTOPCF:
                     tmp_cldtopdist[0, 0] = 0.0
                 else:
                     tmp_cldtopdist[0, 0] += dp / (rho * RG)
 
-                # only treat depositional growth if liquid present
+                # --- only treat depositional growth if liquid present
                 if t < RTT and qlfg > RLMIN:
                     vpice = f_foeeice(t) * RV / RD
                     vpliq = vpice * fokoop
                     icenuclei = 1000 * exp(12.96 * (vpliq - vpice) / vpliq - 0.639)
 
-                    # 0.024 is conductivity of air
-                    # 8.8 = 700 ** (1/3) = density of ice to the third
+                    # --- 0.024 is conductivity of air
+                    # --- 8.8 = 700 ** (1/3) = density of ice to the third
                     add = RLSTT * (RLSTT / (RV * t) - 1) / (0.024 * t)
                     bdd = RV * t * in_ap[0, 0, 0] / (2.21 * vpice)
                     cvds = (
@@ -1168,19 +900,19 @@ def cloudsc(
                         / (8.87 * (add + bdd) * vpice)
                     )
 
-                    # RICEINIT = 1e-12 is initial mass of ice particle
+                    # --- RICEINIT = 1e-12 is initial mass of ice particle
                     ice0 = max(icecld, icenuclei * RICEINIT / rho)
 
-                    # new value of ice
+                    # --- new value of ice
                     inew = (0.666 * cvds * dt + ice0**0.666) ** 1.5
 
-                    # grid-mean deposition rate
+                    # --- grid-mean deposition rate
                     depos = max(a * (inew - ice0), 0.0)
 
-                    # limit deposition to liquid water amount
+                    # --- limit deposition to liquid water amount
                     depos = min(depos, qlfg)
 
-                    # at top of cloud, reduce deposition rate near cloud top
+                    # --- at top of cloud, reduce deposition rate near cloud top
                     infactor = min(icenuclei / 15000, 1.0)
                     depos *= min(
                         infactor
@@ -1189,26 +921,25 @@ def cloudsc(
                         1.0,
                     )
 
-                    # add to matrix
+                    # --- add to matrix
                     solqa_qi_ql += depos
                     solqa_ql_qi -= depos
                     qifg += depos
                     qlfg -= depos
-            elif __INLINED(DEPICE == 2):
-                # ice deposition assuming ice PSD
-                # calculate distance from cloud top
+            elif __INLINED(DEPICE == 2):  # --- ice deposition assuming ice PSD
+                # --- calculate distance from cloud top
                 if a[0, 0, -1] < RCLDTOPCF and a[0, 0, 0] >= RCLDTOPCF:
                     tmp_cldtopdist = 0.0
                 else:
                     tmp_cldtopdist += dp / (rho * RG)
 
-                # only treat depositional growth if liquid present
+                # --- only treat depositional growth if liquid present
                 if t < RTT and qlfg > RLMIN:
                     vpice = f_foeeice(t) * RV / RD
                     vpliq = vpice * fokoop
                     icenuclei = 1000 * exp(12.96 * (vpliq - vpice) / vpliq - 0.639)
 
-                    # RICEINIT=1e-12 is the initial mass of ice particle
+                    # --- RICEINIT=1e-12 is the initial mass of ice particle
                     ice0 = max(icecld, icenuclei * RICEINIT / rho)
 
                     # particle size distribution
@@ -1238,11 +969,11 @@ def cloudsc(
                     )
                     depos = max(a * term1 * term2 * dt, 0.0)
 
-                    # limit deposition to liquid water amount
+                    # --- limit deposition to liquid water amount
                     depos = min(depos, qlfg)
 
-                    # at top of cloud, reduce deposition rate near cloud top to account for small scale
-                    # turbulent processes
+                    # --- at top of cloud, reduce deposition rate near cloud top to account for
+                    # --- small scale turbulent processes
                     infactor = min(icenuclei / 15000, 1.0)
                     depos *= min(
                         infactor
@@ -1250,22 +981,21 @@ def cloudsc(
                         1.0,
                     )
 
-                    # add to matrix
+                    # --- add to matrix
                     solqa_qi_ql += depos
                     solqa_ql_qi -= depos
                     qifg += depos
                     qlfg -= depos
 
-            # precipitation processes
-            # revise in-cloud condensate amount
+            # === 4: precipitation processes
+            # --- revise in-cloud condensate amount
             tmpa = 1 / max(a, EPSEC)
             liqcld = qlfg * tmpa
             icecld = qifg * tmpa
-            licld = liqcld + icecld
 
-            # sedimentation/falling of ql
+            # *** 4.1a: sedimentation/falling of ql
             if __INLINED(FALLQL):
-                # source from layer above
+                # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
                     fallsrce_ql = pfplsl * dtgdp
                     solqa_ql_ql += fallsrce_ql
@@ -1273,13 +1003,13 @@ def cloudsc(
                     # use first guess precip
                     qpretot += qlfg
 
-                # sink to next layer, constant fall speed
+                # --- sink to next layer, constant fall speed
                 fallsink_ql = dtgdp * VQL * rho
             else:
                 fallsink_ql = 0.0
 
-            # sedimentation/falling of qi
-            # source from layer above
+            # *** 4.1b: sedimentation/falling of qi
+            # --- source from layer above
             if tmp_klevel[0] > NCLDTOP - 1:
                 fallsrce_qi = pfplsi * dtgdp
                 solqa_qi_qi += fallsrce_qi
@@ -1287,16 +1017,16 @@ def cloudsc(
                 # use first guess precip
                 qpretot += qifg
 
-            # sink to next layer, constant fall speed
+            # --- sink to next layer, constant fall speed
             if __INLINED(LAERICESED):
                 vqi = 0.002 * in_re_ice[0, 0, 0]
             else:
                 vqi = VQI
             fallsink_qi = dtgdp * vqi * rho
 
-            # sedimentation/falling of qr
+            # *** 4.1c: sedimentation/falling of qr
             if __INLINED(FALLQR):
-                # source from layer above
+                # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
                     fallsrce_qr = pfplsr * dtgdp
                     solqa_qr_qr += fallsrce_qr
@@ -1304,14 +1034,14 @@ def cloudsc(
                     # use first guess precip
                     qpretot += qrfg
 
-                # sink to next layer, constant fall speed
+                # --- sink to next layer, constant fall speed
                 fallsink_qr = dtgdp * VQR * rho
             else:
                 fallsink_qr = 0.0
 
-            # sedimentation/falling of qs
+            # *** 4.1d: sedimentation/falling of qs
             if __INLINED(FALLQS):
-                # source from layer above
+                # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
                     fallsrce_qs = pfplss * dtgdp
                     solqa_qs_qs += fallsrce_qs
@@ -1319,14 +1049,14 @@ def cloudsc(
                     # use first guess precip
                     qpretot += qsfg
 
-                # sink to next layer, constant fall speed
+                # --- sink to next layer, constant fall speed
                 fallsink_qs = dtgdp * VQS * rho
             else:
                 fallsink_qs = 0.0
 
-            # sedimentation/falling of qv
+            # *** 4.1e: sedimentation/falling of qv
             if __INLINED(FALLQV):
-                # source from layer above
+                # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
                     fallsrce_qv = pfplsv * dtgdp
                     solqa_qv_qv += fallsrce_qv
@@ -1334,12 +1064,12 @@ def cloudsc(
                     # use first guess precip
                     qpretot += qvfg
 
-                # sink to next layer, constant fall speed
+                # --- sink to next layer, constant fall speed
                 fallsink_qv = dtgdp * VQV * rho
             else:
                 fallsink_qv = 0.0
 
-            # precip cover overlap using RAX-RAN Overlap
+            # --- precip cover overlap using RAX-RAN Overlap
             if qpretot > EPSEC:
                 tmp_covptot[0, 0] = 1 - (
                     (1 - tmp_covptot[0, 0])
@@ -1358,14 +1088,14 @@ def cloudsc(
                 covpclr = 0.0
                 tmp_covpmax[0, 0] = 0.0
 
-            # autoconversion to snow
+            # *** 4.2a: autoconversion to snow
             if t <= RTT:
-                # snow autoconversion rate follow Lin et al. 1983
+                # --- snow autoconversion rate follow Lin et al. 1983
                 if icecld > EPSEC:
                     co = dt * RSNOWLIN1 * exp(RSNOWLIN2 * (t - RTT))
 
                     if __INLINED(LAERICEAUTO):
-                        lcrit = in_icrit_aer[0, 0, 0] + 0  # todo
+                        lcrit = in_icrit_aer[0, 0, 0]
                         co *= (RNICE / in_nice[0, 0, 0]) ** 0.333
                     else:
                         lcrit = RLCRITSNOW
@@ -1373,10 +1103,9 @@ def cloudsc(
                     snowaut = co * (1 - exp(-((icecld / lcrit) ** 2)))
                     solqb_qs_qi += snowaut
 
-            # autoconversion warm clouds
+            # *** 4.2b: autoconversion warm clouds
             if liqcld > EPSEC:
-                if __INLINED(WARMRAIN == 1):
-                    # warm-rain process follow Sundqvist (1989)
+                if __INLINED(WARMRAIN == 1):  # --- warm-rain process follow Sundqvist (1989)
                     co = RKCONV * dt
 
                     if __INLINED(LAERLIQAUTOLSP):
@@ -1385,7 +1114,7 @@ def cloudsc(
                     else:
                         lcrit = RCLCRIT_LAND if in_lsm[0, 0] > 0.5 else RCLCRIT_SEA
 
-                    # parameters for cloud collection by rain and snow
+                    # --- parameters for cloud collection by rain and snow
                     precip = (pfplss + pfplsr) / max(EPSEC, tmp_covptot[0, 0])
                     cfpr = 1 + RPRC1 * sqrt(max(precip, 0.0))
                     if __INLINED(LAERLIQCOLL):
@@ -1403,8 +1132,9 @@ def cloudsc(
                         solqb_qs_ql += rainaut
                     else:
                         solqb_qr_ql += rainaut
-                elif __INLINED(WARMRAIN == 2):
-                    # warm-rain process follow Khairoutdinov and Kogan (2000)
+                elif __INLINED(
+                    WARMRAIN == 2
+                ):  # --- warm-rain process follow Khairoutdinov and Kogan (2000)
                     if in_lsm[0, 0] > 0.5:
                         const = RCL_KK_cloud_num_land
                         lcrit = RCLCRIT_LAND
@@ -1435,12 +1165,13 @@ def cloudsc(
                         solqa_qr_ql += expr3
                         solqa_ql_qr -= expr3
 
+            # --- riming - collection of cloud liquid drops by snow and ice
             if __INLINED(WARMRAIN > 1):
                 if t <= RTT and liqcld > EPSEC:
                     # fallspeed air density correction
                     fallcorr = (RDENSREF / rho) ** 0.4
 
-                    # riming of snow by cloud water - implicit in lwc
+                    # --- riming of snow by cloud water - implicit in lwc
                     if snowcld > EPSEC and tmp_covptot[0, 0] > 0.01:
                         # calculate riming term
                         snowrime = (
@@ -1457,7 +1188,7 @@ def cloudsc(
 
                         solqb_qs_ql += snowrime
 
-            # melting of snow and ice
+            # *** 4.3a: melting of snow and ice
             icetot = qifg + qsfg
             meltmax = 0.0
 
@@ -1490,7 +1221,7 @@ def cloudsc(
                 solqa_qr_qs += melt_qs
                 solqa_qs_qr -= melt_qs
 
-            # freezing of rain
+            # *** 4.3b: freezing of rain
             if qr > EPSEC:
                 if t[0, 0, 0] <= RTT and t[0, 0, -1] > RTT:
                     # base of melting layer/top of refreezing layer so store rain/snow fraction for
@@ -1519,21 +1250,20 @@ def cloudsc(
                         solqa_qs_qr += frz
                         solqa_qr_qs -= frz
 
-            # freezing of liquid
+            # *** 4.3c: freezing of liquid
             frzmax = max((RTHOMO - t) * RLDCP, 0.0)
             if frzmax > EPSEC and qlfg > EPSEC:
                 frz = min(qlfg, frzmax)
                 solqa_qi_ql += frz
                 solqa_ql_qi -= frz
 
-            # evaporation of rain/snow
-            if __INLINED(EVAPRAIN == 1):
-                # rain evaporation scheme from Sundquist
+            # *** 4.4: evaporation of rain/snow
+            if __INLINED(EVAPRAIN == 1):  # --- rain evaporation scheme from Sundquist
                 rh = RPRECRHMAX + (1 - RPRECRHMAX) * tmp_covpmax[0, 0] / max(EPSEC, 1 - a)
                 rh = min(max(rh, RPRECRHMAX), 1.0)
                 qe = (qv - a * qsliq) / max(EPSEC, 1 - a)
 
-                # humidity in moistest covpclr part of domain
+                # --- humidity in moistest covpclr part of domain
                 qe = max(0.0, min(qe, qsliq))
                 lo1 = covpclr > EPSEC and qrfg > EPSEC and qe < rh * qsliq
                 if lo1:
@@ -1543,7 +1273,7 @@ def cloudsc(
                     expr6 = expr5 if expr4 > 0 else -expr5
                     preclr = qrfg * covpclr / expr6
 
-                    # actual microphysics formula in beta
+                    # --- actual microphysics formula in beta
                     beta1 = (
                         sqrt(in_ap[0, 0, 0] / tmp_aph_s[0, 0])
                         / RVRFACTOR
@@ -1555,12 +1285,12 @@ def cloudsc(
                     dpr = covpclr * beta * (qsliq - qe) / denom * dp / RG
                     dpevap = dpr * dtgdp
 
-                    # add evaporation term to explicit sink
+                    # --- add evaporation term to explicit sink
                     evap = min(dpevap, qrfg)
                     solqa_qv_qr += evap
                     solqa_qr_qv -= evap
 
-                    # reduce the total precip coverage proportional to evaporation
+                    # --- reduce the total precip coverage proportional to evaporation
                     tmp_covptot[0, 0] = max(
                         RCOVPMIN,
                         tmp_covptot[0, 0] - max(0.0, (tmp_covptot[0, 0] - a) * evap / qrfg),
@@ -1568,9 +1298,10 @@ def cloudsc(
 
                     # update fg field
                     qrfg -= evap
-            elif __INLINED(EVAPRAIN == 2):
-                # rain evaporation scheme based on Abel and Boutle (2013)
-                # calculate relative humidity limit for rain evaporation
+            elif __INLINED(
+                EVAPRAIN == 2
+            ):  # --- rain evaporation scheme based on Abel and Boutle (2013)
+                # --- calculate relative humidity limit for rain evaporation
                 # limit rh for rain evaporation dependent on precipitation fraction
                 rh = RPRECRHMAX + (1 - RPRECRHMAX) * tmp_covpmax[0, 0] / max(EPSEC, 1 - a)
                 rh = min(max(rh, RPRECRHMAX), 1.0)
@@ -1581,7 +1312,7 @@ def cloudsc(
                 qe = max(0.0, min(qv, qsliq))
                 lo1 = covpclr > EPSEC and qrfg > EPSEC and qe < rh * qsliq
                 if lo1:
-                    # Abel and Boutle (2012) evaporation
+                    # --- Abel and Boutle (2012) evaporation
                     # calculate local precipitation (kg/kg)
                     preclr = qrfg / tmp_covptot[0, 0]
 
@@ -1602,11 +1333,11 @@ def cloudsc(
 
                     # temperature dependent conductivity
                     corr2 = (t / 273) ** 1.5 * 393 / (t + 120)
-                    ka = RCL_KA273 * corr2
 
                     subsat = max(rh * qsliq - qe, 0.0)
                     beta = (
-                        (0.5 / qsliq)  # todo
+                        0.5
+                        / qsliq
                         * t**2
                         * esatliq
                         * RCL_CONST1R
@@ -1621,12 +1352,12 @@ def cloudsc(
                     denom = 1 + beta * dt
                     dpevap = covpclr * beta * dt * subsat / denom
 
-                    # add evaporation term to explicit sink
+                    # --- add evaporation term to explicit sink
                     evap = min(dpevap, qrfg)
                     solqa_qv_qr += evap
                     solqa_qr_qv -= evap
 
-                    # reduce the total precip coverage proportional to evaporation
+                    # --- reduce the total precip coverage proportional to evaporation
                     tmp_covptot[0, 0] = max(
                         RCOVPMIN,
                         tmp_covptot[0, 0] - max(0.0, (tmp_covptot[0, 0] - a) * evap / qrfg),
@@ -1635,13 +1366,13 @@ def cloudsc(
                     # update fg field
                     qrfg -= evap
 
-            # evaporation of snow
+            # *** 4.5: evaporation of snow
             if __INLINED(EVAPSNOW == 1):
                 rh = RPRECRHMAX + (1 - RPRECRHMAX) * tmp_covpmax[0, 0] / max(EPSEC, 1 - a)
                 rh = min(max(rh, RPRECRHMAX), 1.0)
                 qe = (qv - a * qsice) / max(EPSEC, 1 - a)
 
-                # humidity in moistest covpclr part of domain
+                # --- humidity in moistest covpclr part of domain
                 qe = max(0.0, min(qe, qsice))
                 lo1 = covpclr > EPSEC and qsfg > EPSEC and qe < rh * qsice
                 if lo1:
@@ -1650,7 +1381,7 @@ def cloudsc(
                     expr9 = expr8 if expr7 > 0 else -expr8
                     preclr = qsfg * covpclr / expr9
 
-                    # actual microphysics formula in beta
+                    # --- actual microphysics formula in beta
                     beta1 = (
                         sqrt(in_ap[0, 0, 0] / tmp_aph_s[0, 0])
                         / RVRFACTOR
@@ -1662,12 +1393,12 @@ def cloudsc(
                     dpr = covpclr * beta * (qsice - qe) / denom * dp / RG
                     dpevap = dpr * dtgdp
 
-                    # add evaporation term to explicit sink
+                    # --- add evaporation term to explicit sink
                     evap = min(dpevap, qsfg)
                     solqa_qv_qs += evap
                     solqa_qs_qv -= evap
 
-                    # reduce the total precip coverage proportional to evaporation
+                    # --- reduce the total precip coverage proportional to evaporation
                     tmp_covptot[0, 0] = max(
                         RCOVPMIN,
                         tmp_covptot[0, 0] - max(0.0, (tmp_covptot[0, 0] - a) * evap / qsfg),
@@ -1676,12 +1407,12 @@ def cloudsc(
                     # update first guess field
                     qsfg -= evap
             elif __INLINED(EVAPSNOW == 2):
-                # calculate relative humidity limit for snow evaporation
+                # --- calculate relative humidity limit for snow evaporation
                 rh = RPRECRHMAX + (1 - RPRECRHMAX) * tmp_covpmax[0, 0] / max(EPSEC, 1 - a)
                 rh = min(max(rh, RPRECRHMAX), 1.0)
                 qe = (qv - a * qsice) / max(EPSEC, 1 - a)
 
-                # humidity in moistest covpclr part of domain
+                # --- humidity in moistest covpclr part of domain
                 qe = max(0.0, min(qe, qsice))
                 lo1 = covpclr > EPSEC and qs > EPSEC and qe < rh * qsice
                 if lo1:
@@ -1718,12 +1449,12 @@ def cloudsc(
                     )
                     dpevap = max(covpclr * term1 * term2 * dt, 0.0)
 
-                    # limit evaporation to snow amount
+                    # --- limit evaporation to snow amount
                     evap = min(min(dpevap, evaplimice), qs)
                     solqa_qv_qs += evap
                     solqa_qs_qv -= evap
 
-                    # reduce the total precip coverage proportional to evaporation
+                    # --- reduce the total precip coverage proportional to evaporation
                     tmp_covptot[0, 0] = max(
                         RCOVPMIN, tmp_covptot[0, 0] - max(0.0, (tmp_covptot[0, 0] - a) * evap / qs)
                     )
@@ -1731,7 +1462,7 @@ def cloudsc(
                     # update first guess field
                     qsfg -= evap
 
-            # evaporate small precipitation amounts
+            # --- evaporate small precipitation amounts
             if __INLINED(FALLQL):
                 if qlfg < RLMIN:
                     solqa_qv_ql += qlfg
@@ -1749,22 +1480,23 @@ def cloudsc(
                     solqa_qv_qs += qsfg
                     solqa_qs_qv -= qsfg
 
-            # solver for cloud cover
+            # === 5: solvers for A and L
+            # *** 5.1: solver for cloud cover
             anew = min((a + solac) / (1 + solab), 1.0)
             if anew < RAMIN:
                 anew = 0.0
             da = anew - a0
             tmp_anewm1[0, 0] = anew
 
-            # solver for the microphysics
-            # collect sink terms and mark
+            # *** 5.2: solver for the microphysics
+            # --- collect sink terms and mark
             sinksum_ql = -(solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs + solqa_ql_qv)
             sinksum_qi = -(solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs + solqa_qi_qv)
             sinksum_qr = -(solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs + solqa_qr_qv)
             sinksum_qs = -(solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs + solqa_qs_qv)
             sinksum_qv = -(solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs + solqa_qv_qv)
 
-            # calculate overshoot and scaling factor
+            # --- calculate overshoot and scaling factor
             max_ql = max(ql, EPSEC)
             rat_ql = max(sinksum_ql, max_ql)
             ratio_ql = max_ql / rat_ql
@@ -1781,130 +1513,72 @@ def cloudsc(
             rat_qv = max(sinksum_qv, max_qv)
             ratio_qv = max_qv / rat_qv
 
-            # now sort ratio to find out which species run out first: ql
-            min_ql = 1e32
-            if index1_ql and ratio_ql < min_ql:
-                order_ql = 1
-                min_ql = ratio_ql
-            if index1_qi and ratio_qi < min_ql:
-                order_ql = 2
-                min_ql = ratio_qi
-            if index1_qr and ratio_qr < min_ql:
-                order_ql = 3
-                min_ql = ratio_qr
-            if index1_qs and ratio_qs < min_ql:
-                order_ql = 4
-                min_ql = ratio_qs
-            if index1_qv and ratio_qv < min_ql:
-                order_ql = 0
-            if order_ql == 1:
-                index1_ql = False
-            elif order_ql == 2:
-                index1_qi = False
-            elif order_ql == 3:
-                index1_qr = False
-            elif order_ql == 4:
-                index1_qs = False
-            elif order_ql == 0:
-                index1_qv = False
-
-            # now sort ratio to find out which species run out first: qi
-            min_qi = 1e32
-            if index1_ql and ratio_ql < min_qi:
-                order_qi = 1
-                min_qi = ratio_ql
-            if index1_qi and ratio_qi < min_qi:
-                order_qi = 2
-                min_qi = ratio_qi
-            if index1_qr and ratio_qr < min_qi:
-                order_qi = 3
-                min_qi = ratio_qr
-            if index1_qs and ratio_qs < min_qi:
-                order_qi = 4
-                min_qi = ratio_qs
-            if index1_qv and ratio_qv < min_qi:
-                order_qi = 0
-            if order_qi == 1:
-                index1_ql = False
-            elif order_qi == 2:
-                index1_qi = False
-            elif order_qi == 3:
-                index1_qr = False
-            elif order_qi == 4:
-                index1_qs = False
-            elif order_qi == 0:
-                index1_qv = False
-
-            # now sort ratio to find out which species run out first: qr
-            min_qr = 1e32
-            if index1_ql and ratio_ql < min_qr:
-                order_qr = 1
-                min_qr = ratio_ql
-            if index1_qi and ratio_qi < min_qr:
-                order_qr = 2
-                min_qr = ratio_qi
-            if index1_qr and ratio_qr < min_qr:
-                order_qr = 3
-                min_qr = ratio_qr
-            if index1_qs and ratio_qs < min_qr:
-                order_qr = 4
-                min_qr = ratio_qs
-            if index1_qv and ratio_qv < min_qr:
-                order_qr = 0
-            if order_qr == 1:
-                index1_ql = False
-            elif order_qr == 2:
-                index1_qi = False
-            elif order_qr == 3:
-                index1_qr = False
-            elif order_qr == 4:
-                index1_qs = False
-            elif order_qr == 0:
-                index1_qv = False
-
-            # now sort ratio to find out which species run out first: qs
-            min_qs = 1e32
-            if index1_ql and ratio_ql < min_qs:
-                order_qs = 1
-                min_qs = ratio_ql
-            if index1_qi and ratio_qi < min_qs:
-                order_qs = 2
-                min_qs = ratio_qi
-            if index1_qr and ratio_qr < min_qs:
-                order_qs = 3
-                min_qs = ratio_qr
-            if index1_qs and ratio_qs < min_qs:
-                order_qs = 4
-                min_qs = ratio_qs
-            if index1_qv and ratio_qv < min_qs:
-                order_qs = 0
-            if order_qs == 1:
-                index1_ql = False
-            elif order_qs == 2:
-                index1_qi = False
-            elif order_qs == 3:
-                index1_qr = False
-            elif order_qs == 4:
-                index1_qs = False
-            elif order_qs == 0:
-                index1_qv = False
-
-            # now sort ratio to find out which species run out first: qv
-            min_qv = 1e32
-            if index1_ql and ratio_ql < min_qv:
-                order_qv = 1
-                min_qv = ratio_ql
-            if index1_qi and ratio_qi < min_qv:
-                order_qv = 2
-                min_qv = ratio_qi
-            if index1_qr and ratio_qr < min_qv:
-                order_qv = 3
-                min_qv = ratio_qr
-            if index1_qs and ratio_qs < min_qv:
-                order_qv = 4
-                min_qv = ratio_qs
-            if index1_qv and ratio_qv < min_qv:
-                order_qv = 0
+            # --- now sort ratio to find out which species run out first
+            order_ql, index1_ql, index1_qi, index1_qr, index1_qs, index1_qv = f_helper_0(
+                order_ql,
+                index1_ql,
+                index1_qi,
+                index1_qr,
+                index1_qs,
+                index1_qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+            )
+            order_qi, index1_ql, index1_qi, index1_qr, index1_qs, index1_qv = f_helper_0(
+                order_qi,
+                index1_ql,
+                index1_qi,
+                index1_qr,
+                index1_qs,
+                index1_qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+            )
+            order_qr, index1_ql, index1_qi, index1_qr, index1_qs, index1_qv = f_helper_0(
+                order_qr,
+                index1_ql,
+                index1_qi,
+                index1_qr,
+                index1_qs,
+                index1_qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+            )
+            order_qs, index1_ql, index1_qi, index1_qr, index1_qs, index1_qv = f_helper_0(
+                order_qs,
+                index1_ql,
+                index1_qi,
+                index1_qr,
+                index1_qs,
+                index1_qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+            )
+            order_qv, index1_ql, index1_qi, index1_qr, index1_qs, index1_qv = f_helper_0(
+                order_qv,
+                index1_ql,
+                index1_qi,
+                index1_qr,
+                index1_qs,
+                index1_qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+            )
 
             # scale the sink terms, in the correct order, recalculating the scale factor each time
             sinksum_ql = 0.0
@@ -1913,679 +1587,351 @@ def cloudsc(
             sinksum_qs = 0.0
             sinksum_qv = 0.0
 
-            # recalculate sum and scaling factor: ql
-            if order_ql == 1:
-                index3_ql_ql = solqa_ql_ql < 0.0
-                index3_ql_qi = solqa_ql_qi < 0.0
-                index3_ql_qr = solqa_ql_qr < 0.0
-                index3_ql_qs = solqa_ql_qs < 0.0
-                index3_ql_qv = solqa_ql_qv < 0.0
-                sinksum_ql -= solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs + solqa_ql_qv
-                mm = max(ql, EPSEC)
-                rr = max(sinksum_ql, mm)
-                ratio_ql = mm / rr
-            elif order_ql == 2:
-                index3_qi_ql = solqa_qi_ql < 0.0
-                index3_qi_qi = solqa_qi_qi < 0.0
-                index3_qi_qr = solqa_qi_qr < 0.0
-                index3_qi_qs = solqa_qi_qs < 0.0
-                index3_qi_qv = solqa_qi_qv < 0.0
-                sinksum_qi -= solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs + solqa_qi_qv
-                mm = max(qi, EPSEC)
-                rr = max(sinksum_qi, mm)
-                ratio_qi = mm / rr
-            elif order_ql == 3:
-                index3_qr_ql = solqa_qr_ql < 0.0
-                index3_qr_qi = solqa_qr_qi < 0.0
-                index3_qr_qr = solqa_qr_qr < 0.0
-                index3_qr_qs = solqa_qr_qs < 0.0
-                index3_qr_qv = solqa_qr_qv < 0.0
-                sinksum_qr -= solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs + solqa_qr_qv
-                mm = max(qr, EPSEC)
-                rr = max(sinksum_qr, mm)
-                ratio_qr = mm / rr
-            elif order_ql == 4:
-                index3_qs_ql = solqa_qs_ql < 0.0
-                index3_qs_qi = solqa_qs_qi < 0.0
-                index3_qs_qr = solqa_qs_qr < 0.0
-                index3_qs_qs = solqa_qs_qs < 0.0
-                index3_qs_qv = solqa_qs_qv < 0.0
-                sinksum_qs -= solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs + solqa_qs_qv
-                mm = max(qs, EPSEC)
-                rr = max(sinksum_qs, mm)
-                ratio_qs = mm / rr
-            elif order_ql == 0:
-                index3_qv_ql = solqa_qv_ql < 0.0
-                index3_qv_qi = solqa_qv_qi < 0.0
-                index3_qv_qr = solqa_qv_qr < 0.0
-                index3_qv_qs = solqa_qv_qs < 0.0
-                index3_qv_qv = solqa_qv_qv < 0.0
-                sinksum_qv -= solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs + solqa_qv_qv
-                mm = max(qv, EPSEC)
-                rr = max(sinksum_qv, mm)
-                ratio_qv = mm / rr
+            # --- recalculate sum and scaling factor, and then scale
+            ratio_ql, ratio_qi, ratio_qr, ratio_qs, ratio_qv = f_helper_1(
+                order_ql,
+                index3_ql_ql,
+                index3_ql_qi,
+                index3_ql_qr,
+                index3_ql_qs,
+                index3_ql_qv,
+                index3_qi_ql,
+                index3_qi_qi,
+                index3_qi_qr,
+                index3_qi_qs,
+                index3_qi_qv,
+                index3_qr_ql,
+                index3_qr_qi,
+                index3_qr_qr,
+                index3_qr_qs,
+                index3_qr_qv,
+                index3_qs_ql,
+                index3_qs_qi,
+                index3_qs_qr,
+                index3_qs_qs,
+                index3_qs_qv,
+                index3_qv_ql,
+                index3_qv_qi,
+                index3_qv_qr,
+                index3_qv_qs,
+                index3_qv_qv,
+                ql,
+                qi,
+                qr,
+                qs,
+                qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+                sinksum_ql,
+                sinksum_qi,
+                sinksum_qr,
+                sinksum_qs,
+                sinksum_qv,
+                solqa_ql_ql,
+                solqa_ql_qi,
+                solqa_ql_qr,
+                solqa_ql_qs,
+                solqa_ql_qv,
+                solqa_qi_ql,
+                solqa_qi_qi,
+                solqa_qi_qr,
+                solqa_qi_qs,
+                solqa_qi_qv,
+                solqa_qr_ql,
+                solqa_qr_qi,
+                solqa_qr_qr,
+                solqa_qr_qs,
+                solqa_qr_qv,
+                solqa_qs_ql,
+                solqa_qs_qi,
+                solqa_qs_qr,
+                solqa_qs_qs,
+                solqa_qs_qv,
+                solqa_qv_ql,
+                solqa_qv_qi,
+                solqa_qv_qr,
+                solqa_qv_qs,
+                solqa_qv_qv,
+            )
+            ratio_ql, ratio_qi, ratio_qr, ratio_qs, ratio_qv = f_helper_1(
+                order_qi,
+                index3_ql_ql,
+                index3_ql_qi,
+                index3_ql_qr,
+                index3_ql_qs,
+                index3_ql_qv,
+                index3_qi_ql,
+                index3_qi_qi,
+                index3_qi_qr,
+                index3_qi_qs,
+                index3_qi_qv,
+                index3_qr_ql,
+                index3_qr_qi,
+                index3_qr_qr,
+                index3_qr_qs,
+                index3_qr_qv,
+                index3_qs_ql,
+                index3_qs_qi,
+                index3_qs_qr,
+                index3_qs_qs,
+                index3_qs_qv,
+                index3_qv_ql,
+                index3_qv_qi,
+                index3_qv_qr,
+                index3_qv_qs,
+                index3_qv_qv,
+                ql,
+                qi,
+                qr,
+                qs,
+                qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+                sinksum_ql,
+                sinksum_qi,
+                sinksum_qr,
+                sinksum_qs,
+                sinksum_qv,
+                solqa_ql_ql,
+                solqa_ql_qi,
+                solqa_ql_qr,
+                solqa_ql_qs,
+                solqa_ql_qv,
+                solqa_qi_ql,
+                solqa_qi_qi,
+                solqa_qi_qr,
+                solqa_qi_qs,
+                solqa_qi_qv,
+                solqa_qr_ql,
+                solqa_qr_qi,
+                solqa_qr_qr,
+                solqa_qr_qs,
+                solqa_qr_qv,
+                solqa_qs_ql,
+                solqa_qs_qi,
+                solqa_qs_qr,
+                solqa_qs_qs,
+                solqa_qs_qv,
+                solqa_qv_ql,
+                solqa_qv_qi,
+                solqa_qv_qr,
+                solqa_qv_qs,
+                solqa_qv_qv,
+            )
+            ratio_ql, ratio_qi, ratio_qr, ratio_qs, ratio_qv = f_helper_1(
+                order_qr,
+                index3_ql_ql,
+                index3_ql_qi,
+                index3_ql_qr,
+                index3_ql_qs,
+                index3_ql_qv,
+                index3_qi_ql,
+                index3_qi_qi,
+                index3_qi_qr,
+                index3_qi_qs,
+                index3_qi_qv,
+                index3_qr_ql,
+                index3_qr_qi,
+                index3_qr_qr,
+                index3_qr_qs,
+                index3_qr_qv,
+                index3_qs_ql,
+                index3_qs_qi,
+                index3_qs_qr,
+                index3_qs_qs,
+                index3_qs_qv,
+                index3_qv_ql,
+                index3_qv_qi,
+                index3_qv_qr,
+                index3_qv_qs,
+                index3_qv_qv,
+                ql,
+                qi,
+                qr,
+                qs,
+                qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+                sinksum_ql,
+                sinksum_qi,
+                sinksum_qr,
+                sinksum_qs,
+                sinksum_qv,
+                solqa_ql_ql,
+                solqa_ql_qi,
+                solqa_ql_qr,
+                solqa_ql_qs,
+                solqa_ql_qv,
+                solqa_qi_ql,
+                solqa_qi_qi,
+                solqa_qi_qr,
+                solqa_qi_qs,
+                solqa_qi_qv,
+                solqa_qr_ql,
+                solqa_qr_qi,
+                solqa_qr_qr,
+                solqa_qr_qs,
+                solqa_qr_qv,
+                solqa_qs_ql,
+                solqa_qs_qi,
+                solqa_qs_qr,
+                solqa_qs_qs,
+                solqa_qs_qv,
+                solqa_qv_ql,
+                solqa_qv_qi,
+                solqa_qv_qr,
+                solqa_qv_qs,
+                solqa_qv_qv,
+            )
+            ratio_ql, ratio_qi, ratio_qr, ratio_qs, ratio_qv = f_helper_1(
+                order_qs,
+                index3_ql_ql,
+                index3_ql_qi,
+                index3_ql_qr,
+                index3_ql_qs,
+                index3_ql_qv,
+                index3_qi_ql,
+                index3_qi_qi,
+                index3_qi_qr,
+                index3_qi_qs,
+                index3_qi_qv,
+                index3_qr_ql,
+                index3_qr_qi,
+                index3_qr_qr,
+                index3_qr_qs,
+                index3_qr_qv,
+                index3_qs_ql,
+                index3_qs_qi,
+                index3_qs_qr,
+                index3_qs_qs,
+                index3_qs_qv,
+                index3_qv_ql,
+                index3_qv_qi,
+                index3_qv_qr,
+                index3_qv_qs,
+                index3_qv_qv,
+                ql,
+                qi,
+                qr,
+                qs,
+                qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+                sinksum_ql,
+                sinksum_qi,
+                sinksum_qr,
+                sinksum_qs,
+                sinksum_qv,
+                solqa_ql_ql,
+                solqa_ql_qi,
+                solqa_ql_qr,
+                solqa_ql_qs,
+                solqa_ql_qv,
+                solqa_qi_ql,
+                solqa_qi_qi,
+                solqa_qi_qr,
+                solqa_qi_qs,
+                solqa_qi_qv,
+                solqa_qr_ql,
+                solqa_qr_qi,
+                solqa_qr_qr,
+                solqa_qr_qs,
+                solqa_qr_qv,
+                solqa_qs_ql,
+                solqa_qs_qi,
+                solqa_qs_qr,
+                solqa_qs_qs,
+                solqa_qs_qv,
+                solqa_qv_ql,
+                solqa_qv_qi,
+                solqa_qv_qr,
+                solqa_qv_qs,
+                solqa_qv_qv,
+            )
+            ratio_ql, ratio_qi, ratio_qr, ratio_qs, ratio_qv = f_helper_1(
+                order_qv,
+                index3_ql_ql,
+                index3_ql_qi,
+                index3_ql_qr,
+                index3_ql_qs,
+                index3_ql_qv,
+                index3_qi_ql,
+                index3_qi_qi,
+                index3_qi_qr,
+                index3_qi_qs,
+                index3_qi_qv,
+                index3_qr_ql,
+                index3_qr_qi,
+                index3_qr_qr,
+                index3_qr_qs,
+                index3_qr_qv,
+                index3_qs_ql,
+                index3_qs_qi,
+                index3_qs_qr,
+                index3_qs_qs,
+                index3_qs_qv,
+                index3_qv_ql,
+                index3_qv_qi,
+                index3_qv_qr,
+                index3_qv_qs,
+                index3_qv_qv,
+                ql,
+                qi,
+                qr,
+                qs,
+                qv,
+                ratio_ql,
+                ratio_qi,
+                ratio_qr,
+                ratio_qs,
+                ratio_qv,
+                sinksum_ql,
+                sinksum_qi,
+                sinksum_qr,
+                sinksum_qs,
+                sinksum_qv,
+                solqa_ql_ql,
+                solqa_ql_qi,
+                solqa_ql_qr,
+                solqa_ql_qs,
+                solqa_ql_qv,
+                solqa_qi_ql,
+                solqa_qi_qi,
+                solqa_qi_qr,
+                solqa_qi_qs,
+                solqa_qi_qv,
+                solqa_qr_ql,
+                solqa_qr_qi,
+                solqa_qr_qr,
+                solqa_qr_qs,
+                solqa_qr_qv,
+                solqa_qs_ql,
+                solqa_qs_qi,
+                solqa_qs_qr,
+                solqa_qs_qs,
+                solqa_qs_qv,
+                solqa_qv_ql,
+                solqa_qv_qi,
+                solqa_qv_qr,
+                solqa_qv_qs,
+                solqa_qv_qv,
+            )
 
-            # scale: ql
-            if order_ql == 1:
-                if index3_ql_ql:
-                    solqa_ql_ql *= ratio_ql
-                    solqa_ql_ql *= ratio_ql
-                if index3_ql_qi:
-                    solqa_ql_qi *= ratio_ql
-                    solqa_qi_ql *= ratio_ql
-                if index3_ql_qr:
-                    solqa_ql_qr *= ratio_ql
-                    solqa_qr_ql *= ratio_ql
-                if index3_ql_qs:
-                    solqa_ql_qs *= ratio_ql
-                    solqa_qs_ql *= ratio_ql
-                if index3_ql_qv:
-                    solqa_ql_qv *= ratio_ql
-                    solqa_qv_ql *= ratio_ql
-            elif order_ql == 2:
-                if index3_qi_ql:
-                    solqa_qi_ql *= ratio_qi
-                    solqa_ql_qi *= ratio_qi
-                if index3_qi_qi:
-                    solqa_qi_qi *= ratio_qi
-                    solqa_qi_qi *= ratio_qi
-                if index3_qi_qr:
-                    solqa_qi_qr *= ratio_qi
-                    solqa_qr_qi *= ratio_qi
-                if index3_qi_qs:
-                    solqa_qi_qs *= ratio_qi
-                    solqa_qs_qi *= ratio_qi
-                if index3_qi_qv:
-                    solqa_qi_qv *= ratio_qi
-                    solqa_qv_qi *= ratio_qi
-            elif order_ql == 3:
-                if index3_qr_ql:
-                    solqa_qr_ql *= ratio_qr
-                    solqa_ql_qr *= ratio_qr
-                if index3_qr_qi:
-                    solqa_qr_qi *= ratio_qr
-                    solqa_qi_qr *= ratio_qr
-                if index3_qr_qr:
-                    solqa_qr_qr *= ratio_qr
-                    solqa_qr_qr *= ratio_qr
-                if index3_qr_qs:
-                    solqa_qr_qs *= ratio_qr
-                    solqa_qs_qr *= ratio_qr
-                if index3_qr_qv:
-                    solqa_qr_qv *= ratio_qr
-                    solqa_qv_qr *= ratio_qr
-            elif order_ql == 4:
-                if index3_qs_ql:
-                    solqa_qs_ql *= ratio_qs
-                    solqa_ql_qs *= ratio_qs
-                if index3_qs_qi:
-                    solqa_qs_qi *= ratio_qs
-                    solqa_qi_qs *= ratio_qs
-                if index3_qs_qr:
-                    solqa_qs_qr *= ratio_qs
-                    solqa_qr_qs *= ratio_qs
-                if index3_qs_qs:
-                    solqa_qs_qs *= ratio_qs
-                    solqa_qs_qs *= ratio_qs
-                if index3_qs_qv:
-                    solqa_qs_qv *= ratio_qs
-                    solqa_qv_qs *= ratio_qs
-            elif order_ql == 0:
-                if index3_qv_ql:
-                    solqa_qv_ql *= ratio_qv
-                    solqa_ql_qv *= ratio_qv
-                if index3_qv_qi:
-                    solqa_qv_qi *= ratio_qv
-                    solqa_qi_qv *= ratio_qv
-                if index3_qv_qr:
-                    solqa_qv_qr *= ratio_qv
-                    solqa_qr_qv *= ratio_qv
-                if index3_qv_qs:
-                    solqa_qv_qs *= ratio_qv
-                    solqa_qs_qv *= ratio_qv
-                if index3_qv_qv:
-                    solqa_qv_qv *= ratio_qv
-                    solqa_qv_qv *= ratio_qv
-
-            # recalculate sum and scaling factor: qi
-            if order_qi == 1:
-                index3_ql_ql = solqa_ql_ql < 0.0
-                index3_ql_qi = solqa_ql_qi < 0.0
-                index3_ql_qr = solqa_ql_qr < 0.0
-                index3_ql_qs = solqa_ql_qs < 0.0
-                index3_ql_qv = solqa_ql_qv < 0.0
-                sinksum_ql -= solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs + solqa_ql_qv
-                mm = max(ql, EPSEC)
-                rr = max(sinksum_ql, mm)
-                ratio_ql = mm / rr
-            elif order_qi == 2:
-                index3_qi_ql = solqa_qi_ql < 0.0
-                index3_qi_qi = solqa_qi_qi < 0.0
-                index3_qi_qr = solqa_qi_qr < 0.0
-                index3_qi_qs = solqa_qi_qs < 0.0
-                index3_qi_qv = solqa_qi_qv < 0.0
-                sinksum_qi -= solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs + solqa_qi_qv
-                mm = max(qi, EPSEC)
-                rr = max(sinksum_qi, mm)
-                ratio_qi = mm / rr
-            elif order_qi == 3:
-                index3_qr_ql = solqa_qr_ql < 0.0
-                index3_qr_qi = solqa_qr_qi < 0.0
-                index3_qr_qr = solqa_qr_qr < 0.0
-                index3_qr_qs = solqa_qr_qs < 0.0
-                index3_qr_qv = solqa_qr_qv < 0.0
-                sinksum_qr -= solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs + solqa_qr_qv
-                mm = max(qr, EPSEC)
-                rr = max(sinksum_qr, mm)
-                ratio_qr = mm / rr
-            elif order_qi == 4:
-                index3_qs_ql = solqa_qs_ql < 0.0
-                index3_qs_qi = solqa_qs_qi < 0.0
-                index3_qs_qr = solqa_qs_qr < 0.0
-                index3_qs_qs = solqa_qs_qs < 0.0
-                index3_qs_qv = solqa_qs_qv < 0.0
-                sinksum_qs -= solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs + solqa_qs_qv
-                mm = max(qs, EPSEC)
-                rr = max(sinksum_qs, mm)
-                ratio_qs = mm / rr
-            elif order_qi == 0:
-                index3_qv_ql = solqa_qv_ql < 0.0
-                index3_qv_qi = solqa_qv_qi < 0.0
-                index3_qv_qr = solqa_qv_qr < 0.0
-                index3_qv_qs = solqa_qv_qs < 0.0
-                index3_qv_qv = solqa_qv_qv < 0.0
-                sinksum_qv -= solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs + solqa_qv_qv
-                mm = max(qv, EPSEC)
-                rr = max(sinksum_qv, mm)
-                ratio_qv = mm / rr
-
-            # scale: qi
-            if order_qi == 1:
-                if index3_ql_ql:
-                    solqa_ql_ql *= ratio_ql
-                    solqa_ql_ql *= ratio_ql
-                if index3_ql_qi:
-                    solqa_ql_qi *= ratio_ql
-                    solqa_qi_ql *= ratio_ql
-                if index3_ql_qr:
-                    solqa_ql_qr *= ratio_ql
-                    solqa_qr_ql *= ratio_ql
-                if index3_ql_qs:
-                    solqa_ql_qs *= ratio_ql
-                    solqa_qs_ql *= ratio_ql
-                if index3_ql_qv:
-                    solqa_ql_qv *= ratio_ql
-                    solqa_qv_ql *= ratio_ql
-            elif order_qi == 2:
-                if index3_qi_ql:
-                    solqa_qi_ql *= ratio_qi
-                    solqa_ql_qi *= ratio_qi
-                if index3_qi_qi:
-                    solqa_qi_qi *= ratio_qi
-                    solqa_qi_qi *= ratio_qi
-                if index3_qi_qr:
-                    solqa_qi_qr *= ratio_qi
-                    solqa_qr_qi *= ratio_qi
-                if index3_qi_qs:
-                    solqa_qi_qs *= ratio_qi
-                    solqa_qs_qi *= ratio_qi
-                if index3_qi_qv:
-                    solqa_qi_qv *= ratio_qi
-                    solqa_qv_qi *= ratio_qi
-            elif order_qi == 3:
-                if index3_qr_ql:
-                    solqa_qr_ql *= ratio_qr
-                    solqa_ql_qr *= ratio_qr
-                if index3_qr_qi:
-                    solqa_qr_qi *= ratio_qr
-                    solqa_qi_qr *= ratio_qr
-                if index3_qr_qr:
-                    solqa_qr_qr *= ratio_qr
-                    solqa_qr_qr *= ratio_qr
-                if index3_qr_qs:
-                    solqa_qr_qs *= ratio_qr
-                    solqa_qs_qr *= ratio_qr
-                if index3_qr_qv:
-                    solqa_qr_qv *= ratio_qr
-                    solqa_qv_qr *= ratio_qr
-            elif order_qi == 4:
-                if index3_qs_ql:
-                    solqa_qs_ql *= ratio_qs
-                    solqa_ql_qs *= ratio_qs
-                if index3_qs_qi:
-                    solqa_qs_qi *= ratio_qs
-                    solqa_qi_qs *= ratio_qs
-                if index3_qs_qr:
-                    solqa_qs_qr *= ratio_qs
-                    solqa_qr_qs *= ratio_qs
-                if index3_qs_qs:
-                    solqa_qs_qs *= ratio_qs
-                    solqa_qs_qs *= ratio_qs
-                if index3_qs_qv:
-                    solqa_qs_qv *= ratio_qs
-                    solqa_qv_qs *= ratio_qs
-            elif order_qi == 0:
-                if index3_qv_ql:
-                    solqa_qv_ql *= ratio_qv
-                    solqa_ql_qv *= ratio_qv
-                if index3_qv_qi:
-                    solqa_qv_qi *= ratio_qv
-                    solqa_qi_qv *= ratio_qv
-                if index3_qv_qr:
-                    solqa_qv_qr *= ratio_qv
-                    solqa_qr_qv *= ratio_qv
-                if index3_qv_qs:
-                    solqa_qv_qs *= ratio_qv
-                    solqa_qs_qv *= ratio_qv
-                if index3_qv_qv:
-                    solqa_qv_qv *= ratio_qv
-                    solqa_qv_qv *= ratio_qv
-
-            # recalculate sum and scaling factor: qr
-            if order_qr == 1:
-                index3_ql_ql = solqa_ql_ql < 0.0
-                index3_ql_qi = solqa_ql_qi < 0.0
-                index3_ql_qr = solqa_ql_qr < 0.0
-                index3_ql_qs = solqa_ql_qs < 0.0
-                index3_ql_qv = solqa_ql_qv < 0.0
-                sinksum_ql -= solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs + solqa_ql_qv
-                mm = max(ql, EPSEC)
-                rr = max(sinksum_ql, mm)
-                ratio_ql = mm / rr
-            elif order_qr == 2:
-                index3_qi_ql = solqa_qi_ql < 0.0
-                index3_qi_qi = solqa_qi_qi < 0.0
-                index3_qi_qr = solqa_qi_qr < 0.0
-                index3_qi_qs = solqa_qi_qs < 0.0
-                index3_qi_qv = solqa_qi_qv < 0.0
-                sinksum_qi -= solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs + solqa_qi_qv
-                mm = max(qi, EPSEC)
-                rr = max(sinksum_qi, mm)
-                ratio_qi = mm / rr
-            elif order_qr == 3:
-                index3_qr_ql = solqa_qr_ql < 0.0
-                index3_qr_qi = solqa_qr_qi < 0.0
-                index3_qr_qr = solqa_qr_qr < 0.0
-                index3_qr_qs = solqa_qr_qs < 0.0
-                index3_qr_qv = solqa_qr_qv < 0.0
-                sinksum_qr -= solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs + solqa_qr_qv
-                mm = max(qr, EPSEC)
-                rr = max(sinksum_qr, mm)
-                ratio_qr = mm / rr
-            elif order_qr == 4:
-                index3_qs_ql = solqa_qs_ql < 0.0
-                index3_qs_qi = solqa_qs_qi < 0.0
-                index3_qs_qr = solqa_qs_qr < 0.0
-                index3_qs_qs = solqa_qs_qs < 0.0
-                index3_qs_qv = solqa_qs_qv < 0.0
-                sinksum_qs -= solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs + solqa_qs_qv
-                mm = max(qs, EPSEC)
-                rr = max(sinksum_qs, mm)
-                ratio_qs = mm / rr
-            elif order_qr == 0:
-                index3_qv_ql = solqa_qv_ql < 0.0
-                index3_qv_qi = solqa_qv_qi < 0.0
-                index3_qv_qr = solqa_qv_qr < 0.0
-                index3_qv_qs = solqa_qv_qs < 0.0
-                index3_qv_qv = solqa_qv_qv < 0.0
-                sinksum_qv -= solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs + solqa_qv_qv
-                mm = max(qv, EPSEC)
-                rr = max(sinksum_qv, mm)
-                ratio_qv = mm / rr
-
-            # scale: qr
-            if order_qr == 1:
-                if index3_ql_ql:
-                    solqa_ql_ql *= ratio_ql
-                    solqa_ql_ql *= ratio_ql
-                if index3_ql_qi:
-                    solqa_ql_qi *= ratio_ql
-                    solqa_qi_ql *= ratio_ql
-                if index3_ql_qr:
-                    solqa_ql_qr *= ratio_ql
-                    solqa_qr_ql *= ratio_ql
-                if index3_ql_qs:
-                    solqa_ql_qs *= ratio_ql
-                    solqa_qs_ql *= ratio_ql
-                if index3_ql_qv:
-                    solqa_ql_qv *= ratio_ql
-                    solqa_qv_ql *= ratio_ql
-            elif order_qr == 2:
-                if index3_qi_ql:
-                    solqa_qi_ql *= ratio_qi
-                    solqa_ql_qi *= ratio_qi
-                if index3_qi_qi:
-                    solqa_qi_qi *= ratio_qi
-                    solqa_qi_qi *= ratio_qi
-                if index3_qi_qr:
-                    solqa_qi_qr *= ratio_qi
-                    solqa_qr_qi *= ratio_qi
-                if index3_qi_qs:
-                    solqa_qi_qs *= ratio_qi
-                    solqa_qs_qi *= ratio_qi
-                if index3_qi_qv:
-                    solqa_qi_qv *= ratio_qi
-                    solqa_qv_qi *= ratio_qi
-            elif order_qr == 3:
-                if index3_qr_ql:
-                    solqa_qr_ql *= ratio_qr
-                    solqa_ql_qr *= ratio_qr
-                if index3_qr_qi:
-                    solqa_qr_qi *= ratio_qr
-                    solqa_qi_qr *= ratio_qr
-                if index3_qr_qr:
-                    solqa_qr_qr *= ratio_qr
-                    solqa_qr_qr *= ratio_qr
-                if index3_qr_qs:
-                    solqa_qr_qs *= ratio_qr
-                    solqa_qs_qr *= ratio_qr
-                if index3_qr_qv:
-                    solqa_qr_qv *= ratio_qr
-                    solqa_qv_qr *= ratio_qr
-            elif order_qr == 4:
-                if index3_qs_ql:
-                    solqa_qs_ql *= ratio_qs
-                    solqa_ql_qs *= ratio_qs
-                if index3_qs_qi:
-                    solqa_qs_qi *= ratio_qs
-                    solqa_qi_qs *= ratio_qs
-                if index3_qs_qr:
-                    solqa_qs_qr *= ratio_qs
-                    solqa_qr_qs *= ratio_qs
-                if index3_qs_qs:
-                    solqa_qs_qs *= ratio_qs
-                    solqa_qs_qs *= ratio_qs
-                if index3_qs_qv:
-                    solqa_qs_qv *= ratio_qs
-                    solqa_qv_qs *= ratio_qs
-            elif order_qr == 0:
-                if index3_qv_ql:
-                    solqa_qv_ql *= ratio_qv
-                    solqa_ql_qv *= ratio_qv
-                if index3_qv_qi:
-                    solqa_qv_qi *= ratio_qv
-                    solqa_qi_qv *= ratio_qv
-                if index3_qv_qr:
-                    solqa_qv_qr *= ratio_qv
-                    solqa_qr_qv *= ratio_qv
-                if index3_qv_qs:
-                    solqa_qv_qs *= ratio_qv
-                    solqa_qs_qv *= ratio_qv
-                if index3_qv_qv:
-                    solqa_qv_qv *= ratio_qv
-                    solqa_qv_qv *= ratio_qv
-
-            # recalculate sum and scaling factor: qs
-            if order_qs == 1:
-                index3_ql_ql = solqa_ql_ql < 0.0
-                index3_ql_qi = solqa_ql_qi < 0.0
-                index3_ql_qr = solqa_ql_qr < 0.0
-                index3_ql_qs = solqa_ql_qs < 0.0
-                index3_ql_qv = solqa_ql_qv < 0.0
-                sinksum_ql -= solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs + solqa_ql_qv
-                mm = max(ql, EPSEC)
-                rr = max(sinksum_ql, mm)
-                ratio_ql = mm / rr
-            elif order_qs == 2:
-                index3_qi_ql = solqa_qi_ql < 0.0
-                index3_qi_qi = solqa_qi_qi < 0.0
-                index3_qi_qr = solqa_qi_qr < 0.0
-                index3_qi_qs = solqa_qi_qs < 0.0
-                index3_qi_qv = solqa_qi_qv < 0.0
-                sinksum_qi -= solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs + solqa_qi_qv
-                mm = max(qi, EPSEC)
-                rr = max(sinksum_qi, mm)
-                ratio_qi = mm / rr
-            elif order_qs == 3:
-                index3_qr_ql = solqa_qr_ql < 0.0
-                index3_qr_qi = solqa_qr_qi < 0.0
-                index3_qr_qr = solqa_qr_qr < 0.0
-                index3_qr_qs = solqa_qr_qs < 0.0
-                index3_qr_qv = solqa_qr_qv < 0.0
-                sinksum_qr -= solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs + solqa_qr_qv
-                mm = max(qr, EPSEC)
-                rr = max(sinksum_qr, mm)
-                ratio_qr = mm / rr
-            elif order_qs == 4:
-                index3_qs_ql = solqa_qs_ql < 0.0
-                index3_qs_qi = solqa_qs_qi < 0.0
-                index3_qs_qr = solqa_qs_qr < 0.0
-                index3_qs_qs = solqa_qs_qs < 0.0
-                index3_qs_qv = solqa_qs_qv < 0.0
-                sinksum_qs -= solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs + solqa_qs_qv
-                mm = max(qs, EPSEC)
-                rr = max(sinksum_qs, mm)
-                ratio_qs = mm / rr
-            elif order_qs == 0:
-                index3_qv_ql = solqa_qv_ql < 0.0
-                index3_qv_qi = solqa_qv_qi < 0.0
-                index3_qv_qr = solqa_qv_qr < 0.0
-                index3_qv_qs = solqa_qv_qs < 0.0
-                index3_qv_qv = solqa_qv_qv < 0.0
-                sinksum_qv -= solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs + solqa_qv_qv
-                mm = max(qv, EPSEC)
-                rr = max(sinksum_qv, mm)
-                ratio_qv = mm / rr
-
-            # scale: qs
-            if order_qs == 1:
-                if index3_ql_ql:
-                    solqa_ql_ql *= ratio_ql
-                    solqa_ql_ql *= ratio_ql
-                if index3_ql_qi:
-                    solqa_ql_qi *= ratio_ql
-                    solqa_qi_ql *= ratio_ql
-                if index3_ql_qr:
-                    solqa_ql_qr *= ratio_ql
-                    solqa_qr_ql *= ratio_ql
-                if index3_ql_qs:
-                    solqa_ql_qs *= ratio_ql
-                    solqa_qs_ql *= ratio_ql
-                if index3_ql_qv:
-                    solqa_ql_qv *= ratio_ql
-                    solqa_qv_ql *= ratio_ql
-            elif order_qs == 2:
-                if index3_qi_ql:
-                    solqa_qi_ql *= ratio_qi
-                    solqa_ql_qi *= ratio_qi
-                if index3_qi_qi:
-                    solqa_qi_qi *= ratio_qi
-                    solqa_qi_qi *= ratio_qi
-                if index3_qi_qr:
-                    solqa_qi_qr *= ratio_qi
-                    solqa_qr_qi *= ratio_qi
-                if index3_qi_qs:
-                    solqa_qi_qs *= ratio_qi
-                    solqa_qs_qi *= ratio_qi
-                if index3_qi_qv:
-                    solqa_qi_qv *= ratio_qi
-                    solqa_qv_qi *= ratio_qi
-            elif order_qs == 3:
-                if index3_qr_ql:
-                    solqa_qr_ql *= ratio_qr
-                    solqa_ql_qr *= ratio_qr
-                if index3_qr_qi:
-                    solqa_qr_qi *= ratio_qr
-                    solqa_qi_qr *= ratio_qr
-                if index3_qr_qr:
-                    solqa_qr_qr *= ratio_qr
-                    solqa_qr_qr *= ratio_qr
-                if index3_qr_qs:
-                    solqa_qr_qs *= ratio_qr
-                    solqa_qs_qr *= ratio_qr
-                if index3_qr_qv:
-                    solqa_qr_qv *= ratio_qr
-                    solqa_qv_qr *= ratio_qr
-            elif order_qs == 4:
-                if index3_qs_ql:
-                    solqa_qs_ql *= ratio_qs
-                    solqa_ql_qs *= ratio_qs
-                if index3_qs_qi:
-                    solqa_qs_qi *= ratio_qs
-                    solqa_qi_qs *= ratio_qs
-                if index3_qs_qr:
-                    solqa_qs_qr *= ratio_qs
-                    solqa_qr_qs *= ratio_qs
-                if index3_qs_qs:
-                    solqa_qs_qs *= ratio_qs
-                    solqa_qs_qs *= ratio_qs
-                if index3_qs_qv:
-                    solqa_qs_qv *= ratio_qs
-                    solqa_qv_qs *= ratio_qs
-            elif order_qs == 0:
-                if index3_qv_ql:
-                    solqa_qv_ql *= ratio_qv
-                    solqa_ql_qv *= ratio_qv
-                if index3_qv_qi:
-                    solqa_qv_qi *= ratio_qv
-                    solqa_qi_qv *= ratio_qv
-                if index3_qv_qr:
-                    solqa_qv_qr *= ratio_qv
-                    solqa_qr_qv *= ratio_qv
-                if index3_qv_qs:
-                    solqa_qv_qs *= ratio_qv
-                    solqa_qs_qv *= ratio_qv
-                if index3_qv_qv:
-                    solqa_qv_qv *= ratio_qv
-                    solqa_qv_qv *= ratio_qv
-
-            # recalculate sum and scaling factor: qv
-            if order_qv == 1:
-                index3_ql_ql = solqa_ql_ql < 0.0
-                index3_ql_qi = solqa_ql_qi < 0.0
-                index3_ql_qr = solqa_ql_qr < 0.0
-                index3_ql_qs = solqa_ql_qs < 0.0
-                index3_ql_qv = solqa_ql_qv < 0.0
-                sinksum_ql -= solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs + solqa_ql_qv
-                mm = max(ql, EPSEC)
-                rr = max(sinksum_ql, mm)
-                ratio_ql = mm / rr
-            elif order_qv == 2:
-                index3_qi_ql = solqa_qi_ql < 0.0
-                index3_qi_qi = solqa_qi_qi < 0.0
-                index3_qi_qr = solqa_qi_qr < 0.0
-                index3_qi_qs = solqa_qi_qs < 0.0
-                index3_qi_qv = solqa_qi_qv < 0.0
-                sinksum_qi -= solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs + solqa_qi_qv
-                mm = max(qi, EPSEC)
-                rr = max(sinksum_qi, mm)
-                ratio_qi = mm / rr
-            elif order_qv == 3:
-                index3_qr_ql = solqa_qr_ql < 0.0
-                index3_qr_qi = solqa_qr_qi < 0.0
-                index3_qr_qr = solqa_qr_qr < 0.0
-                index3_qr_qs = solqa_qr_qs < 0.0
-                index3_qr_qv = solqa_qr_qv < 0.0
-                sinksum_qr -= solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs + solqa_qr_qv
-                mm = max(qr, EPSEC)
-                rr = max(sinksum_qr, mm)
-                ratio_qr = mm / rr
-            elif order_qv == 4:
-                index3_qs_ql = solqa_qs_ql < 0.0
-                index3_qs_qi = solqa_qs_qi < 0.0
-                index3_qs_qr = solqa_qs_qr < 0.0
-                index3_qs_qs = solqa_qs_qs < 0.0
-                index3_qs_qv = solqa_qs_qv < 0.0
-                sinksum_qs -= solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs + solqa_qs_qv
-                mm = max(qs, EPSEC)
-                rr = max(sinksum_qs, mm)
-                ratio_qs = mm / rr
-            elif order_qv == 0:
-                index3_qv_ql = solqa_qv_ql < 0.0
-                index3_qv_qi = solqa_qv_qi < 0.0
-                index3_qv_qr = solqa_qv_qr < 0.0
-                index3_qv_qs = solqa_qv_qs < 0.0
-                index3_qv_qv = solqa_qv_qv < 0.0
-                sinksum_qv -= solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs + solqa_qv_qv
-                mm = max(qv, EPSEC)
-                rr = max(sinksum_qv, mm)
-                ratio_qv = mm / rr
-
-            # scale: qv
-            if order_qv == 1:
-                if index3_ql_ql:
-                    solqa_ql_ql *= ratio_ql
-                    solqa_ql_ql *= ratio_ql
-                if index3_ql_qi:
-                    solqa_ql_qi *= ratio_ql
-                    solqa_qi_ql *= ratio_ql
-                if index3_ql_qr:
-                    solqa_ql_qr *= ratio_ql
-                    solqa_qr_ql *= ratio_ql
-                if index3_ql_qs:
-                    solqa_ql_qs *= ratio_ql
-                    solqa_qs_ql *= ratio_ql
-                if index3_ql_qv:
-                    solqa_ql_qv *= ratio_ql
-                    solqa_qv_ql *= ratio_ql
-            elif order_qv == 2:
-                if index3_qi_ql:
-                    solqa_qi_ql *= ratio_qi
-                    solqa_ql_qi *= ratio_qi
-                if index3_qi_qi:
-                    solqa_qi_qi *= ratio_qi
-                    solqa_qi_qi *= ratio_qi
-                if index3_qi_qr:
-                    solqa_qi_qr *= ratio_qi
-                    solqa_qr_qi *= ratio_qi
-                if index3_qi_qs:
-                    solqa_qi_qs *= ratio_qi
-                    solqa_qs_qi *= ratio_qi
-                if index3_qi_qv:
-                    solqa_qi_qv *= ratio_qi
-                    solqa_qv_qi *= ratio_qi
-            elif order_qv == 3:
-                if index3_qr_ql:
-                    solqa_qr_ql *= ratio_qr
-                    solqa_ql_qr *= ratio_qr
-                if index3_qr_qi:
-                    solqa_qr_qi *= ratio_qr
-                    solqa_qi_qr *= ratio_qr
-                if index3_qr_qr:
-                    solqa_qr_qr *= ratio_qr
-                    solqa_qr_qr *= ratio_qr
-                if index3_qr_qs:
-                    solqa_qr_qs *= ratio_qr
-                    solqa_qs_qr *= ratio_qr
-                if index3_qr_qv:
-                    solqa_qr_qv *= ratio_qr
-                    solqa_qv_qr *= ratio_qr
-            elif order_qv == 4:
-                if index3_qs_ql:
-                    solqa_qs_ql *= ratio_qs
-                    solqa_ql_qs *= ratio_qs
-                if index3_qs_qi:
-                    solqa_qs_qi *= ratio_qs
-                    solqa_qi_qs *= ratio_qs
-                if index3_qs_qr:
-                    solqa_qs_qr *= ratio_qs
-                    solqa_qr_qs *= ratio_qs
-                if index3_qs_qs:
-                    solqa_qs_qs *= ratio_qs
-                    solqa_qs_qs *= ratio_qs
-                if index3_qs_qv:
-                    solqa_qs_qv *= ratio_qs
-                    solqa_qv_qs *= ratio_qs
-            elif order_qv == 0:
-                if index3_qv_ql:
-                    solqa_qv_ql *= ratio_qv
-                    solqa_ql_qv *= ratio_qv
-                if index3_qv_qi:
-                    solqa_qv_qi *= ratio_qv
-                    solqa_qi_qv *= ratio_qv
-                if index3_qv_qr:
-                    solqa_qv_qr *= ratio_qv
-                    solqa_qr_qv *= ratio_qv
-                if index3_qv_qs:
-                    solqa_qv_qs *= ratio_qv
-                    solqa_qs_qv *= ratio_qv
-                if index3_qv_qv:
-                    solqa_qv_qv *= ratio_qv
-                    solqa_qv_qv *= ratio_qv
-
-            # solver
-            # set the lhs of equation
-            # diagonals: microphysical sink terms + transport
+            # *** 5.2.2: solver
+            # --- set the lhs of equation
+            # --- diagonals: microphysical sink terms + transport
             lhs_ql_ql = (
                 1
                 + fallsink_ql
@@ -2632,7 +1978,7 @@ def cloudsc(
                 + solqb_qs_qv
             )
 
-            # non-diagonals: microphysical source terms
+            # --- non-diagonals: microphysical source terms
             lhs_ql_qi = -solqb_ql_qi
             lhs_ql_qr = -solqb_ql_qr
             lhs_ql_qs = -solqb_ql_qs
@@ -2654,15 +2000,15 @@ def cloudsc(
             lhs_qv_qr = -solqb_qv_qr
             lhs_qv_qs = -solqb_qv_qs
 
-            # set the rhs of equation
-            # sum the explicit source and sink
+            # --- set the rhs of equation
+            # --- sum the explicit source and sink
             qln = ql + solqa_ql_ql + solqa_ql_qi + solqa_ql_qr + solqa_ql_qs + solqa_ql_qv
             qin = qi + solqa_qi_ql + solqa_qi_qi + solqa_qi_qr + solqa_qi_qs + solqa_qi_qv
             qrn = qr + solqa_qr_ql + solqa_qr_qi + solqa_qr_qr + solqa_qr_qs + solqa_qr_qv
             qsn = qs + solqa_qs_ql + solqa_qs_qi + solqa_qs_qr + solqa_qs_qs + solqa_qs_qv
             qvn = qv + solqa_qv_ql + solqa_qv_qi + solqa_qv_qr + solqa_qv_qs + solqa_qv_qv
 
-            # solve by LU decomposition
+            # --- solve by LU decomposition
             # non pivoting recursive factorization
             lhs_qi_ql /= lhs_ql_ql  #             JN=1, JM=2
             lhs_qi_qi -= lhs_qi_ql * lhs_ql_qi  # JN=1, JM=2, IK=2
@@ -2737,14 +2083,14 @@ def cloudsc(
                 qvn += qsn
                 qsn = 0.0
 
-            # variables needed for next level
+            # --- variables needed for next level
             tmp_qlnm1[0, 0] = qln
             tmp_qinm1[0, 0] = qin
             tmp_qrnm1[0, 0] = qrn
             tmp_qsnm1[0, 0] = qsn
             tmp_qvnm1[0, 0] = qvn
 
-            # precipitation/sedimentation fluxes to next level
+            # *** 5.3: precipitation/sedimentation fluxes to next level diagnostic precipitation fluxes
             tmp_pfplsl_n[0, 0] = fallsink_ql * qln * rdtgdp
             tmp_pfplsi_n[0, 0] = fallsink_qi * qin * rdtgdp
             tmp_pfplsr_n[0, 0] = fallsink_qr * qrn * rdtgdp
@@ -2756,8 +2102,8 @@ def cloudsc(
             if qpretot < EPSEC:
                 tmp_covptot[0, 0] = 0.0
 
-            # update tendencies
-            # temperature and clv budgets
+            # === 6: update tendencies
+            # *** 6.1: temperature and CLV budgets
             flux_ql = psupsatsrce_ql + convsrce_ql + fallsrce_ql - (fallsink_ql + convsink_ql) * qln
             if __INLINED(PHASEQL == 1):
                 out_tnd_loc_t[0, 0, 0] += RALVDCP * (qln - ql - flux_ql) / dt
@@ -2786,13 +2132,13 @@ def cloudsc(
                 out_tnd_loc_t[0, 0, 0] += RALSDCP * (qsn - qs - flux_qs) / dt
             out_tnd_loc_qs[0, 0, 0] += (qsn - qs0) / dt
 
-            # humidity budget
+            # *** 6.2: humidity budget
             out_tnd_loc_qv[0, 0, 0] += (qvn - qv) / dt
 
-            # cloud cover
+            # *** 6.3: cloud cover
             out_tnd_loc_a[0, 0, 0] += da / dt
 
-            # copy precipitation fraction into output variable
+            # --- copy precipitation fraction into output variable
             out_covptot[0, 0, 0] = tmp_covptot[0, 0]
         with interval(-1, None):
             pfplsl = tmp_pfplsl_n[0, 0]
@@ -2801,12 +2147,13 @@ def cloudsc(
             pfplss = tmp_pfplss_n[0, 0]
             pfplsv = tmp_pfplsv_n[0, 0]
 
+    # === 7: flux/diagnostics computations
     with computation(PARALLEL), interval(...):
-        # copy general precip arrays back info pfp arrays for GRIB archiving
+        # --- copy general precip arrays back info PFP arrays for GRIB archiving
         out_fplsl[0, 0, 0] = pfplsr + pfplsl
         out_fplsn[0, 0, 0] = pfplss + pfplsi
 
-        # enthalpy flux due to precipitation
+        # --- enthalpy flux due to precipitation
         out_fhpsl[0, 0, 0] = -RLVTT * out_fplsl[0, 0, 0]
         out_fhpsn[0, 0, 0] = -RLSTT * out_fplsn[0, 0, 0]
 
@@ -2838,11 +2185,12 @@ def cloudsc(
             out_fsqltur[0, 0, 0] = out_fsqltur[0, 0, -1]
             out_fsqitur[0, 0, 0] = out_fsqitur[0, 0, -1]
 
-            alfaw = foealfa[0, 0, -1]
-
             # liquid, LS scheme minus detrainment
             out_fsqlf[0, 0, 0] += (
-                qln[0, 0, -1] - ql0[0, 0, -1] + in_vfl[0, 0, -1] * dt - alfaw * lude[0, 0, -1]
+                qln[0, 0, -1]
+                - ql0[0, 0, -1]
+                + in_vfl[0, 0, -1] * dt
+                - foealfa[0, 0, -1] * lude[0, 0, -1]
             ) * gdph_r
             # liquid, negative numbers
             out_fcqlng[0, 0, 0] += lneg_ql[0, 0, -1] * gdph_r
@@ -2856,7 +2204,10 @@ def cloudsc(
 
             # ice, LS scheme minus detrainment
             out_fsqif[0, 0, 0] += (
-                qin[0, 0, -1] - qi0[0, 0, -1] + in_vfi[0, 0, -1] * dt - (1 - alfaw) * lude[0, 0, -1]
+                qin[0, 0, -1]
+                - qi0[0, 0, -1]
+                + in_vfi[0, 0, -1] * dt
+                - (1 - foealfa[0, 0, -1]) * lude[0, 0, -1]
             ) * gdph_r
             # ice, negative numbers
             out_fcqnng[0, 0, 0] += lneg_qi[0, 0, -1] * gdph_r
