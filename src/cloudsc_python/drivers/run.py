@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 import click
-import csv
-import datetime
-import os
 from typing import Optional
 
 from cloudsc4py.framework.grid import ComputationalGrid

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from gt4py.gtscript import Field, IJ, K, function
+from gt4py.gtscript import Field, IJ, K
 
 from cloudsc4py.framework.stencil import stencil_collection
 from cloudsc4py.physics._stencils.cuadjtq import f_cuadjtq
@@ -162,7 +162,6 @@ def cloudsc(
         RCL_FAC1,
         RCL_FAC2,
         RCL_FZRAB,
-        RCL_KA273,
         RCL_KK_cloud_num_land,
         RCL_KK_cloud_num_sea,
         RCL_KKAac,
@@ -176,7 +175,6 @@ def cloudsc(
         RCLDIFF_CONVI,
         RCLDTOPCF,
         RCOVPMIN,
-        RCPD,
         RD,
         RDCP,
         RDENSREF,
