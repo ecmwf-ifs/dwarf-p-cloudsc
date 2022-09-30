@@ -10,8 +10,10 @@ from utils import print_performance, to_csv
 
 def core(config: FortranConfig, io_config: IOConfig) -> None:
     executable = os.path.join(
-        os.path.dirname(__file__), f"../../../build/bin/dwarf-cloudsc-{config.mode}"
+        os.path.dirname(__file__), config.build_dir, f"dwarf-cloudsc-{config.mode}"
     )
+    if not os.path.exists(executable):
+        raise RuntimeError(f"The executable `{executable}` does not exist.")
 
     # warm-up cache
     _ = subprocess.run(
@@ -56,6 +58,7 @@ def core(config: FortranConfig, io_config: IOConfig) -> None:
 
 
 @click.command()
+@click.option("--build-dir", type=str, default="fortran")
 @click.option("--mode", type=str, default="fortran")
 @click.option("--num-runs", type=int, default=1)
 @click.option("--num-threads", type=int, default=1)

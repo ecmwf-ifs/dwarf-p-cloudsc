@@ -110,10 +110,16 @@ default_python_config = PythonConfig(
 
 
 class FortranConfig(BaseModel):
+    build_dir: str
     mode: str
     num_runs: int
     num_threads: int
     nx: int
+
+    def with_build_dir(self, build_dir: str) -> FortranConfig:
+        args = self.dict()
+        args["build_dir"] = build_dir
+        return FortranConfig(**args)
 
     def with_mode(self, mode: str) -> FortranConfig:
         args = self.dict()
@@ -136,4 +142,6 @@ class FortranConfig(BaseModel):
         return FortranConfig(**args)
 
 
-default_fortran_config = FortranConfig(mode="fortran", num_runs=1, num_threads=1, nx=1)
+default_fortran_config = FortranConfig(
+    build_dir=".", mode="fortran", num_runs=1, num_threads=1, nx=1
+)
