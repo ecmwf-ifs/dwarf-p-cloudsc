@@ -2,7 +2,6 @@
 from gt4py import gtscript
 
 from cloudsc4py.framework.stencil import function_collection
-from cloudsc4py.utils.f2py import ported_function
 
 
 @function_collection("f_helper_0")

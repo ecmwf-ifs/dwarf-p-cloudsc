@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from cloudsc4py.framework.grid import I, J, K
 from cloudsc4py.framework.storage import allocate_data_array
 from cloudsc4py.initialization.utils import initialize_field
-from cloudsc4py.utils.f2py import ported_function
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -20,7 +19,6 @@ if TYPE_CHECKING:
     from cloudsc4py.utils.iox import HDF5Reader
 
 
-@ported_function()
 def allocate_tendencies(
     computational_grid: ComputationalGrid, *, gt4py_config: GT4PyConfig
 ) -> DataArrayDict:
@@ -41,7 +39,6 @@ def allocate_tendencies(
     }
 
 
-@ported_function()
 def initialize_tendencies(tendencies: DataArrayDict, hdf5_reader: HDF5Reader) -> None:
     hdf5_reader_keys = {"f_a": "TENDENCY_LOC_A", "f_qv": "TENDENCY_LOC_Q", "f_t": "TENDENCY_LOC_T"}
     for name, hdf5_reader_key in hdf5_reader_keys.items():
@@ -54,7 +51,6 @@ def initialize_tendencies(tendencies: DataArrayDict, hdf5_reader: HDF5Reader) ->
         # np.testing.assert_allclose(state[name].data[:, :, :137], clv[:, np.newaxis, :, idx])
 
 
-@ported_function()
 def allocate_diagnostics(
     computational_grid: ComputationalGrid, *, gt4py_config: GT4PyConfig
 ) -> DataArrayDict:
@@ -90,7 +86,6 @@ def allocate_diagnostics(
     }
 
 
-@ported_function()
 def initialize_diagnostics(diagnostics: DataArrayDict, hdf5_reader: HDF5Reader) -> None:
     hdf5_reader_keys = {name: "P" + name[2:].upper() for name in diagnostics if name != "time"}
     for name, hdf5_reader_key in hdf5_reader_keys.items():

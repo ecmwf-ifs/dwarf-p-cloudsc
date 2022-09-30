@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from cloudsc4py.framework.grid import I, J, K
 from cloudsc4py.framework.storage import allocate_data_array
 from cloudsc4py.initialization.utils import initialize_field
-from cloudsc4py.utils.f2py import ported_function
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -20,7 +19,6 @@ if TYPE_CHECKING:
     from cloudsc4py.utils.iox import HDF5Reader
 
 
-@ported_function()
 def allocate_state(
     computational_grid: ComputationalGrid, *, gt4py_config: GT4PyConfig
 ) -> DataArrayDict:
@@ -80,7 +78,6 @@ def allocate_state(
     }
 
 
-@ported_function()
 def initialize_state(state: DataArrayDict, hdf5_reader: HDF5Reader) -> None:
     hdf5_reader_keys = {
         "b_convection_on": "LDCUM",

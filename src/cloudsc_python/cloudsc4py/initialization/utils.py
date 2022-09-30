@@ -3,8 +3,6 @@ from __future__ import annotations
 import numpy as np
 from typing import TYPE_CHECKING
 
-from cloudsc4py.utils.f2py import ported_function
-
 if TYPE_CHECKING:
     from sympl._core.data_array import DataArray
 
@@ -32,7 +30,6 @@ def initialize_storage_3d(storage: Storage, buffer: np.ndarray) -> None:
     # np.testing.assert_allclose(storage[:, :, :mk], buffer[:, np.newaxis, :])
 
 
-@ported_function()
 def initialize_field(field: DataArray, buffer: np.ndarray) -> None:
     if field.ndim == 2:
         initialize_storage_2d(field.data, buffer)
