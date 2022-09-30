@@ -1,49 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
-import dataclasses
-from functools import partial
-import math
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from typing import TYPE_CHECKING
 
+from make_plot_scaling import DefaultLine, LinePool, plot_lines
 from plot_utils import get_figure_and_axes, set_axes_properties, set_figure_properties
 
-if TYPE_CHECKING:
-    from typing import Optional
 
-
-@dataclasses.dataclass
-class Line:
-    backend: str
-    color: str
-    linestyle: str
-    marker: str
-    linewidth: float
-    markersize: float
-    markerfacecolor: Optional[str] = None
-    markeredgecolor: Optional[str] = None
-    label: Optional[str] = None
-
-    def __post_init__(self):
-        self.markerfacecolor = self.markerfacecolor or self.color
-        self.markeredgecolor = self.markeredgecolor or self.color
-        self.label = self.label or self.backend
-
-
-DEFAULT_LINEWIDTH = 1.5
-DEFAULT_MARKERSIZE = 10
-DefaultLine = partial(Line, linewidth=DEFAULT_LINEWIDTH, markersize=DEFAULT_MARKERSIZE, label=None)
-
-
-@dataclasses.dataclass
-class LinePool:
-    output_file: str
-    lines: list[Line]
-    reference_backend: str = "fortran"
-
-
+# >>> config: start
 lines = [
     # DefaultLine("fortran", "black", "-", None),
     DefaultLine("gpu-scc", "magenta", "-", "p", label="FORTRAN: gpu-scc"),
@@ -54,13 +18,11 @@ lines = [
     DefaultLine("cuda", "purple", "-", "o", label="Python: cuda"),
     DefaultLine("dace:gpu", "orange", "-", "s", label="Python: dace:gpu"),
 ]
-line_pool_00 = LinePool("../drivers/performance_cray.csv", lines)
-line_pool_01 = LinePool("../drivers/performance_gnu.csv", lines)
-line_pool_10 = LinePool("../drivers/performance_intel.csv", lines)
-line_pool_11 = LinePool("../drivers/performance_nvidia.csv", lines)
+line_pool_00 = LinePool("../data/performance_cray.csv", lines, host="dom")
+line_pool_01 = LinePool("../data/performance_gnu.csv", lines, host="dom")
+line_pool_10 = LinePool("../data/performance_intel.csv", lines, host="dom")
+line_pool_11 = LinePool("../data/performance_nvidia.csv", lines, host="dom")
 nx_l = tuple(2**i for i in range(10, 18))
-
-
 figure_properties = {
     "figsize": [12.5, 8],
     "fontsize": 16,
@@ -146,81 +108,10 @@ axes_properties_11 = {
     "text": "$\\mathbf{d)}$ NVIDIA",
     "text_loc": "upper left",
 }
-
-
-def plot_speedup(ax: plt.Axes, line_pool: LinePool) -> dict[str, list[float]]:
-    speedups = {line.backend: [] for line in line_pool.lines}
-    df = pd.read_csv(line_pool.output_file)
-    df_ref = df[df.backend == line_pool.reference_backend]
-
-    # collect data
-    for nx in nx_l:
-        df_ref_1 = df_ref[df_ref.nx == nx]
-        runtime_ref = df_ref_1.loc[df_ref_1.index[0], "mean"]
-
-        for line in line_pool.lines:
-            df1 = df[df.backend == line.backend]
-            df2 = df1[df1.nx == nx]
-            if df2.empty:
-                speedups[line.backend].append(math.nan)
-            else:
-                runtime = df2.loc[df2.index[0], "mean"]
-                speedups[line.backend].append(runtime_ref / runtime)
-
-    # plot
-    ax.plot(nx_l, (1,) * len(nx_l), "k-", linewidth=1)
-    for line in line_pool.lines:
-        ax.plot(
-            nx_l,
-            speedups[line.backend],
-            line.color,
-            linestyle=line.linestyle,
-            linewidth=line.linewidth,
-            marker=line.marker,
-            markersize=line.markersize,
-            markerfacecolor=line.markerfacecolor,
-            markeredgecolor=line.markeredgecolor,
-            label=line.label,
-        )
-
-    return speedups
-
-
-def plot_runtime(ax: plt.Axes, line_pool: LinePool) -> dict[str, list[float]]:
-    runtimes = {line.backend: [] for line in line_pool.lines}
-    df = pd.read_csv(line_pool.output_file)
-
-    # collect data
-    for nx in nx_l:
-        for line in line_pool.lines:
-            df1 = df[df.backend == line.backend]
-            df2 = df1[df1.nx == nx]
-            if df2.empty:
-                runtimes[line.backend].append(math.nan)
-            else:
-                runtimes[line.backend].append(df2.loc[df2.index[0], "mean"])
-
-    # plot
-    for line in line_pool.lines:
-        ax.plot(
-            nx_l,
-            runtimes[line.backend],
-            line.color,
-            linestyle=line.linestyle,
-            linewidth=line.linewidth,
-            marker=line.marker,
-            markersize=line.markersize,
-            markerfacecolor=line.markerfacecolor,
-            markeredgecolor=line.markeredgecolor,
-            label=line.label,
-        )
-
-    return runtimes
+# >>> config: end
 
 
 def main():
-    plot_lines = plot_speedup
-
     fig, ax_00 = get_figure_and_axes(nrows=2, ncols=2, index=1, **figure_properties)
     plot_lines(ax_00, line_pool_00)
     set_axes_properties(ax_00, **axes_properties_00)
@@ -236,12 +127,6 @@ def main():
     _, ax_11 = get_figure_and_axes(fig=fig, nrows=2, ncols=2, index=4, **figure_properties)
     plot_lines(ax_11, line_pool_11)
     set_axes_properties(ax_11, **axes_properties_11)
-
-    # _, ax_12 = get_figure_and_axes(fig=fig, nrows=2, ncols=2, index=3, **figure_properties)
-    # handles, labels = ax_00.get_legend_handles_labels()
-    # ax_01.legend(bbox_to_anchor=(0, 0, 1, 1), bbox_transform=ax_12.transAxes)
-    # # ax_12.legend(handles, labels, borderaxespad=0)
-    # ax_12.axis("off")
 
     set_figure_properties(fig, **figure_properties)
     plt.show()

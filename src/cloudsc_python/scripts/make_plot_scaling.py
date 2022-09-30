@@ -41,9 +41,11 @@ DefaultLine = partial(Line, linewidth=DEFAULT_LINEWIDTH, markersize=DEFAULT_MARK
 class LinePool:
     output_file: str
     lines: list[Line]
+    host: str
     reference_backend: str = "fortran"
 
 
+# >>> config: start
 lines = [
     DefaultLine("gt:cpu_kfirst", "cyan", "-", ">"),
     DefaultLine("gt:cpu_ifirst", "blue", "-", "<"),
@@ -51,10 +53,8 @@ lines = [
     DefaultLine("cuda", "purple", "-", "o"),
     DefaultLine("dace:gpu", "orange", "-", "s"),
 ]
-line_pool = LinePool("performance.csv", lines, reference_backend="fortran")
+line_pool = LinePool("../data/performance_gnu.csv", lines, host="dom", reference_backend="fortran")
 nx_l = tuple(2**i for i in range(10, 18))
-
-
 figure_properties = {
     "figsize": [6, 6],
     "fontsize": 16,
@@ -68,8 +68,8 @@ axes_properties = {
     "x_ticks": nx_l,
     "x_tick_labels": tuple(f"$2^{{{int(np.log2(nx))}}}$" for nx in nx_l),
     "y_label": "Speed-up w.r.t. FORTRAN [-]",
-    "y_lim": [0, 8],
-    "y_ticks": range(0, 9),
+    "y_lim": [0, 10],
+    "y_ticks": range(0, 11),
     "y_tick_labels": None,
     "legend_on": True,
     "legend_fontsize": 14,
@@ -79,17 +79,19 @@ axes_properties = {
     "grid_on": True,
     "grid_properties": {"linestyle": ":"},
 }
+# <<< config: end
 
 
 def plot_lines(ax: plt.Axes, line_pool: LinePool) -> dict[str, list[float]]:
     speedups = {line.backend: [] for line in line_pool.lines}
     df = pd.read_csv(line_pool.output_file)
+    df = df[df.host == line_pool.host]
     df_ref = df[df.backend == line_pool.reference_backend]
 
     # collect data
     for nx in nx_l:
         df_ref_1 = df_ref[df_ref.nx == nx]
-        runtime_ref = df_ref_1.loc[df_ref_1.index[0], "mean"]
+        runtime_ref = df_ref_1.loc[df_ref_1.index[-1], "mean"]
 
         for line in line_pool.lines:
             df1 = df[df.backend == line.backend]
@@ -97,7 +99,7 @@ def plot_lines(ax: plt.Axes, line_pool: LinePool) -> dict[str, list[float]]:
             if df2.empty:
                 speedups[line.backend].append(math.nan)
             else:
-                runtime = df2.loc[df2.index[0], "mean"]
+                runtime = df2.loc[df2.index[-1], "mean"]
                 speedups[line.backend].append(runtime_ref / runtime)
 
     # plot
