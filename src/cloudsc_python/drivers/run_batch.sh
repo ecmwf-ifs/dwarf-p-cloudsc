@@ -1,61 +1,43 @@
 #!/bin/bash
 
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=512    || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=1024   || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=2048   || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=4096   || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=8192   || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=16384  || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=32768  || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=65536  || true
-python run_fortran.py --num-runs=20 --num-threads=24 --output-file=performance.csv --host-alias=daint --mode=fortran --nx=131072 || true
+ENV=gnu
+HOST=dom
+NXS=( 512 1024 2048 4096 8192 16384 32768 65536 131072 )
+FORTRAN_MODES=(  )
+GT4PY_BACKENDS=( cuda dace:gpu )
 
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=512    || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=1024   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=2048   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=4096   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=8192   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=16384  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=32768  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=65536  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_kfirst --nx=131072 || true
+for FORTRAN_MODE in "${FORTRAN_MODES[@]}"
+do
+  echo "FORTRAN: $FORTRAN_MODE: start"
+  for NX in "${NXS[@]}"
+  do
+    echo -n "  nx=$NX: "
+    python run_fortran.py \
+      --build-dir=../../../build/"$ENV" \
+      --num-runs=20 \
+      --num-threads=24 \
+      --output-file=performance_"$ENV".csv \
+      --host-alias="$HOST" \
+      --mode="$FORTRAN_MODE" \
+      --nx="$NX" || true
+  done
+  echo "FORTRAN: $FORTRAN_MODE: end"
+done
 
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=512    || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=1024   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=2048   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=4096   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=8192   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=16384  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=32768  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=65536  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:cpu_ifirst --nx=131072 || true
-
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=512    || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=1024   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=2048   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=4096   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=8192   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=16384  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=32768  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=65536  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=gt:gpu --nx=131072 || true
-
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=512    || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=1024   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=2048   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=4096   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=8192   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=16384  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=32768  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=65536  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=cuda --nx=131072 || true
-
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=512    || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=1024   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=2048   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=4096   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=8192   || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=16384  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=32768  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=65536  || true
-python run.py --num-runs=20 --disable-checks --disable-validation --output-file=performance.csv --host-alias=daint --backend=dace:gpu --nx=131072 || true
+for GT4PY_BACKEND in "${GT4PY_BACKENDS[@]}"
+do
+  echo "Python: $GT4PY_BACKEND: start"
+  for NX in "${NXS[@]}"
+  do
+    echo -n "  nx=$NX: "
+    CXX=CC CC=cc python run.py \
+      --num-runs=20 \
+      --disable-checks \
+      --disable-validation \
+      --output-file=performance_"$ENV".csv \
+      --host-alias="$HOST" \
+      --backend="$GT4PY_BACKEND" \
+      --nx="$NX" || true
+  done
+  echo "Python: $GT4PY_BACKEND: end"
+done
