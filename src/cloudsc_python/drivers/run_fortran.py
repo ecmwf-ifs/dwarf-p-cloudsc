@@ -10,7 +10,7 @@ from utils import print_performance, to_csv
 
 def core(config: FortranConfig, io_config: IOConfig) -> None:
     executable = os.path.join(
-        os.path.dirname(__file__), config.build_dir, f"dwarf-cloudsc-{config.mode}"
+        os.path.dirname(__file__), config.build_dir, f"bin/dwarf-cloudsc-{config.mode}"
     )
     if not os.path.exists(executable):
         raise RuntimeError(f"The executable `{executable}` does not exist.")
@@ -66,6 +66,7 @@ def core(config: FortranConfig, io_config: IOConfig) -> None:
 @click.option("--output-file", type=str, default=None)
 @click.option("--host-alias", type=str, default=None)
 def main(
+    build_dir: str,
     mode: str,
     num_runs: int,
     num_threads: int,
@@ -74,7 +75,8 @@ def main(
     host_alias: Optional[str],
 ) -> None:
     config = (
-        default_fortran_config.with_mode(mode)
+        default_fortran_config.with_build_dir(build_dir)
+        .with_mode(mode)
         .with_num_runs(num_runs)
         .with_num_threads(num_threads)
         .with_nx(nx)
