@@ -169,11 +169,6 @@ def set_figure_properties(fig: plt.Figure, **kwargs) -> None:
         if y_label != "":
             ax.set_ylabel(y_label, labelpad=y_labelpad)
 
-    if tight_layout:
-        fig.tight_layout(rect=tight_layout_rect, w_pad=tight_layout_wpad, h_pad=tight_layout_hpad)
-
-    fig.subplots_adjust(right=right, wspace=wspace, hspace=hspace)
-
     if figlegend_on:
         figlegend_ax = [figlegend_ax] if isinstance(figlegend_ax, int) else figlegend_ax
         axes = (
@@ -236,6 +231,11 @@ def set_figure_properties(fig: plt.Figure, **kwargs) -> None:
                 loc=figlegend_loc,
                 ncol=figlegend_ncol,
             )
+
+    if tight_layout:
+        fig.tight_layout(rect=tight_layout_rect, w_pad=tight_layout_wpad, h_pad=tight_layout_hpad)
+
+    fig.subplots_adjust(right=right, wspace=wspace, hspace=hspace)
 
 
 def set_axes_properties(ax: plt.Axes, **kwargs) -> None:
