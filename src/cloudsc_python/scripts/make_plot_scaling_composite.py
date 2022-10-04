@@ -14,7 +14,7 @@ lines = [
     DefaultLine("gpu-scc-hoist", "pink", "-", "H", label="FORTRAN: gpu-scc-hoist"),
     DefaultLine("gt:cpu_kfirst", "cyan", "-", ">", label="Python: gt:cpu_kfirst"),
     DefaultLine("gt:cpu_ifirst", "blue", "-", "<", label="Python: gt:cpu_ifirst"),
-    # DefaultLine("gt:gpu", "green", "-", "^", label="Python: gt:gpu"),
+    DefaultLine("gt:gpu", "green", "-", "^", label="Python: gt:gpu"),
     DefaultLine("cuda", "purple", "-", "o", label="Python: cuda"),
     DefaultLine("dace:gpu", "orange", "-", "s", label="Python: dace:gpu"),
 ]
@@ -39,7 +39,7 @@ axes_properties_00 = {
     "x_lim": None,
     "x_ticks": nx_l,
     "x_tick_labels": (),
-    "y_label": "Speed-up w.r.t FORTRAN [-]",
+    "y_label": "Speed-up w.r.t. FORTRAN [-]",
     "y_scale": "symlog",
     "y_scale_kwargs": {"base": 2, "linthresh": 1},
     "y_lim": (0, 12),

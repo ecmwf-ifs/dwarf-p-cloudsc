@@ -2,7 +2,6 @@
 import csv
 import datetime
 import os
-from typing import Optional
 
 
 def to_csv(
