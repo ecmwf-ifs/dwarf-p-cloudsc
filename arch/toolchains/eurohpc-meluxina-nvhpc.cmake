@@ -31,26 +31,29 @@ set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 # OpenAcc FLAGS
 ####################################################################
 
-# NB: We have to add `-mp` again to avoid undefined symbols during linking
-# (smells like an Nvidia bug)
-set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath" CACHE STRING "" )
-# Enable this to get more detailed compiler output
-# set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
+## # NB: We have to add `-mp` again to avoid undefined symbols during linking
+## # (smells like an Nvidia bug)
+## set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath" CACHE STRING "" )
+## # Enable this to get more detailed compiler output
+## # set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
+
+##set( OpenACC_Fortran_FLAGS "-acc -ta=tesla:lineinfo,deepcopy,fastmath" )
+set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,rdc,lineinfo,fastmath")
+set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo -Mcuda=maxregcount:128" )
+
 
 ####################################################################
 # COMMON FLAGS
 ####################################################################
 
 set(ECBUILD_Fortran_FLAGS "-fpic")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mframe")
+##set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mframe")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mbyteswapio")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mstack_arrays")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mrecursive")
+##set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mstack_arrays")
+##set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mrecursive")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Ktrap=fp")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Kieee")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mdaz")
-
-set(ECBUILD_Fortran_LINK_FLAGS "-gpu=pinned")
 
 set( ECBUILD_Fortran_FLAGS_BIT "-O2 -gopt" )
 
