@@ -28,7 +28,7 @@ jobs:
       matrix:
 
         arch:
-          - github/ubuntu/gnu/9.3.0
+          - github/ubuntu/gnu/9.4.0
 
         io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
 
@@ -56,11 +56,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Sets-up environment and installs required packages
-      - name: Environment setup
+      # Installs required packages
+      - name: Package installation
         run: |
-          [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
-          [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || sudo apt install libboost-filesystem-dev libboost-system-dev
+          sudo apt-get install libc-dev-bin
 
       # Install MPI
       - name: Install MPI via Apt
@@ -73,9 +72,18 @@ jobs:
         run: .github/scripts/bootstrap-nvhpc.sh
 
       # Install HDF5
+      - name: Install HDF5 via Apt
+        if: ${{ ! contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' ) }}
+        run: sudo apt-get install libhdf5-dev
+
       - name: Install HDF5 from source
         if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
         run: source arch/${{ matrix.arch }}/env.sh && .github/scripts/install-hdf5.sh
+
+      # Install Boost
+      - name: Install Boost libraries
+        if: contains( matrix.io_library_flag, 'with-serialbox' )
+        run: sudo apt install libboost-filesystem-dev libboost-system-dev
 
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
