@@ -7,6 +7,12 @@
 ! granted to it by virtue of its status as an intergovernmental organisation
 ! nor does it submit to any jurisdiction.
 
+#ifdef HAVE_CUDA
+#define CUDA_DEVICE ATTRIBUTES(DEVICE)
+#else
+#define CUDA_DEVICE
+#endif
+
 MODULE FCCLD_MOD
   !*
   !     ------------------------------------------------------------------
@@ -31,7 +37,7 @@ MODULE FCCLD_MOD
   IMPLICIT NONE
   CONTAINS
 
-ATTRIBUTES(DEVICE)  PURE ELEMENTAL FUNCTION FOKOOP(PTARE)
+CUDA_DEVICE  PURE ELEMENTAL FUNCTION FOKOOP(PTARE)
     REAL(KIND=JPRB) :: FOKOOP
     REAL(KIND=JPRB), VALUE :: PTARE
     !$acc routine seq

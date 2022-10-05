@@ -33,7 +33,7 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/validate_mod.F90
     module/cloudsc_global_state_mod.F90
     module/cloudsc_mpi_mod.F90
-    module/yomcst_initialise.F90
+    ## module/yomcst_initialise.F90
 )
 
 if( HAVE_ACC )
@@ -51,6 +51,27 @@ endif()
 ecbuild_add_library( TARGET cloudsc-common-lib
     TYPE ${LIBRARY_TYPE}
     DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    SOURCES
+        ${CLOUDSC_COMMON_SOURCES}
+        $<${HAVE_MPI}:module/cloudsc_mpif.F90>
+        $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
+    PRIVATE_INCLUDES
+        $<${HAVE_HDF5}:${HDF5_Fortran_INCLUDE_DIRS}>
+    PUBLIC_INCLUDES
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>
+    PUBLIC_LIBS
+        $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
+        $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
+        $<${HAVE_MPI}:MPI::MPI_Fortran>
+        $<${HAVE_HDF5}:hdf5::hdf5_fortran>
+        $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
+)
+
+ecbuild_add_library( TARGET cloudsc-common-cuda-lib
+    TYPE ${LIBRARY_TYPE}
+    DEFINITIONS ${CLOUDSC_DEFINITIONS} HAVE_CUDA
     SOURCES
         ${CLOUDSC_COMMON_SOURCES}
         $<${HAVE_MPI}:module/cloudsc_mpif.F90>

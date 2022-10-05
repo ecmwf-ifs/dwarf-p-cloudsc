@@ -98,7 +98,7 @@ if( HAVE_CLOUDSC_GPU_SCC_C )
 	    cloudsc_gpu_scc_cuf_mod.F90
 	    nlev_mod.F90
         LIBS
-           cloudsc-common-lib
+           cloudsc-common-cuda-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_C
     )
 endif()

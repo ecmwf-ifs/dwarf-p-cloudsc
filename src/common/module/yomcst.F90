@@ -55,7 +55,7 @@ IMPLICIT NONE
 !**! * RG           : gravity constant
 !**! * R1SA         : 1/RA
 !**REAL(KIND=JPRB) :: RA
-REAL(KIND=JPRB) :: RG, rg_h
+REAL(KIND=JPRB) :: RG
 !**REAL(KIND=JPRB) :: R1SA
 !**
 !**! A1.3 Radiation
@@ -89,14 +89,14 @@ REAL(KIND=JPRB) :: RG, rg_h
 !**REAL(KIND=JPRB) :: RMD
 !**REAL(KIND=JPRB) :: RMV
 !**REAL(KIND=JPRB) :: RMO3
-REAL(KIND=JPRB) :: RD, rd_h
-REAL(KIND=JPRB) :: RV, rv_h
-REAL(KIND=JPRB) :: RCPD, rcpd_h
+REAL(KIND=JPRB) :: RD
+REAL(KIND=JPRB) :: RV
+REAL(KIND=JPRB) :: RCPD
 !**REAL(KIND=JPRB) :: RCPV
 !**REAL(KIND=JPRB) :: RCVD
 !**REAL(KIND=JPRB) :: RCVV
 !**REAL(KIND=JPRB) :: RKAPPA
-REAL(KIND=JPRB) :: RETV, retv_h
+REAL(KIND=JPRB) :: RETV
 !**REAL(KIND=JPRB) :: RMCO2
 !**REAL(KIND=JPRB) :: RMCH4
 !**REAL(KIND=JPRB) :: RMN2O
@@ -122,15 +122,29 @@ REAL(KIND=JPRB) :: RETV, retv_h
 !**! * RLMLT        : RLMlt = melting latent heat at T=Tt
 !**! * RDT          : Tt - Tx(ew-ei)
 !**REAL(KIND=JPRB) :: RATM
-REAL(KIND=JPRB) :: RTT, rtt_h
-REAL(KIND=JPRB) :: RLVTT, rlvtt_h
-REAL(KIND=JPRB) :: RLSTT, rlstt_h
+REAL(KIND=JPRB) :: RTT
+REAL(KIND=JPRB) :: RLVTT
+REAL(KIND=JPRB) :: RLSTT
 !**REAL(KIND=JPRB) :: RLVZER
 !**REAL(KIND=JPRB) :: RLSZER
-REAL(KIND=JPRB) :: RLMLT, rlmlt_h
+REAL(KIND=JPRB) :: RLMLT
 !**REAL(KIND=JPRB) :: RDT
 
-ATTRIBUTES(CONSTANT) :: RG, RCPD, RD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV 
+#ifdef HAVE_CUDA
+REAL(KIND=JPRB) :: RG_H
+REAL(KIND=JPRB) :: RD_H
+REAL(KIND=JPRB) :: RV_H
+REAL(KIND=JPRB) :: RCPD_H
+REAL(KIND=JPRB) :: RETV_H
+REAL(KIND=JPRB) :: RTT_H
+REAL(KIND=JPRB) :: RLVTT_H
+REAL(KIND=JPRB) :: RLSTT_H
+REAL(KIND=JPRB) :: RLMLT_H
+
+
+ATTRIBUTES(CONSTANT) :: RG, RCPD, RD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
+#endif
+
 ! A1.8 Curve of saturation
 ! * RESTT        : es(Tt) = saturation vapour tension at T=Tt
 ! * RGAMW        : Rgamw = (Cw-Cp_vap)/R_vap
@@ -164,21 +178,36 @@ ATTRIBUTES(CONSTANT) :: RG, RCPD, RD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
 
 !    ------------------------------------------------------------------
 
-!!CONTAINS
-!!
-!!attributes(host)  SUBROUTINE YOMCST_LOAD_PARAMETERS()
-!!USE FILE_IO_MOD, ONLY : LOAD_SCALAR_real
-!!    CALL LOAD_SCALAR_real('RG', RG_h)
-!!    CALL LOAD_SCALAR_real('RD', RD_h)
-!!    CALL LOAD_SCALAR_real('RCPD', RCPD_h)
-!!    CALL LOAD_SCALAR_real('RETV', RETV_h)
-!!    CALL LOAD_SCALAR_real('RLVTT', RLVTT_h)
-!!    CALL LOAD_SCALAR_real('RLSTT', RLSTT_h)
-!!    CALL LOAD_SCALAR_real('RLMLT', RLMLT_h)
-!!    CALL LOAD_SCALAR_real('RTT', RTT_h)
-!!    CALL LOAD_SCALAR_real('RV', RV_h)
+CONTAINS
 
-!!    rg=rg_h; rd=rd_h; rcpd=rcpd_h; retv=retv_h; rlvtt=rlvtt_h; rlstt=rlstt_h; rlmlt=rlmlt_h; rtt=rtt_h; rv=rv_h
-!!  END SUBROUTINE YOMCST_LOAD_PARAMETERS
+#ifdef HAVE_CUDA
+attributes(host)  SUBROUTINE YOMCST_LOAD_PARAMETERS()
+USE FILE_IO_MOD, ONLY : LOAD_SCALAR_real
+   CALL LOAD_SCALAR_real('RG', RG_h)
+   CALL LOAD_SCALAR_real('RD', RD_h)
+   CALL LOAD_SCALAR_real('RCPD', RCPD_h)
+   CALL LOAD_SCALAR_real('RETV', RETV_h)
+   CALL LOAD_SCALAR_real('RLVTT', RLVTT_h)
+   CALL LOAD_SCALAR_real('RLSTT', RLSTT_h)
+   CALL LOAD_SCALAR_real('RLMLT', RLMLT_h)
+   CALL LOAD_SCALAR_real('RTT', RTT_h)
+   CALL LOAD_SCALAR_real('RV', RV_h)
+
+   rg=rg_h; rd=rd_h; rcpd=rcpd_h; retv=retv_h; rlvtt=rlvtt_h; rlstt=rlstt_h; rlmlt=rlmlt_h; rtt=rtt_h; rv=rv_h
+ END SUBROUTINE YOMCST_LOAD_PARAMETERS
+#else
+SUBROUTINE YOMCST_LOAD_PARAMETERS()
+USE FILE_IO_MOD, ONLY : LOAD_SCALAR
+   CALL LOAD_SCALAR('RG', RG)
+   CALL LOAD_SCALAR('RD', RD)
+   CALL LOAD_SCALAR('RCPD', RCPD)
+   CALL LOAD_SCALAR('RETV', RETV)
+   CALL LOAD_SCALAR('RLVTT', RLVTT)
+   CALL LOAD_SCALAR('RLSTT', RLSTT)
+   CALL LOAD_SCALAR('RLMLT', RLMLT)
+   CALL LOAD_SCALAR('RTT', RTT)
+   CALL LOAD_SCALAR('RV', RV)
+ END SUBROUTINE YOMCST_LOAD_PARAMETERS
+#endif
 
 END MODULE YOMCST
