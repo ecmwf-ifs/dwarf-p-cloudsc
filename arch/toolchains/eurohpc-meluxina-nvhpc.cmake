@@ -39,7 +39,7 @@ set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 
 ##set( OpenACC_Fortran_FLAGS "-acc -ta=tesla:lineinfo,deepcopy,fastmath" )
 set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,rdc,lineinfo,fastmath")
-set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo -Mcuda=maxregcount:128" )
+# set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo -Mcuda=maxregcount:128" )
 
 
 ####################################################################

@@ -8,11 +8,6 @@
 
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
-# Compile CUDA fortran files with -MCuda. 
-#  cloudsc_add_compile_options(
-#      SOURCES module/fccld_mod.F90  module/fcttre_mod.F90  module/yoethf.F90  module/yomcst.F90
-#      FLAGS   "-Mcuda")
-
 
 list(APPEND CLOUDSC_COMMON_SOURCES
     module/parkind1.F90
@@ -35,6 +30,28 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/cloudsc_mpi_mod.F90
     ## module/yomcst_initialise.F90
 )
+
+list(APPEND CLOUDSC_CUDA_SOURCES
+    module/fccld_mod.cuf.F90
+    module/fcttre_mod.cuf.F90
+    module/yoethf.cuf.F90
+    module/yomcst.cuf.F90
+    module/yoecldp.cuf.F90
+)
+
+# Compile CUDA fortran files with -MCuda.
+cloudsc_add_compile_options(
+    SOURCES
+        module/fccld_mod.F90
+        module/fcttre_mod.F90
+        module/yoethf.F90
+        module/yomcst.F90
+        module/yoecldp.F90
+        ${CLOUDSC_COMMON_SOURCES}
+        ${CLOUDSC_CUDA_SOURCES}
+    FLAGS "-Mcuda=maxregcount:128"
+)
+
 
 if( HAVE_ACC )
     # ========================================================================
@@ -74,6 +91,7 @@ ecbuild_add_library( TARGET cloudsc-common-cuda-lib
     DEFINITIONS ${CLOUDSC_DEFINITIONS} HAVE_CUDA
     SOURCES
         ${CLOUDSC_COMMON_SOURCES}
+	${CLOUDSC_CUDA_SOURCES}
         $<${HAVE_MPI}:module/cloudsc_mpif.F90>
         $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
     PRIVATE_INCLUDES
@@ -89,3 +107,7 @@ ecbuild_add_library( TARGET cloudsc-common-cuda-lib
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
 )
+# set_property(TARGET cloudsc-common-cuda-lib PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+# set_property(TARGET cloudsc-common-cuda-lib PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+
+target_link_options(cloudsc-common-cuda-lib PUBLIC "-Mcuda")

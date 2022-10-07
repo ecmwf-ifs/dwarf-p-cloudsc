@@ -86,9 +86,10 @@ endif()
 
 if( HAVE_CLOUDSC_GPU_SCC_C )
     # Compile CUDA fortran files with -MCuda. 
-    #    cloudsc_add_compile_options(
-    #	    SOURCES cloudsc_gpu_scc_cuf_mod.F90  cloudsc_driver_gpu_scc_cuf_mod.F90
-    #       FLAGS   "-Mcuda")
+    cloudsc_add_compile_options(
+        SOURCES cloudsc_gpu_scc_cuf_mod.F90  cloudsc_driver_gpu_scc_cuf_mod.F90
+	        nlev_mod.F90 dwarf_cloudsc_gpu.F90
+        FLAGS   "-Mcuda=maxregcount:128")
 
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-cuf
@@ -101,6 +102,8 @@ if( HAVE_CLOUDSC_GPU_SCC_C )
            cloudsc-common-cuda-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_C
     )
+
+    target_link_options(dwarf-cloudsc-gpu-scc-c PUBLIC "-Mcuda")
 endif()
 
 
