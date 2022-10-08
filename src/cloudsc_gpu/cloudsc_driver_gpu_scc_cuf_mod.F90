@@ -16,7 +16,6 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_CUF_MOD
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE YOMCST_CUF,ONLY : YOMCST_UPDATE_DEVICE
   USE YOETHF_CUF,ONLY : YOETHF_UPDATE_DEVICE
-  USE YOECLDP_CUF,ONLY : YRECLDP_UPDATE_DEVICE
 
   USE CLOUDSC_GPU_SCC_CUF_MOD, ONLY: CLOUDSC_SCC_CUF
   USE NLEV_MOD, ONLY : NLEV
@@ -109,7 +108,7 @@ CONTAINS
     INTEGER :: ISTAT
 
     ! Local copy of cloud parameters for offload
-    TYPE(TECLDP) :: LOCAL_YRECLDP
+    TYPE(TECLDP), DEVICE :: LOCAL_YRECLDP
  
     TYPE(DIM3) :: GRIDDIM, BLOCKDIM
 
@@ -166,11 +165,9 @@ CONTAINS
     REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: PFHPSL_d(:,:,:) !!(NPROMA, NLEV+1, NGPBLKS)    ! Enthalpy flux for liq
     REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: PFHPSN_d(:,:,:) !!(NPROMA, NLEV+1, NGPBLKS)    ! ice number concentration (cf. CCN)
 
-    TYPE(TECLDP),DEVICE :: LOCAL_YRECLDP_d
-
+    ! Transfer global module-scope parameters to constant device memory
     CALL YOMCST_UPDATE_DEVICE()
     CALL YOETHF_UPDATE_DEVICE()
-    CALL YRECLDP_UPDATE_DEVICE()
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 
@@ -216,8 +213,6 @@ CONTAINS
     pccn_d=pccn; pnice_d=pnice; pcovptot_d=pcovptot; prainfrac_toprfz_d=prainfrac_toprfz; pfsqlf_d=pfsqlf;
     pfsqif_d=pfsqif; pfcqnng_d=pfcqnng; pfcqlng_d=pfcqlng; pfsqrf_d=pfsqrf; pfsqsf_d=pfsqsf; pfcqrng_d=pfcqrng; pfcqsng_d=pfcqsng
     pfsqltur_d=pfsqltur; pfsqitur_d=pfsqitur; pfplsl_d=pfplsl; pfplsn_d=pfplsn; pfhpsl_d=pfhpsl; pfhpsn_d=pfhpsn
-    local_yrecldp_d=local_yrecldp
-    print *, 'In driver after copy to device !!!'
     
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
@@ -252,21 +247,18 @@ CONTAINS
         & PFSQLF_D, PFSQIF_D, PFCQNNG_D, PFCQLNG_D, &
         & PFSQRF_D, PFSQSF_D, PFCQRNG_D, PFCQSNG_D, &
         & PFSQLTUR_D, PFSQITUR_D, &
-        & PFPLSL_D, PFPLSN_D, PFHPSL_D, PFHPSN_D &
-        &  )
+        & PFPLSL_D, PFPLSN_D, PFHPSL_D, PFHPSN_D, &
+        & LOCAL_YRECLDP )
 
     ISTAT = cudaDeviceSynchronize()
     
     CALL TIMER%THREAD_END(TID)
 
-    print *, 'In driver after cloudsc !!!'
     buffer_tmp=buffer_tmp_d; buffer_loc = buffer_loc_d; 
     plude=plude_d;
     pcovptot=pcovptot_d;
     pfsqlf=pfsqlf_d; pfsqif=pfsqif_d; pfcqnng=pfcqnng_d; pfcqlng=pfcqlng_d; pfsqrf=pfsqrf_d; pfsqsf=pfsqsf_d; pfcqrng=pfcqrng_d; 
     pfcqsng=pfcqsng_d; pfsqltur=pfsqltur_d; pfsqitur=pfsqitur_d; pfplsl=pfplsl_d; pfplsn=pfplsn_d; pfhpsl=pfhpsl_d; pfhpsn=pfhpsn_d;
-    print *, 'In driver after copy back to host !!!'
-
 
     CALL TIMER%END()
 
