@@ -15,7 +15,7 @@ cmake_policy( SET CMP0077 NEW )
 find_package( ecbuild REQUIRED )
 
 # define the project
-project( dwarf-p-cloudsc LANGUAGES C Fortran CUDA)
+project( dwarf-p-cloudsc LANGUAGES C Fortran )
 
 include( cmake/compat.cmake )
 if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
@@ -48,6 +48,15 @@ endif()
 ecbuild_add_option( FEATURE ACC
     DESCRIPTION "OpenACC" DEFAULT ON
     REQUIRED_PACKAGES "OpenACC" )
+
+include(CheckLanguage)
+check_language( CUDA )
+ecbuild_add_option( FEATURE CUDA
+    DESCRIPTION "CUDA" DEFAULT OFF
+    CONDITION CMAKE_CUDA_COMPILER )
+if( HAVE_CUDA )
+    enable_language( CUDA )
+endif()
 
 ### OpenMP
 ecbuild_add_option( FEATURE OMP

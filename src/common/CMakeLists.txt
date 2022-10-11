@@ -37,7 +37,7 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/yomcst.cuf.F90
 )
 
-# if( HAVE_CUDA )
+if( HAVE_CUDA )
     # ========================================================================
     # Compile CUDA fortran files with -MCuda.
     #
@@ -52,7 +52,7 @@ list(APPEND CLOUDSC_CUDA_SOURCES
 
     # Add CUDA-specific flags to the library if enabled
     list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
-# endif()
+endif()
 
 
 if( HAVE_ACC )
