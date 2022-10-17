@@ -52,6 +52,12 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   The block array arguments are fully dimensioned though, and
   multi-dimensional temporaries have been declared explicitly at the
   driver level.
+- **dwarf-cloudsc-gpu-scc-cuf**: GPU-enabled and optimized version of
+  CLOUDSC that uses the SCC loop layout in combination with CUDA-Fortran
+  (CUF) to explicitly allocated temporary arrays in device memory and
+  move parameter structures to constant memory. To enable this variant,
+  a suitable CUDA installation is required and the `--with-cuda` flag
+  needs to be passed at the build stage.
 
 ## Download and Installation
 
