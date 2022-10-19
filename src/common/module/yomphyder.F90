@@ -37,8 +37,8 @@ type state_type
   !REAL(KIND=JPRB), dimension(:,:), pointer :: qsat    ! spec. humidity at saturation
 
 #ifdef  USE_FIELD_API
-  TYPE(FIELD_3D), POINTER :: F_T, F_A, F_Q
-  TYPE(FIELD_4D), POINTER :: F_CLD
+  CLASS(FIELD_3D), POINTER :: F_T, F_A, F_Q
+  CLASS(FIELD_4D), POINTER :: F_CLD
 #endif
 end type state_type
 

@@ -1,11 +1,7 @@
-! (C) Copyright 1988- ECMWF.
+! Rank and shape definitions for simple templating
 !
-! This software is licensed under the terms of the Apache Licence Version 2.0
-! which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
-!
-! In applying this licence, ECMWF does not waive the privileges and immunities
-! granted to it by virtue of its status as an intergovernmental organisation
-! nor does it submit to any jurisdiction.
+! Note that the ranks encode coneptual dimensions here, eg. FIELD_2D encodes
+! a surface field and FIELD_3D represents a field with a vertical component.
 
 MODULE FIELD_MODULE
   ! The FIELD types provided by this module provide data abstractions that
@@ -15,28 +11,33 @@ MODULE FIELD_MODULE
   ! incorporated into Atlas. They can also provide backward-compatibility
   ! for non-Atlas execution modes.
 
-USE PARKIND1, ONLY: JPIM, JPRB
+USE PARKIND1, ONLY: JPIM, JPRB, JPLM
 USE OML_MOD, ONLY: OML_MAX_THREADS, OML_MY_THREAD
 USE IEEE_ARITHMETIC, ONLY: IEEE_SIGNALING_NAN
 
 USE CUDAFOR
-
-use openacc
-
-use iso_c_binding
+USE ISO_C_BINDING
+USE OPENACC
 
 IMPLICIT NONE
 
-TYPE FIELD_2D
+INTEGER (KIND=JPIM), PARAMETER :: NDEVFRESH = INT(B'00000001', JPIM), NHSTFRESH = INT(B'00000010', JPIM)
+INTEGER (KIND=JPIM), PARAMETER, PRIVATE :: NH2D = 1, ND2H = 2, NRD = INT(B'00000001', JPIM), NWR = INT(B'00000010', JPIM)
+
+TYPE GPU_STATS
+  INTEGER :: TRANSFER_CPU_TO_GPU = 0
+  INTEGER :: TRANSFER_GPU_TO_CPU = 0
+  REAL :: TOTAL_TIME_TRANSFER_CPU_TO_GPU = 0
+  REAL :: TOTAL_TIME_TRANSFER_GPU_TO_CPU = 0
+  CONTAINS
+  PROCEDURE :: INC_CPU_TO_GPU_TRANSFER
+  PROCEDURE :: INC_GPU_TO_CPU_TRANSFER
+END TYPE GPU_STATS
+
+TYPE, ABSTRACT :: FIELD_2D
   ! A FIELD encapsulates a single multi-dimensional array and can
   ! provide block-indexed "views" of the data for automating the
   ! allocation and parallel iterration of NPROMA blocks.
-
-  ! The data view to be used in thread-parallel sections
-  !
-  ! The underlying view pointer is of rank-1, since we always
-  ! the horizontal component as a single dimension.
-  REAL(KIND=JPRB), POINTER :: VIEW(:) => NULL()
 
   ! TODO: Atlas-based field data storage field
   ! TODO: Do we still need to use pointers here?
@@ -48,61 +49,81 @@ TYPE FIELD_2D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   REAL(KIND=JPRB), POINTER :: PTR(:,:) => NULL()
-  ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:)
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:)
-  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:)
-
-  ! For wrapping discontiguous fields in co-allocated storage
-  ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
-  ! and integer index, to allow block pointer extraction that
-  ! conforms with CUDA device pointers in PGI.
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:) => NULL()
-  INTEGER(KIND=JPIM) :: FIDX
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:) => NULL()
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:) => NULL()
 
   ! A separate data pointer that can be used to create
   ! a contiguous chunk of host memory to cleanly map to
   ! device, should the %DATA pointer be discontiguous.
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:) => NULL()
+  REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: DEVDATA(:,:)
 
-  ! Number of blocks used in the data layout
-  INTEGER :: NBLOCKS
-
-  ! Flag indicating whether this field stores real data
-  LOGICAL :: ACTIVE = .FALSE.
   ! Flag indicating the use a single block-buffer per thread
   LOGICAL :: THREAD_BUFFER = .FALSE.
-  ! Flag indicating whether we own the allocated base array
-  LOGICAL :: OWNED = .TRUE.
-  ! Flag indicating whether latest data currently resides on device
-  LOGICAL :: ON_DEVICE = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
 
 CONTAINS
 
-  PROCEDURE :: CLONE => FIELD_2D_CLONE
-  PROCEDURE :: UPDATE_VIEW => FIELD_2D_UPDATE_VIEW
-  PROCEDURE :: EXTRACT_VIEW => FIELD_2D_EXTRACT_VIEW
-  PROCEDURE :: GET_VIEW => FIELD_2D_GET_VIEW
   PROCEDURE :: FINAL => FIELD_2D_FINAL
-
-  ! GPU-specific device data transfer API
-  PROCEDURE :: CREATE_DEVICE => FIELD_2D_CREATE_DEVICE
-  PROCEDURE :: UPDATE_DEVICE => FIELD_2D_UPDATE_DEVICE
-  PROCEDURE :: UPDATE_HOST => FIELD_2D_UPDATE_HOST
-  PROCEDURE :: ENSURE_DEVICE => FIELD_2D_ENSURE_DEVICE
-  PROCEDURE :: ENSURE_HOST => FIELD_2D_ENSURE_HOST
+  PROCEDURE :: FIELD_2D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_2D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_2D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_2D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_2D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_2D_GET_DEVICE_DATA_RDWR
   PROCEDURE :: DELETE_DEVICE => FIELD_2D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_2D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_2D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_2D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_2D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_2D_GET_HOST_DATA
 END TYPE FIELD_2D
 
-TYPE FIELD_3D
+TYPE, EXTENDS(FIELD_2D) :: FIELD_2D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_2D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_2D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_2D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_2D_WRAPPER_FINAL
+END TYPE FIELD_2D_WRAPPER
+
+TYPE, EXTENDS(FIELD_2D) :: FIELD_2D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_2D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_2D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_2D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_2D_OWNER_FINAL
+END TYPE FIELD_2D_OWNER
+
+TYPE, EXTENDS(FIELD_2D) :: FIELD_2D_WRAPPER_PACKED
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_2D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_2D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_2D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_2D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_2D_WRAPPER_PACKED
+
+TYPE FIELD_2D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_2D), POINTER :: PTR => NULL()
+END TYPE FIELD_2D_PTR
+
+TYPE FIELD_2D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  REAL(KIND=JPRB), POINTER :: P(:) => NULL()
+END TYPE FIELD_2D_VIEW
+
+TYPE, ABSTRACT :: FIELD_3D
   ! A FIELD encapsulates a single multi-dimensional array and can
   ! provide block-indexed "views" of the data for automating the
   ! allocation and parallel iterration of NPROMA blocks.
-
-  ! The data view to be used in thread-parallel sections
-  !
-  ! The underlying view pointer is of rank-1, since we always
-  ! the horizontal component as a single dimension.
-  REAL(KIND=JPRB), POINTER :: VIEW(:,:) => NULL()
 
   ! TODO: Atlas-based field data storage field
   ! TODO: Do we still need to use pointers here?
@@ -114,63 +135,81 @@ TYPE FIELD_3D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   REAL(KIND=JPRB), POINTER :: PTR(:,:,:) => NULL()
-  ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:)
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:)
-  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:,:)
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:) => NULL()
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:) => NULL()
 
-  ! For wrapping discontiguous fields in co-allocated storage
-  ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
-  ! and integer index, to allow block pointer extraction that
-  ! conforms with CUDA device pointers in PGI.
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:) => NULL()
-  INTEGER(KIND=JPIM) :: FIDX
-
-  ! ! A separate data pointer that can be used to create
-  ! ! a contiguous chunk of host memory to cleanly map to
-  ! ! device, should the %DATA pointer be discontiguous.
-  ! REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:) => NULL()
-
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
   REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:)
 
-  ! Number of blocks used in the data layout
-  INTEGER :: NBLOCKS
-
-  ! Flag indicating whether this field stores real data
-  LOGICAL :: ACTIVE = .FALSE.
   ! Flag indicating the use a single block-buffer per thread
   LOGICAL :: THREAD_BUFFER = .FALSE.
-  ! Flag indicating whether we own the allocated base array
-  LOGICAL :: OWNED = .TRUE.
-  ! Flag indicating whether latest data currently resides on device
-  LOGICAL :: ON_DEVICE = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
 
 CONTAINS
 
-  PROCEDURE :: CLONE => FIELD_3D_CLONE
-  PROCEDURE :: UPDATE_VIEW => FIELD_3D_UPDATE_VIEW
-  PROCEDURE :: EXTRACT_VIEW => FIELD_3D_EXTRACT_VIEW
-  PROCEDURE :: GET_VIEW => FIELD_3D_GET_VIEW
   PROCEDURE :: FINAL => FIELD_3D_FINAL
-
-  ! GPU-specific device data transfer API
-  PROCEDURE :: CREATE_DEVICE => FIELD_3D_CREATE_DEVICE
-  PROCEDURE :: UPDATE_DEVICE => FIELD_3D_UPDATE_DEVICE
-  PROCEDURE :: UPDATE_HOST => FIELD_3D_UPDATE_HOST
-  PROCEDURE :: ENSURE_DEVICE => FIELD_3D_ENSURE_DEVICE
-  PROCEDURE :: ENSURE_HOST => FIELD_3D_ENSURE_HOST
+  PROCEDURE :: FIELD_3D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_3D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_3D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_3D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_3D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_3D_GET_DEVICE_DATA_RDWR
   PROCEDURE :: DELETE_DEVICE => FIELD_3D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_3D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_3D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_3D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_3D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_3D_GET_HOST_DATA
 END TYPE FIELD_3D
 
-TYPE FIELD_4D
+TYPE, EXTENDS(FIELD_3D) :: FIELD_3D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_3D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_3D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_3D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_3D_WRAPPER_FINAL
+END TYPE FIELD_3D_WRAPPER
+
+TYPE, EXTENDS(FIELD_3D) :: FIELD_3D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_3D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_3D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_3D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_3D_OWNER_FINAL
+END TYPE FIELD_3D_OWNER
+
+TYPE, EXTENDS(FIELD_3D) :: FIELD_3D_WRAPPER_PACKED
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_3D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_3D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_3D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_3D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_3D_WRAPPER_PACKED
+
+TYPE FIELD_3D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_3D), POINTER :: PTR => NULL()
+END TYPE FIELD_3D_PTR
+
+TYPE FIELD_3D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  REAL(KIND=JPRB), POINTER :: P(:,:) => NULL()
+END TYPE FIELD_3D_VIEW
+
+TYPE, ABSTRACT :: FIELD_4D
   ! A FIELD encapsulates a single multi-dimensional array and can
   ! provide block-indexed "views" of the data for automating the
   ! allocation and parallel iterration of NPROMA blocks.
-
-  ! The data view to be used in thread-parallel sections
-  !
-  ! The underlying view pointer is of rank-1, since we always
-  ! the horizontal component as a single dimension.
-  REAL(KIND=JPRB), POINTER :: VIEW(:,:,:) => NULL()
 
   ! TODO: Atlas-based field data storage field
   ! TODO: Do we still need to use pointers here?
@@ -182,62 +221,167 @@ TYPE FIELD_4D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:) => NULL()
-  ! REAL(KIND=JPRB), ALLOCATABLE :: DATA(:,:,:,:)
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:,:)
-  ! REAL(KIND=JPRB), ALLOCATABLE, PINNED :: DATA(:,:,:,:)
-
-  ! For wrapping discontiguous fields in co-allocated storage
-  ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
-  ! and integer index, to allow block pointer extraction that
-  ! conforms with CUDA device pointers in PGI.
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:,:) => NULL()
-  INTEGER(KIND=JPIM) :: FIDX
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:) => NULL()
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:,:) => NULL()
 
   ! A separate data pointer that can be used to create
   ! a contiguous chunk of host memory to cleanly map to
   ! device, should the %DATA pointer be discontiguous.
-  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:) => NULL()
+  REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:,:)
 
-  ! Number of blocks used in the data layout
-  INTEGER :: NBLOCKS
-
-  ! Flag indicating whether this field stores real data
-  LOGICAL :: ACTIVE = .FALSE.
   ! Flag indicating the use a single block-buffer per thread
   LOGICAL :: THREAD_BUFFER = .FALSE.
-  ! Flag indicating whether we own the allocated base array
-  LOGICAL :: OWNED = .TRUE.
-  ! Flag indicating whether latest data currently resides on device
-  LOGICAL :: ON_DEVICE = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
 
 CONTAINS
 
-  PROCEDURE :: CLONE => FIELD_4D_CLONE
-  PROCEDURE :: UPDATE_VIEW => FIELD_4D_UPDATE_VIEW
-  PROCEDURE :: EXTRACT_VIEW => FIELD_4D_EXTRACT_VIEW
-  PROCEDURE :: GET_VIEW => FIELD_4D_GET_VIEW
   PROCEDURE :: FINAL => FIELD_4D_FINAL
-
-  ! GPU-specific device data transfer API
-  PROCEDURE :: CREATE_DEVICE => FIELD_4D_CREATE_DEVICE
-  PROCEDURE :: UPDATE_DEVICE => FIELD_4D_UPDATE_DEVICE
-  PROCEDURE :: UPDATE_HOST => FIELD_4D_UPDATE_HOST
-  PROCEDURE :: ENSURE_DEVICE => FIELD_4D_ENSURE_DEVICE
-  PROCEDURE :: ENSURE_HOST => FIELD_4D_ENSURE_HOST
+  PROCEDURE :: FIELD_4D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_4D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_4D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_4D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_4D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_4D_GET_DEVICE_DATA_RDWR
   PROCEDURE :: DELETE_DEVICE => FIELD_4D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_4D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_4D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_4D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_4D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_4D_GET_HOST_DATA
 END TYPE FIELD_4D
 
+TYPE, EXTENDS(FIELD_4D) :: FIELD_4D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_4D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_4D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_4D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_4D_WRAPPER_FINAL
+END TYPE FIELD_4D_WRAPPER
 
-TYPE FIELD_INT2D
+TYPE, EXTENDS(FIELD_4D) :: FIELD_4D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_4D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_4D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_4D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_4D_OWNER_FINAL
+END TYPE FIELD_4D_OWNER
+
+TYPE, EXTENDS(FIELD_4D) :: FIELD_4D_WRAPPER_PACKED
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_4D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_4D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_4D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_4D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_4D_WRAPPER_PACKED
+
+TYPE FIELD_4D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_4D), POINTER :: PTR => NULL()
+END TYPE FIELD_4D_PTR
+
+TYPE FIELD_4D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  REAL(KIND=JPRB), POINTER :: P(:,:,:) => NULL()
+END TYPE FIELD_4D_VIEW
+
+TYPE, ABSTRACT :: FIELD_5D
   ! A FIELD encapsulates a single multi-dimensional array and can
   ! provide block-indexed "views" of the data for automating the
   ! allocation and parallel iterration of NPROMA blocks.
 
-  ! The data view to be used in thread-parallel sections
+  ! TODO: Atlas-based field data storage field
+  ! TODO: Do we still need to use pointers here?
+  ! TYPE(ATLAS_FIELD), POINTER :: DATA
+
+  ! Storage pointer for non-Atlas backward-compatibility mode
   !
-  ! The underlying view pointer is of rank-1, since we always
-  ! the horizontal component as a single dimension.
-  INTEGER(KIND=JPIM), POINTER :: VIEW(:) => NULL()
+  ! The underlying storage pointer has the rank as the dimension,
+  ! where the innermost dimension represents the horizontal and
+  ! the outermost one is the block index.
+  REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:,:) => NULL()
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:,:) => NULL()
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DATA(:,:,:,:,:) => NULL()
+
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
+  REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:,:,:)
+
+  ! Flag indicating the use a single block-buffer per thread
+  LOGICAL :: THREAD_BUFFER = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
+
+CONTAINS
+
+  PROCEDURE :: FINAL => FIELD_5D_FINAL
+  PROCEDURE :: FIELD_5D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_5D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_5D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_5D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_5D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_5D_GET_DEVICE_DATA_RDWR
+  PROCEDURE :: DELETE_DEVICE => FIELD_5D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_5D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_5D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_5D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_5D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_5D_GET_HOST_DATA
+END TYPE FIELD_5D
+
+TYPE, EXTENDS(FIELD_5D) :: FIELD_5D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_5D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_5D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_5D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_5D_WRAPPER_FINAL
+END TYPE FIELD_5D_WRAPPER
+
+TYPE, EXTENDS(FIELD_5D) :: FIELD_5D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_5D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_5D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_5D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_5D_OWNER_FINAL
+END TYPE FIELD_5D_OWNER
+
+TYPE, EXTENDS(FIELD_5D) :: FIELD_5D_WRAPPER_PACKED
+  REAL(KIND=JPRB), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_5D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_5D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_5D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_5D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_5D_WRAPPER_PACKED
+
+TYPE FIELD_5D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_5D), POINTER :: PTR => NULL()
+END TYPE FIELD_5D_PTR
+
+TYPE FIELD_5D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  REAL(KIND=JPRB), POINTER :: P(:,:,:,:) => NULL()
+END TYPE FIELD_5D_VIEW
+
+TYPE, ABSTRACT :: FIELD_INT2D
+  ! A FIELD encapsulates a single multi-dimensional array and can
+  ! provide block-indexed "views" of the data for automating the
+  ! allocation and parallel iterration of NPROMA blocks.
 
   ! TODO: Atlas-based field data storage field
   ! TODO: Do we still need to use pointers here?
@@ -249,62 +393,81 @@ TYPE FIELD_INT2D
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
   INTEGER(KIND=JPIM), POINTER :: PTR(:,:) => NULL()
-  ! INTEGER(KIND=JPIM), ALLOCATABLE :: DATA(:,:)
-  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DATA(:,:)
-  ! INTEGER(KIND=JPIM), ALLOCATABLE, PINNED :: DATA(:,:)
-
-  ! For wrapping discontiguous fields in co-allocated storage
-  ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
-  ! and integer index, to allow block pointer extraction that
-  ! conforms with CUDA device pointers in PGI.
-  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:) => NULL()
-  INTEGER(KIND=JPIM) :: FIDX
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DEVPTR(:,:) => NULL()
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DATA(:,:) => NULL()
 
   ! A separate data pointer that can be used to create
   ! a contiguous chunk of host memory to cleanly map to
   ! device, should the %DATA pointer be discontiguous.
-  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DEVPTR(:,:) => NULL()
+  INTEGER(KIND=JPIM), DEVICE, ALLOCATABLE :: DEVDATA(:,:)
 
-  ! Number of blocks used in the data layout
-  INTEGER :: NBLOCKS
-
-  ! Flag indicating whether this field stores real data
-  LOGICAL :: ACTIVE = .FALSE.
   ! Flag indicating the use a single block-buffer per thread
   LOGICAL :: THREAD_BUFFER = .FALSE.
-  ! Flag indicating whether we own the allocated base array
-  LOGICAL :: OWNED = .TRUE.
-  ! Flag indicating whether latest data currently resides on device
-  LOGICAL :: ON_DEVICE = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
 
 CONTAINS
 
-  PROCEDURE :: CLONE => FIELD_INT2D_CLONE
-  PROCEDURE :: UPDATE_VIEW => FIELD_INT2D_UPDATE_VIEW
-  PROCEDURE :: EXTRACT_VIEW => FIELD_INT2D_EXTRACT_VIEW
-  PROCEDURE :: GET_VIEW => FIELD_INT2D_GET_VIEW
   PROCEDURE :: FINAL => FIELD_INT2D_FINAL
-
-  ! GPU-specific device data transfer API
-  PROCEDURE :: CREATE_DEVICE => FIELD_INT2D_CREATE_DEVICE
-  PROCEDURE :: UPDATE_DEVICE => FIELD_INT2D_UPDATE_DEVICE
-  PROCEDURE :: UPDATE_HOST => FIELD_INT2D_UPDATE_HOST
-  PROCEDURE :: ENSURE_DEVICE => FIELD_INT2D_ENSURE_DEVICE
-  PROCEDURE :: ENSURE_HOST => FIELD_INT2D_ENSURE_HOST
+  PROCEDURE :: FIELD_INT2D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_INT2D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_INT2D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_INT2D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_INT2D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_INT2D_GET_DEVICE_DATA_RDWR
   PROCEDURE :: DELETE_DEVICE => FIELD_INT2D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_INT2D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT2D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT2D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_INT2D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_INT2D_GET_HOST_DATA
 END TYPE FIELD_INT2D
 
+TYPE, EXTENDS(FIELD_INT2D) :: FIELD_INT2D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT2D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT2D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT2D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_INT2D_WRAPPER_FINAL
+END TYPE FIELD_INT2D_WRAPPER
 
-TYPE FIELD_LOG2D
+TYPE, EXTENDS(FIELD_INT2D) :: FIELD_INT2D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT2D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT2D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT2D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_INT2D_OWNER_FINAL
+END TYPE FIELD_INT2D_OWNER
+
+TYPE, EXTENDS(FIELD_INT2D) :: FIELD_INT2D_WRAPPER_PACKED
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT2D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT2D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT2D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_INT2D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_INT2D_WRAPPER_PACKED
+
+TYPE FIELD_INT2D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_INT2D), POINTER :: PTR => NULL()
+END TYPE FIELD_INT2D_PTR
+
+TYPE FIELD_INT2D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  INTEGER(KIND=JPIM), POINTER :: P(:) => NULL()
+END TYPE FIELD_INT2D_VIEW
+
+TYPE, ABSTRACT :: FIELD_INT3D
   ! A FIELD encapsulates a single multi-dimensional array and can
   ! provide block-indexed "views" of the data for automating the
   ! allocation and parallel iterration of NPROMA blocks.
-
-  ! The data view to be used in thread-parallel sections
-  !
-  ! The underlying view pointer is of rank-1, since we always
-  ! the horizontal component as a single dimension.
-  LOGICAL, POINTER :: VIEW(:) => NULL()
 
   ! TODO: Atlas-based field data storage field
   ! TODO: Do we still need to use pointers here?
@@ -315,1875 +478,5652 @@ TYPE FIELD_LOG2D
   ! The underlying storage pointer has the rank as the dimension,
   ! where the innermost dimension represents the horizontal and
   ! the outermost one is the block index.
-  LOGICAL, POINTER :: PTR(:,:) => NULL()
-  ! LOGICAL, ALLOCATABLE :: DATA(:,:)
-  LOGICAL, POINTER, CONTIGUOUS :: DATA(:,:)
-  ! LOGICAL, ALLOCATABLE, PINNED :: DATA(:,:)
-
-  ! For wrapping discontiguous fields in co-allocated storage
-  ! arrays (eg. GFL/GMV) also store a CONTIGUOUS base pointer
-  ! and integer index, to allow block pointer extraction that
-  ! conforms with CUDA device pointers in PGI.
-  LOGICAL, POINTER, CONTIGUOUS :: BASE_PTR(:,:,:) => NULL()
-  INTEGER(KIND=JPIM) :: FIDX
+  INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:) => NULL()
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DEVPTR(:,:,:) => NULL()
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DATA(:,:,:) => NULL()
 
   ! A separate data pointer that can be used to create
   ! a contiguous chunk of host memory to cleanly map to
   ! device, should the %DATA pointer be discontiguous.
-  LOGICAL, POINTER, CONTIGUOUS :: DEVPTR(:,:) => NULL()
+  INTEGER(KIND=JPIM), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:)
 
-  ! Number of blocks used in the data layout
-  INTEGER :: NBLOCKS
-
-  ! Flag indicating whether this field stores real data
-  LOGICAL :: ACTIVE = .FALSE.
   ! Flag indicating the use a single block-buffer per thread
   LOGICAL :: THREAD_BUFFER = .FALSE.
-  ! Flag indicating whether we own the allocated base array
-  LOGICAL :: OWNED = .TRUE.
-  ! Flag indicating whether latest data currently resides on device
-  LOGICAL :: ON_DEVICE = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
 
 CONTAINS
 
-  PROCEDURE :: CLONE => FIELD_LOG2D_CLONE
-  PROCEDURE :: UPDATE_VIEW => FIELD_LOG2D_UPDATE_VIEW
-  PROCEDURE :: EXTRACT_VIEW => FIELD_LOG2D_EXTRACT_VIEW
-  PROCEDURE :: GET_VIEW => FIELD_LOG2D_GET_VIEW
-  PROCEDURE :: FINAL => FIELD_LOG2D_FINAL
+  PROCEDURE :: FINAL => FIELD_INT3D_FINAL
+  PROCEDURE :: FIELD_INT3D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_INT3D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_INT3D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_INT3D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_INT3D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_INT3D_GET_DEVICE_DATA_RDWR
+  PROCEDURE :: DELETE_DEVICE => FIELD_INT3D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_INT3D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT3D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT3D_UPDATE_HOST
 
-  ! GPU-specific device data transfer API
-  PROCEDURE :: CREATE_DEVICE => FIELD_LOG2D_CREATE_DEVICE
-  PROCEDURE :: UPDATE_DEVICE => FIELD_LOG2D_UPDATE_DEVICE
-  PROCEDURE :: UPDATE_HOST => FIELD_LOG2D_UPDATE_HOST
-  PROCEDURE :: ENSURE_DEVICE => FIELD_LOG2D_ENSURE_DEVICE
-  PROCEDURE :: ENSURE_HOST => FIELD_LOG2D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_INT3D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_INT3D_GET_HOST_DATA
+END TYPE FIELD_INT3D
+
+TYPE, EXTENDS(FIELD_INT3D) :: FIELD_INT3D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT3D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT3D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT3D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_INT3D_WRAPPER_FINAL
+END TYPE FIELD_INT3D_WRAPPER
+
+TYPE, EXTENDS(FIELD_INT3D) :: FIELD_INT3D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT3D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT3D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT3D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_INT3D_OWNER_FINAL
+END TYPE FIELD_INT3D_OWNER
+
+TYPE, EXTENDS(FIELD_INT3D) :: FIELD_INT3D_WRAPPER_PACKED
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT3D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT3D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT3D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_INT3D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_INT3D_WRAPPER_PACKED
+
+TYPE FIELD_INT3D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_INT3D), POINTER :: PTR => NULL()
+END TYPE FIELD_INT3D_PTR
+
+TYPE FIELD_INT3D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  INTEGER(KIND=JPIM), POINTER :: P(:,:) => NULL()
+END TYPE FIELD_INT3D_VIEW
+
+TYPE, ABSTRACT :: FIELD_INT4D
+  ! A FIELD encapsulates a single multi-dimensional array and can
+  ! provide block-indexed "views" of the data for automating the
+  ! allocation and parallel iterration of NPROMA blocks.
+
+  ! TODO: Atlas-based field data storage field
+  ! TODO: Do we still need to use pointers here?
+  ! TYPE(ATLAS_FIELD), POINTER :: DATA
+
+  ! Storage pointer for non-Atlas backward-compatibility mode
+  !
+  ! The underlying storage pointer has the rank as the dimension,
+  ! where the innermost dimension represents the horizontal and
+  ! the outermost one is the block index.
+  INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DATA(:,:,:,:) => NULL()
+
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
+  INTEGER(KIND=JPIM), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:,:)
+
+  ! Flag indicating the use a single block-buffer per thread
+  LOGICAL :: THREAD_BUFFER = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
+
+CONTAINS
+
+  PROCEDURE :: FINAL => FIELD_INT4D_FINAL
+  PROCEDURE :: FIELD_INT4D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_INT4D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_INT4D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_INT4D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_INT4D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_INT4D_GET_DEVICE_DATA_RDWR
+  PROCEDURE :: DELETE_DEVICE => FIELD_INT4D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_INT4D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT4D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT4D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_INT4D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_INT4D_GET_HOST_DATA
+END TYPE FIELD_INT4D
+
+TYPE, EXTENDS(FIELD_INT4D) :: FIELD_INT4D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT4D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT4D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT4D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_INT4D_WRAPPER_FINAL
+END TYPE FIELD_INT4D_WRAPPER
+
+TYPE, EXTENDS(FIELD_INT4D) :: FIELD_INT4D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT4D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT4D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT4D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_INT4D_OWNER_FINAL
+END TYPE FIELD_INT4D_OWNER
+
+TYPE, EXTENDS(FIELD_INT4D) :: FIELD_INT4D_WRAPPER_PACKED
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT4D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT4D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT4D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_INT4D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_INT4D_WRAPPER_PACKED
+
+TYPE FIELD_INT4D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_INT4D), POINTER :: PTR => NULL()
+END TYPE FIELD_INT4D_PTR
+
+TYPE FIELD_INT4D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  INTEGER(KIND=JPIM), POINTER :: P(:,:,:) => NULL()
+END TYPE FIELD_INT4D_VIEW
+
+TYPE, ABSTRACT :: FIELD_INT5D
+  ! A FIELD encapsulates a single multi-dimensional array and can
+  ! provide block-indexed "views" of the data for automating the
+  ! allocation and parallel iterration of NPROMA blocks.
+
+  ! TODO: Atlas-based field data storage field
+  ! TODO: Do we still need to use pointers here?
+  ! TYPE(ATLAS_FIELD), POINTER :: DATA
+
+  ! Storage pointer for non-Atlas backward-compatibility mode
+  !
+  ! The underlying storage pointer has the rank as the dimension,
+  ! where the innermost dimension represents the horizontal and
+  ! the outermost one is the block index.
+  INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DATA(:,:,:,:,:) => NULL()
+
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
+  INTEGER(KIND=JPIM), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:,:,:)
+
+  ! Flag indicating the use a single block-buffer per thread
+  LOGICAL :: THREAD_BUFFER = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
+
+CONTAINS
+
+  PROCEDURE :: FINAL => FIELD_INT5D_FINAL
+  PROCEDURE :: FIELD_INT5D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_INT5D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_INT5D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_INT5D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_INT5D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_INT5D_GET_DEVICE_DATA_RDWR
+  PROCEDURE :: DELETE_DEVICE => FIELD_INT5D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_INT5D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT5D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT5D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_INT5D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_INT5D_GET_HOST_DATA
+END TYPE FIELD_INT5D
+
+TYPE, EXTENDS(FIELD_INT5D) :: FIELD_INT5D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT5D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT5D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT5D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_INT5D_WRAPPER_FINAL
+END TYPE FIELD_INT5D_WRAPPER
+
+TYPE, EXTENDS(FIELD_INT5D) :: FIELD_INT5D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT5D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT5D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT5D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_INT5D_OWNER_FINAL
+END TYPE FIELD_INT5D_OWNER
+
+TYPE, EXTENDS(FIELD_INT5D) :: FIELD_INT5D_WRAPPER_PACKED
+  INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_INT5D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_INT5D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_INT5D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_INT5D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_INT5D_WRAPPER_PACKED
+
+TYPE FIELD_INT5D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_INT5D), POINTER :: PTR => NULL()
+END TYPE FIELD_INT5D_PTR
+
+TYPE FIELD_INT5D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  INTEGER(KIND=JPIM), POINTER :: P(:,:,:,:) => NULL()
+END TYPE FIELD_INT5D_VIEW
+
+TYPE, ABSTRACT :: FIELD_LOG2D
+  ! A FIELD encapsulates a single multi-dimensional array and can
+  ! provide block-indexed "views" of the data for automating the
+  ! allocation and parallel iterration of NPROMA blocks.
+
+  ! TODO: Atlas-based field data storage field
+  ! TODO: Do we still need to use pointers here?
+  ! TYPE(ATLAS_FIELD), POINTER :: DATA
+
+  ! Storage pointer for non-Atlas backward-compatibility mode
+  !
+  ! The underlying storage pointer has the rank as the dimension,
+  ! where the innermost dimension represents the horizontal and
+  ! the outermost one is the block index.
+  LOGICAL(KIND=JPLM), POINTER :: PTR(:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DEVPTR(:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DATA(:,:) => NULL()
+
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
+  LOGICAL(KIND=JPLM), DEVICE, ALLOCATABLE :: DEVDATA(:,:)
+
+  ! Flag indicating the use a single block-buffer per thread
+  LOGICAL :: THREAD_BUFFER = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
+
+CONTAINS
+
+  PROCEDURE :: FINAL => FIELD_LOG2D_FINAL
+  PROCEDURE :: FIELD_LOG2D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_LOG2D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_LOG2D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_LOG2D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_LOG2D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_LOG2D_GET_DEVICE_DATA_RDWR
   PROCEDURE :: DELETE_DEVICE => FIELD_LOG2D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_LOG2D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG2D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG2D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_LOG2D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_LOG2D_GET_HOST_DATA
 END TYPE FIELD_LOG2D
 
+TYPE, EXTENDS(FIELD_LOG2D) :: FIELD_LOG2D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG2D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG2D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG2D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_LOG2D_WRAPPER_FINAL
+END TYPE FIELD_LOG2D_WRAPPER
 
-TYPE FIELD_2D_PTR
+TYPE, EXTENDS(FIELD_LOG2D) :: FIELD_LOG2D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG2D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG2D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG2D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_LOG2D_OWNER_FINAL
+END TYPE FIELD_LOG2D_OWNER
+
+TYPE, EXTENDS(FIELD_LOG2D) :: FIELD_LOG2D_WRAPPER_PACKED
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG2D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG2D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG2D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_LOG2D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_LOG2D_WRAPPER_PACKED
+
+TYPE FIELD_LOG2D_PTR
   ! Struct to hold references to field objects
-  TYPE(FIELD_2D), POINTER :: PTR => NULL()
-END TYPE FIELD_2D_PTR
+  CLASS(FIELD_LOG2D), POINTER :: PTR => NULL()
+END TYPE FIELD_LOG2D_PTR
 
-TYPE FIELD_2D_VIEW
+TYPE FIELD_LOG2D_VIEW
   ! Struct to hold array views, so we can make arrays of them
-  REAL(KIND=JPRB), POINTER :: P(:) => NULL()
-END TYPE FIELD_2D_VIEW
-TYPE FIELD_3D_PTR
-  ! Struct to hold references to field objects
-  TYPE(FIELD_3D), POINTER :: PTR => NULL()
-END TYPE FIELD_3D_PTR
+  LOGICAL(KIND=JPLM), POINTER :: P(:) => NULL()
+END TYPE FIELD_LOG2D_VIEW
 
-TYPE FIELD_3D_VIEW
-  ! Struct to hold array views, so we can make arrays of them
-  REAL(KIND=JPRB), POINTER :: P(:,:) => NULL()
-END TYPE FIELD_3D_VIEW
-TYPE FIELD_4D_PTR
-  ! Struct to hold references to field objects
-  TYPE(FIELD_4D), POINTER :: PTR => NULL()
-END TYPE FIELD_4D_PTR
+TYPE, ABSTRACT :: FIELD_LOG3D
+  ! A FIELD encapsulates a single multi-dimensional array and can
+  ! provide block-indexed "views" of the data for automating the
+  ! allocation and parallel iterration of NPROMA blocks.
 
-TYPE FIELD_4D_VIEW
-  ! Struct to hold array views, so we can make arrays of them
-  REAL(KIND=JPRB), POINTER :: P(:,:,:) => NULL()
-END TYPE FIELD_4D_VIEW
+  ! TODO: Atlas-based field data storage field
+  ! TODO: Do we still need to use pointers here?
+  ! TYPE(ATLAS_FIELD), POINTER :: DATA
 
+  ! Storage pointer for non-Atlas backward-compatibility mode
+  !
+  ! The underlying storage pointer has the rank as the dimension,
+  ! where the innermost dimension represents the horizontal and
+  ! the outermost one is the block index.
+  LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DEVPTR(:,:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DATA(:,:,:) => NULL()
 
-INTERFACE FIELD_2D
-  MODULE PROCEDURE :: FIELD_2D_WRAP
-  MODULE PROCEDURE :: FIELD_2D_WRAP_PACKED
-  ! MODULE PROCEDURE :: FIELD_2D_EMPTY
-  MODULE PROCEDURE :: FIELD_2D_ALLOCATE
-END INTERFACE
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
+  LOGICAL(KIND=JPLM), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:)
 
-INTERFACE FIELD_3D
-  MODULE PROCEDURE :: FIELD_3D_WRAP
-  MODULE PROCEDURE :: FIELD_3D_WRAP_PACKED
-  ! MODULE PROCEDURE :: FIELD_3D_EMPTY
-  MODULE PROCEDURE :: FIELD_3D_ALLOCATE
-END INTERFACE
+  ! Flag indicating the use a single block-buffer per thread
+  LOGICAL :: THREAD_BUFFER = .FALSE.
 
-INTERFACE FIELD_4D
-  MODULE PROCEDURE :: FIELD_4D_WRAP
-  MODULE PROCEDURE :: FIELD_4D_WRAP_PACKED
-  ! MODULE PROCEDURE :: FIELD_4D_EMPTY
-  MODULE PROCEDURE :: FIELD_4D_ALLOCATE
-END INTERFACE
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
 
-
-INTERFACE FIELD_INT2D
-  MODULE PROCEDURE :: FIELD_INT2D_WRAP
-  MODULE PROCEDURE :: FIELD_INT2D_WRAP_PACKED
-  ! MODULE PROCEDURE :: FIELD_INT2D_EMPTY
-  MODULE PROCEDURE :: FIELD_INT2D_ALLOCATE
-END INTERFACE
-
-
-INTERFACE FIELD_LOG2D
-  MODULE PROCEDURE :: FIELD_LOG2D_WRAP
-  MODULE PROCEDURE :: FIELD_LOG2D_WRAP_PACKED
-  ! MODULE PROCEDURE :: FIELD_LOG2D_EMPTY
-  MODULE PROCEDURE :: FIELD_LOG2D_ALLOCATE
-END INTERFACE
-
-
-INTERFACE FILL_BUFFER
-  MODULE PROCEDURE :: FILL_BUFFER_2D, FILL_BUFFER_3D, FILL_BUFFER_4D
-  MODULE PROCEDURE :: FILL_BUFFER_INT2D, FILL_BUFFER_LOG2D
-END INTERFACE FILL_BUFFER
-
-INTERFACE FIELD_CREATE_DEVICE
-  MODULE PROCEDURE :: FIELD_2D_CREATE_DEVICE
-  MODULE PROCEDURE :: FIELD_3D_CREATE_DEVICE
-  MODULE PROCEDURE :: FIELD_4D_CREATE_DEVICE
-  MODULE PROCEDURE :: FIELD_INT2D_CREATE_DEVICE
-  MODULE PROCEDURE :: FIELD_LOG2D_CREATE_DEVICE
-END INTERFACE FIELD_CREATE_DEVICE
-
-INTERFACE FIELD_UPDATE_DEVICE
-  MODULE PROCEDURE :: FIELD_2D_UPDATE_DEVICE
-  MODULE PROCEDURE :: FIELD_3D_UPDATE_DEVICE
-  MODULE PROCEDURE :: FIELD_4D_UPDATE_DEVICE
-  MODULE PROCEDURE :: FIELD_INT2D_UPDATE_DEVICE
-  MODULE PROCEDURE :: FIELD_LOG2D_UPDATE_DEVICE
-END INTERFACE FIELD_UPDATE_DEVICE
-
-INTERFACE FIELD_UPDATE_HOST
-  MODULE PROCEDURE :: FIELD_2D_UPDATE_HOST
-  MODULE PROCEDURE :: FIELD_3D_UPDATE_HOST
-  MODULE PROCEDURE :: FIELD_4D_UPDATE_HOST
-  MODULE PROCEDURE :: FIELD_INT2D_UPDATE_HOST
-  MODULE PROCEDURE :: FIELD_LOG2D_UPDATE_HOST
-END INTERFACE FIELD_UPDATE_HOST
-
-INTERFACE FIELD_DELETE_DEVICE
-  MODULE PROCEDURE :: FIELD_2D_DELETE_DEVICE
-  MODULE PROCEDURE :: FIELD_3D_DELETE_DEVICE
-  MODULE PROCEDURE :: FIELD_4D_DELETE_DEVICE
-  MODULE PROCEDURE :: FIELD_INT2D_DELETE_DEVICE
-  MODULE PROCEDURE :: FIELD_LOG2D_DELETE_DEVICE
-END INTERFACE FIELD_DELETE_DEVICE
-
-INTERFACE GET_DEVICE_DATA
-  MODULE PROCEDURE :: FIELD_2D_GET_DEVICE_DATA
-  MODULE PROCEDURE :: FIELD_3D_GET_DEVICE_DATA
-  MODULE PROCEDURE :: FIELD_4D_GET_DEVICE_DATA
-  MODULE PROCEDURE :: FIELD_INT2D_GET_DEVICE_DATA
-  MODULE PROCEDURE :: FIELD_LOG2D_GET_DEVICE_DATA
-END INTERFACE GET_DEVICE_DATA
-
-INTERFACE FIELD_ENSURE_DEVICE
-  MODULE PROCEDURE :: FIELD_2D_ENSURE_DEVICE
-  MODULE PROCEDURE :: FIELD_3D_ENSURE_DEVICE
-  MODULE PROCEDURE :: FIELD_4D_ENSURE_DEVICE
-  MODULE PROCEDURE :: FIELD_INT2D_ENSURE_DEVICE
-  MODULE PROCEDURE :: FIELD_LOG2D_ENSURE_DEVICE
-END INTERFACE FIELD_ENSURE_DEVICE
-
-INTERFACE FIELD_ENSURE_HOST
-  MODULE PROCEDURE :: FIELD_2D_ENSURE_HOST
-  MODULE PROCEDURE :: FIELD_3D_ENSURE_HOST
-  MODULE PROCEDURE :: FIELD_4D_ENSURE_HOST
-  MODULE PROCEDURE :: FIELD_INT2D_ENSURE_HOST
-  MODULE PROCEDURE :: FIELD_LOG2D_ENSURE_HOST
-END INTERFACE FIELD_ENSURE_HOST
+  TYPE(GPU_STATS) :: STATS
 
 CONTAINS
 
-  function malloc_host_pinned_2d(shape, nblocks) result(ptr)
-    integer(kind=jpim), intent(in) :: shape(1)
-    integer(kind=jpim), intent(in), optional :: nblocks
-    real(kind=jprb), pointer, contiguous :: ptr(:,:)
+  PROCEDURE :: FINAL => FIELD_LOG3D_FINAL
+  PROCEDURE :: FIELD_LOG3D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_LOG3D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_LOG3D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_LOG3D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_LOG3D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_LOG3D_GET_DEVICE_DATA_RDWR
+  PROCEDURE :: DELETE_DEVICE => FIELD_LOG3D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_LOG3D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG3D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG3D_UPDATE_HOST
 
-    integer(kind=jpim) :: istat, arrsize
-    type(c_ptr) :: hptr
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_LOG3D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_LOG3D_GET_HOST_DATA
+END TYPE FIELD_LOG3D
 
-    arrsize = shape(1) * nblocks * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    if (istat /= 0) print *, "ERROR: Failed to allocate pinned host memory!"
-    call c_f_pointer(hptr, ptr, [shape(1), nblocks] )
-  end function malloc_host_pinned_2d
+TYPE, EXTENDS(FIELD_LOG3D) :: FIELD_LOG3D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG3D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG3D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG3D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_LOG3D_WRAPPER_FINAL
+END TYPE FIELD_LOG3D_WRAPPER
 
-  function malloc_host_pinned_3d(shape, nblocks) result(ptr)
-    integer(kind=jpim), intent(in) :: shape(2)
-    integer(kind=jpim), intent(in), optional :: nblocks
-    real(kind=jprb), pointer, contiguous :: ptr(:,:,:)
+TYPE, EXTENDS(FIELD_LOG3D) :: FIELD_LOG3D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG3D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG3D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG3D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_LOG3D_OWNER_FINAL
+END TYPE FIELD_LOG3D_OWNER
 
-    integer(kind=jpim) :: istat, arrsize
-    type(c_ptr) :: hptr
+TYPE, EXTENDS(FIELD_LOG3D) :: FIELD_LOG3D_WRAPPER_PACKED
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG3D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG3D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG3D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_LOG3D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_LOG3D_WRAPPER_PACKED
 
-    arrsize = shape(1) * shape(2) * nblocks * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    if (istat /= 0) print *, "ERROR: Failed to allocate pinned host memory!"
-    call c_f_pointer(hptr, ptr, [shape(1), shape(2), nblocks] )
-  end function malloc_host_pinned_3d
+TYPE FIELD_LOG3D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_LOG3D), POINTER :: PTR => NULL()
+END TYPE FIELD_LOG3D_PTR
 
-  function malloc_host_pinned_4d(shape, nblocks) result(ptr)
-    integer(kind=jpim), intent(in) :: shape(3)
-    integer(kind=jpim), intent(in), optional :: nblocks
-    real(kind=jprb), pointer, contiguous :: ptr(:,:,:,:)
+TYPE FIELD_LOG3D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  LOGICAL(KIND=JPLM), POINTER :: P(:,:) => NULL()
+END TYPE FIELD_LOG3D_VIEW
 
-    integer(kind=jpim) :: istat, arrsize
-    type(c_ptr) :: hptr
+TYPE, ABSTRACT :: FIELD_LOG4D
+  ! A FIELD encapsulates a single multi-dimensional array and can
+  ! provide block-indexed "views" of the data for automating the
+  ! allocation and parallel iterration of NPROMA blocks.
 
-    arrsize = shape(1) * shape(2) * shape(3) * nblocks * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    if (istat /= 0) print *, "ERROR: Failed to allocate pinned host memory!"
-    call c_f_pointer(hptr, ptr, [shape(1), shape(2), shape(3), nblocks] )
-  end function malloc_host_pinned_4d
+  ! TODO: Atlas-based field data storage field
+  ! TODO: Do we still need to use pointers here?
+  ! TYPE(ATLAS_FIELD), POINTER :: DATA
 
+  ! Storage pointer for non-Atlas backward-compatibility mode
+  !
+  ! The underlying storage pointer has the rank as the dimension,
+  ! where the innermost dimension represents the horizontal and
+  ! the outermost one is the block index.
+  LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DATA(:,:,:,:) => NULL()
 
-  SUBROUTINE FILL_BUFFER_2D(BUFFER, INDEX)
-    ! Utility routine to fill data buffers (views)
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: BUFFER(:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: INDEX
-    INTEGER(KIND=JPIM) :: IDX
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
+  LOGICAL(KIND=JPLM), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:,:)
 
-    IDX = INDEX+1
-    BUFFER(IDX:) = BUFFER(INDEX)
-  END SUBROUTINE FILL_BUFFER_2D
+  ! Flag indicating the use a single block-buffer per thread
+  LOGICAL :: THREAD_BUFFER = .FALSE.
 
-  SUBROUTINE FILL_BUFFER_3D(BUFFER, INDEX)
-    ! Utility routine to fill data buffers (views)
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: BUFFER(:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: INDEX
-    INTEGER(KIND=JPIM) :: I, IDX
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
 
-    IDX = INDEX+1
-    DO I=1, SIZE(BUFFER, 2)
-      BUFFER(IDX:,I) = BUFFER(INDEX,I)
-    END DO
-  END SUBROUTINE FILL_BUFFER_3D
+  TYPE(GPU_STATS) :: STATS
 
-  SUBROUTINE FILL_BUFFER_4D(BUFFER, INDEX)
-    ! Utility routine to fill data buffers (views)
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: BUFFER(:,:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: INDEX
-    INTEGER(KIND=JPIM) :: I, J, IDX
+CONTAINS
 
-    IDX = INDEX+1
-    DO I=1, SIZE(BUFFER, 2)
-      DO J=1, SIZE(BUFFER, 3)
-        BUFFER(IDX:,I,J) = BUFFER(INDEX,I,J)
-      END DO
-    END DO
-  END SUBROUTINE FILL_BUFFER_4D
+  PROCEDURE :: FINAL => FIELD_LOG4D_FINAL
+  PROCEDURE :: FIELD_LOG4D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_LOG4D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_LOG4D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_LOG4D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_LOG4D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_LOG4D_GET_DEVICE_DATA_RDWR
+  PROCEDURE :: DELETE_DEVICE => FIELD_LOG4D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_LOG4D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG4D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG4D_UPDATE_HOST
 
-  SUBROUTINE FILL_BUFFER_INT2D(BUFFER, INDEX)
-    ! Utility routine to fill data buffers (views)
-    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: BUFFER(:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: INDEX
-    INTEGER(KIND=JPIM) :: IDX
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_LOG4D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_LOG4D_GET_HOST_DATA
+END TYPE FIELD_LOG4D
 
-    IDX = INDEX+1
-    BUFFER(IDX:) = BUFFER(INDEX)
-  END SUBROUTINE FILL_BUFFER_INT2D
+TYPE, EXTENDS(FIELD_LOG4D) :: FIELD_LOG4D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG4D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG4D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG4D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_LOG4D_WRAPPER_FINAL
+END TYPE FIELD_LOG4D_WRAPPER
 
-  SUBROUTINE FILL_BUFFER_LOG2D(BUFFER, INDEX)
-    ! Utility routine to fill data buffers (views)
-    LOGICAL, POINTER, INTENT(INOUT) :: BUFFER(:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: INDEX
-    INTEGER(KIND=JPIM) :: IDX
+TYPE, EXTENDS(FIELD_LOG4D) :: FIELD_LOG4D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG4D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG4D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG4D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_LOG4D_OWNER_FINAL
+END TYPE FIELD_LOG4D_OWNER
 
-    IDX = INDEX+1
-    BUFFER(IDX:) = BUFFER(INDEX)
-  END SUBROUTINE FILL_BUFFER_LOG2D
+TYPE, EXTENDS(FIELD_LOG4D) :: FIELD_LOG4D_WRAPPER_PACKED
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG4D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG4D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG4D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_LOG4D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_LOG4D_WRAPPER_PACKED
 
-  FUNCTION FIELD_2D_EMPTY(SHAPE) RESULT(SELF)
+TYPE FIELD_LOG4D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_LOG4D), POINTER :: PTR => NULL()
+END TYPE FIELD_LOG4D_PTR
+
+TYPE FIELD_LOG4D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  LOGICAL(KIND=JPLM), POINTER :: P(:,:,:) => NULL()
+END TYPE FIELD_LOG4D_VIEW
+
+TYPE, ABSTRACT :: FIELD_LOG5D
+  ! A FIELD encapsulates a single multi-dimensional array and can
+  ! provide block-indexed "views" of the data for automating the
+  ! allocation and parallel iterration of NPROMA blocks.
+
+  ! TODO: Atlas-based field data storage field
+  ! TODO: Do we still need to use pointers here?
+  ! TYPE(ATLAS_FIELD), POINTER :: DATA
+
+  ! Storage pointer for non-Atlas backward-compatibility mode
+  !
+  ! The underlying storage pointer has the rank as the dimension,
+  ! where the innermost dimension represents the horizontal and
+  ! the outermost one is the block index.
+  LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:,:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:,:) => NULL()
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: DATA(:,:,:,:,:) => NULL()
+
+  ! A separate data pointer that can be used to create
+  ! a contiguous chunk of host memory to cleanly map to
+  ! device, should the %DATA pointer be discontiguous.
+  LOGICAL(KIND=JPLM), DEVICE, ALLOCATABLE :: DEVDATA(:,:,:,:,:)
+
+  ! Flag indicating the use a single block-buffer per thread
+  LOGICAL :: THREAD_BUFFER = .FALSE.
+
+  INTEGER(KIND=JPIM) :: ISTATUS = 0
+  INTEGER(KIND=JPIM) :: LAST_CONTIGUOUS_DIMENSION = 0
+
+  TYPE(GPU_STATS) :: STATS
+
+CONTAINS
+
+  PROCEDURE :: FINAL => FIELD_LOG5D_FINAL
+  PROCEDURE :: FIELD_LOG5D_FINAL
+  PROCEDURE :: GET_VIEW => FIELD_LOG5D_GET_VIEW
+  PROCEDURE :: GET_HOST_DATA_RDONLY => FIELD_LOG5D_GET_HOST_DATA_RDONLY
+  PROCEDURE :: GET_HOST_DATA_RDWR => FIELD_LOG5D_GET_HOST_DATA_RDWR
+  PROCEDURE :: GET_DEVICE_DATA_RDONLY => FIELD_LOG5D_GET_DEVICE_DATA_RDONLY
+  PROCEDURE :: GET_DEVICE_DATA_RDWR => FIELD_LOG5D_GET_DEVICE_DATA_RDWR
+  PROCEDURE :: DELETE_DEVICE => FIELD_LOG5D_DELETE_DEVICE
+  PROCEDURE :: ENSURE_HOST => FIELD_LOG5D_ENSURE_HOST
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG5D_UPDATE_DEVICE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG5D_UPDATE_HOST
+
+  PROCEDURE, PRIVATE :: GET_DEVICE_DATA => FIELD_LOG5D_GET_DEVICE_DATA
+  PROCEDURE, PRIVATE :: GET_HOST_DATA => FIELD_LOG5D_GET_HOST_DATA
+END TYPE FIELD_LOG5D
+
+TYPE, EXTENDS(FIELD_LOG5D) :: FIELD_LOG5D_WRAPPER
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG5D_WRAP
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG5D_UPDATE_HOST_WRAPPER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG5D_UPDATE_DEVICE_WRAPPER
+  PROCEDURE :: FINAL => FIELD_LOG5D_WRAPPER_FINAL
+END TYPE FIELD_LOG5D_WRAPPER
+
+TYPE, EXTENDS(FIELD_LOG5D) :: FIELD_LOG5D_OWNER
+  TYPE(C_PTR) :: HPTR
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG5D_ALLOCATE
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG5D_UPDATE_HOST_OWNER
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG5D_UPDATE_DEVICE_OWNER
+  PROCEDURE :: FINAL => FIELD_LOG5D_OWNER_FINAL
+END TYPE FIELD_LOG5D_OWNER
+
+TYPE, EXTENDS(FIELD_LOG5D) :: FIELD_LOG5D_WRAPPER_PACKED
+  LOGICAL(KIND=JPLM), POINTER, CONTIGUOUS :: BASE_PTR(:,:,:,:,:,:) => NULL()
+  INTEGER(KIND=JPIM) :: FIDX
+CONTAINS
+  PROCEDURE :: INIT => FIELD_LOG5D_WRAP_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_HOST => FIELD_LOG5D_UPDATE_HOST_WRAPPER_PACKED
+  PROCEDURE, PRIVATE :: UPDATE_DEVICE => FIELD_LOG5D_UPDATE_DEVICE_WRAPPER_PACKED
+  PROCEDURE :: FINAL => FIELD_LOG5D_WRAPPER_PACKED_FINAL
+END TYPE FIELD_LOG5D_WRAPPER_PACKED
+
+TYPE FIELD_LOG5D_PTR
+  ! Struct to hold references to field objects
+  CLASS(FIELD_LOG5D), POINTER :: PTR => NULL()
+END TYPE FIELD_LOG5D_PTR
+
+TYPE FIELD_LOG5D_VIEW
+  ! Struct to hold array views, so we can make arrays of them
+  LOGICAL(KIND=JPLM), POINTER :: P(:,:,:,:) => NULL()
+END TYPE FIELD_LOG5D_VIEW
+
+CONTAINS
+!
+! CLASS METHODS
+!
+  SUBROUTINE FIELD_2D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
     ! Create FIELD object by wrapping existing data
-    !
-    ! If a SHAPE is provided, a single empty buffer block-sized buffer
-    ! will be allocated under %VIEW and used by all threads in a
-    ! thread-parallel region to avoid segfault when dereferencing NULL
-    ! pointers. Otherwise %DATA and %VIEW will always be unassociated.
-    TYPE(FIELD_2D) :: SELF
-    INTEGER(KIND=JPIM), OPTIONAL, INTENT(IN) :: SHAPE(1)
-
-    SELF%PTR => NULL()
-    IF (PRESENT(SHAPE)) THEN
-      ALLOCATE(SELF%VIEW(SHAPE(1)))
-    END IF
-    SELF%ACTIVE = .FALSE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = 0
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_2D_EMPTY
-
-  FUNCTION FIELD_3D_EMPTY(SHAPE) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    !
-    ! If a SHAPE is provided, a single empty buffer block-sized buffer
-    ! will be allocated under %VIEW and used by all threads in a
-    ! thread-parallel region to avoid segfault when dereferencing NULL
-    ! pointers. Otherwise %DATA and %VIEW will always be unassociated.
-    TYPE(FIELD_3D) :: SELF
-    INTEGER(KIND=JPIM), OPTIONAL, INTENT(IN) :: SHAPE(2)
-
-    SELF%PTR => NULL()
-    IF (PRESENT(SHAPE)) THEN
-      ALLOCATE(SELF%VIEW(SHAPE(1),SHAPE(2)))
-    END IF
-    SELF%ACTIVE = .FALSE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = 0
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_3D_EMPTY
-
-  FUNCTION FIELD_4D_EMPTY(SHAPE) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    !
-    ! If a SHAPE is provided, a single empty buffer block-sized buffer
-    ! will be allocated under %VIEW and used by all threads in a
-    ! thread-parallel region to avoid segfault when dereferencing NULL
-    ! pointers. Otherwise %DATA and %VIEW will always be unassociated.
-    TYPE(FIELD_4D) :: SELF
-    INTEGER(KIND=JPIM), OPTIONAL, INTENT(IN) :: SHAPE(3)
-
-    SELF%PTR => NULL()
-    IF (PRESENT(SHAPE)) THEN
-      ALLOCATE(SELF%VIEW(SHAPE(1),SHAPE(2),SHAPE(3)))
-    END IF
-    SELF%ACTIVE = .FALSE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = 0
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_4D_EMPTY
-
-  FUNCTION FIELD_INT2D_EMPTY(SHAPE) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    !
-    ! If a SHAPE is provided, a single empty buffer block-sized buffer
-    ! will be allocated under %VIEW and used by all threads in a
-    ! thread-parallel region to avoid segfault when dereferencing NULL
-    ! pointers. Otherwise %DATA and %VIEW will always be unassociated.
-    TYPE(FIELD_INT2D) :: SELF
-    INTEGER(KIND=JPIM), OPTIONAL, INTENT(IN) :: SHAPE(1)
-
-    SELF%PTR => NULL()
-    IF (PRESENT(SHAPE)) THEN
-      ALLOCATE(SELF%VIEW(SHAPE(1)))
-    END IF
-    SELF%ACTIVE = .FALSE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = 0
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_INT2D_EMPTY
-
-  FUNCTION FIELD_LOG2D_EMPTY(SHAPE) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    !
-    ! If a SHAPE is provided, a single empty buffer block-sized buffer
-    ! will be allocated under %VIEW and used by all threads in a
-    ! thread-parallel region to avoid segfault when dereferencing NULL
-    ! pointers. Otherwise %DATA and %VIEW will always be unassociated.
-    TYPE(FIELD_LOG2D) :: SELF
-    INTEGER(KIND=JPIM), OPTIONAL, INTENT(IN) :: SHAPE(1)
-
-    SELF%PTR => NULL()
-    IF (PRESENT(SHAPE)) THEN
-      ALLOCATE(SELF%VIEW(SHAPE(1)))
-    END IF
-    SELF%ACTIVE = .FALSE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = 0
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_LOG2D_EMPTY
-
-  FUNCTION FIELD_2D_WRAP(DATA) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    TYPE(FIELD_2D), TARGET :: SELF
+    CLASS(FIELD_2D_WRAPPER), INTENT(INOUT) :: SELF
     REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(2)
+    LOGICAL :: LLPERSISTENT
 
-    SELF%PTR => DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 2)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_2D_WRAP
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
 
-  FUNCTION FIELD_3D_WRAP(DATA) RESULT(SELF)
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 2)) THEN
+        CALL ABOR1 ('FIELD_2D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_2D_WRAP
+
+  SUBROUTINE FIELD_2D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_2D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_2D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_2D_UPDATE_HOST(SELF)
+    CLASS(FIELD_2D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_2D_UPDATE_HOST
+
+  SUBROUTINE FIELD_2D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
     ! Create FIELD object by wrapping existing data
-    TYPE(FIELD_3D), TARGET :: SELF
-    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:)
-
-    SELF%PTR => DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 3)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_3D_WRAP
-
-  FUNCTION FIELD_4D_WRAP(DATA) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    TYPE(FIELD_4D), TARGET :: SELF
-    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:)
-
-    SELF%PTR => DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 4)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_4D_WRAP
-
-  FUNCTION FIELD_INT2D_WRAP(DATA) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    TYPE(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:)
-
-    SELF%PTR => DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 2)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_INT2D_WRAP
-
-  FUNCTION FIELD_LOG2D_WRAP(DATA) RESULT(SELF)
-    ! Create FIELD object by wrapping existing data
-    TYPE(FIELD_LOG2D), TARGET :: SELF
-    LOGICAL, TARGET, INTENT(IN) :: DATA(:,:)
-
-    SELF%PTR => DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 2)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_LOG2D_WRAP
-
-  FUNCTION FIELD_2D_WRAP_PACKED(DATA, IDX) RESULT(SELF)
-    ! Create FIELD object packed in a multi-field buffer by storing a
-    ! contiguous pointer to existing data and an index.
-    TYPE(FIELD_2D), TARGET :: SELF
+    CLASS(FIELD_2D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
     REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(2)
+    LOGICAL :: LLPERSISTENT
 
-    SELF%PTR => DATA(:,IDX,:)
-    SELF%ACTIVE = .TRUE.
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):) => DATA(:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,IDX,:)
+    ENDIF
     SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 2)
-    SELF%BASE_PTR => DATA
-    SELF%FIDX = IDX
-  END FUNCTION FIELD_2D_WRAP_PACKED
+    SELF%ISTATUS = NHSTFRESH
 
-  FUNCTION FIELD_3D_WRAP_PACKED(DATA, IDX) RESULT(SELF)
-    ! Create FIELD object packed in a multi-field buffer by storing a
-    ! contiguous pointer to existing data and an index.
-    TYPE(FIELD_3D), TARGET :: SELF
-    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
-
-    integer(kind=jpim) :: arrsize, istat
-    type(c_ptr) :: hptr
-
-    SELF%PTR => DATA(:,:,IDX,:)
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 3)
     SELF%BASE_PTR => DATA
     SELF%FIDX = IDX
 
-    ! arrsize = SIZE(SELF%PTR, 1) * SIZE(SELF%PTR, 2) * SELF%NBLOCKS * sizeof(1.0_JPRB)
-    ! istat = cudaSetDeviceFlags(cudadevicemaphost)
-    ! istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    ! call c_f_pointer(hptr, self%data, [SIZE(SELF%PTR, 1), SIZE(SELF%PTR, 2), SELF%NBLOCKS] )
+  END SUBROUTINE FIELD_2D_WRAP_PACKED
 
-  END FUNCTION FIELD_3D_WRAP_PACKED
-
-  FUNCTION FIELD_4D_WRAP_PACKED(DATA, IDX) RESULT(SELF)
-    ! Create FIELD object packed in a multi-field buffer by storing a
-    ! contiguous pointer to existing data and an index.
-    TYPE(FIELD_4D), TARGET :: SELF
-    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
-
-    SELF%PTR => DATA(:,:,:,IDX,:)
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 4)
-    SELF%BASE_PTR => DATA
-    SELF%FIDX = IDX
-  END FUNCTION FIELD_4D_WRAP_PACKED
-
-  FUNCTION FIELD_INT2D_WRAP_PACKED(DATA, IDX) RESULT(SELF)
-    ! Create FIELD object packed in a multi-field buffer by storing a
-    ! contiguous pointer to existing data and an index.
-    TYPE(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
-
-    SELF%PTR => DATA(:,IDX,:)
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 2)
-    SELF%BASE_PTR => DATA
-    SELF%FIDX = IDX
-  END FUNCTION FIELD_INT2D_WRAP_PACKED
-
-  FUNCTION FIELD_LOG2D_WRAP_PACKED(DATA, IDX) RESULT(SELF)
-    ! Create FIELD object packed in a multi-field buffer by storing a
-    ! contiguous pointer to existing data and an index.
-    TYPE(FIELD_LOG2D), TARGET :: SELF
-    LOGICAL, TARGET, INTENT(IN) :: DATA(:,:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
-
-    SELF%PTR => DATA(:,IDX,:)
-    SELF%ACTIVE = .TRUE.
-    SELF%THREAD_BUFFER = .FALSE.
-    SELF%OWNED = .FALSE.
-    SELF%NBLOCKS = SIZE(SELF%PTR, 2)
-    SELF%BASE_PTR => DATA
-    SELF%FIDX = IDX
-  END FUNCTION FIELD_LOG2D_WRAP_PACKED
-
-  FUNCTION FIELD_2D_ALLOCATE(SHAPE, NBLOCKS, PERSISTENT) RESULT(SELF)
+  SUBROUTINE FIELD_2D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
     ! Create FIELD object by explicitly allocating new data
-    !
-    ! Please note that SHAPE is the conceptual shape without the block dimension
-    TYPE(FIELD_2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(1)
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
+    CLASS(FIELD_2D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(2)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(2)
     LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
-    INTEGER(KIND=JPIM) :: NBLK
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(2)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(2)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
 
-    INTEGER(KIND=JPIM) :: istat, arrsize
-    type(c_ptr) :: hptr
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(2) = OML_MAX_THREADS()
 
     ! By default we allocate thread-local temporaries
     SELF%THREAD_BUFFER = .TRUE.
-    NBLK = OML_MAX_THREADS()
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 2
 
     IF (PRESENT(PERSISTENT)) THEN
       IF (PERSISTENT) THEN
-        ! Adjust outer dim for full-sized persistent blocked arrays
-        IF (.NOT. PRESENT(NBLOCKS)) CALL &
-         & ABOR1('FIELD_2D_ALLOCATE : NBLOCKS not given for persistent allocation!')
         SELF%THREAD_BUFFER = .FALSE.
-        NBLK = NBLOCKS
+        REAL_LBOUNDS(2) = 1
+        REAL_UBOUNDS(2) = UBOUNDS(2)
       END IF
     END IF
 
-    ! Allocate storage array and store metadata
-    ! ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):) => SELF%DATA
 
-    arrsize = SHAPE(1) * NBLK * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    call c_f_pointer(hptr, self%data, [SHAPE(1), NBLK] )
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_2D_ALLOCATE
 
-    SELF%PTR => SELF%DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%OWNED = .TRUE.
-    SELF%NBLOCKS = SIZE(SELF%DATA, 2)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_2D_ALLOCATE
-
-  FUNCTION FIELD_3D_ALLOCATE(SHAPE, NBLOCKS, PERSISTENT) RESULT(SELF)
-    ! Create FIELD object by explicitly allocating new data
-    !
-    ! Please note that SHAPE is the conceptual shape without the block dimension
-    TYPE(FIELD_3D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(2)
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
-    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
-    INTEGER(KIND=JPIM) :: NBLK
-
-    INTEGER(KIND=JPIM) :: istat, arrsize
-    type(c_ptr) :: hptr
-
-    ! By default we allocate thread-local temporaries
-    SELF%THREAD_BUFFER = .TRUE.
-    NBLK = OML_MAX_THREADS()
-
-    IF (PRESENT(PERSISTENT)) THEN
-      IF (PERSISTENT) THEN
-        ! Adjust outer dim for full-sized persistent blocked arrays
-        IF (.NOT. PRESENT(NBLOCKS)) CALL &
-         & ABOR1('FIELD_3D_ALLOCATE : NBLOCKS not given for persistent allocation!')
-        SELF%THREAD_BUFFER = .FALSE.
-        NBLK = NBLOCKS
-      END IF
-    END IF
-
-    ! Allocate storage array and store metadata
-    ! ALLOCATE(SELF%DATA(SHAPE(1),SHAPE(2),NBLK))
-
-    arrsize = SHAPE(1) * SHAPE(2) * NBLK * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    call c_f_pointer(hptr, self%data, [SHAPE(1), SHAPE(2), NBLK] )
-
-    SELF%PTR => SELF%DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%OWNED = .TRUE.
-    SELF%NBLOCKS = SIZE(SELF%DATA, 3)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_3D_ALLOCATE
-
-  FUNCTION FIELD_4D_ALLOCATE(SHAPE, NBLOCKS, PERSISTENT) RESULT(SELF)
-    ! Create FIELD object by explicitly allocating new data
-    !
-    ! Please note that SHAPE is the conceptual shape without the block dimension
-    TYPE(FIELD_4D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(3)
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
-    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
-    INTEGER(KIND=JPIM) :: NBLK
-
-    INTEGER(KIND=JPIM) :: istat, arrsize
-    type(c_ptr) :: hptr
-
-    ! By default we allocate thread-local temporaries
-    SELF%THREAD_BUFFER = .TRUE.
-    NBLK = OML_MAX_THREADS()
-
-    IF (PRESENT(PERSISTENT)) THEN
-      IF (PERSISTENT) THEN
-        ! Adjust outer dim for full-sized persistent blocked arrays
-        IF (.NOT. PRESENT(NBLOCKS)) CALL &
-         & ABOR1('FIELD_4D_ALLOCATE : NBLOCKS not given for persistent allocation!')
-        SELF%THREAD_BUFFER = .FALSE.
-        NBLK = NBLOCKS
-      END IF
-    END IF
-
-    ! Allocate storage array and store metadata
-    ! ALLOCATE(SELF%DATA(SHAPE(1),SHAPE(2),SHAPE(3),NBLK))
-
-    arrsize = SHAPE(1) * SHAPE(2) * SHAPE(3) * NBLK * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    call c_f_pointer(hptr, self%data, [SHAPE(1), SHAPE(2), SHAPE(3), NBLK] )
-
-    SELF%PTR => SELF%DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%OWNED = .TRUE.
-    SELF%NBLOCKS = SIZE(SELF%DATA, 4)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_4D_ALLOCATE
-
-  FUNCTION FIELD_INT2D_ALLOCATE(SHAPE, NBLOCKS, PERSISTENT) RESULT(SELF)
-    ! Create FIELD object by explicitly allocating new data
-    !
-    ! Please note that SHAPE is the conceptual shape without the block dimension
-    TYPE(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(1)
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
-    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
-    INTEGER(KIND=JPIM) :: NBLK
-
-    INTEGER(KIND=JPIM) :: istat, arrsize
-    type(c_ptr) :: hptr
-
-    ! By default we allocate thread-local temporaries
-    SELF%THREAD_BUFFER = .TRUE.
-    NBLK = OML_MAX_THREADS()
-
-    IF (PRESENT(PERSISTENT)) THEN
-      IF (PERSISTENT) THEN
-        ! Adjust outer dim for full-sized persistent blocked arrays
-        IF (.NOT. PRESENT(NBLOCKS)) CALL &
-         & ABOR1('FIELD_INT2D_ALLOCATE : NBLOCKS not given for persistent allocation!')
-        SELF%THREAD_BUFFER = .FALSE.
-        NBLK = NBLOCKS
-      END IF
-    END IF
-
-    ! Allocate storage array and store metadata
-    ! ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
-
-    arrsize = SHAPE(1) * NBLK * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    call c_f_pointer(hptr, self%data, [SHAPE(1), NBLK] )
-
-    SELF%PTR => SELF%DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%OWNED = .TRUE.
-    SELF%NBLOCKS = SIZE(SELF%DATA, 2)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_INT2D_ALLOCATE
-
-  FUNCTION FIELD_LOG2D_ALLOCATE(SHAPE, NBLOCKS, PERSISTENT) RESULT(SELF)
-    ! Create FIELD object by explicitly allocating new data
-    !
-    ! Please note that SHAPE is the conceptual shape without the block dimension
-    TYPE(FIELD_LOG2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(1)
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
-    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
-    INTEGER(KIND=JPIM) :: NBLK
-
-    INTEGER(KIND=JPIM) :: istat, arrsize
-    type(c_ptr) :: hptr
-
-    ! By default we allocate thread-local temporaries
-    SELF%THREAD_BUFFER = .TRUE.
-    NBLK = OML_MAX_THREADS()
-
-    IF (PRESENT(PERSISTENT)) THEN
-      IF (PERSISTENT) THEN
-        ! Adjust outer dim for full-sized persistent blocked arrays
-        IF (.NOT. PRESENT(NBLOCKS)) CALL &
-         & ABOR1('FIELD_LOG2D_ALLOCATE : NBLOCKS not given for persistent allocation!')
-        SELF%THREAD_BUFFER = .FALSE.
-        NBLK = NBLOCKS
-      END IF
-    END IF
-
-    ! Allocate storage array and store metadata
-    ! ALLOCATE(SELF%DATA(SHAPE(1),NBLK))
-
-    arrsize = SHAPE(1) * NBLK * sizeof(1.0_JPRB)
-    istat = cudaSetDeviceFlags(cudadevicemaphost)
-    istat = cudaHostAlloc(hptr, arrsize, cudaHostAllocMapped)
-    call c_f_pointer(hptr, self%data, [SHAPE(1), NBLK] )
-
-    SELF%PTR => SELF%DATA
-    SELF%ACTIVE = .TRUE.
-    SELF%OWNED = .TRUE.
-    SELF%NBLOCKS = SIZE(SELF%DATA, 2)
-    SELF%BASE_PTR => NULL()
-    SELF%FIDX = -1
-  END FUNCTION FIELD_LOG2D_ALLOCATE
-
-  FUNCTION FIELD_2D_CLONE(SELF) RESULT(NEWOBJ)
-    ! Clone (deep-copy) this FIELD object, keeping the DATA pointer
-    ! intact, but replicating view pointers.
+  FUNCTION FIELD_2D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
     CLASS(FIELD_2D) :: SELF
-    TYPE(FIELD_2D), POINTER :: NEWOBJ
-
-    ALLOCATE(NEWOBJ)
-    ! For owned storage data, re-allocate but do not copy data over
-    IF (SELF%OWNED) THEN
-      ALLOCATE(NEWOBJ%DATA, MOLD=SELF%DATA)
-      NEWOBJ%PTR => NEWOBJ%DATA
-    ELSE
-      NEWOBJ%PTR => SELF%PTR
-    END IF
-    NEWOBJ%VIEW => NULL()
-    NEWOBJ%NBLOCKS = SELF%NBLOCKS
-    NEWOBJ%THREAD_BUFFER = SELF%THREAD_BUFFER
-    NEWOBJ%OWNED = .FALSE.
-  END FUNCTION FIELD_2D_CLONE
-
-  FUNCTION FIELD_3D_CLONE(SELF) RESULT(NEWOBJ)
-    ! Clone (deep-copy) this FIELD object, keeping the DATA pointer
-    ! intact, but replicating view pointers.
-    CLASS(FIELD_3D) :: SELF
-    TYPE(FIELD_3D), POINTER :: NEWOBJ
-
-    ALLOCATE(NEWOBJ)
-    ! For owned storage data, re-allocate but do not copy data over
-    IF (SELF%OWNED) THEN
-      ALLOCATE(NEWOBJ%DATA, MOLD=SELF%DATA)
-      NEWOBJ%PTR => NEWOBJ%DATA
-    ELSE
-      NEWOBJ%PTR => SELF%PTR
-    END IF
-    NEWOBJ%VIEW => NULL()
-    NEWOBJ%NBLOCKS = SELF%NBLOCKS
-    NEWOBJ%THREAD_BUFFER = SELF%THREAD_BUFFER
-    NEWOBJ%OWNED = .FALSE.
-  END FUNCTION FIELD_3D_CLONE
-
-  FUNCTION FIELD_4D_CLONE(SELF) RESULT(NEWOBJ)
-    ! Clone (deep-copy) this FIELD object, keeping the DATA pointer
-    ! intact, but replicating view pointers.
-    CLASS(FIELD_4D) :: SELF
-    TYPE(FIELD_4D), POINTER :: NEWOBJ
-
-    ALLOCATE(NEWOBJ)
-    ! For owned storage data, re-allocate but do not copy data over
-    IF (SELF%OWNED) THEN
-      ALLOCATE(NEWOBJ%DATA, MOLD=SELF%DATA)
-      NEWOBJ%PTR => NEWOBJ%DATA
-    ELSE
-      NEWOBJ%PTR => SELF%PTR
-    END IF
-    NEWOBJ%VIEW => NULL()
-    NEWOBJ%NBLOCKS = SELF%NBLOCKS
-    NEWOBJ%THREAD_BUFFER = SELF%THREAD_BUFFER
-    NEWOBJ%OWNED = .FALSE.
-  END FUNCTION FIELD_4D_CLONE
-
-  FUNCTION FIELD_INT2D_CLONE(SELF) RESULT(NEWOBJ)
-    ! Clone (deep-copy) this FIELD object, keeping the DATA pointer
-    ! intact, but replicating view pointers.
-    CLASS(FIELD_INT2D) :: SELF
-    TYPE(FIELD_INT2D), POINTER :: NEWOBJ
-
-    ALLOCATE(NEWOBJ)
-    ! For owned storage data, re-allocate but do not copy data over
-    IF (SELF%OWNED) THEN
-      ALLOCATE(NEWOBJ%DATA, MOLD=SELF%DATA)
-      NEWOBJ%PTR => NEWOBJ%DATA
-    ELSE
-      NEWOBJ%PTR => SELF%PTR
-    END IF
-    NEWOBJ%VIEW => NULL()
-    NEWOBJ%NBLOCKS = SELF%NBLOCKS
-    NEWOBJ%THREAD_BUFFER = SELF%THREAD_BUFFER
-    NEWOBJ%OWNED = .FALSE.
-  END FUNCTION FIELD_INT2D_CLONE
-
-  FUNCTION FIELD_LOG2D_CLONE(SELF) RESULT(NEWOBJ)
-    ! Clone (deep-copy) this FIELD object, keeping the DATA pointer
-    ! intact, but replicating view pointers.
-    CLASS(FIELD_LOG2D) :: SELF
-    TYPE(FIELD_LOG2D), POINTER :: NEWOBJ
-
-    ALLOCATE(NEWOBJ)
-    ! For owned storage data, re-allocate but do not copy data over
-    IF (SELF%OWNED) THEN
-      ALLOCATE(NEWOBJ%DATA, MOLD=SELF%DATA)
-      NEWOBJ%PTR => NEWOBJ%DATA
-    ELSE
-      NEWOBJ%PTR => SELF%PTR
-    END IF
-    NEWOBJ%VIEW => NULL()
-    NEWOBJ%NBLOCKS = SELF%NBLOCKS
-    NEWOBJ%THREAD_BUFFER = SELF%THREAD_BUFFER
-    NEWOBJ%OWNED = .FALSE.
-  END FUNCTION FIELD_LOG2D_CLONE
-
-
-  SUBROUTINE FIELD_2D_UPDATE_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Sets the view pointer FIELD%MP to the block of the given index
-    CLASS(FIELD_2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      SELF%VIEW => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      SELF%VIEW => SELF%PTR(:,IDX)
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(SELF%VIEW, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) SELF%VIEW(:) = 0.0_JPRB
-    END IF
-  END SUBROUTINE FIELD_2D_UPDATE_VIEW
-
-  SUBROUTINE FIELD_3D_UPDATE_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Sets the view pointer FIELD%MP to the block of the given index
-    CLASS(FIELD_3D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      SELF%VIEW => SELF%DATA(:,:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      SELF%VIEW => SELF%PTR(:,:,IDX)
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(SELF%VIEW, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) SELF%VIEW(:,:) = 0.0_JPRB
-    END IF
-  END SUBROUTINE FIELD_3D_UPDATE_VIEW
-
-  SUBROUTINE FIELD_4D_UPDATE_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Sets the view pointer FIELD%MP to the block of the given index
-    CLASS(FIELD_4D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      SELF%VIEW => SELF%DATA(:,:,:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      SELF%VIEW => SELF%PTR(:,:,:,IDX)
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(SELF%VIEW, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) SELF%VIEW(:,:,:) = 0.0_JPRB
-    END IF
-  END SUBROUTINE FIELD_4D_UPDATE_VIEW
-
-  SUBROUTINE FIELD_INT2D_UPDATE_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Sets the view pointer FIELD%MP to the block of the given index
-    CLASS(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      SELF%VIEW => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      SELF%VIEW => SELF%PTR(:,IDX)
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(SELF%VIEW, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) SELF%VIEW(:) = 0.0_JPIM
-    END IF
-  END SUBROUTINE FIELD_INT2D_UPDATE_VIEW
-
-
-  SUBROUTINE FIELD_LOG2D_UPDATE_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Sets the view pointer FIELD%MP to the block of the given index
-    CLASS(FIELD_LOG2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      SELF%VIEW => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      SELF%VIEW => SELF%PTR(:,IDX)
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(SELF%VIEW, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) SELF%VIEW(:) = .FALSE.
-    END IF
-  END SUBROUTINE FIELD_LOG2D_UPDATE_VIEW
-
-  SUBROUTINE FIELD_2D_EXTRACT_VIEW(SELF, VIEW_PTR, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_2D), TARGET :: SELF
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: VIEW_PTR(:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) VIEW_PTR(:) = 0.0_JPRB
-    END IF
-  END SUBROUTINE FIELD_2D_EXTRACT_VIEW
-
-  SUBROUTINE FIELD_3D_EXTRACT_VIEW(SELF, VIEW_PTR, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_3D), TARGET :: SELF
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: VIEW_PTR(:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) VIEW_PTR(:,:) = 0.0_JPRB
-    END IF
-  END SUBROUTINE FIELD_3D_EXTRACT_VIEW
-
-  SUBROUTINE FIELD_4D_EXTRACT_VIEW(SELF, VIEW_PTR, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_4D), TARGET :: SELF
-    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: VIEW_PTR(:,:,:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,:,:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,:,:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) VIEW_PTR(:,:,:) = 0.0_JPRB
-    END IF
-  END SUBROUTINE FIELD_4D_EXTRACT_VIEW
-
-  SUBROUTINE FIELD_INT2D_EXTRACT_VIEW(SELF, VIEW_PTR, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: VIEW_PTR(:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) VIEW_PTR(:) = 0.0_JPIM
-    END IF
-  END SUBROUTINE FIELD_INT2D_EXTRACT_VIEW
-
-  SUBROUTINE FIELD_LOG2D_EXTRACT_VIEW(SELF, VIEW_PTR, BLOCK_INDEX, BLOCK_SIZE, ZERO)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_LOG2D), TARGET :: SELF
-    LOGICAL, POINTER, INTENT(INOUT) :: VIEW_PTR(:)
-    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
-    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
-    INTEGER(KIND=JPIM) :: IDX
-
-    IDX = BLOCK_INDEX
-    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
-
-    IF (PRESENT(BLOCK_SIZE) .AND. BLOCK_INDEX == SELF%NBLOCKS) THEN
-      ! Fill the the buffer by replicating the last entry
-      CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-    END IF
-
-    IF (PRESENT(ZERO)) THEN
-      IF (ZERO) VIEW_PTR(:) = .FALSE.
-    END IF
-  END SUBROUTINE FIELD_LOG2D_EXTRACT_VIEW
-
-  FUNCTION FIELD_2D_GET_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO) RESULT(VIEW_PTR)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_2D), TARGET :: SELF
     REAL(KIND=JPRB), POINTER :: VIEW_PTR(:)
     INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
     LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
     INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
 
     IDX = BLOCK_INDEX
     IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
 
-    IF (PRESENT(BLOCK_SIZE)) THEN
-      IF (BLOCK_INDEX == SELF%NBLOCKS) THEN
-        ! Fill the the buffer by replicating the last entry
-        CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-      END IF
-    END IF
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):) => SELF%PTR(:,IDX)
 
     IF (PRESENT(ZERO)) THEN
       IF (ZERO) VIEW_PTR(:) = 0.0_JPRB
     END IF
   END FUNCTION FIELD_2D_GET_VIEW
 
-  FUNCTION FIELD_3D_GET_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO) RESULT(VIEW_PTR)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_3D), TARGET :: SELF
+  SUBROUTINE FIELD_2D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_2D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_2D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_2D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_2D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_2D_FINAL
+
+  SUBROUTINE FIELD_2D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_2D_WRAPPER) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_2D_FINAL
+  END SUBROUTINE FIELD_2D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_2D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_2D_WRAPPER_PACKED) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_2D_FINAL
+  END SUBROUTINE FIELD_2D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_2D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_2D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_2D_FINAL
+  END SUBROUTINE FIELD_2D_OWNER_FINAL
+
+  SUBROUTINE FIELD_2D_ENSURE_HOST(SELF)
+    CLASS(FIELD_2D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_2D_ENSURE_HOST
+
+  SUBROUTINE FIELD_2D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_2D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):) => SELF%PTR (:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_2D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_2D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_2D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_2D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_2D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_2D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_2D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_2D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_2D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_2D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_2D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):) => SELF%DEVPTR(:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_2D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_2D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_2D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_2D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_2D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_2D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_2D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_2D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_2D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_2D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_2D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,IBL), SELF%PTR(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_2D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_2D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_2D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,IBL), SELF%DEVDATA(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_2D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_2D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_2D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,IBL), SELF%BASE_PTR(:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_2D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_2D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_2D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:, SELF%FIDX,IBL), SELF%DEVDATA(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_2D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_2D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_2D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_2D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_2D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_2D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_2D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_3D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_3D_WRAPPER), INTENT(INOUT) :: SELF
+    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(3)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 3)) THEN
+        CALL ABOR1 ('FIELD_3D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_3D_WRAP
+
+  SUBROUTINE FIELD_3D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_3D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_3D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_3D_UPDATE_HOST(SELF)
+    CLASS(FIELD_3D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_3D_UPDATE_HOST
+
+  SUBROUTINE FIELD_3D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_3D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(3)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => DATA(:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_3D_WRAP_PACKED
+
+  SUBROUTINE FIELD_3D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_3D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(3)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(3)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(3)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(3)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(3) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 3
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(3) = 1
+        REAL_UBOUNDS(3) = UBOUNDS(3)
+      END IF
+    END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_3D_ALLOCATE
+
+  FUNCTION FIELD_3D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_3D) :: SELF
     REAL(KIND=JPRB), POINTER :: VIEW_PTR(:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
     LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
     INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
 
     IDX = BLOCK_INDEX
     IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
 
-    IF (PRESENT(BLOCK_SIZE)) THEN
-      IF (BLOCK_INDEX == SELF%NBLOCKS) THEN
-        ! Fill the the buffer by replicating the last entry
-        CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-      END IF
-    END IF
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):) => SELF%PTR(:,:,IDX)
 
     IF (PRESENT(ZERO)) THEN
       IF (ZERO) VIEW_PTR(:,:) = 0.0_JPRB
     END IF
   END FUNCTION FIELD_3D_GET_VIEW
 
-  FUNCTION FIELD_4D_GET_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO) RESULT(VIEW_PTR)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_4D), TARGET :: SELF
+  SUBROUTINE FIELD_3D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_3D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_3D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_3D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_3D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_3D_FINAL
+
+  SUBROUTINE FIELD_3D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_3D_WRAPPER) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_3D_FINAL
+  END SUBROUTINE FIELD_3D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_3D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_3D_WRAPPER_PACKED) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_3D_FINAL
+  END SUBROUTINE FIELD_3D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_3D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_3D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_3D_FINAL
+  END SUBROUTINE FIELD_3D_OWNER_FINAL
+
+  SUBROUTINE FIELD_3D_ENSURE_HOST(SELF)
+    CLASS(FIELD_3D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_3D_ENSURE_HOST
+
+  SUBROUTINE FIELD_3D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_3D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => SELF%PTR (:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_3D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_3D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_3D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_3D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_3D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_3D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_3D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_3D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_3D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_3D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_3D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => SELF%DEVPTR(:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_3D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_3D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_3D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_3D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_3D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_3D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_3D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_3D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_3D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_3D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_3D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,IBL), SELF%PTR(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_3D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_3D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_3D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,IBL), SELF%DEVDATA(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_3D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_3D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_3D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,IBL), SELF%BASE_PTR(:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_3D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_3D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_3D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_3D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_3D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_3D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_3D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_3D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_3D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_3D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_4D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_4D_WRAPPER), INTENT(INOUT) :: SELF
+    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(4)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 4)) THEN
+        CALL ABOR1 ('FIELD_4D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_4D_WRAP
+
+  SUBROUTINE FIELD_4D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_4D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_4D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_4D_UPDATE_HOST(SELF)
+    CLASS(FIELD_4D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_4D_UPDATE_HOST
+
+  SUBROUTINE FIELD_4D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_4D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(4)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => DATA(:,:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_4D_WRAP_PACKED
+
+  SUBROUTINE FIELD_4D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_4D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(4)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(4)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(4)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(4)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(4) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 4
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(4) = 1
+        REAL_UBOUNDS(4) = UBOUNDS(4)
+      END IF
+    END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & (REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1) * SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1,REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):,REAL_LBOUNDS(4):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_4D_ALLOCATE
+
+  FUNCTION FIELD_4D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_4D) :: SELF
     REAL(KIND=JPRB), POINTER :: VIEW_PTR(:,:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
     LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
     INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
 
     IDX = BLOCK_INDEX
     IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,:,:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,:,:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
 
-    IF (PRESENT(BLOCK_SIZE)) THEN
-      IF (BLOCK_INDEX == SELF%NBLOCKS) THEN
-        ! Fill the the buffer by replicating the last entry
-        CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
-      END IF
-    END IF
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):,LBOUNDS(3):) => SELF%PTR(:,:,:,IDX)
 
     IF (PRESENT(ZERO)) THEN
       IF (ZERO) VIEW_PTR(:,:,:) = 0.0_JPRB
     END IF
   END FUNCTION FIELD_4D_GET_VIEW
 
-  FUNCTION FIELD_INT2D_GET_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO) RESULT(VIEW_PTR)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), POINTER :: VIEW_PTR(:)
+  SUBROUTINE FIELD_4D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_4D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_4D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_4D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_4D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_4D_FINAL
+
+  SUBROUTINE FIELD_4D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_4D_WRAPPER) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_4D_FINAL
+  END SUBROUTINE FIELD_4D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_4D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_4D_WRAPPER_PACKED) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_4D_FINAL
+  END SUBROUTINE FIELD_4D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_4D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_4D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_4D_FINAL
+  END SUBROUTINE FIELD_4D_OWNER_FINAL
+
+  SUBROUTINE FIELD_4D_ENSURE_HOST(SELF)
+    CLASS(FIELD_4D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_4D_ENSURE_HOST
+
+  SUBROUTINE FIELD_4D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_4D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => SELF%PTR (:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_4D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_4D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_4D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_4D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_4D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_4D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_4D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_4D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_4D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_4D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_4D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => SELF%DEVPTR(:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_4D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_4D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_4D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_4D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_4D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_4D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_4D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_4D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_4D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_4D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_4D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,IBL), SELF%PTR(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_4D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_4D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_4D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,:,IBL), SELF%DEVDATA(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_4D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_4D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_4D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,IBL), SELF%BASE_PTR(:,:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_4D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_4D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_4D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_4D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_4D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_4D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_4D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_4D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_4D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_4D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_5D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_5D_WRAPPER), INTENT(INOUT) :: SELF
+    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(5)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 5)) THEN
+        CALL ABOR1 ('FIELD_5D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_5D_WRAP
+
+  SUBROUTINE FIELD_5D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_5D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_5D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_5D_UPDATE_HOST(SELF)
+    CLASS(FIELD_5D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_5D_UPDATE_HOST
+
+  SUBROUTINE FIELD_5D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_5D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    REAL(KIND=JPRB), TARGET, INTENT(IN) :: DATA(:,:,:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(5)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => DATA(:,:,:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_5D_WRAP_PACKED
+
+  SUBROUTINE FIELD_5D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_5D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(5)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(5)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(5)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(5)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(5) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 5
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(5) = 1
+        REAL_UBOUNDS(5) = UBOUNDS(5)
+      END IF
+    END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & (REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1) * (REAL_UBOUNDS(5)-REAL_LBOUNDS(5)+1) * SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1,REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1,REAL_UBOUNDS(5)-REAL_LBOUNDS(5)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):,REAL_LBOUNDS(4):,REAL_LBOUNDS(5):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_5D_ALLOCATE
+
+  FUNCTION FIELD_5D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_5D) :: SELF
+    REAL(KIND=JPRB), POINTER :: VIEW_PTR(:,:,:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
     LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
     INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
 
     IDX = BLOCK_INDEX
     IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
 
-    IF (PRESENT(BLOCK_SIZE)) THEN
-      IF (BLOCK_INDEX == SELF%NBLOCKS) THEN
-        ! Fill the the buffer by replicating the last entry
-        CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):,LBOUNDS(3):,LBOUNDS(4):) => SELF%PTR(:,:,:,:,IDX)
+
+    IF (PRESENT(ZERO)) THEN
+      IF (ZERO) VIEW_PTR(:,:,:,:) = 0.0_JPRB
+    END IF
+  END FUNCTION FIELD_5D_GET_VIEW
+
+  SUBROUTINE FIELD_5D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_5D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_5D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_5D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_5D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_5D_FINAL
+
+  SUBROUTINE FIELD_5D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_5D_WRAPPER) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_5D_FINAL
+  END SUBROUTINE FIELD_5D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_5D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_5D_WRAPPER_PACKED) :: SELF
+    REAL(KIND=JPRB), POINTER :: PTR(:,:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_5D_FINAL
+  END SUBROUTINE FIELD_5D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_5D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_5D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_5D_FINAL
+  END SUBROUTINE FIELD_5D_OWNER_FINAL
+
+  SUBROUTINE FIELD_5D_ENSURE_HOST(SELF)
+    CLASS(FIELD_5D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_5D_ENSURE_HOST
+
+  SUBROUTINE FIELD_5D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_5D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => SELF%PTR (:,:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_5D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_5D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_5D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_5D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_5D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_5D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_5D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_5D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_5D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_5D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_5D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => SELF%DEVPTR(:,:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_5D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_5D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_5D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_5D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_5D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_5D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_5D), INTENT (INOUT) :: SELF
+    REAL(KIND=JPRB), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_5D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_5D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_5D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_5D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,:,IBL), SELF%PTR(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_5D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_5D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_5D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,:,:,IBL), SELF%DEVDATA(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_5D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_5D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_5D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,:,IBL), SELF%BASE_PTR(:,:,:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_5D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_5D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_5D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:,:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_5D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_5D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_5D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_5D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_5D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_5D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1.0_JPRB)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_5D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_INT2D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT2D_WRAPPER), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(2)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 2)) THEN
+        CALL ABOR1 ('FIELD_INT2D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_INT2D_WRAP
+
+  SUBROUTINE FIELD_INT2D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_INT2D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_INT2D_UPDATE_HOST(SELF)
+    CLASS(FIELD_INT2D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_HOST
+
+  SUBROUTINE FIELD_INT2D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT2D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(2)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):) => DATA(:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_INT2D_WRAP_PACKED
+
+  SUBROUTINE FIELD_INT2D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_INT2D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(2)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(2)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(2)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(2)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(2) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 2
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(2) = 1
+        REAL_UBOUNDS(2) = UBOUNDS(2)
       END IF
     END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * SIZEOF(1_JPIM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_INT2D_ALLOCATE
+
+  FUNCTION FIELD_INT2D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_INT2D) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: VIEW_PTR(:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
+    INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
+
+    IDX = BLOCK_INDEX
+    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):) => SELF%PTR(:,IDX)
 
     IF (PRESENT(ZERO)) THEN
       IF (ZERO) VIEW_PTR(:) = 0.0_JPIM
     END IF
   END FUNCTION FIELD_INT2D_GET_VIEW
 
+  SUBROUTINE FIELD_INT2D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_INT2D) :: SELF
 
-  FUNCTION FIELD_LOG2D_GET_VIEW(SELF, BLOCK_INDEX, BLOCK_SIZE, ZERO) RESULT(VIEW_PTR)
-    ! Updates internal view and exports it to an external pointer
-    CLASS(FIELD_LOG2D), TARGET :: SELF
-    LOGICAL, POINTER :: VIEW_PTR(:)
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_INT2D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_INT2D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT2D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_INT2D_FINAL
+
+  SUBROUTINE FIELD_INT2D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT2D_WRAPPER) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT2D_FINAL
+  END SUBROUTINE FIELD_INT2D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_INT2D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT2D_WRAPPER_PACKED) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT2D_FINAL
+  END SUBROUTINE FIELD_INT2D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_INT2D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT2D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_INT2D_FINAL
+  END SUBROUTINE FIELD_INT2D_OWNER_FINAL
+
+  SUBROUTINE FIELD_INT2D_ENSURE_HOST(SELF)
+    CLASS(FIELD_INT2D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_INT2D_ENSURE_HOST
+
+  SUBROUTINE FIELD_INT2D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT2D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):) => SELF%PTR (:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT2D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_INT2D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT2D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_INT2D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT2D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT2D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT2D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_INT2D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT2D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_INT2D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT2D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):) => SELF%DEVPTR(:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT2D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_INT2D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT2D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_INT2D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT2D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT2D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT2D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_INT2D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT2D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_INT2D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_INT2D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,IBL), SELF%PTR(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_INT2D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_INT2D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,IBL), SELF%DEVDATA(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_INT2D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT2D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,IBL), SELF%BASE_PTR(:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT2D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT2D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:, SELF%FIDX,IBL), SELF%DEVDATA(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT2D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_INT2D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_INT2D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_INT2D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT2D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_INT3D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT3D_WRAPPER), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(3)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 3)) THEN
+        CALL ABOR1 ('FIELD_INT3D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_INT3D_WRAP
+
+  SUBROUTINE FIELD_INT3D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_INT3D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_INT3D_UPDATE_HOST(SELF)
+    CLASS(FIELD_INT3D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_HOST
+
+  SUBROUTINE FIELD_INT3D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT3D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(3)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => DATA(:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_INT3D_WRAP_PACKED
+
+  SUBROUTINE FIELD_INT3D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_INT3D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(3)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(3)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(3)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(3)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(3) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 3
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(3) = 1
+        REAL_UBOUNDS(3) = UBOUNDS(3)
+      END IF
+    END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & SIZEOF(1_JPIM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_INT3D_ALLOCATE
+
+  FUNCTION FIELD_INT3D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_INT3D) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: VIEW_PTR(:,:)
     INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
-    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: BLOCK_SIZE
     LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
     INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
 
     IDX = BLOCK_INDEX
     IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
-    IF (SELF%ACTIVE .AND. SELF%OWNED) THEN
-      VIEW_PTR => SELF%DATA(:,IDX)
-    ELSEIF (SELF%ACTIVE .AND. .NOT. SELF%OWNED) THEN
-      VIEW_PTR => SELF%PTR(:,IDX)
-    ELSE
-      VIEW_PTR => SELF%VIEW  ! Set to NaN'd field buffer
-    END IF
 
-    IF (PRESENT(BLOCK_SIZE)) THEN
-      IF (BLOCK_INDEX == SELF%NBLOCKS) THEN
-        ! Fill the the buffer by replicating the last entry
-        CALL FILL_BUFFER(VIEW_PTR, INDEX=BLOCK_SIZE)
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):) => SELF%PTR(:,:,IDX)
+
+    IF (PRESENT(ZERO)) THEN
+      IF (ZERO) VIEW_PTR(:,:) = 0.0_JPIM
+    END IF
+  END FUNCTION FIELD_INT3D_GET_VIEW
+
+  SUBROUTINE FIELD_INT3D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_INT3D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_INT3D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_INT3D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT3D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_INT3D_FINAL
+
+  SUBROUTINE FIELD_INT3D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT3D_WRAPPER) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT3D_FINAL
+  END SUBROUTINE FIELD_INT3D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_INT3D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT3D_WRAPPER_PACKED) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT3D_FINAL
+  END SUBROUTINE FIELD_INT3D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_INT3D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT3D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_INT3D_FINAL
+  END SUBROUTINE FIELD_INT3D_OWNER_FINAL
+
+  SUBROUTINE FIELD_INT3D_ENSURE_HOST(SELF)
+    CLASS(FIELD_INT3D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_INT3D_ENSURE_HOST
+
+  SUBROUTINE FIELD_INT3D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT3D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => SELF%PTR (:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT3D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_INT3D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT3D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_INT3D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT3D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT3D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT3D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_INT3D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT3D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_INT3D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT3D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => SELF%DEVPTR(:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT3D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_INT3D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT3D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_INT3D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT3D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT3D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT3D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_INT3D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT3D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_INT3D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_INT3D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,IBL), SELF%PTR(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_INT3D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_INT3D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,IBL), SELF%DEVDATA(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_INT3D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT3D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,IBL), SELF%BASE_PTR(:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT3D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT3D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT3D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_INT3D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_INT3D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_INT3D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT3D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_INT4D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT4D_WRAPPER), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(4)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 4)) THEN
+        CALL ABOR1 ('FIELD_INT4D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_INT4D_WRAP
+
+  SUBROUTINE FIELD_INT4D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_INT4D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_INT4D_UPDATE_HOST(SELF)
+    CLASS(FIELD_INT4D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_HOST
+
+  SUBROUTINE FIELD_INT4D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT4D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(4)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => DATA(:,:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_INT4D_WRAP_PACKED
+
+  SUBROUTINE FIELD_INT4D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_INT4D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(4)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(4)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(4)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(4)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(4) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 4
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(4) = 1
+        REAL_UBOUNDS(4) = UBOUNDS(4)
       END IF
     END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & (REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1) * SIZEOF(1_JPIM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1,REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):,REAL_LBOUNDS(4):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_INT4D_ALLOCATE
+
+  FUNCTION FIELD_INT4D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_INT4D) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: VIEW_PTR(:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
+    INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    IDX = BLOCK_INDEX
+    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):,LBOUNDS(3):) => SELF%PTR(:,:,:,IDX)
+
+    IF (PRESENT(ZERO)) THEN
+      IF (ZERO) VIEW_PTR(:,:,:) = 0.0_JPIM
+    END IF
+  END FUNCTION FIELD_INT4D_GET_VIEW
+
+  SUBROUTINE FIELD_INT4D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_INT4D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_INT4D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_INT4D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT4D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_INT4D_FINAL
+
+  SUBROUTINE FIELD_INT4D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT4D_WRAPPER) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT4D_FINAL
+  END SUBROUTINE FIELD_INT4D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_INT4D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT4D_WRAPPER_PACKED) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT4D_FINAL
+  END SUBROUTINE FIELD_INT4D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_INT4D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT4D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_INT4D_FINAL
+  END SUBROUTINE FIELD_INT4D_OWNER_FINAL
+
+  SUBROUTINE FIELD_INT4D_ENSURE_HOST(SELF)
+    CLASS(FIELD_INT4D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_INT4D_ENSURE_HOST
+
+  SUBROUTINE FIELD_INT4D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT4D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => SELF%PTR (:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT4D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_INT4D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT4D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_INT4D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT4D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT4D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT4D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_INT4D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT4D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_INT4D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT4D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => SELF%DEVPTR(:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT4D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_INT4D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT4D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_INT4D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT4D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT4D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT4D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_INT4D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT4D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_INT4D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_INT4D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,IBL), SELF%PTR(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_INT4D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_INT4D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,:,IBL), SELF%DEVDATA(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_INT4D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT4D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,IBL), SELF%BASE_PTR(:,:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT4D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT4D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT4D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_INT4D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_INT4D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_INT4D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT4D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_INT5D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT5D_WRAPPER), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(5)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 5)) THEN
+        CALL ABOR1 ('FIELD_INT5D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_INT5D_WRAP
+
+  SUBROUTINE FIELD_INT5D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_INT5D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_INT5D_UPDATE_HOST(SELF)
+    CLASS(FIELD_INT5D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_HOST
+
+  SUBROUTINE FIELD_INT5D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_INT5D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    INTEGER(KIND=JPIM), TARGET, INTENT(IN) :: DATA(:,:,:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(5)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => DATA(:,:,:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_INT5D_WRAP_PACKED
+
+  SUBROUTINE FIELD_INT5D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_INT5D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(5)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(5)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(5)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(5)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(5) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 5
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(5) = 1
+        REAL_UBOUNDS(5) = UBOUNDS(5)
+      END IF
+    END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & (REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1) * (REAL_UBOUNDS(5)-REAL_LBOUNDS(5)+1) * SIZEOF(1_JPIM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1,REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1,REAL_UBOUNDS(5)-REAL_LBOUNDS(5)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):,REAL_LBOUNDS(4):,REAL_LBOUNDS(5):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_INT5D_ALLOCATE
+
+  FUNCTION FIELD_INT5D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_INT5D) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: VIEW_PTR(:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
+    INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    IDX = BLOCK_INDEX
+    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):,LBOUNDS(3):,LBOUNDS(4):) => SELF%PTR(:,:,:,:,IDX)
+
+    IF (PRESENT(ZERO)) THEN
+      IF (ZERO) VIEW_PTR(:,:,:,:) = 0.0_JPIM
+    END IF
+  END FUNCTION FIELD_INT5D_GET_VIEW
+
+  SUBROUTINE FIELD_INT5D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_INT5D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_INT5D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_INT5D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT5D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_INT5D_FINAL
+
+  SUBROUTINE FIELD_INT5D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT5D_WRAPPER) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT5D_FINAL
+  END SUBROUTINE FIELD_INT5D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_INT5D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT5D_WRAPPER_PACKED) :: SELF
+    INTEGER(KIND=JPIM), POINTER :: PTR(:,:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_INT5D_FINAL
+  END SUBROUTINE FIELD_INT5D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_INT5D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_INT5D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_INT5D_FINAL
+  END SUBROUTINE FIELD_INT5D_OWNER_FINAL
+
+  SUBROUTINE FIELD_INT5D_ENSURE_HOST(SELF)
+    CLASS(FIELD_INT5D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_INT5D_ENSURE_HOST
+
+  SUBROUTINE FIELD_INT5D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT5D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => SELF%PTR (:,:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT5D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_INT5D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT5D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_INT5D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT5D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT5D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT5D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_INT5D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT5D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_INT5D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_INT5D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
+      CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => SELF%DEVPTR(:,:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_INT5D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_INT5D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_INT5D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_INT5D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_INT5D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_INT5D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_INT5D), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_INT5D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_INT5D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_INT5D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_INT5D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,:,IBL), SELF%PTR(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_INT5D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_INT5D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,:,:,IBL), SELF%DEVDATA(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_INT5D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT5D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,:,IBL), SELF%BASE_PTR(:,:,:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT5D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_INT5D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:,:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_INT5D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_INT5D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_INT5D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_INT5D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(1_JPIM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_INT5D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_LOG2D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG2D_WRAPPER), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(2)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 2)) THEN
+        CALL ABOR1 ('FIELD_LOG2D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG2D_WRAP
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_LOG2D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_HOST(SELF)
+    CLASS(FIELD_LOG2D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_HOST
+
+  SUBROUTINE FIELD_LOG2D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG2D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(2)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):) => DATA(:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_LOG2D_WRAP_PACKED
+
+  SUBROUTINE FIELD_LOG2D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_LOG2D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(2)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(2)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(2)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(2)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(2) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 2
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(2) = 1
+        REAL_UBOUNDS(2) = UBOUNDS(2)
+      END IF
+    END IF
+
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * SIZEOF(.TRUE._JPLM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):) => SELF%DATA
+
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_LOG2D_ALLOCATE
+
+  FUNCTION FIELD_LOG2D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_LOG2D) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: VIEW_PTR(:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
+    INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
+
+    IDX = BLOCK_INDEX
+    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):) => SELF%PTR(:,IDX)
 
     IF (PRESENT(ZERO)) THEN
       IF (ZERO) VIEW_PTR(:) = .FALSE.
     END IF
   END FUNCTION FIELD_LOG2D_GET_VIEW
 
-
-  SUBROUTINE FIELD_2D_CREATE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_2D), TARGET :: SELF
-
-    SELF%DEVPTR => SELF%DATA
-    !$acc enter data create(SELF%DATA)
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_2D_CREATE_DEVICE
-
-  SUBROUTINE FIELD_3D_CREATE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_3D), TARGET :: SELF
-    INTEGER(KIND=JPIM) :: ARRSIZE
-
-    ARRSIZE = SIZE(SELF%PTR) * SIZEOF(1.0_JPRB)
-    ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
-    CALL ACC_MAP_DATA(SELF%PTR, SELF%DEVDATA, ARRSIZE)
-
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_3D_CREATE_DEVICE
-
-  SUBROUTINE FIELD_4D_CREATE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_4D), TARGET :: SELF
-
-    SELF%DEVPTR => SELF%DATA
-    !$acc enter data create(SELF%DATA)
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_4D_CREATE_DEVICE
-
-  SUBROUTINE FIELD_INT2D_CREATE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_INT2D), TARGET :: SELF
-
-    SELF%DEVPTR => SELF%DATA
-    !$acc enter data create(SELF%DATA)
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_INT2D_CREATE_DEVICE
-
-  SUBROUTINE FIELD_LOG2D_CREATE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_LOG2D), TARGET :: SELF
-
-    SELF%DEVPTR => SELF%DATA
-    !$acc enter data create(SELF%DATA)
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_LOG2D_CREATE_DEVICE
-
-  FUNCTION FIELD_2D_GET_DEVICE_DATA(SELF) RESULT(DEVPTR)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_2D), TARGET :: SELF
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:)
-
-    IF (.NOT. SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_DEVICE()
-    END IF
-
-    IF (SELF%OWNED) THEN
-      DEVPTR => SELF%DATA
-    ELSE
-      DEVPTR => SELF%DEVPTR
-    END IF
-  END FUNCTION FIELD_2D_GET_DEVICE_DATA
-
-  FUNCTION FIELD_3D_GET_DEVICE_DATA(SELF) RESULT(DEVPTR)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_3D), TARGET :: SELF
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:)
-
-    type(c_ptr) :: hptr
-
-    IF (.NOT. SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_DEVICE()
-    END IF
-
-    IF (SELF%OWNED) THEN
-      DEVPTR => SELF%DATA
-    ELSE
-      hptr = acc_hostptr(self%devdata)
-      call c_f_pointer(hptr, devptr, shape(self%devdata))
-    END IF
-  END FUNCTION FIELD_3D_GET_DEVICE_DATA
-
-  FUNCTION FIELD_4D_GET_DEVICE_DATA(SELF) RESULT(DEVPTR)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_4D), TARGET :: SELF
-    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: DEVPTR(:,:,:,:)
-
-    IF (.NOT. SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_DEVICE()
-    END IF
-
-    IF (SELF%OWNED) THEN
-      DEVPTR => SELF%DATA
-    ELSE
-      DEVPTR => SELF%DEVPTR
-    END IF
-  END FUNCTION FIELD_4D_GET_DEVICE_DATA
-
-  FUNCTION FIELD_INT2D_GET_DEVICE_DATA(SELF) RESULT(DEVPTR)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM), POINTER, CONTIGUOUS :: DEVPTR(:,:)
-
-    IF (.NOT. SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_DEVICE()
-    END IF
-
-    IF (SELF%OWNED) THEN
-      DEVPTR => SELF%DATA
-    ELSE
-      DEVPTR => SELF%DEVPTR
-    END IF
-  END FUNCTION FIELD_INT2D_GET_DEVICE_DATA
-
-  FUNCTION FIELD_LOG2D_GET_DEVICE_DATA(SELF) RESULT(DEVPTR)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_LOG2D), TARGET :: SELF
-    LOGICAL, POINTER, CONTIGUOUS :: DEVPTR(:,:)
-
-    IF (.NOT. SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_DEVICE()
-    END IF
-
-    IF (SELF%OWNED) THEN
-      DEVPTR => SELF%DATA
-    ELSE
-      DEVPTR => SELF%DEVPTR
-    END IF
-  END FUNCTION FIELD_LOG2D_GET_DEVICE_DATA
-
-  SUBROUTINE FIELD_2D_UPDATE_DEVICE(SELF)
-    ! Create a copy of this field on device and copy data over
-    CLASS(FIELD_2D), TARGET :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      !$acc enter data create(SELF%DATA)
-      !$acc update device(SELF%DATA(:,:))
-      !$acc wait
-      SELF%DEVPTR => SELF%DATA
-    ELSE
-      ALLOCATE(SELF%DEVPTR, SOURCE=SELF%PTR)
-      !$acc enter data create(SELF%DEVPTR)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DEVPTR(:,IBL))
-      END DO
-      !$acc wait
-    END IF
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_2D_UPDATE_DEVICE
-
-  SUBROUTINE FIELD_3D_UPDATE_DEVICE(SELF)
-    ! Create a copy of this field on device and copy data over
-    CLASS(FIELD_3D), TARGET :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    INTEGER(KIND=JPIM) :: istat, arrsize, blksize
-    type(c_ptr) :: hptr
-    integer(kind=jpim) :: shape(3)
-
-    logical :: pres
-
-    arrsize = size(self%ptr) * sizeof(1.0_JPRB)
-    blksize = arrsize / self%nblocks
-    ALLOCATE(SELF%DEVDATA, mold=SELF%PTR)
-
-    IF (SELF%OWNED) THEN
-      call acc_map_data(self%data, self%devdata, arrsize)
-      call acc_memcpy_to_device(self%devdata(:,:,:), self%data(:,:,:), arrsize)
-
-    ELSE
-      ! TODO: This is a dirty trick to fool the OpenACC runtime!
-      ! We allocate the associated data array (full size), so that we can
-      ! add it to the OpenACC host-device map (it's contiguous!)
-      ! Then, we copy the data in a strided fashio from the discontiguous pointer.
-      ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
-      call acc_map_data(self%data, self%devdata, arrsize)
-      DO IBL=1, SELF%NBLOCKS
-        call acc_memcpy_to_device(self%devdata(:,:,ibl), self%base_ptr(:,:,self%fidx,ibl), blksize)
-      END DO
-    END IF
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_3D_UPDATE_DEVICE
-
-  SUBROUTINE FIELD_4D_UPDATE_DEVICE(SELF)
-    ! Create a copy of this field on device and copy data over
-    CLASS(FIELD_4D), TARGET :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      !$acc enter data create(SELF%DATA)
-      !$acc update device(SELF%DATA(:,:,:,:))
-      !$acc wait
-      SELF%DEVPTR => SELF%DATA
-    ELSE
-      ALLOCATE(SELF%DEVPTR, SOURCE=SELF%PTR)
-      !$acc enter data create(SELF%DEVPTR)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DEVPTR(:,:,:,IBL))
-      END DO
-      !$acc wait
-    END IF
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_4D_UPDATE_DEVICE
-
-  SUBROUTINE FIELD_INT2D_UPDATE_DEVICE(SELF)
-    ! Create a copy of this field on device and copy data over
-    CLASS(FIELD_INT2D), TARGET :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      !$acc enter data create(SELF%DATA)
-      !$acc update device(SELF%DATA(:,:))
-      !$acc wait
-      SELF%DEVPTR => SELF%DATA
-    ELSE
-      ALLOCATE(SELF%DEVPTR, SOURCE=SELF%PTR)
-      !$acc enter data create(SELF%DEVPTR)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DEVPTR(:,IBL))
-      END DO
-      !$acc wait
-    END IF
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_INT2D_UPDATE_DEVICE
-
-  SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE(SELF)
-    ! Create a copy of this field on device and copy data over
-    CLASS(FIELD_LOG2D), TARGET :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      !$acc enter data create(SELF%DATA)
-      !$acc update device(SELF%DATA(:,:))
-      !$acc wait
-      SELF%DEVPTR => SELF%DATA
-    ELSE
-      ALLOCATE(SELF%DEVPTR, SOURCE=SELF%PTR)
-      !$acc enter data create(SELF%DEVPTR)
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update device(SELF%DEVPTR(:,IBL))
-      END DO
-      !$acc wait
-    END IF
-    SELF%ON_DEVICE = .TRUE.
-  END SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE
-
-  SUBROUTINE FIELD_2D_UPDATE_HOST(SELF)
-    ! Synchronize device data back to host
-    CLASS(FIELD_2D) :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      !$acc update host(SELF%DATA(:,:))
-      !$acc wait
-      !$acc exit data delete(SELF%DATA)
-    ELSE
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DEVPTR(:,IBL))
-      END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DEVPTR)
-      SELF%PTR(:,:) = SELF%DEVPTR(:,:)
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_2D_UPDATE_HOST
-
-  SUBROUTINE FIELD_3D_UPDATE_HOST(SELF)
-    ! Synchronize device data back to host
-    CLASS(FIELD_3D) :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    INTEGER(KIND=JPIM) :: istat, arrsize, blksize
-    type(c_ptr) :: hptr
-
-    arrsize = size(self%ptr) * sizeof(1.0_JPRB)
-    blksize = arrsize / self%nblocks
-
-    IF (SELF%OWNED) THEN
-      call acc_memcpy_from_device(self%data(:,:,:), self%devdata(:,:,:), arrsize)
-      call acc_unmap_data(self%data)
-
-    ELSE
-      ! call acc_memcpy_from_device(self%data(:,:,:), self%devdata(:,:,:), arrsize)
-      DO IBL=1, SELF%NBLOCKS
-        ! self%base_ptr(:,:,self%fidx,ibl) = self%data(:,:,ibl)
-        
-        ! call acc_memcpy_from_device(self%ptr(:,:,ibl), self%devdata(:,:,ibl), blksize)
-        call acc_memcpy_from_device(self%base_ptr(:,:,self%fidx,ibl), self%devdata(:,:,ibl), blksize)
-      END DO
-      call acc_unmap_data(self%data)
-      DEALLOCATE(SELF%DATA)
-    END IF
-
-    DEALLOCATE(SELF%DEVDATA)
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_3D_UPDATE_HOST
-
-  SUBROUTINE FIELD_4D_UPDATE_HOST(SELF)
-    ! Synchronize device data back to host
-    CLASS(FIELD_4D) :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DATA(:,:,:,IBL))
-      END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DATA)
-    ELSE
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DEVPTR(:,:,:,IBL))
-      END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DEVPTR)
-      SELF%PTR(:,:,:,:) = SELF%DEVPTR(:,:,:,:)
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_4D_UPDATE_HOST
-
-  SUBROUTINE FIELD_INT2D_UPDATE_HOST(SELF)
-    ! Synchronize device data back to host
-    CLASS(FIELD_INT2D) :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DATA(:,IBL))
-      END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DATA)
-    ELSE
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DEVPTR(:,IBL))
-      END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DEVPTR)
-      SELF%PTR(:,:) = SELF%DEVPTR(:,:)
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_INT2D_UPDATE_HOST
-
-  SUBROUTINE FIELD_LOG2D_UPDATE_HOST(SELF)
-    ! Synchronize device data back to host
-    CLASS(FIELD_LOG2D) :: SELF
-    INTEGER(KIND=JPIM) :: IBL
-
-    IF (SELF%OWNED) THEN
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DATA(:,IBL))
-      END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DATA)
-    ELSE
-      DO IBL=1, SELF%NBLOCKS
-        !$acc update host(SELF%DEVPTR(:,IBL))
-      END DO
-      !$acc wait
-      !$acc exit data delete(SELF%DEVPTR)
-      SELF%PTR(:,:) = SELF%DEVPTR(:,:)
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_LOG2D_UPDATE_HOST
- 
-  SUBROUTINE FIELD_2D_DELETE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_2D), TARGET :: SELF
-
-    !$acc exit data delete(SELF%DEVPTR)
-    IF (SELF%OWNED) THEN
-      NULLIFY(SELF%DEVPTR)
-    ELSE
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_2D_DELETE_DEVICE
-
-  SUBROUTINE FIELD_3D_DELETE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_3D), TARGET :: SELF
-
-    IF (SELF%OWNED) THEN
-      CALL ACC_UNMAP_DATA(SELF%DATA)
-    ELSE
-      CALL ACC_UNMAP_DATA(SELF%PTR)
-    END IF
-    DEALLOCATE(SELF%DEVDATA)
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_3D_DELETE_DEVICE
-
-  SUBROUTINE FIELD_4D_DELETE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_4D), TARGET :: SELF
-
-    !$acc exit data delete(SELF%DEVPTR)
-    IF (SELF%OWNED) THEN
-      NULLIFY(SELF%DEVPTR)
-    ELSE
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_4D_DELETE_DEVICE
-
-  SUBROUTINE FIELD_INT2D_DELETE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_INT2D), TARGET :: SELF
-
-    !$acc exit data delete(SELF%DEVPTR)
-    IF (SELF%OWNED) THEN
-      NULLIFY(SELF%DEVPTR)
-    ELSE
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
-  END SUBROUTINE FIELD_INT2D_DELETE_DEVICE
-
   SUBROUTINE FIELD_LOG2D_DELETE_DEVICE(SELF)
-    ! Initialize a copy of this field on GPU device
-    CLASS(FIELD_LOG2D), TARGET :: SELF
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_LOG2D) :: SELF
 
-    !$acc exit data delete(SELF%DEVPTR)
-    IF (SELF%OWNED) THEN
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
       NULLIFY(SELF%DEVPTR)
-    ELSE
-      DEALLOCATE(SELF%DEVPTR)
-    END IF
-    SELF%ON_DEVICE = .FALSE.
+    ENDIF
   END SUBROUTINE FIELD_LOG2D_DELETE_DEVICE
 
-  SUBROUTINE FIELD_2D_ENSURE_HOST(SELF)
-    ! Ensure that field has been moved back to host
-    CLASS(FIELD_2D), TARGET :: SELF
+  SUBROUTINE FIELD_LOG2D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG2D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_LOG2D_FINAL
 
-    IF (SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_HOST()
-    END IF
-  END SUBROUTINE FIELD_2D_ENSURE_HOST
+  SUBROUTINE FIELD_LOG2D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG2D_WRAPPER) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG2D_FINAL
+  END SUBROUTINE FIELD_LOG2D_WRAPPER_FINAL
 
-  SUBROUTINE FIELD_3D_ENSURE_HOST(SELF)
-    ! Ensure that field has been moved back to host
-    CLASS(FIELD_3D), TARGET :: SELF
+  SUBROUTINE FIELD_LOG2D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG2D_WRAPPER_PACKED) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG2D_FINAL
+  END SUBROUTINE FIELD_LOG2D_WRAPPER_PACKED_FINAL
 
-    IF (SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_HOST()
-    END IF
-  END SUBROUTINE FIELD_3D_ENSURE_HOST
+  SUBROUTINE FIELD_LOG2D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG2D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
 
-  SUBROUTINE FIELD_4D_ENSURE_HOST(SELF)
-    ! Ensure that field has been moved back to host
-    CLASS(FIELD_4D), TARGET :: SELF
-
-    IF (SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_HOST()
-    END IF
-  END SUBROUTINE FIELD_4D_ENSURE_HOST
-
-  SUBROUTINE FIELD_INT2D_ENSURE_HOST(SELF)
-    ! Ensure that field has been moved back to host
-    CLASS(FIELD_INT2D), TARGET :: SELF
-
-    IF (SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_HOST()
-    END IF
-  END SUBROUTINE FIELD_INT2D_ENSURE_HOST
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_LOG2D_FINAL
+  END SUBROUTINE FIELD_LOG2D_OWNER_FINAL
 
   SUBROUTINE FIELD_LOG2D_ENSURE_HOST(SELF)
-    ! Ensure that field has been moved back to host
-    CLASS(FIELD_LOG2D), TARGET :: SELF
+    CLASS(FIELD_LOG2D), INTENT (INOUT) :: SELF
 
-    IF (SELF%ON_DEVICE) THEN
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
       CALL SELF%UPDATE_HOST()
-    END IF
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
   END SUBROUTINE FIELD_LOG2D_ENSURE_HOST
 
-  SUBROUTINE FIELD_2D_ENSURE_DEVICE(SELF)
-    ! Ensure that field has been moved over to device
-    CLASS(FIELD_2D), TARGET :: SELF
+  SUBROUTINE FIELD_LOG2D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG2D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
 
-    IF (.NOT. SELF%ON_DEVICE) THEN
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):) => SELF%PTR (:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG2D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_LOG2D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG2D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_LOG2D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_LOG2D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_LOG2D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG2D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_LOG2D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_LOG2D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_LOG2D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG2D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(2)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
       CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):) => SELF%DEVPTR(:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG2D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_LOG2D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG2D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_LOG2D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_LOG2D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_LOG2D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG2D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:)
+
+    CALL FIELD_LOG2D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_LOG2D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_LOG2D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,IBL), SELF%PTR(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_LOG2D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,IBL), SELF%DEVDATA(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG2D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,IBL), SELF%BASE_PTR(:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG2D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 2) - LBOUND(SELF%DATA, 2) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 2), UBOUND(SELF%PTR, 2)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:, SELF%FIDX,IBL), SELF%DEVDATA(:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_LOG2D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_LOG2D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_LOG2D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG2D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_LOG3D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG3D_WRAPPER), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(3)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 3)) THEN
+        CALL ABOR1 ('FIELD_LOG3D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG3D_WRAP
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_LOG3D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_HOST(SELF)
+    CLASS(FIELD_LOG3D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_HOST
+
+  SUBROUTINE FIELD_LOG3D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG3D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(3)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => DATA(:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_LOG3D_WRAP_PACKED
+
+  SUBROUTINE FIELD_LOG3D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_LOG3D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(3)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(3)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(3)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(3)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(3) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 3
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(3) = 1
+        REAL_UBOUNDS(3) = UBOUNDS(3)
+      END IF
     END IF
-  END SUBROUTINE FIELD_2D_ENSURE_DEVICE
 
-  SUBROUTINE FIELD_3D_ENSURE_DEVICE(SELF)
-    ! Ensure that field has been moved over to device
-    CLASS(FIELD_3D), TARGET :: SELF
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & SIZEOF(.TRUE._JPLM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):) => SELF%DATA
 
-    IF (.NOT. SELF%ON_DEVICE) THEN
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_LOG3D_ALLOCATE
+
+  FUNCTION FIELD_LOG3D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_LOG3D) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: VIEW_PTR(:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
+    INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
+
+    IDX = BLOCK_INDEX
+    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):) => SELF%PTR(:,:,IDX)
+
+    IF (PRESENT(ZERO)) THEN
+      IF (ZERO) VIEW_PTR(:,:) = .FALSE.
+    END IF
+  END FUNCTION FIELD_LOG3D_GET_VIEW
+
+  SUBROUTINE FIELD_LOG3D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_LOG3D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_LOG3D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_LOG3D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG3D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_LOG3D_FINAL
+
+  SUBROUTINE FIELD_LOG3D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG3D_WRAPPER) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG3D_FINAL
+  END SUBROUTINE FIELD_LOG3D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_LOG3D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG3D_WRAPPER_PACKED) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG3D_FINAL
+  END SUBROUTINE FIELD_LOG3D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_LOG3D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG3D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_LOG3D_FINAL
+  END SUBROUTINE FIELD_LOG3D_OWNER_FINAL
+
+  SUBROUTINE FIELD_LOG3D_ENSURE_HOST(SELF)
+    CLASS(FIELD_LOG3D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG3D_ENSURE_HOST
+
+  SUBROUTINE FIELD_LOG3D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG3D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => SELF%PTR (:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG3D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_LOG3D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG3D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_LOG3D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_LOG3D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_LOG3D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG3D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_LOG3D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_LOG3D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_LOG3D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG3D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(3)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
       CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):) => SELF%DEVPTR(:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG3D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_LOG3D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG3D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_LOG3D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_LOG3D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_LOG3D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG3D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:)
+
+    CALL FIELD_LOG3D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_LOG3D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_LOG3D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,IBL), SELF%PTR(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_LOG3D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,IBL), SELF%DEVDATA(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG3D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,IBL), SELF%BASE_PTR(:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG3D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 3) - LBOUND(SELF%DATA, 3) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 3), UBOUND(SELF%PTR, 3)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_LOG3D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_LOG3D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_LOG3D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG3D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_LOG4D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG4D_WRAPPER), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(4)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 4)) THEN
+        CALL ABOR1 ('FIELD_LOG4D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG4D_WRAP
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_LOG4D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_HOST(SELF)
+    CLASS(FIELD_LOG4D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_HOST
+
+  SUBROUTINE FIELD_LOG4D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG4D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(4)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => DATA(:,:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_LOG4D_WRAP_PACKED
+
+  SUBROUTINE FIELD_LOG4D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_LOG4D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(4)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(4)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(4)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(4)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(4) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 4
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(4) = 1
+        REAL_UBOUNDS(4) = UBOUNDS(4)
+      END IF
     END IF
-  END SUBROUTINE FIELD_3D_ENSURE_DEVICE
 
-  SUBROUTINE FIELD_4D_ENSURE_DEVICE(SELF)
-    ! Ensure that field has been moved over to device
-    CLASS(FIELD_4D), TARGET :: SELF
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & (REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1) * SIZEOF(.TRUE._JPLM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1,REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):,REAL_LBOUNDS(4):) => SELF%DATA
 
-    IF (.NOT. SELF%ON_DEVICE) THEN
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_LOG4D_ALLOCATE
+
+  FUNCTION FIELD_LOG4D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_LOG4D) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: VIEW_PTR(:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
+    INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    IDX = BLOCK_INDEX
+    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):,LBOUNDS(3):) => SELF%PTR(:,:,:,IDX)
+
+    IF (PRESENT(ZERO)) THEN
+      IF (ZERO) VIEW_PTR(:,:,:) = .FALSE.
+    END IF
+  END FUNCTION FIELD_LOG4D_GET_VIEW
+
+  SUBROUTINE FIELD_LOG4D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_LOG4D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_LOG4D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_LOG4D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG4D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_LOG4D_FINAL
+
+  SUBROUTINE FIELD_LOG4D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG4D_WRAPPER) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG4D_FINAL
+  END SUBROUTINE FIELD_LOG4D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_LOG4D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG4D_WRAPPER_PACKED) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG4D_FINAL
+  END SUBROUTINE FIELD_LOG4D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_LOG4D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG4D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_LOG4D_FINAL
+  END SUBROUTINE FIELD_LOG4D_OWNER_FINAL
+
+  SUBROUTINE FIELD_LOG4D_ENSURE_HOST(SELF)
+    CLASS(FIELD_LOG4D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG4D_ENSURE_HOST
+
+  SUBROUTINE FIELD_LOG4D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG4D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => SELF%PTR (:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG4D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_LOG4D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG4D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_LOG4D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_LOG4D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_LOG4D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG4D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_LOG4D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_LOG4D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_LOG4D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG4D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(4)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
       CALL SELF%UPDATE_DEVICE()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):) => SELF%DEVPTR(:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG4D_GET_DEVICE_DATA
+
+  SUBROUTINE FIELD_LOG4D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG4D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_LOG4D_GET_DEVICE_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_LOG4D_GET_DEVICE_DATA_RDONLY
+
+  SUBROUTINE FIELD_LOG4D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG4D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:)
+
+    CALL FIELD_LOG4D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_LOG4D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_LOG4D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,IBL), SELF%PTR(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_LOG4D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,:,IBL), SELF%DEVDATA(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG4D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,IBL), SELF%BASE_PTR(:,:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG4D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 4) - LBOUND(SELF%DATA, 4) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 4), UBOUND(SELF%PTR, 4)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_LOG4D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_LOG4D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_LOG4D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG4D_UPDATE_HOST_OWNER
+
+  SUBROUTINE FIELD_LOG5D_WRAP(SELF, DATA, PERSISTENT, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG5D_WRAPPER), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:,:,:,:)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(5)
+    LOGICAL :: LLPERSISTENT
+
+    LLPERSISTENT = .TRUE.
+    IF (PRESENT (PERSISTENT)) LLPERSISTENT = PERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => DATA
+    ELSE
+      SELF%PTR => DATA
+    ENDIF
+    SELF%THREAD_BUFFER = .NOT. LLPERSISTENT
+    SELF%ISTATUS = NHSTFRESH
+
+    IF (.NOT. LLPERSISTENT) THEN
+      IF (OML_MAX_THREADS() /= SIZE (DATA, 5)) THEN
+        CALL ABOR1 ('FIELD_LOG5D_WRAP: DIMENSION MISMATCH')
+      ENDIF
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG5D_WRAP
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE(SELF)
+    CLASS(FIELD_LOG5D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_HOST(SELF)
+    CLASS(FIELD_LOG5D), INTENT(INOUT) :: SELF
+
+    PRINT *, "Should never arrive here"
+    ERROR STOP
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_HOST
+
+  SUBROUTINE FIELD_LOG5D_WRAP_PACKED(SELF, DATA, IDX, LBOUNDS)
+    ! Create FIELD object by wrapping existing data
+    CLASS(FIELD_LOG5D_WRAPPER_PACKED), INTENT(INOUT) :: SELF
+    LOGICAL(KIND=JPLM), TARGET, INTENT(IN) :: DATA(:,:,:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: IDX
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: LBOUNDS(5)
+    LOGICAL :: LLPERSISTENT
+
+    IF (PRESENT(LBOUNDS)) THEN
+      SELF%PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => DATA(:,:,:,:,IDX,:)
+    ELSE
+      SELF%PTR => DATA(:,:,:,:,IDX,:)
+    ENDIF
+    SELF%THREAD_BUFFER = .FALSE.
+    SELF%ISTATUS = NHSTFRESH
+
+    SELF%BASE_PTR => DATA
+    SELF%FIDX = IDX
+
+  END SUBROUTINE FIELD_LOG5D_WRAP_PACKED
+
+  SUBROUTINE FIELD_LOG5D_ALLOCATE (SELF, LBOUNDS, UBOUNDS, PERSISTENT)
+    ! Create FIELD object by explicitly allocating new data
+    CLASS(FIELD_LOG5D_OWNER) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: LBOUNDS(5)
+    INTEGER(KIND=JPIM), INTENT(IN) :: UBOUNDS(5)
+    LOGICAL, INTENT(IN), OPTIONAL :: PERSISTENT
+    INTEGER(KIND=JPIM) :: REAL_LBOUNDS(5)
+    INTEGER(KIND=JPIM) :: REAL_UBOUNDS(5)
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+
+    REAL_LBOUNDS=LBOUNDS
+    REAL_UBOUNDS=UBOUNDS
+    REAL_UBOUNDS(5) = OML_MAX_THREADS()
+
+    ! By default we allocate thread-local temporaries
+    SELF%THREAD_BUFFER = .TRUE.
+
+    SELF%LAST_CONTIGUOUS_DIMENSION = 5
+
+    IF (PRESENT(PERSISTENT)) THEN
+      IF (PERSISTENT) THEN
+        SELF%THREAD_BUFFER = .FALSE.
+        REAL_LBOUNDS(5) = 1
+        REAL_UBOUNDS(5) = UBOUNDS(5)
+      END IF
     END IF
-  END SUBROUTINE FIELD_4D_ENSURE_DEVICE
 
-  SUBROUTINE FIELD_INT2D_ENSURE_DEVICE(SELF)
-    ! Ensure that field has been moved over to device
-    CLASS(FIELD_INT2D), TARGET :: SELF
+    ARRSIZE = (REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1) * (REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1) * (REAL_UBOUNDS(3)-REAL_LBOUNDS(3)+1) *&
+        & (REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1) * (REAL_UBOUNDS(5)-REAL_LBOUNDS(5)+1) * SIZEOF(.TRUE._JPLM)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(SELF%HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(SELF%HPTR, SELF%DATA, [REAL_UBOUNDS(1)-REAL_LBOUNDS(1)+1,REAL_UBOUNDS(2)-REAL_LBOUNDS(2)+1,REAL_UBOUNDS(3)-REA&
+        &L_LBOUNDS(3)+1,REAL_UBOUNDS(4)-REAL_LBOUNDS(4)+1,REAL_UBOUNDS(5)-REAL_LBOUNDS(5)+1])
+    SELF%PTR(REAL_LBOUNDS(1):,REAL_LBOUNDS(2):,REAL_LBOUNDS(3):,REAL_LBOUNDS(4):,REAL_LBOUNDS(5):) => SELF%DATA
 
-    IF (.NOT. SELF%ON_DEVICE) THEN
+    SELF%ISTATUS = NHSTFRESH
+  END SUBROUTINE FIELD_LOG5D_ALLOCATE
+
+  FUNCTION FIELD_LOG5D_GET_VIEW(SELF, BLOCK_INDEX, ZERO) RESULT(VIEW_PTR)
+    CLASS(FIELD_LOG5D) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: VIEW_PTR(:,:,:,:)
+    INTEGER(KIND=JPIM), INTENT(IN) :: BLOCK_INDEX
+    LOGICAL, OPTIONAL, INTENT(IN) :: ZERO
+    INTEGER(KIND=JPIM) :: IDX
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    IDX = BLOCK_INDEX
+    IF (SELF%THREAD_BUFFER) IDX = OML_MY_THREAD()
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    VIEW_PTR(LBOUNDS(1):,LBOUNDS(2):,LBOUNDS(3):,LBOUNDS(4):) => SELF%PTR(:,:,:,:,IDX)
+
+    IF (PRESENT(ZERO)) THEN
+      IF (ZERO) VIEW_PTR(:,:,:,:) = .FALSE.
+    END IF
+  END FUNCTION FIELD_LOG5D_GET_VIEW
+
+  SUBROUTINE FIELD_LOG5D_DELETE_DEVICE(SELF)
+    ! Delete the copy of this field on GPU device
+    CLASS(FIELD_LOG5D) :: SELF
+
+    IF (ASSOCIATED (SELF%DEVPTR)) THEN
+      DEALLOCATE (SELF%DEVDATA)
+      NULLIFY(SELF%DEVPTR)
+    ENDIF
+  END SUBROUTINE FIELD_LOG5D_DELETE_DEVICE
+
+  SUBROUTINE FIELD_LOG5D_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG5D) :: SELF
+    CALL SELF%DELETE_DEVICE()
+    NULLIFY(SELF%PTR)
+  END SUBROUTINE FIELD_LOG5D_FINAL
+
+  SUBROUTINE FIELD_LOG5D_WRAPPER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG5D_WRAPPER) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG5D_FINAL
+  END SUBROUTINE FIELD_LOG5D_WRAPPER_FINAL
+
+  SUBROUTINE FIELD_LOG5D_WRAPPER_PACKED_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG5D_WRAPPER_PACKED) :: SELF
+    LOGICAL(KIND=JPLM), POINTER :: PTR(:,:,:,:,:)
+    CALL SELF%GET_HOST_DATA_RDONLY(PTR)
+    CALL SELF%FIELD_LOG5D_FINAL
+  END SUBROUTINE FIELD_LOG5D_WRAPPER_PACKED_FINAL
+
+  SUBROUTINE FIELD_LOG5D_OWNER_FINAL(SELF)
+    ! Finalizes field and deallocates owned data
+    CLASS(FIELD_LOG5D_OWNER) :: SELF
+    INTEGER(KIND=JPIM) :: ISTAT
+
+    ISTAT = CUDAFREEHOST(SELF%HPTR)
+    NULLIFY(SELF%DATA)
+    CALL SELF%FIELD_LOG5D_FINAL
+  END SUBROUTINE FIELD_LOG5D_OWNER_FINAL
+
+  SUBROUTINE FIELD_LOG5D_ENSURE_HOST(SELF)
+    CLASS(FIELD_LOG5D), INTENT (INOUT) :: SELF
+
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG5D_ENSURE_HOST
+
+  SUBROUTINE FIELD_LOG5D_GET_HOST_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG5D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NHSTFRESH) == 0) THEN
+      CALL SELF%UPDATE_HOST()
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NHSTFRESH)
+    ENDIF
+    PTR (LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => SELF%PTR (:,:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NDEVFRESH))
+    ENDIF
+
+  END SUBROUTINE FIELD_LOG5D_GET_HOST_DATA
+
+  SUBROUTINE FIELD_LOG5D_GET_HOST_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG5D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_LOG5D_GET_HOST_DATA (SELF, NRD, PTR)
+
+  END SUBROUTINE FIELD_LOG5D_GET_HOST_DATA_RDONLY
+
+  SUBROUTINE FIELD_LOG5D_GET_HOST_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG5D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+
+    CALL FIELD_LOG5D_GET_HOST_DATA (SELF, IOR (NRD, NWR), PTR)
+
+  END SUBROUTINE FIELD_LOG5D_GET_HOST_DATA_RDWR
+
+  SUBROUTINE FIELD_LOG5D_GET_DEVICE_DATA (SELF, MODE, PTR)
+    CLASS(FIELD_LOG5D), INTENT (INOUT) :: SELF
+    INTEGER (KIND=JPIM),                INTENT (IN) :: MODE
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
+    INTEGER(KIND=JPIM) :: LBOUNDS(5)
+
+    LBOUNDS=LBOUND(SELF%PTR)
+    IF (IAND (SELF%ISTATUS, NDEVFRESH) == 0) THEN
+      IF (.NOT. ALLOCATED(SELF%DEVDATA))THEN
+        ALLOCATE(SELF%DEVDATA, MOLD=SELF%PTR)
+      ENDIF
       CALL SELF%UPDATE_DEVICE()
-    END IF
-  END SUBROUTINE FIELD_INT2D_ENSURE_DEVICE
+      SELF%ISTATUS = IOR (SELF%ISTATUS, NDEVFRESH)
+    ENDIF
+    PTR(LBOUNDS(1):, LBOUNDS(2):, LBOUNDS(3):, LBOUNDS(4):, LBOUNDS(5):) => SELF%DEVPTR(:,:,:,:,:)
+    IF (IAND (MODE, NWR) /= 0) THEN
+      SELF%ISTATUS = IAND (SELF%ISTATUS, NOT (NHSTFRESH))
+    ENDIF
 
-  SUBROUTINE FIELD_LOG2D_ENSURE_DEVICE(SELF)
-    ! Ensure that field has been moved over to device
-    CLASS(FIELD_LOG2D), TARGET :: SELF
+  END SUBROUTINE FIELD_LOG5D_GET_DEVICE_DATA
 
-    IF (.NOT. SELF%ON_DEVICE) THEN
-      CALL SELF%UPDATE_DEVICE()
-    END IF
-  END SUBROUTINE FIELD_LOG2D_ENSURE_DEVICE
+  SUBROUTINE FIELD_LOG5D_GET_DEVICE_DATA_RDONLY (SELF, PTR)
+    CLASS(FIELD_LOG5D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
 
-  SUBROUTINE FIELD_2D_FINAL(SELF)
-    ! Finalizes field and dealloactes owned data
-    CLASS(FIELD_2D) :: SELF
-    IF (SELF%OWNED) THEN
-      DEALLOCATE(SELF%DATA)
-    END IF
-    NULLIFY(SELF%PTR)
-    NULLIFY(SELF%VIEW)
-  END SUBROUTINE FIELD_2D_FINAL
+    CALL FIELD_LOG5D_GET_DEVICE_DATA (SELF, NRD, PTR)
 
-  SUBROUTINE FIELD_3D_FINAL(SELF)
-    ! Finalizes field and dealloactes owned data
-    CLASS(FIELD_3D) :: SELF
-    IF (SELF%OWNED) THEN
-      DEALLOCATE(SELF%DATA)
-    END IF
-    NULLIFY(SELF%PTR)
-    NULLIFY(SELF%VIEW)
-  END SUBROUTINE FIELD_3D_FINAL
+  END SUBROUTINE FIELD_LOG5D_GET_DEVICE_DATA_RDONLY
 
-  SUBROUTINE FIELD_4D_FINAL(SELF)
-    ! Finalizes field and dealloactes owned data
-    CLASS(FIELD_4D) :: SELF
-    IF (SELF%OWNED) THEN
-      DEALLOCATE(SELF%DATA)
-    END IF
-    NULLIFY(SELF%PTR)
-    NULLIFY(SELF%VIEW)
-  END SUBROUTINE FIELD_4D_FINAL
+  SUBROUTINE FIELD_LOG5D_GET_DEVICE_DATA_RDWR (SELF, PTR)
+    CLASS(FIELD_LOG5D), INTENT (INOUT) :: SELF
+    LOGICAL(KIND=JPLM), POINTER, INTENT(INOUT) :: PTR(:,:,:,:,:)
 
-  SUBROUTINE FIELD_INT2D_FINAL(SELF)
-    ! Finalizes field and dealloactes owned data
-    CLASS(FIELD_INT2D) :: SELF
-    IF (SELF%OWNED) THEN
-      DEALLOCATE(SELF%DATA)
-    END IF
-    NULLIFY(SELF%PTR)
-    NULLIFY(SELF%VIEW)
-  END SUBROUTINE FIELD_INT2D_FINAL
+    CALL FIELD_LOG5D_GET_DEVICE_DATA (SELF, IOR (NRD, NWR), PTR)
 
-  SUBROUTINE FIELD_LOG2D_FINAL(SELF)
-    ! Finalizes field and dealloactes owned data
-    CLASS(FIELD_LOG2D) :: SELF
-    IF (SELF%OWNED) THEN
-      DEALLOCATE(SELF%DATA)
-    END IF
-    NULLIFY(SELF%PTR)
-    NULLIFY(SELF%VIEW)
-  END SUBROUTINE FIELD_LOG2D_FINAL
+  END SUBROUTINE FIELD_LOG5D_GET_DEVICE_DATA_RDWR
+
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE_WRAPPER(SELF)
+    CLASS(FIELD_LOG5D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,:,IBL), SELF%PTR(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE_WRAPPER
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_HOST_WRAPPER(SELF)
+    CLASS(FIELD_LOG5D_WRAPPER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%PTR(:,:,:,:,IBL), SELF%DEVDATA(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_HOST_WRAPPER
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG5D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ALLOCATE(SELF%DATA, MOLD=SELF%PTR)
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA(:,:,:,:,IBL), SELF%BASE_PTR(:,:,:,:, SELF%FIDX,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_HOST_WRAPPER_PACKED(SELF)
+    CLASS(FIELD_LOG5D_WRAPPER_PACKED), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE, BLKSIZE, NBLOCKS, IBL
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    NBLOCKS = UBOUND(SELF%DATA, 5) - LBOUND(SELF%DATA, 5) + 1
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+    BLKSIZE = ARRSIZE/NBLOCKS
+
+    CALL CPU_TIME(START)
+    DO IBL=LBOUND(SELF%PTR, 5), UBOUND(SELF%PTR, 5)
+      CALL ACC_MEMCPY_FROM_DEVICE(SELF%BASE_PTR(:,:,:,:, SELF%FIDX,IBL), SELF%DEVDATA(:,:,:,:,IBL), BLKSIZE)
+    END DO
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+    DEALLOCATE(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_HOST_WRAPPER_PACKED
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE_OWNER(SELF)
+    CLASS(FIELD_LOG5D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL ACC_MAP_DATA(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_TO_DEVICE(SELF%DEVDATA, SELF%DATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    HPTR = ACC_HOSTPTR(SELF%DEVDATA)
+    CALL C_F_POINTER(HPTR, SELF%DEVPTR, SHAPE(SELF%DEVDATA))
+
+    CALL SELF%STATS%INC_CPU_TO_GPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_DEVICE_OWNER
+
+  SUBROUTINE FIELD_LOG5D_UPDATE_HOST_OWNER(SELF)
+    CLASS(FIELD_LOG5D_OWNER), INTENT (INOUT) :: SELF
+    INTEGER(KIND=JPIM) :: ARRSIZE
+    TYPE(C_PTR) :: HPTR
+    REAL :: START, FINISH
+
+    ARRSIZE = SIZE(SELF%DATA) * SIZEOF(.TRUE._JPLM)
+
+    CALL CPU_TIME(START)
+    CALL ACC_MEMCPY_FROM_DEVICE(SELF%DATA, SELF%DEVDATA, ARRSIZE)
+    CALL CPU_TIME(FINISH)
+
+    CALL ACC_UNMAP_DATA(SELF%DATA)
+
+    CALL SELF%STATS%INC_GPU_TO_CPU_TRANSFER(START, FINISH)
+
+  END SUBROUTINE FIELD_LOG5D_UPDATE_HOST_OWNER
+
+
+  FUNCTION MALLOC_HOST_PINNED_2D(SHAPE, NBLOCKS) RESULT(PTR)
+    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(1)
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PTR(:,:)
+
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+    TYPE(C_PTR) :: HPTR
+
+    ARRSIZE = SHAPE(1) * NBLOCKS * SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(HPTR, PTR, [SHAPE(1), NBLOCKS] )
+
+  END FUNCTION
+
+  FUNCTION MALLOC_HOST_PINNED_3D(SHAPE, NBLOCKS) RESULT(PTR)
+    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(2)
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PTR(:,:,:)
+
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+    TYPE(C_PTR) :: HPTR
+
+    ARRSIZE = SHAPE(1) * SHAPE(2) * NBLOCKS * SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(HPTR, PTR, [SHAPE(1), SHAPE(2), NBLOCKS] )
+
+  END FUNCTION
+
+  FUNCTION MALLOC_HOST_PINNED_4D(SHAPE, NBLOCKS) RESULT(PTR)
+    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(3)
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PTR(:,:,:,:)
+
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+    TYPE(C_PTR) :: HPTR
+
+    ARRSIZE = SHAPE(1) * SHAPE(2) * SHAPE(3) * NBLOCKS * SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(HPTR, PTR, [SHAPE(1), SHAPE(2), SHAPE(3), NBLOCKS] )
+
+  END FUNCTION
+
+  FUNCTION MALLOC_HOST_PINNED_5D(SHAPE, NBLOCKS) RESULT(PTR)
+    INTEGER(KIND=JPIM), INTENT(IN) :: SHAPE(4)
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NBLOCKS
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PTR(:,:,:,:,:)
+
+    INTEGER(KIND=JPIM) :: ISTAT, ARRSIZE
+    TYPE(C_PTR) :: HPTR
+
+    ARRSIZE = SHAPE(1) * SHAPE(2) * SHAPE(3) * SHAPE(4) * NBLOCKS * SIZEOF(1.0_JPRB)
+    ISTAT = CUDASETDEVICEFLAGS(CUDADEVICEMAPHOST)
+    ISTAT = CUDAHOSTALLOC(HPTR, ARRSIZE, CUDAHOSTALLOCMAPPED)
+    CALL C_F_POINTER(HPTR, PTR, [SHAPE(1), SHAPE(2), SHAPE(3), SHAPE(4), NBLOCKS] )
+
+  END FUNCTION
+
+
+  SUBROUTINE INC_CPU_TO_GPU_TRANSFER(SELF, START, FINISH)
+    CLASS(GPU_STATS), INTENT(INOUT) :: SELF
+    REAL, INTENT(IN) :: START, FINISH
+    SELF%TRANSFER_CPU_TO_GPU = SELF%TRANSFER_CPU_TO_GPU + 1
+    SELF%TOTAL_TIME_TRANSFER_CPU_TO_GPU = SELF%TOTAL_TIME_TRANSFER_CPU_TO_GPU + FINISH - START
+  END SUBROUTINE
+
+  SUBROUTINE INC_GPU_TO_CPU_TRANSFER(SELF, START, FINISH)
+    CLASS(GPU_STATS), INTENT(INOUT) :: SELF
+    REAL, INTENT(IN) :: START, FINISH
+    SELF%TRANSFER_GPU_TO_CPU = SELF%TRANSFER_GPU_TO_CPU + 1
+    SELF%TOTAL_TIME_TRANSFER_GPU_TO_CPU = SELF%TOTAL_TIME_TRANSFER_GPU_TO_CPU + FINISH - START
+  END SUBROUTINE
+
+
+!
+! HELPERS
+!
+
+  INTEGER (KIND=JPIM) FUNCTION FIELD_2D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  REAL(KIND=JPRB), POINTER :: PTR (:,:)
+  INTEGER*8 :: ISTRIDE (2)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 2
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1)) - LOC (PTR (1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2)) - LOC (PTR (1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  END FUNCTION FIELD_2D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_3D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  REAL(KIND=JPRB), POINTER :: PTR (:,:,:)
+  INTEGER*8 :: ISTRIDE (3)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 3
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  END FUNCTION FIELD_3D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_4D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  REAL(KIND=JPRB), POINTER :: PTR (:,:,:,:)
+  INTEGER*8 :: ISTRIDE (4)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 4
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  IF (LOC (PTR (1, 1, 1, 2)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (4)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 4
+
+  END FUNCTION FIELD_4D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_5D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  REAL(KIND=JPRB), POINTER :: PTR (:,:,:,:,:)
+  INTEGER*8 :: ISTRIDE (5)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 5
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  IF (LOC (PTR (1, 1, 1, 2, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (4)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 4
+
+  IF (LOC (PTR (1, 1, 1, 1, 2)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (5)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 5
+
+  END FUNCTION FIELD_5D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_INT2D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  INTEGER(KIND=JPIM), POINTER :: PTR (:,:)
+  INTEGER*8 :: ISTRIDE (2)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 2
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1)) - LOC (PTR (1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2)) - LOC (PTR (1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  END FUNCTION FIELD_INT2D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_INT3D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  INTEGER(KIND=JPIM), POINTER :: PTR (:,:,:)
+  INTEGER*8 :: ISTRIDE (3)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 3
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  END FUNCTION FIELD_INT3D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_INT4D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  INTEGER(KIND=JPIM), POINTER :: PTR (:,:,:,:)
+  INTEGER*8 :: ISTRIDE (4)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 4
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  IF (LOC (PTR (1, 1, 1, 2)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (4)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 4
+
+  END FUNCTION FIELD_INT4D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_INT5D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  INTEGER(KIND=JPIM), POINTER :: PTR (:,:,:,:,:)
+  INTEGER*8 :: ISTRIDE (5)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 5
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  IF (LOC (PTR (1, 1, 1, 2, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (4)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 4
+
+  IF (LOC (PTR (1, 1, 1, 1, 2)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (5)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 5
+
+  END FUNCTION FIELD_INT5D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_LOG2D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  LOGICAL(KIND=JPLM), POINTER :: PTR (:,:)
+  INTEGER*8 :: ISTRIDE (2)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 2
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1)) - LOC (PTR (1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2)) - LOC (PTR (1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  END FUNCTION FIELD_LOG2D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_LOG3D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  LOGICAL(KIND=JPLM), POINTER :: PTR (:,:,:)
+  INTEGER*8 :: ISTRIDE (3)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 3
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2)) - LOC (PTR (1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  END FUNCTION FIELD_LOG3D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_LOG4D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  LOGICAL(KIND=JPLM), POINTER :: PTR (:,:,:,:)
+  INTEGER*8 :: ISTRIDE (4)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 4
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2, 1)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  IF (LOC (PTR (1, 1, 1, 2)) - LOC (PTR (1, 1, 1, 1)) /= ISTRIDE (4)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 4
+
+  END FUNCTION FIELD_LOG4D_GET_LAST_CONTIGUOUS_DIMENSION
+  INTEGER (KIND=JPIM) FUNCTION FIELD_LOG5D_GET_LAST_CONTIGUOUS_DIMENSION (PTR) RESULT (JDIM)
+  LOGICAL(KIND=JPLM), POINTER :: PTR (:,:,:,:,:)
+  INTEGER*8 :: ISTRIDE (5)
+  INTEGER (KIND=JPIM) :: J
+
+  ISTRIDE (1) = KIND (PTR)
+  DO J = 2, 5
+    ISTRIDE (J) = ISTRIDE (J-1) * SIZE (PTR, J-1)
+  ENDDO
+
+  JDIM = 0
+  IF (LOC (PTR (2, 1, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (1)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 1
+
+  IF (LOC (PTR (1, 2, 1, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (2)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 2
+
+  IF (LOC (PTR (1, 1, 2, 1, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (3)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 3
+
+  IF (LOC (PTR (1, 1, 1, 2, 1)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (4)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 4
+
+  IF (LOC (PTR (1, 1, 1, 1, 2)) - LOC (PTR (1, 1, 1, 1, 1)) /= ISTRIDE (5)) THEN
+    RETURN
+  ENDIF
+
+  JDIM = 5
+
+  END FUNCTION FIELD_LOG5D_GET_LAST_CONTIGUOUS_DIMENSION
 
 END MODULE FIELD_MODULE
