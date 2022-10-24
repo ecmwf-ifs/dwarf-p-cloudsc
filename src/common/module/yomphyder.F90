@@ -10,7 +10,7 @@
 module yomphyder
 
 USE PARKIND1, ONLY : JPIM, JPRB
-#ifdef  USE_FIELD_API
+#ifdef USE_FIELD_API
 USE FIELD_MODULE, ONLY: FIELD_3D, FIELD_4D
 #endif
 

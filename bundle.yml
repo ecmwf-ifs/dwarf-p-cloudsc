@@ -9,8 +9,8 @@ cmake : >
 projects :
 
     - ecbuild :
-        git     : https://github.com/ecmwf/ecbuild
-        version : 3.6.4
+        git     : https://github.com/ecmwf/ecbuild 
+        version : 3.7.0
         bundle  : false
 
     - serialbox :
@@ -36,11 +36,21 @@ projects :
             LOKI_ENABLE_TESTS=OFF
             LOKI_ENABLE_NO_INSTALL=ON
 
+    - field_api :
+        git     : ${BITBUCKET}/rdx/field_api
+        version : master
+        optional: true
+        require : ecbuild
+        cmake   : >
+            ENABLE_FIELD_API_TESTS=OFF
+            ENABLE_FIELD_API_FIAT_BUILD=OFF
+            FIELD_API_UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
         dir     : $PWD
         version : develop
-        require : ecbuild serialbox loki
+        require : ecbuild serialbox loki field_api
 
 options :
 
@@ -66,6 +76,7 @@ options :
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
             ENABLE_CLOUDSC_GPU_SCC_FIELD=ON
+            ENABLE_FIELD_API=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
@@ -93,6 +104,14 @@ options :
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations
         cmake : LOKI_FRONTEND={{value}}
+
+    - field_api-old-copy :
+        help  : Use COPY for GPU offload rather than UPDATE_DEVICE/UPDATE_HOST
+        cmake : ENABLE_FIELD_API_OLD_COPY=ON
+
+    - field_api-testing :
+        help  : Enable field_api testing
+        cmake : ENABLE_FIELD_API_TESTS=ON
 
     - cloudsc-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
