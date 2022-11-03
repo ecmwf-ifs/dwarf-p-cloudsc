@@ -2104,15 +2104,22 @@ def cloudsc(
             out_covptot[0, 0, 0] = tmp_covptot[0, 0]
 
     # === 7: flux/diagnostics computations
-    with computation(PARALLEL):
+    with computation(FORWARD):
         with interval(0, 1):
-            # --- copy general precip arrays back info PFP arrays for GRIB archiving
-            out_fplsl[0, 0, 0] = 0
-            out_fplsn[0, 0, 0] = 0
-
-            # --- enthalpy flux due to precipitation
-            out_fhpsl[0, 0, 0] = 0
-            out_fhpsn[0, 0, 0] = 0
+            out_fplsl[0, 0, 0] = 0.0
+            out_fplsn[0, 0, 0] = 0.0
+            out_fhpsl[0, 0, 0] = 0.0
+            out_fhpsn[0, 0, 0] = 0.0
+            out_fsqlf[0, 0, 0] = 0.0
+            out_fsqif[0, 0, 0] = 0.0
+            out_fsqrf[0, 0, 0] = 0.0
+            out_fsqsf[0, 0, 0] = 0.0
+            out_fcqlng[0, 0, 0] = 0.0
+            out_fcqnng[0, 0, 0] = 0.0
+            out_fcqrng[0, 0, 0] = 0.0
+            out_fcqsng[0, 0, 0] = 0.0
+            out_fsqltur[0, 0, 0] = 0.0
+            out_fsqitur[0, 0, 0] = 0.0
         with interval(1, None):
             # --- copy general precip arrays back info PFP arrays for GRIB archiving
             out_fplsl[0, 0, 0] = pfplsr[0, 0, -1] + pfplsl[0, 0, -1]
@@ -2122,22 +2129,6 @@ def cloudsc(
             out_fhpsl[0, 0, 0] = -RLVTT * out_fplsl[0, 0, 0]
             out_fhpsn[0, 0, 0] = -RLSTT * out_fplsn[0, 0, 0]
 
-    with computation(FORWARD):
-        with interval(0, 1):
-            out_fsqlf[0, 0, 0] = 0.0
-            out_fsqif[0, 0, 0] = 0.0
-            out_fsqrf[0, 0, 0] = 0.0
-            out_fsqsf[0, 0, 0] = 0.0
-            out_fcqlng[0, 0, 0] = 0.0
-            out_fcqnng[0, 0, 0] = 0.0
-            out_fcqrng[0, 0, 0] = 0.0
-            out_fcqsng[0, 0, 0] = 0.0
-
-            # fluxes due to turbulence
-            out_fsqltur[0, 0, 0] = 0.0
-            out_fsqitur[0, 0, 0] = 0.0
-
-        with interval(1, None):
             gdph_r = -(in_aph[0, 0, 0] - in_aph[0, 0, -1]) / (RG * dt)
             out_fsqlf[0, 0, 0] = out_fsqlf[0, 0, -1]
             out_fsqif[0, 0, 0] = out_fsqif[0, 0, -1]
