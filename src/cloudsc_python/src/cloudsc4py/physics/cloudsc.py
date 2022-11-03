@@ -173,11 +173,11 @@ class Cloudsc(ImplicitTendencyComponent):
     ) -> None:
         with managed_temporary_storage(
             self.computational_grid,
-            *repeat(((I, J), "float"), 7),
+            *repeat(((I, J), "float"), 6),
             ((I, J), "bool"),
             ((K,), "int"),
             gt4py_config=self.gt4py_config,
-        ) as (anewm1, aph_s, cldtopdist, covpmax, covptot, paphd, trpaus, rainliq, klevel):
+        ) as (aph_s, cldtopdist, covpmax, covptot, paphd, trpaus, rainliq, klevel):
             inputs = {
                 "in_" + name.split("_", maxsplit=1)[1]: state[name]
                 for name in self.input_properties
@@ -191,7 +191,6 @@ class Cloudsc(ImplicitTendencyComponent):
                 for name in self.diagnostic_properties
             }
             temporaries = {
-                "tmp_anewm1": anewm1,
                 "tmp_aph_s": aph_s,
                 "tmp_cldtopdist": cldtopdist,
                 "tmp_covpmax": covpmax,

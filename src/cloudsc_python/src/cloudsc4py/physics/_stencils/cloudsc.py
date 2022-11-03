@@ -78,7 +78,6 @@ def cloudsc(
     out_tnd_loc_qs: Field["float"],
     out_tnd_loc_qv: Field["float"],
     out_tnd_loc_t: Field["float"],
-    tmp_anewm1: Field[IJ, "float"],
     tmp_aph_s: Field[IJ, "float"],
     tmp_cldtopdist: Field[IJ, "float"],
     tmp_covpmax: Field[IJ, "float"],
@@ -207,7 +206,6 @@ def cloudsc(
     with computation(FORWARD), interval(0, 1):
         # zero arrays
         out_rainfrac_toprfz[0, 0] = 0.0
-        tmp_anewm1[0, 0] = 0.0
         tmp_cldtopdist[0, 0] = 0.0
         tmp_covpmax[0, 0] = 0.0
         tmp_covptot[0, 0] = 0.0
@@ -372,6 +370,7 @@ def cloudsc(
             qrn = 0.0
             qsn = 0.0
             qvn = 0.0
+            anew = 0.0
         with interval(NCLDTOP - 1, -1):
             # *** 3.0: initialize variables
             # --- first guess microphysics
@@ -619,7 +618,7 @@ def cloudsc(
             # --- subsidence source from layer above and evaporation of cloud within the layer
             if tmp_klevel[0] > NCLDTOP - 1:
                 mf = max(0.0, (in_mfu + in_mfd) * dtgdp)
-                acust = mf * tmp_anewm1[0, 0]
+                acust = mf * anew[0, 0, -1]
 
                 if __INLINED(not FALLQL and PHASEQL > 0):
                     lcust_ql = mf * qln[0, 0, -1]
@@ -649,7 +648,7 @@ def cloudsc(
                 # work out how much liquid evaporates at arrival point
                 dtdp = RDCP * 0.5 * (t[0, 0, -1] + t[0, 0, 0]) / in_aph[0, 0, 0]
                 dtforc = dtdp[0, 0, 0] * (in_ap[0, 0, 0] - in_ap[0, 0, -1])
-                dqs = tmp_anewm1[0, 0] * dtforc * dqsmixdt
+                dqs = anew[0, 0, -1] * dtforc * dqsmixdt
 
                 if __INLINED(not FALLQL and PHASEQL > 0):
                     lfinal = max(0.0, lcust_ql - dqs)
@@ -1457,7 +1456,6 @@ def cloudsc(
             if anew < RAMIN:
                 anew = 0.0
             da = anew - a0
-            tmp_anewm1[0, 0] = anew
 
             # *** 5.2: solver for the microphysics
             # --- collect sink terms and mark
