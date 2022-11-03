@@ -85,16 +85,6 @@ def cloudsc(
     tmp_covptot: Field[IJ, "float"],
     tmp_klevel: Field[K, "int"],
     tmp_paphd: Field[IJ, "float"],
-    tmp_pfplsi_n: Field[IJ, "float"],
-    tmp_pfplsl_n: Field[IJ, "float"],
-    tmp_pfplsr_n: Field[IJ, "float"],
-    tmp_pfplss_n: Field[IJ, "float"],
-    tmp_pfplsv_n: Field[IJ, "float"],
-    tmp_qinm1: Field[IJ, "float"],
-    tmp_qlnm1: Field[IJ, "float"],
-    tmp_qrnm1: Field[IJ, "float"],
-    tmp_qsnm1: Field[IJ, "float"],
-    tmp_qvnm1: Field[IJ, "float"],
     tmp_rainliq: Field[IJ, "bool"],
     tmp_trpaus: Field[IJ, "float"],
     *,
@@ -222,16 +212,6 @@ def cloudsc(
         tmp_covpmax[0, 0] = 0.0
         tmp_covptot[0, 0] = 0.0
         tmp_paphd[0, 0] = 0.0
-        tmp_pfplsl_n[0, 0] = 0.0
-        tmp_pfplsi_n[0, 0] = 0.0
-        tmp_pfplsr_n[0, 0] = 0.0
-        tmp_pfplss_n[0, 0] = 0.0
-        tmp_pfplsv_n[0, 0] = 0.0
-        tmp_qlnm1[0, 0] = 0.0
-        tmp_qinm1[0, 0] = 0.0
-        tmp_qrnm1[0, 0] = 0.0
-        tmp_qsnm1[0, 0] = 0.0
-        tmp_qvnm1[0, 0] = 0.0
         tmp_rainliq[0, 0] = True
         tmp_trpaus[0, 0] = 0.0
 
@@ -514,13 +494,6 @@ def cloudsc(
             solqb_qv_qs = 0.0
             solqb_qv_qv = 0.0
 
-            # retrieve values from previous level
-            pfplsl = tmp_pfplsl_n[0, 0]
-            pfplsi = tmp_pfplsi_n[0, 0]
-            pfplsr = tmp_pfplsr_n[0, 0]
-            pfplss = tmp_pfplss_n[0, 0]
-            pfplsv = tmp_pfplsv_n[0, 0]
-
             # derived variables needed
             dp = in_aph[0, 0, 1] - in_aph[0, 0, 0]
             gdp = RG / dp
@@ -649,27 +622,27 @@ def cloudsc(
                 acust = mf * tmp_anewm1[0, 0]
 
                 if __INLINED(not FALLQL and PHASEQL > 0):
-                    lcust_ql = mf * tmp_qlnm1[0, 0]
+                    lcust_ql = mf * qln[0, 0, -1]
                     # record total flux for enthalpy budget
                     convsrce_ql += lcust_ql
 
                 if __INLINED(not FALLQI and PHASEQI > 0):
-                    lcust_qi = mf * tmp_qinm1[0, 0]
+                    lcust_qi = mf * qin[0, 0, -1]
                     # record total flux for enthalpy budget
                     convsrce_qi += lcust_qi
 
                 if __INLINED(not FALLQR and PHASEQR > 0):
-                    lcust_qr = mf * tmp_qrnm1[0, 0]
+                    lcust_qr = mf * qrn[0, 0, -1]
                     # record total flux for enthalpy budget
                     convsrce_qr += lcust_qr
 
                 if __INLINED(not FALLQS and PHASEQS > 0):
-                    lcust_qs = mf * tmp_qsnm1[0, 0]
+                    lcust_qs = mf * qsn[0, 0, -1]
                     # record total flux for enthalpy budget
                     convsrce_qs += lcust_qs
 
                 if __INLINED(not FALLQV and PHASEQV > 0):
-                    lcust_qv = mf * tmp_qvnm1[0, 0]
+                    lcust_qv = mf * qvn[0, 0, -1]
                     # record total flux for enthalpy budget
                     convsrce_qv += lcust_qv
 
@@ -995,7 +968,7 @@ def cloudsc(
             if __INLINED(FALLQL):
                 # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
-                    fallsrce_ql = pfplsl * dtgdp
+                    fallsrce_ql = pfplsl[0, 0, -1] * dtgdp
                     solqa_ql_ql += fallsrce_ql
                     qlfg += fallsrce_ql
                     # use first guess precip
@@ -1009,7 +982,7 @@ def cloudsc(
             # *** 4.1b: sedimentation/falling of qi
             # --- source from layer above
             if tmp_klevel[0] > NCLDTOP - 1:
-                fallsrce_qi = pfplsi * dtgdp
+                fallsrce_qi = pfplsi[0, 0, -1] * dtgdp
                 solqa_qi_qi += fallsrce_qi
                 qifg += fallsrce_qi
                 # use first guess precip
@@ -1026,7 +999,7 @@ def cloudsc(
             if __INLINED(FALLQR):
                 # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
-                    fallsrce_qr = pfplsr * dtgdp
+                    fallsrce_qr = pfplsr[0, 0, -1] * dtgdp
                     solqa_qr_qr += fallsrce_qr
                     qrfg += fallsrce_qr
                     # use first guess precip
@@ -1041,7 +1014,7 @@ def cloudsc(
             if __INLINED(FALLQS):
                 # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
-                    fallsrce_qs = pfplss * dtgdp
+                    fallsrce_qs = pfplss[0, 0, -1] * dtgdp
                     solqa_qs_qs += fallsrce_qs
                     qsfg += fallsrce_qs
                     # use first guess precip
@@ -1056,7 +1029,7 @@ def cloudsc(
             if __INLINED(FALLQV):
                 # --- source from layer above
                 if tmp_klevel[0] > NCLDTOP - 1:
-                    fallsrce_qv = pfplsv * dtgdp
+                    fallsrce_qv = pfplsv[0, 0, -1] * dtgdp
                     solqa_qv_qv += fallsrce_qv
                     qvfg += fallsrce_qv
                     # use first guess precip
@@ -1113,7 +1086,7 @@ def cloudsc(
                         lcrit = RCLCRIT_LAND if in_lsm[0, 0] > 0.5 else RCLCRIT_SEA
 
                     # --- parameters for cloud collection by rain and snow
-                    precip = (pfplss + pfplsr) / max(EPSEC, tmp_covptot[0, 0])
+                    precip = (pfplss[0, 0, -1] + pfplsr[0, 0, -1]) / max(EPSEC, tmp_covptot[0, 0])
                     cfpr = 1 + RPRC1 * sqrt(max(precip, 0.0))
                     if __INLINED(LAERLIQCOLL):
                         cfpr *= (RCCN / in_ccn[0, 0, 0]) ** 0.333
@@ -2081,22 +2054,15 @@ def cloudsc(
                 qvn += qsn
                 qsn = 0.0
 
-            # --- variables needed for next level
-            tmp_qlnm1[0, 0] = qln
-            tmp_qinm1[0, 0] = qin
-            tmp_qrnm1[0, 0] = qrn
-            tmp_qsnm1[0, 0] = qsn
-            tmp_qvnm1[0, 0] = qvn
-
             # *** 5.3: precipitation/sedimentation fluxes to next level diagnostic precipitation fluxes
-            tmp_pfplsl_n[0, 0] = fallsink_ql * qln * rdtgdp
-            tmp_pfplsi_n[0, 0] = fallsink_qi * qin * rdtgdp
-            tmp_pfplsr_n[0, 0] = fallsink_qr * qrn * rdtgdp
-            tmp_pfplss_n[0, 0] = fallsink_qs * qsn * rdtgdp
-            tmp_pfplsv_n[0, 0] = fallsink_qv * qvn * rdtgdp
+            pfplsl = fallsink_ql * qln * rdtgdp
+            pfplsi = fallsink_qi * qin * rdtgdp
+            pfplsr = fallsink_qr * qrn * rdtgdp
+            pfplss = fallsink_qs * qsn * rdtgdp
+            pfplsv = fallsink_qv * qvn * rdtgdp
 
             # ensure precipitation fraction is zero if no precipitation
-            qpretot = tmp_pfplss_n[0, 0] + tmp_pfplsr_n[0, 0]
+            qpretot = pfplss + pfplsr
             if qpretot < EPSEC:
                 tmp_covptot[0, 0] = 0.0
 
@@ -2138,22 +2104,25 @@ def cloudsc(
 
             # --- copy precipitation fraction into output variable
             out_covptot[0, 0, 0] = tmp_covptot[0, 0]
-        with interval(-1, None):
-            pfplsl = tmp_pfplsl_n[0, 0]
-            pfplsi = tmp_pfplsi_n[0, 0]
-            pfplsr = tmp_pfplsr_n[0, 0]
-            pfplss = tmp_pfplss_n[0, 0]
-            pfplsv = tmp_pfplsv_n[0, 0]
 
     # === 7: flux/diagnostics computations
-    with computation(PARALLEL), interval(...):
-        # --- copy general precip arrays back info PFP arrays for GRIB archiving
-        out_fplsl[0, 0, 0] = pfplsr + pfplsl
-        out_fplsn[0, 0, 0] = pfplss + pfplsi
+    with computation(PARALLEL):
+        with interval(0, 1):
+            # --- copy general precip arrays back info PFP arrays for GRIB archiving
+            out_fplsl[0, 0, 0] = 0
+            out_fplsn[0, 0, 0] = 0
 
-        # --- enthalpy flux due to precipitation
-        out_fhpsl[0, 0, 0] = -RLVTT * out_fplsl[0, 0, 0]
-        out_fhpsn[0, 0, 0] = -RLSTT * out_fplsn[0, 0, 0]
+            # --- enthalpy flux due to precipitation
+            out_fhpsl[0, 0, 0] = 0
+            out_fhpsn[0, 0, 0] = 0
+        with interval(1, None):
+            # --- copy general precip arrays back info PFP arrays for GRIB archiving
+            out_fplsl[0, 0, 0] = pfplsr[0, 0, -1] + pfplsl[0, 0, -1]
+            out_fplsn[0, 0, 0] = pfplss[0, 0, -1] + pfplsi[0, 0, -1]
+
+            # --- enthalpy flux due to precipitation
+            out_fhpsl[0, 0, 0] = -RLVTT * out_fplsl[0, 0, 0]
+            out_fhpsn[0, 0, 0] = -RLSTT * out_fplsn[0, 0, 0]
 
     with computation(FORWARD):
         with interval(0, 1):

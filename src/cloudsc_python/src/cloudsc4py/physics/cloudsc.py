@@ -173,31 +173,11 @@ class Cloudsc(ImplicitTendencyComponent):
     ) -> None:
         with managed_temporary_storage(
             self.computational_grid,
-            *repeat(((I, J), "float"), 17),
+            *repeat(((I, J), "float"), 7),
             ((I, J), "bool"),
             ((K,), "int"),
             gt4py_config=self.gt4py_config,
-        ) as (
-            anewm1,
-            aph_s,
-            cldtopdist,
-            covpmax,
-            covptot,
-            paphd,
-            pfplsv_n,
-            pfplsl_n,
-            pfplsi_n,
-            pfplsr_n,
-            pfplss_n,
-            qinm1,
-            qlnm1,
-            qrnm1,
-            qsnm1,
-            qvnm1,
-            trpaus,
-            rainliq,
-            klevel,
-        ):
+        ) as (anewm1, aph_s, cldtopdist, covpmax, covptot, paphd, trpaus, rainliq, klevel):
             inputs = {
                 "in_" + name.split("_", maxsplit=1)[1]: state[name]
                 for name in self.input_properties
@@ -218,16 +198,6 @@ class Cloudsc(ImplicitTendencyComponent):
                 "tmp_covptot": covptot,
                 "tmp_klevel": klevel,
                 "tmp_paphd": paphd,
-                "tmp_pfplsv_n": pfplsv_n,
-                "tmp_pfplsl_n": pfplsl_n,
-                "tmp_pfplsi_n": pfplsi_n,
-                "tmp_pfplsr_n": pfplsr_n,
-                "tmp_pfplss_n": pfplss_n,
-                "tmp_qinm1": qinm1,
-                "tmp_qlnm1": qlnm1,
-                "tmp_qrnm1": qrnm1,
-                "tmp_qsnm1": qsnm1,
-                "tmp_qvnm1": qvnm1,
                 "tmp_rainliq": rainliq,
                 "tmp_trpaus": trpaus,
             }
