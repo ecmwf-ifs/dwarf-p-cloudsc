@@ -112,6 +112,7 @@ default_python_config = PythonConfig(
 class FortranConfig(BaseModel):
     build_dir: str
     mode: str
+    nproma: int
     num_runs: int
     num_threads: int
     nx: int
@@ -124,6 +125,11 @@ class FortranConfig(BaseModel):
     def with_mode(self, mode: str) -> FortranConfig:
         args = self.dict()
         args["mode"] = mode
+        return FortranConfig(**args)
+
+    def with_nproma(self, nproma: int) -> FortranConfig:
+        args = self.dict()
+        args["nproma"] = nproma
         return FortranConfig(**args)
 
     def with_num_runs(self, num_runs: int) -> FortranConfig:
@@ -143,5 +149,5 @@ class FortranConfig(BaseModel):
 
 
 default_fortran_config = FortranConfig(
-    build_dir=".", mode="fortran", num_runs=1, num_threads=1, nx=1
+    build_dir=".", mode="fortran", nproma=32, num_runs=1, num_threads=1, nx=1
 )

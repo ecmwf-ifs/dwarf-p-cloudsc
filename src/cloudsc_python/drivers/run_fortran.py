@@ -21,7 +21,7 @@ def core(config: FortranConfig, io_config: IOConfig) -> None:
             executable,
             str(config.num_threads),
             str(config.nx),
-            str(min(config.nx, 32)),
+            str(min(config.nx, config.nproma)),
         ],
         capture_output=True,
     )
@@ -34,14 +34,20 @@ def core(config: FortranConfig, io_config: IOConfig) -> None:
                 executable,
                 str(config.num_threads),
                 str(config.nx),
-                str(min(config.nx, 32)),
+                str(min(config.nx, config.nproma)),
             ],
             capture_output=True,
         )
-        x = out.stderr.decode("utf-8").split("\n")[-2]
-        y = x.split(" ")
-        z = [c for c in y if c != ""]
-        runtimes.append(float(z[-4]))
+        if "gpu" in config.mode:
+            x = out.stderr.decode("utf-8").split("\n")[2]
+            y = x.split(" ")
+            z = [c for c in y if c != ""]
+            runtimes.append(float(z[-4]))
+        else:
+            x = out.stderr.decode("utf-8").split("\n")[-2]
+            y = x.split(" ")
+            z = [c for c in y if c != ""]
+            runtimes.append(float(z[-4]))
 
     runtime_mean, runtime_stddev = print_performance(runtimes)
 
@@ -60,6 +66,7 @@ def core(config: FortranConfig, io_config: IOConfig) -> None:
 @click.command()
 @click.option("--build-dir", type=str, default="fortran")
 @click.option("--mode", type=str, default="fortran")
+@click.option("--nproma", type=int, default=32)
 @click.option("--num-runs", type=int, default=1)
 @click.option("--num-threads", type=int, default=1)
 @click.option("--nx", type=int, default=1)
@@ -68,6 +75,7 @@ def core(config: FortranConfig, io_config: IOConfig) -> None:
 def main(
     build_dir: str,
     mode: str,
+    nproma: int,
     num_runs: int,
     num_threads: int,
     nx: int,
@@ -77,6 +85,7 @@ def main(
     config = (
         default_fortran_config.with_build_dir(build_dir)
         .with_mode(mode)
+        .with_nproma(nproma)
         .with_num_runs(num_runs)
         .with_num_threads(num_threads)
         .with_nx(nx)

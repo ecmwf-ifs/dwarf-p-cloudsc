@@ -2,10 +2,11 @@
 
 CC=$(which cc)
 CXX=$(which CC)
-ENV=gnu
-FORTRAN_MODES=( )
-GT4PY_BACKENDS=( gt:cpu_kfirst gt:cpu_ifirst )
-HOST=mbp18
+ENV=nvidia
+FORTRAN_MODES=( gpu-scc gpu-scc-hoist )
+GT4PY_BACKENDS=( )
+HOST=dom
+NPROMA=128
 NXS=( 512 1024 2048 4096 8192 16384 32768 65536 131072 )
 
 for FORTRAN_MODE in "${FORTRAN_MODES[@]}"
@@ -15,9 +16,10 @@ do
   do
     echo -n "  nx=$NX: "
     python run_fortran.py \
-      --build-dir=../../../build/"$ENV" \
+      --build-dir=../../../../develop/build/"$ENV" \
+      --nproma="$NPROMA" \
       --num-runs=20 \
-      --num-threads=24 \
+      --num-threads=1 \
       --output-file=../data/performance_"$ENV".csv \
       --host-alias="$HOST" \
       --mode="$FORTRAN_MODE" \
