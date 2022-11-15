@@ -28,7 +28,7 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_CUF_MOD
 CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_CUF( &
-     & NUMOMP, NPROMA, NGPTOT, NGPBLKS, NGPTOTG, KFLDX, PTSPHY, &
+     & NUMOMP, NPROMA, NLEV_IN, NGPTOT, NGPBLKS, NGPTOTG, KFLDX, PTSPHY, &
      & PT, PQ, &
      & BUFFER_CML, BUFFER_TMP, BUFFER_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
@@ -48,59 +48,59 @@ CONTAINS
      & )
     ! Driver routine that invokes the optimized CLAW-based CLOUDSC GPU kernel
 
-    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NGPTOT, NGPBLKS, NGPTOTG
+    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV_IN, NGPTOT, NGPBLKS, NGPTOTG
     INTEGER(KIND=JPIM)                                    :: KFLDX 
     REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
-    REAL(KIND=JPRB), INTENT(IN)    :: PT(NPROMA, NLEV, NGPBLKS) ! T at start of callpar
-    REAL(KIND=JPRB), INTENT(IN)    :: PQ(NPROMA, NLEV, NGPBLKS) ! Q at start of callpar
-    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_CML(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
-    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_TMP(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_TMP
-    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_LOC(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_LOC
-    REAL(KIND=JPRB), INTENT(IN)    :: PVFA(NPROMA, NLEV, NGPBLKS)     ! CC from VDF scheme
-    REAL(KIND=JPRB), INTENT(IN)    :: PVFL(NPROMA, NLEV, NGPBLKS)     ! Liq from VDF scheme
-    REAL(KIND=JPRB), INTENT(IN)    :: PVFI(NPROMA, NLEV, NGPBLKS)     ! Ice from VDF scheme
-    REAL(KIND=JPRB), INTENT(IN)    :: PDYNA(NPROMA, NLEV, NGPBLKS)    ! CC from Dynamics
-    REAL(KIND=JPRB), INTENT(IN)    :: PDYNL(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
-    REAL(KIND=JPRB), INTENT(IN)    :: PDYNI(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
-    REAL(KIND=JPRB), INTENT(IN)    :: PHRSW(NPROMA, NLEV, NGPBLKS)    ! Short-wave heating rate
-    REAL(KIND=JPRB), INTENT(IN)    :: PHRLW(NPROMA, NLEV, NGPBLKS)    ! Long-wave heating rate
-    REAL(KIND=JPRB), INTENT(IN)    :: PVERVEL(NPROMA, NLEV, NGPBLKS)  !Vertical velocity
-    REAL(KIND=JPRB), INTENT(IN)    :: PAP(NPROMA, NLEV, NGPBLKS)      ! Pressure on full levels
-    REAL(KIND=JPRB), INTENT(IN)    :: PAPH(NPROMA, NLEV+1, NGPBLKS) ! Pressure on half levels
+    REAL(KIND=JPRB), INTENT(IN)    :: PT(NPROMA, NLEV_IN, NGPBLKS) ! T at start of callpar
+    REAL(KIND=JPRB), INTENT(IN)    :: PQ(NPROMA, NLEV_IN, NGPBLKS) ! Q at start of callpar
+    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_CML(NPROMA,NLEV_IN,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
+    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_TMP(NPROMA,NLEV_IN,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_TMP
+    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_LOC(NPROMA,NLEV_IN,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_LOC
+    REAL(KIND=JPRB), INTENT(IN)    :: PVFA(NPROMA, NLEV_IN, NGPBLKS)     ! CC from VDF scheme
+    REAL(KIND=JPRB), INTENT(IN)    :: PVFL(NPROMA, NLEV_IN, NGPBLKS)     ! Liq from VDF scheme
+    REAL(KIND=JPRB), INTENT(IN)    :: PVFI(NPROMA, NLEV_IN, NGPBLKS)     ! Ice from VDF scheme
+    REAL(KIND=JPRB), INTENT(IN)    :: PDYNA(NPROMA, NLEV_IN, NGPBLKS)    ! CC from Dynamics
+    REAL(KIND=JPRB), INTENT(IN)    :: PDYNL(NPROMA, NLEV_IN, NGPBLKS)    ! Liq from Dynamics
+    REAL(KIND=JPRB), INTENT(IN)    :: PDYNI(NPROMA, NLEV_IN, NGPBLKS)    ! Liq from Dynamics
+    REAL(KIND=JPRB), INTENT(IN)    :: PHRSW(NPROMA, NLEV_IN, NGPBLKS)    ! Short-wave heating rate
+    REAL(KIND=JPRB), INTENT(IN)    :: PHRLW(NPROMA, NLEV_IN, NGPBLKS)    ! Long-wave heating rate
+    REAL(KIND=JPRB), INTENT(IN)    :: PVERVEL(NPROMA, NLEV_IN, NGPBLKS)  !Vertical velocity
+    REAL(KIND=JPRB), INTENT(IN)    :: PAP(NPROMA, NLEV_IN, NGPBLKS)      ! Pressure on full levels
+    REAL(KIND=JPRB), INTENT(IN)    :: PAPH(NPROMA, NLEV_IN+1, NGPBLKS) ! Pressure on half levels
     REAL(KIND=JPRB), INTENT(IN)    :: PLSM(NPROMA, NGPBLKS)    ! Land fraction (0-1)
     LOGICAL, INTENT(IN)            :: LDCUM(NPROMA, NGPBLKS)    ! Convection active
     INTEGER(KIND=JPIM), INTENT(IN) :: KTYPE(NPROMA, NGPBLKS)    ! Convection type 0,1,2
-    REAL(KIND=JPRB), INTENT(IN)    :: PLU(NPROMA, NLEV, NGPBLKS)      ! Conv. condensate
-    REAL(KIND=JPRB), INTENT(INOUT) :: PLUDE(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained water
-    REAL(KIND=JPRB), INTENT(IN)    :: PSNDE(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained snow
-    REAL(KIND=JPRB), INTENT(IN)    :: PMFU(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux up
-    REAL(KIND=JPRB), INTENT(IN)    :: PMFD(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux down
-    REAL(KIND=JPRB), INTENT(IN)    :: PA(NPROMA, NLEV, NGPBLKS)       ! Original Cloud fraction (t)
-    REAL(KIND=JPRB), INTENT(IN)    :: PCLV(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB), INTENT(IN)    :: PSUPSAT(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB), INTENT(IN)    :: PLCRIT_AER(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB), INTENT(IN)    :: PICRIT_AER(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB), INTENT(IN)    :: PRE_ICE(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB), INTENT(IN)    :: PCCN(NPROMA, NLEV, NGPBLKS)     ! liquid cloud condensation nuclei
-    REAL(KIND=JPRB), INTENT(IN)    :: PNICE(NPROMA, NLEV, NGPBLKS)    ! ice number concentration (cf. CCN)
+    REAL(KIND=JPRB), INTENT(IN)    :: PLU(NPROMA, NLEV_IN, NGPBLKS)      ! Conv. condensate
+    REAL(KIND=JPRB), INTENT(INOUT) :: PLUDE(NPROMA, NLEV_IN, NGPBLKS)    ! Conv. detrained water
+    REAL(KIND=JPRB), INTENT(IN)    :: PSNDE(NPROMA, NLEV_IN, NGPBLKS)    ! Conv. detrained snow
+    REAL(KIND=JPRB), INTENT(IN)    :: PMFU(NPROMA, NLEV_IN, NGPBLKS)     ! Conv. mass flux up
+    REAL(KIND=JPRB), INTENT(IN)    :: PMFD(NPROMA, NLEV_IN, NGPBLKS)     ! Conv. mass flux down
+    REAL(KIND=JPRB), INTENT(IN)    :: PA(NPROMA, NLEV_IN, NGPBLKS)       ! Original Cloud fraction (t)
+    REAL(KIND=JPRB), INTENT(IN)    :: PCLV(NPROMA, NLEV_IN, NCLV, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    :: PSUPSAT(NPROMA, NLEV_IN, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    :: PLCRIT_AER(NPROMA, NLEV_IN, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    :: PICRIT_AER(NPROMA, NLEV_IN, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    :: PRE_ICE(NPROMA, NLEV_IN, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    :: PCCN(NPROMA, NLEV_IN, NGPBLKS)     ! liquid cloud condensation nuclei
+    REAL(KIND=JPRB), INTENT(IN)    :: PNICE(NPROMA, NLEV_IN, NGPBLKS)    ! ice number concentration (cf. CCN)
 
-    REAL(KIND=JPRB), INTENT(INOUT) :: PCOVPTOT(NPROMA, NLEV, NGPBLKS)    ! Precip fraction
+    REAL(KIND=JPRB), INTENT(INOUT) :: PCOVPTOT(NPROMA, NLEV_IN, NGPBLKS)    ! Precip fraction
     REAL(KIND=JPRB), INTENT(OUT) :: PRAINFRAC_TOPRFZ(NPROMA, NGPBLKS)
     ! Flux diagnostics for DDH budget
-    REAL(KIND=JPRB), INTENT(OUT) :: PFSQLF(NPROMA, NLEV+1, NGPBLKS)    ! Flux of liquid
-    REAL(KIND=JPRB), INTENT(OUT) :: PFSQIF(NPROMA, NLEV+1, NGPBLKS)    ! Flux of ice
-    REAL(KIND=JPRB), INTENT(OUT) :: PFCQLNG(NPROMA, NLEV+1, NGPBLKS)   ! -ve corr for liq
-    REAL(KIND=JPRB), INTENT(OUT) :: PFCQNNG(NPROMA, NLEV+1, NGPBLKS)   ! -ve corr for ice
-    REAL(KIND=JPRB), INTENT(OUT) :: PFSQRF(NPROMA, NLEV+1, NGPBLKS)    ! Flux diagnostics
-    REAL(KIND=JPRB), INTENT(OUT) :: PFSQSF(NPROMA, NLEV+1, NGPBLKS)    !    for DDH, generic
-    REAL(KIND=JPRB), INTENT(OUT) :: PFCQRNG(NPROMA, NLEV+1, NGPBLKS)   ! rain
-    REAL(KIND=JPRB), INTENT(OUT) :: PFCQSNG(NPROMA, NLEV+1, NGPBLKS)   ! snow
-    REAL(KIND=JPRB), INTENT(OUT) :: PFSQLTUR(NPROMA, NLEV+1, NGPBLKS)  ! liquid flux due to VDF
-    REAL(KIND=JPRB), INTENT(OUT) :: PFSQITUR(NPROMA, NLEV+1, NGPBLKS)  ! ice flux due to VDF
-    REAL(KIND=JPRB), INTENT(OUT) :: PFPLSL(NPROMA, NLEV+1, NGPBLKS)    ! liq+rain sedim flux
-    REAL(KIND=JPRB), INTENT(OUT) :: PFPLSN(NPROMA, NLEV+1, NGPBLKS)    ! ice+snow sedim flux
-    REAL(KIND=JPRB), INTENT(OUT) :: PFHPSL(NPROMA, NLEV+1, NGPBLKS)    ! Enthalpy flux for liq
-    REAL(KIND=JPRB), INTENT(OUT) :: PFHPSN(NPROMA, NLEV+1, NGPBLKS)    ! ice number concentration (cf. CCN)
+    REAL(KIND=JPRB), INTENT(OUT) :: PFSQLF(NPROMA, NLEV_IN+1, NGPBLKS)    ! Flux of liquid
+    REAL(KIND=JPRB), INTENT(OUT) :: PFSQIF(NPROMA, NLEV_IN+1, NGPBLKS)    ! Flux of ice
+    REAL(KIND=JPRB), INTENT(OUT) :: PFCQLNG(NPROMA, NLEV_IN+1, NGPBLKS)   ! -ve corr for liq
+    REAL(KIND=JPRB), INTENT(OUT) :: PFCQNNG(NPROMA, NLEV_IN+1, NGPBLKS)   ! -ve corr for ice
+    REAL(KIND=JPRB), INTENT(OUT) :: PFSQRF(NPROMA, NLEV_IN+1, NGPBLKS)    ! Flux diagnostics
+    REAL(KIND=JPRB), INTENT(OUT) :: PFSQSF(NPROMA, NLEV_IN+1, NGPBLKS)    !    for DDH, generic
+    REAL(KIND=JPRB), INTENT(OUT) :: PFCQRNG(NPROMA, NLEV_IN+1, NGPBLKS)   ! rain
+    REAL(KIND=JPRB), INTENT(OUT) :: PFCQSNG(NPROMA, NLEV_IN+1, NGPBLKS)   ! snow
+    REAL(KIND=JPRB), INTENT(OUT) :: PFSQLTUR(NPROMA, NLEV_IN+1, NGPBLKS)  ! liquid flux due to VDF
+    REAL(KIND=JPRB), INTENT(OUT) :: PFSQITUR(NPROMA, NLEV_IN+1, NGPBLKS)  ! ice flux due to VDF
+    REAL(KIND=JPRB), INTENT(OUT) :: PFPLSL(NPROMA, NLEV_IN+1, NGPBLKS)    ! liq+rain sedim flux
+    REAL(KIND=JPRB), INTENT(OUT) :: PFPLSN(NPROMA, NLEV_IN+1, NGPBLKS)    ! ice+snow sedim flux
+    REAL(KIND=JPRB), INTENT(OUT) :: PFHPSL(NPROMA, NLEV_IN+1, NGPBLKS)    ! Enthalpy flux for liq
+    REAL(KIND=JPRB), INTENT(OUT) :: PFHPSN(NPROMA, NLEV_IN+1, NGPBLKS)    ! ice number concentration (cf. CCN)
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICSTART, ICEND
     TYPE(PERFORMANCE_TIMER) :: TIMER
@@ -165,11 +165,17 @@ CONTAINS
     REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: PFHPSL_d(:,:,:) !!(NPROMA, NLEV+1, NGPBLKS)    ! Enthalpy flux for liq
     REAL(KIND=JPRB), DEVICE, ALLOCATABLE :: PFHPSN_d(:,:,:) !!(NPROMA, NLEV+1, NGPBLKS)    ! ice number concentration (cf. CCN)
 
+#include "abor1.intfb.h"
+
     ! Transfer global module-scope parameters to constant device memory
     CALL YOMCST_UPDATE_DEVICE()
     CALL YOETHF_UPDATE_DEVICE()
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
+
+    IF (NLEV_IN /= NLEV) THEN
+      CALL ABOR1('ERROR: Vertical dimension NLEV does not equal parametrised constant NLEV=137')
+    END IF
 
     ALLOCATE( PT_d(NPROMA, NLEV, NGPBLKS),PQ_d(NPROMA, NLEV, NGPBLKS),BUFFER_CML_d(NPROMA,NLEV,3+NCLV,NGPBLKS))
     ALLOCATE( BUFFER_TMP_d(NPROMA,NLEV,3+NCLV,NGPBLKS), BUFFER_LOC_d(NPROMA,NLEV,3+NCLV,NGPBLKS))
@@ -219,8 +225,8 @@ CONTAINS
     CALL TIMER%THREAD_START(TID)
 
 
-       ICSTART=1
-       ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
+    ICSTART=1
+    ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
     GRIDDIM = DIM3(1,1,CEILING(REAL(NGPTOT)/REAL(NPROMA)))
     BLOCKDIM = DIM3(NPROMA,1,1)
