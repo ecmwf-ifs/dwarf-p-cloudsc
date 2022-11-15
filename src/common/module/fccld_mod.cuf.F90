@@ -7,7 +7,8 @@
 ! granted to it by virtue of its status as an intergovernmental organisation
 ! nor does it submit to any jurisdiction.
 
-MODULE FCCLD_MOD
+
+MODULE FCCLD_CUF_MOD
   !*
   !     ------------------------------------------------------------------
   !     This COMDECK defines functions to be used in the cloud scheme
@@ -24,18 +25,18 @@ MODULE FCCLD_MOD
   !     **********************************************
   !
   !               INPUT : PTARE = TEMPERATURE 
-  USE PARKIND1,   ONLY : JPIM, JPRB
-  USE YOETHF,     ONLY : RKOOP1, RKOOP2
-  USE FCTTRE_MOD, ONLY : FOEELIQ, FOEEICE
+  USE PARKIND1,       ONLY : JPIM, JPRB
+  USE YOETHF_CUF,     RKOOP1=>RKOOP1_D, RKOOP2=>RKOOP2_D
+  USE FCTTRE_CUF_MOD, ONLY : FOEELIQ, FOEEICE
 
   IMPLICIT NONE
   CONTAINS
 
-  PURE ELEMENTAL FUNCTION FOKOOP(PTARE)
+  ATTRIBUTES(DEVICE)  PURE ELEMENTAL FUNCTION FOKOOP(PTARE)
     REAL(KIND=JPRB) :: FOKOOP
     REAL(KIND=JPRB), VALUE :: PTARE
 
     FOKOOP = MIN(RKOOP1-RKOOP2*PTARE,FOEELIQ(PTARE)/FOEEICE(PTARE))
   END FUNCTION FOKOOP
 
-END MODULE FCCLD_MOD
+END MODULE FCCLD_CUF_MOD

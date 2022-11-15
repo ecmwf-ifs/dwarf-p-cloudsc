@@ -33,6 +33,7 @@ module use /apps/USE/easybuild/staging/2021.5/modules/all
 module_load NVHPC/22.3
 module_load ParaStationMPI/5.4.11-1-GCC-10.3.0-CUDA-11.3.1
 module_load CMake/3.20.4
+module_load CUDA/11.3.1
 module_load Boost/1.76.0-GCC-10.3.0
 module_load Python/3.9.5-GCCcore-10.3.0
 

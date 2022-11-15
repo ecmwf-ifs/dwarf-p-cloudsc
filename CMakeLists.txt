@@ -28,6 +28,8 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   endif()
 endif()
 
+include( cloudsc_compile_options )
+
 ### OpenACC
 if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
     # Incredibly inconvenient: FindOpenACC does _not_ set OpenACC_FOUND, only
@@ -46,6 +48,15 @@ endif()
 ecbuild_add_option( FEATURE ACC
     DESCRIPTION "OpenACC" DEFAULT ON
     REQUIRED_PACKAGES "OpenACC" )
+
+include(CheckLanguage)
+check_language( CUDA )
+ecbuild_add_option( FEATURE CUDA
+    DESCRIPTION "CUDA" DEFAULT OFF
+    CONDITION CMAKE_CUDA_COMPILER )
+if( HAVE_CUDA )
+    enable_language( CUDA )
+endif()
 
 ### OpenMP
 ecbuild_add_option( FEATURE OMP

@@ -8,6 +8,7 @@
 
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
+
 list(APPEND CLOUDSC_COMMON_SOURCES
     module/parkind1.F90
     module/yoecldp.F90
@@ -28,6 +29,31 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/cloudsc_global_state_mod.F90
     module/cloudsc_mpi_mod.F90
 )
+
+list(APPEND CLOUDSC_CUDA_SOURCES
+    module/fccld_mod.cuf.F90
+    module/fcttre_mod.cuf.F90
+    module/yoethf.cuf.F90
+    module/yomcst.cuf.F90
+)
+
+if( HAVE_CUDA )
+    # ========================================================================
+    # Compile CUDA fortran files with -MCuda.
+    #
+    # This is necessary since CMake's CUDA languages does not natively
+    # understand CUDA-Fortran (.cuf) yet. So we simply emulate .cuf with
+    # .cuf.F90 files and force the compile flags here.
+    # ========================================================================
+    cloudsc_add_compile_options(
+        SOURCES ${CLOUDSC_CUDA_SOURCES}
+        FLAGS "-Mcuda=maxregcount:128"
+    )
+
+    # Add CUDA-specific flags to the library if enabled
+    list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
+endif()
+
 
 if( HAVE_ACC )
     # ========================================================================
