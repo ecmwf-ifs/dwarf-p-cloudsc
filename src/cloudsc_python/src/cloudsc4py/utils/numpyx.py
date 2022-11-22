@@ -9,6 +9,6 @@ if TYPE_CHECKING:
 
 def to_numpy(storage: Storage) -> np.ndarray:
     try:
-        return storage.asnumpy()
+        return storage.get()
     except AttributeError:
         return storage
