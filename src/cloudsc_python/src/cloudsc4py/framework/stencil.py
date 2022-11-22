@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from gt4py import gtscript
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Dict
 
     from gt4py import StencilObject
 
@@ -41,7 +41,7 @@ def stencil_collection(name: str):
 def compile_stencil(
     name: str,
     gt4py_config: GT4PyConfig,
-    externals: dict[str, Any] = None,
+    externals: Dict[str, Any] = None,
 ) -> StencilObject:
     stencil_info = STENCIL_COLLECTION.get(name, None)
     if stencil_info is None:

@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 from typing import Dict, TypeVar, Union
 
 from sympl import DataArray as SymplDataArray
 
-from gt4py.storage import Storage
+try:
+    import cupy as cp
+except ImportError:
+    cp = np
 
 
-Array = Storage
-ArrayDict = Dict[str, Storage]
 DataArray = SymplDataArray
 DataArrayDict = Dict[str, DataArray]
 ParameterDict = Dict[str, Union[bool, float, int]]
-StorageDict = dict[str, Storage]
+Storage = Union[np.ndarray, cp.ndarray]
+StorageDict = Dict[str, Storage]
 Range = TypeVar("Range")

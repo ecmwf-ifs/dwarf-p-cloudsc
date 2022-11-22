@@ -12,6 +12,7 @@ from cloudsc4py.framework.storage import managed_temporary_storage
 
 if TYPE_CHECKING:
     from datetime import timedelta
+    from typing import Dict
 
     from sympl._core.typingx import PropertyDict
 
@@ -170,7 +171,7 @@ class Cloudsc(ImplicitTendencyComponent):
         timestep: timedelta,
         out_tendencies: StorageDict,
         out_diagnostics: StorageDict,
-        overwrite_tendencies: dict[str, bool],
+        overwrite_tendencies: Dict[str, bool],
     ) -> None:
         with managed_temporary_storage(
             self.computational_grid,

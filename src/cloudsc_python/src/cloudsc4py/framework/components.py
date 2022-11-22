@@ -14,7 +14,7 @@ from cloudsc4py.framework.stencil import compile_stencil
 from cloudsc4py.framework.storage import get_data_shape_from_name, get_dtype_from_name, zeros
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Dict
 
     from gt4py import StencilObject
     from gt4py.storage import Storage
@@ -29,7 +29,7 @@ class ComputationalGridComponent:
         self.gt4py_config = gt4py_config
 
     def compile_stencil(
-        self, name: str, externals: Optional[dict[str, Any]] = None
+        self, name: str, externals: Optional[Dict[str, Any]] = None
     ) -> StencilObject:
         return compile_stencil(name, self.gt4py_config, externals)
 

@@ -2,12 +2,16 @@
 from __future__ import annotations
 from functools import cached_property
 import numpy as np
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Dict, List, Tuple
 
 
 class DimSymbol:
     """Symbol identifying a dimension, e.g. I or I-1/2."""
 
-    _instances: dict[int, DimSymbol] = {}
+    _instances: Dict[int, DimSymbol] = {}
 
     name: str
     offset: float
@@ -46,7 +50,7 @@ class Grid:
     """Grid of points."""
 
     def __init__(
-        self, shape: tuple[int, ...], dims: tuple[str, ...], storage_shape: tuple[int, ...] = None
+        self, shape: Tuple[int, ...], dims: Tuple[str, ...], storage_shape: Tuple[int, ...] = None
     ) -> None:
         assert len(shape) == len(dims)
         self.shape = shape
@@ -54,14 +58,14 @@ class Grid:
         self.storage_shape = storage_shape or self.shape
 
     @cached_property
-    def coords(self) -> tuple[np.ndarray, ...]:
+    def coords(self) -> Tuple[np.ndarray, ...]:
         return tuple(np.arange(size) for size in self.storage_shape)
 
 
 class ComputationalGrid:
     """A three-dimensional computational grid consisting of mass and staggered grid points."""
 
-    grids: dict[tuple[DimSymbol, ...], Grid]
+    grids: Dict[Tuple[DimSymbol, ...], Grid]
 
     def __init__(self, nx: int, ny: int, nz: int) -> None:
         self.grids = {
@@ -72,7 +76,7 @@ class ComputationalGrid:
         }
 
 
-def get_mask(grid_id: tuple[DimSymbol, ...], data_shape: tuple[int, ...]) -> list[bool]:
+def get_mask(grid_id: Tuple[DimSymbol, ...], data_shape: Tuple[int, ...]) -> List[bool]:
     """Compute the mask for a storage defined over `grid_id`."""
     out = []
     for target_name in ("I", "J", "K"):

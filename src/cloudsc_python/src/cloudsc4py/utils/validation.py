@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 from cloudsc4py.utils.numpyx import to_numpy
 
 if TYPE_CHECKING:
+    from typing import Tuple
+
     from sympl._core.data_array import DataArray
     from sympl._core.typingx import DataArrayDict
 
@@ -38,7 +40,7 @@ def validate_field(src: DataArray, trg: DataArray) -> bool:
         raise ValueError("The field to validate must be either 2-d or 3-d.")
 
 
-def validate(src: DataArrayDict, trg: DataArrayDict) -> tuple[str]:
+def validate(src: DataArrayDict, trg: DataArrayDict) -> Tuple[str]:
     return tuple(
         name
         for name in src

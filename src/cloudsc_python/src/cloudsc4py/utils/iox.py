@@ -11,7 +11,7 @@ from cloudsc4py.utils.f2py import ported_method
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Optional
+    from typing import Optional, Type
 
     from cloudsc4py.framework.config import DataTypes
 
@@ -291,7 +291,7 @@ class HDF5Reader:
 
     def _initialize_parameters(
         self,
-        parameter_cls: type[BaseModel],
+        parameter_cls: Type[BaseModel],
         get_parameter_name: Optional[Callable[[str], str]] = None,
     ):
         init_dict = {}

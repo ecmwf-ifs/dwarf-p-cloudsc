@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 import csv
 import datetime
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Tuple
 
 
 def to_csv(
@@ -32,7 +37,7 @@ def to_csv(
         )
 
 
-def print_performance(runtimes: list[float]) -> tuple[float, float]:
+def print_performance(runtimes: list[float]) -> Tuple[float, float]:
     n = len(runtimes)
     mean = sum(runtimes) / n
     stddev = (sum((runtime - mean) ** 2 for runtime in runtimes) / (n - 1 if n > 1 else n)) ** 0.5

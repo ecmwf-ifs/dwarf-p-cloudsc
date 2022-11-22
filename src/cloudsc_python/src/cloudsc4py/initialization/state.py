@@ -9,7 +9,7 @@ from cloudsc4py.framework.storage import allocate_data_array
 from cloudsc4py.initialization.utils import initialize_field
 
 if TYPE_CHECKING:
-    from typing import Literal
+    from typing import Literal, Tuple
 
     from sympl._core.data_array import DataArray
     from sympl._core.typingx import DataArrayDict
@@ -23,7 +23,7 @@ def allocate_state(
     computational_grid: ComputationalGrid, *, gt4py_config: GT4PyConfig
 ) -> DataArrayDict:
     def _allocate(
-        grid_id: tuple[DimSymbol, ...], units: str, dtype: Literal["bool", "float", "int"]
+        grid_id: Tuple[DimSymbol, ...], units: str, dtype: Literal["bool", "float", "int"]
     ) -> DataArray:
         return allocate_data_array(
             computational_grid, grid_id, units, gt4py_config=gt4py_config, dtype=dtype
