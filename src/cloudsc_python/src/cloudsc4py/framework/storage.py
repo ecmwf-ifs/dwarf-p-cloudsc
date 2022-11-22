@@ -28,15 +28,7 @@ def zeros(
     data_shape = data_shape or ()
     shape = grid.storage_shape + data_shape
     dtype = gt4py_config.dtypes.dict()[dtype]
-    mask = get_mask(grid_id, data_shape)
-    return gt4py.storage.zeros(
-        gt4py_config.backend,
-        [0] * len(shape),
-        shape,
-        dtype,
-        mask=mask,
-        managed_memory=gt4py_config.managed,
-    )
+    return gt4py.storage.zeros(shape, dtype, backend=gt4py_config.backend)
 
 
 def get_data_array(
