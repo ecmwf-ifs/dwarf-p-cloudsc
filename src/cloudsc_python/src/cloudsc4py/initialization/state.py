@@ -118,12 +118,10 @@ def initialize_state(state: DataArrayDict, hdf5_reader: HDF5Reader) -> None:
     clv = hdf5_reader.get_field("PCLV")
     for idx, name in enumerate(("f_ql", "f_qi", "f_qr", "f_qs")):
         initialize_field(state[name], clv[..., idx])
-        # np.testing.assert_allclose(state[name].data[:, :, :137], clv[:, np.newaxis, :, idx])
 
     tnd_tmp_cld = hdf5_reader.get_field("TENDENCY_TMP_CLD")
     for idx, name in enumerate(("f_tnd_tmp_ql", "f_tnd_tmp_qi", "f_tnd_tmp_qr", "f_tnd_tmp_qs")):
         initialize_field(state[name], tnd_tmp_cld[..., idx])
-        # np.testing.assert_allclose(state[name].data[:, :, :137], tnd_tmp_cld[:, np.newaxis, :, idx])
 
 
 def get_state(

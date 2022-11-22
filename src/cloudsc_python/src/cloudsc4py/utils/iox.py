@@ -191,8 +191,6 @@ class HDF5Reader:
     def __init__(self, filename: str, data_types: DataTypes) -> None:
         self.f = h5py.File(filename)
         self.data_types = data_types
-        # import ipdb
-        # ipdb.set_trace()
 
     def __del__(self) -> None:
         self.f.close()

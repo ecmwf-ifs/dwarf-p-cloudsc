@@ -48,7 +48,6 @@ def initialize_tendencies(tendencies: DataArrayDict, hdf5_reader: HDF5Reader) ->
     cld = hdf5_reader.get_field("TENDENCY_LOC_CLD")
     for idx, name in enumerate(("f_ql", "f_qi", "f_qr", "f_qs")):
         initialize_field(tendencies[name], cld[..., idx])
-        # np.testing.assert_allclose(state[name].data[:, :, :137], clv[:, np.newaxis, :, idx])
 
 
 def allocate_diagnostics(

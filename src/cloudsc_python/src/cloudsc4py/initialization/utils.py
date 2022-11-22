@@ -16,7 +16,6 @@ def initialize_storage_2d(storage: Storage, buffer: np.ndarray) -> None:
     for b in range(nb):
         storage[b * mi : (b + 1) * mi, 0:1] = buffer[:, np.newaxis]
     storage[nb * mi :, 0:1] = buffer[: ni - nb * mi, np.newaxis]
-    # np.testing.assert_allclose(storage, buffer[:, np.newaxis])
 
 
 def initialize_storage_3d(storage: Storage, buffer: np.ndarray) -> None:
@@ -27,7 +26,6 @@ def initialize_storage_3d(storage: Storage, buffer: np.ndarray) -> None:
     for b in range(nb):
         storage[b * mi : (b + 1) * mi, 0:1, :lk] = buffer[:, np.newaxis, :lk]
     storage[nb * mi :, 0:1, :lk] = buffer[: ni - nb * mi, np.newaxis, :lk]
-    # np.testing.assert_allclose(storage[:, :, :mk], buffer[:, np.newaxis, :])
 
 
 def initialize_field(field: DataArray, buffer: np.ndarray) -> None:
