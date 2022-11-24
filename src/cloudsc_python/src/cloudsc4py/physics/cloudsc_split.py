@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from cloudsc4py.framework.components import ImplicitTendencyComponent
 from cloudsc4py.framework.grid import I, J, K
 from cloudsc4py.framework.storage import managed_temporary_storage
+from cloudsc4py.utils.numpyx import assign
 
 if TYPE_CHECKING:
     from datetime import timedelta
@@ -231,7 +232,7 @@ class Cloudsc(ImplicitTendencyComponent):
                 "tmp_trpaus": trpaus,
             }
             aph_s[...] = state["f_aph"][..., self.nlev]
-            klevel[...] = np.arange(self.nlev + 1)
+            assign(klevel, np.arange(self.nlev + 1))
 
             inputs1 = inputs.copy()
             vfi = inputs1.pop("in_vfi")

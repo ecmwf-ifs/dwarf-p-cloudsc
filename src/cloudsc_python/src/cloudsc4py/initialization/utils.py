@@ -3,6 +3,8 @@ from __future__ import annotations
 import numpy as np
 from typing import TYPE_CHECKING
 
+from cloudsc4py.utils.numpyx import assign
+
 if TYPE_CHECKING:
     from sympl._core.data_array import DataArray
 
@@ -14,8 +16,8 @@ def initialize_storage_2d(storage: Storage, buffer: np.ndarray) -> None:
     mi = buffer.size
     nb = ni // mi
     for b in range(nb):
-        storage[b * mi : (b + 1) * mi, 0:1] = buffer[:, np.newaxis]
-    storage[nb * mi :, 0:1] = buffer[: ni - nb * mi, np.newaxis]
+        assign(storage[b * mi : (b + 1) * mi, 0:1], buffer[:, np.newaxis])
+    assign(storage[nb * mi :, 0:1], buffer[: ni - nb * mi, np.newaxis])
 
 
 def initialize_storage_3d(storage: Storage, buffer: np.ndarray) -> None:
@@ -24,8 +26,8 @@ def initialize_storage_3d(storage: Storage, buffer: np.ndarray) -> None:
     lk = min(nk, mk)
     nb = ni // mi
     for b in range(nb):
-        storage[b * mi : (b + 1) * mi, 0:1, :lk] = buffer[:, np.newaxis, :lk]
-    storage[nb * mi :, 0:1, :lk] = buffer[: ni - nb * mi, np.newaxis, :lk]
+        assign(storage[b * mi : (b + 1) * mi, 0:1, :lk], buffer[:, np.newaxis, :lk])
+    assign(storage[nb * mi :, 0:1, :lk], buffer[: ni - nb * mi, np.newaxis, :lk])
 
 
 def initialize_field(field: DataArray, buffer: np.ndarray) -> None:
