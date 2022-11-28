@@ -28,8 +28,8 @@ projects :
             CMAKE_CXX_EXTENSIONS=ON
 
     - loki :
-        git     : ${BITBUCKET}/rdx/loki
-        version : master
+        git     : https://github.com/ecmwf-ifs/loki
+        version : main
         optional: true
         require : ecbuild
         cmake   : >
