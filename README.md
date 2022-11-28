@@ -34,10 +34,12 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
 - **dwarf-cloudsc-gpu-kernels**: GPU-enabled version of the CLOUDSC dwarf
   that uses OpenACC and relies on the `!$acc kernels` directive to offload
   the computational kernel.
-- **dwarf-cloudsc-gpu-claw**: GPU-enabled and optimized version of CLOUDSC
-  that is based on an auto-generated version of CLOUDSC based on the CLAW
-  tool. The kernel in this demonstrator has been further optimized with
-  gang-level loop blocking to demonstrate potential performance gains.
+- **dwarf-cloudsc-gpu-claw** (deprecated!): GPU-enabled and optimized version of
+  CLOUDSC that is based on an auto-generated version of CLOUDSC based on the CLAW
+  tool. The kernel in this demonstrator has been further optimized with gang-level
+  loop blocking to demonstrate potential performance gains. This variant is defunct
+  on current Nvidia GPUs and therefore deactivated by default, requiring explicit
+  `--with-claw` flag to build.
 - **dwarf-cloudsc-gpu-scc**: GPU-enabled and optimized version of
   CLOUDSC that utilises the native blocked IFS memory layout via a
   "single-column coalesced" (SCC) loop layout. Here the outer NPROMA
@@ -54,7 +56,7 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   driver level.
 - **dwarf-cloudsc-gpu-scc-cuf**: GPU-enabled and optimized version of
   CLOUDSC that uses the SCC loop layout in combination with CUDA-Fortran
-  (CUF) to explicitly allocated temporary arrays in device memory and
+  (CUF) to explicitly allocate temporary arrays in device memory and
   move parameter structures to constant memory. To enable this variant,
   a suitable CUDA installation is required and the `--with-cuda` flag
   needs to be passed at the build stage.
@@ -249,29 +251,19 @@ In principle, the same should work for multi-node execution (`-N 2`, `-N 4` etc.
 
 ## Loki transformations for CLOUDSC
 
-Loki is an in-house developed source-to-source translation tool that
-allows us to create bespoke transformations for the IFS to target and
-experiment with emerging HPC architectures and programming models. We
-use the CLOUDSC dwarf as a demonstrator for targeted transformation
-capabilities of physics and grid point computations kernels, including
-conversion to C and GPU via downstream tools like CLAW.
+[Loki](https://github.com/ecmwf-ifs/loki) is an in-house developed
+source-to-source translation tool that allows us to create bespoke
+transformations for the IFS to target and experiment with emerging HPC
+architectures and programming models. We use the CLOUDSC dwarf as a demonstrator
+for targeted transformation capabilities of physics and grid point computations
+kernels, including conversion to C and GPU, directly or via downstream tools
+like CLAW.
 
-To use the Loki demonstrators, Loki and CLAW need to be installed as
-described in the
-[Loki install instructions](https://git.ecmwf.int/projects/RDX/repos/loki/browse/INSTALL.md).
-*Please note that the in-house "volta" machine needs some manual workarounds for this atm.*
-
-Once Loki and CLAW are installed and activated via `source loki-activate`,
-the following build flags enable the demonstrator build targets:
+The following build flags enable the demonstrator build targets on the
+ECMWF Atos HPC facility's GPU partition:
 
 ```sh
-# For general use on workstations with GNU
-# Please note that OpenACC needs to be disable with GNU,
-# since CLAW-generated code currently does not comply with GNU.
-./cloudsc-bundle build --clean --with-loki --loki-frontend=fp --arch=./arch/ecmwf/leap42/gnu/7.3.0
-
-# For GPU exploration on volta
-./cloudsc-bundle build --clean [--with-gpu]--with-loki --loki-frontend=fp --arch=./arch/ecmwf/volta/nvhpc/20.9
+./cloudsc-bundle build --clean [--with-gpu] --with-loki --loki-frontend=fp --arch=./arch/ecmwf/hpc2020/nvhpc/22.1
 ```
 
 The following Loki modes are included in the dwarf, each with a bespoke demonstrator build:
@@ -283,17 +275,20 @@ The following Loki modes are included in the dwarf, each with a bespoke demonstr
 - **cloudsc-loki-sca**: Pure single-column mode that strips all horizontal
   vector loops from the kernel and introduces an outer "column-loop"
   at the driver level.
-- **cloudsc-loki-claw-cpu**: Same as SCA, but also adds the necessary CLAW
-  annotations. The resulting cloudsc.claw.F90 file is then processed
-  by CLAW to re-insert vector loops for optimal CPU execution.
-- **cloudsc-loki-claw-gpu**: Creates the same CLAW-ready kernel file, but
-  triggers the GPU-specific optimizations in the CLAW compiler to
-  insert OpenACC-offload instructions in the driver and an OpenACC
-  parallel loop inside the kernel for each block. This needs to be run
-  with large block sizes (eg. NPROMA=1024-8192).
+- **cloudsc-loki-claw-cpu** (deprecated): Same as SCA, but also adds the
+  necessary CLAW annotations. The resulting cloudsc.claw.F90 file is then
+  processed by CLAW to re-insert vector loops for optimal CPU execution.
+- **cloudsc-loki-claw-gpu** (deprecated): Creates the same CLAW-ready kernel
+  file, but triggers the GPU-specific optimizations in the CLAW compiler to insert
+  OpenACC-offload instructions in the driver and an OpenACC parallel loop inside
+  the kernel for each block. This needs to be run with large block sizes (eg.
+  NPROMA=1024-8192).
 - **cloudsc-loki-c**: A prototype C transpilation pipeline that converts
   the kernel to C and calls it via iso_c_bindings interfaces from the
   driver.
+
+To enable the deprecated and, on GPU, defunct CLAW variants, the build-flag
+`--with-claw` needs to be specified explicitly.
 
 ### A note on frontends
 
