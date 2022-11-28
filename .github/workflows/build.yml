@@ -38,6 +38,8 @@ jobs:
 
         gpu_flag: ['', '--with-gpu']  # GPU-variants enabled
 
+        loki_flag: ['', '--with-loki']  # Loki source-to-source translation enabled
+
         include:
           # Add nvhpc build configurations with serialbox and HDF5
           - arch: github/ubuntu/nvhpc/21.9
@@ -94,13 +96,14 @@ jobs:
         run: |
           ./cloudsc-bundle build --retry-verbose \
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
-          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }}
+          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }}
 
       # Verify targets exist
       - name: Verify targets
         env:
           io_library_flag: ${{ matrix.io_library_flag }}
           gpu_flag: ${{ matrix.gpu_flag }}
+          loki_flag: ${{ matrix.loki_flag }}
         run: .github/scripts/verify-targets.sh
 
       # Run double-precision targets
