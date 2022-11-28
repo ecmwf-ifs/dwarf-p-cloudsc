@@ -27,7 +27,11 @@ fi
 if [[ "$loki_flag" == "--with-loki" ]]
 then
   targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
-  targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist dwarf-cloudsc-loki-c)
+  targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
+  if [[ "$prec_flag" != "--single-precision" ]]
+  then
+    targets+=(dwarf-cloudsc-loki-c)
+  fi
   if [[ "$claw_flag" == "--with-claw" ]]
   then
     targets+=(dwarf-cloudsc-loki-claw-cpu dwarf-cloudsc-loki-claw-gpu)

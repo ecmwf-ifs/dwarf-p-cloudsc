@@ -105,6 +105,7 @@ jobs:
       - name: Verify targets
         env:
           io_library_flag: ${{ matrix.io_library_flag }}
+          prec_flag: ${{ matrix.prec_flag }}
           gpu_flag: ${{ matrix.gpu_flag }}
           loki_flag: ${{ matrix.loki_flag }}
           claw_flag: ${{ matrix.claw_flag }}
