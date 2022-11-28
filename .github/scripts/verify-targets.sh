@@ -17,14 +17,21 @@ fi
 
 if [[ "$gpu_flag" == "--with-gpu" ]]
 then
-  targets+=(dwarf-cloudsc-gpu-claw dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-omp-scc-hoist)
+  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-omp-scc-hoist)
+  if [[ "$claw_flag" == "--with-claw" ]]
+  then
+    targets+=(dwarf-cloudsc-gpu-claw)
+  fi
 fi
 
 if [[ "$loki_flag" == "--with-loki" ]]
 then
   targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
-  targets+=(dwarf-cloudsc-loki-claw-cpu dwarf-cloudsc-loki-claw-gpu)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist dwarf-cloudsc-loki-c)
+  if [[ "$claw_flag" == "--with-claw" ]]
+  then
+    targets+=(dwarf-cloudsc-loki-claw-cpu dwarf-cloudsc-loki-claw-gpu)
+  fi
 fi
 
 #

@@ -17,7 +17,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }}
+    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }}
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -40,6 +40,8 @@ jobs:
 
         loki_flag: ['', '--with-loki']  # Loki source-to-source translation enabled
 
+        claw_flag: ['']  # Flag to enable CLAW-generated variants
+
         include:
           # Add nvhpc build configurations with serialbox and HDF5
           - arch: github/ubuntu/nvhpc/21.9
@@ -56,7 +58,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Installs required packages
       - name: Package installation
@@ -96,7 +98,8 @@ jobs:
         run: |
           ./cloudsc-bundle build --retry-verbose \
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
-          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }}
+          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
+          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }}
 
       # Verify targets exist
       - name: Verify targets
@@ -104,6 +107,7 @@ jobs:
           io_library_flag: ${{ matrix.io_library_flag }}
           gpu_flag: ${{ matrix.gpu_flag }}
           loki_flag: ${{ matrix.loki_flag }}
+          claw_flag: ${{ matrix.claw_flag }}
         run: .github/scripts/verify-targets.sh
 
       # Run double-precision targets

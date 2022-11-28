@@ -12,6 +12,12 @@ ecbuild_add_option( FEATURE CLOUDSC_LOKI
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+# Define the CLAW-based Loki dwarf variants as an ECBuild feature
+ecbuild_add_option( FEATURE CLOUDSC_LOKI_CLAW
+    DESCRIPTION "Build optimized CPU and GPU version of CLOUDSC derived from Loki+CLAW" DEFAULT OFF
+    CONDITION HAVE_CLOUDSC_LOKI
+)
+
 function( cloudsc_xmod _TARGET )
 
     if( TARGET clawfc AND ${LOKI_FRONTEND} STREQUAL "omni" )
@@ -182,7 +188,7 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (CPU layout and OpenMP)  ##
     ####################################################
-    if( TARGET clawfc )
+    if( HAVE_CLOUDSC_LOKI_CLAW AND TARGET clawfc )
 
         cloudsc_xmod( loki-claw-cpu )
 
@@ -268,7 +274,7 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (GPU layout and OpenACC) ##
     ####################################################
-    if( TARGET clawfc )
+    if( HAVE_CLOUDSC_LOKI_CLAW AND TARGET clawfc )
 
         cloudsc_xmod( loki-claw-gpu )
 
