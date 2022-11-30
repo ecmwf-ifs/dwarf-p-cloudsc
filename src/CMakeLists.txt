@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-add_subdirectory(prototype1)
+#add_subdirectory(prototype1)
 add_subdirectory(common)
 add_subdirectory(cloudsc_fortran)
 add_subdirectory(cloudsc_c)
