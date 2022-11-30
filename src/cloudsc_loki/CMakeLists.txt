@@ -12,6 +12,12 @@ ecbuild_add_option( FEATURE CLOUDSC_LOKI
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+# Define the CLAW-based Loki dwarf variants as an ECBuild feature
+ecbuild_add_option( FEATURE CLOUDSC_LOKI_CLAW
+    DESCRIPTION "Build optimized CPU and GPU version of CLOUDSC derived from Loki+CLAW" DEFAULT OFF
+    CONDITION HAVE_CLOUDSC_LOKI
+)
+
 function( cloudsc_xmod _TARGET )
 
     if( TARGET clawfc AND ${LOKI_FRONTEND} STREQUAL "omni" )
@@ -182,7 +188,7 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (CPU layout and OpenMP)  ##
     ####################################################
-    if( TARGET clawfc )
+    if( HAVE_CLOUDSC_LOKI_CLAW AND TARGET clawfc )
 
         cloudsc_xmod( loki-claw-cpu )
 
@@ -268,7 +274,7 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Generate SCA code with CLAW annotations    ##
     ##   * Process with CLAW (GPU layout and OpenACC) ##
     ####################################################
-    if( TARGET clawfc )
+    if( HAVE_CLOUDSC_LOKI_CLAW AND TARGET clawfc )
 
         cloudsc_xmod( loki-claw-gpu )
 
@@ -414,61 +420,65 @@ if( HAVE_CLOUDSC_LOKI )
     # C-transpilation mode for generating vectorized C host code (experimental!)
     ##############################################################################
 
-    cloudsc_xmod( loki-c )
+    if ( NOT HAVE_SINGLE_PRECISION )
 
-    loki_transform_transpile(
-        FRONTEND ${LOKI_FRONTEND} CPP
-        HEADERS
-            ${COMMON_MODULE}/parkind1.F90
-            ${COMMON_MODULE}/yomphyder.F90
-            ${COMMON_MODULE}/yomcst.F90
-            ${COMMON_MODULE}/yoethf.F90
-            ${COMMON_MODULE}/yoecldp.F90
-            ${COMMON_MODULE}/fcttre_mod.F90
-            ${COMMON_MODULE}/fccld_mod.F90
-        DRIVER ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
-        SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-        INCLUDES ${COMMON_INCLUDE}
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c
-        OUTPUT
-            loki-c/cloudsc_driver_loki_mod.c.F90
-            loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
-            loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
-            loki-c/yoecldp_fc.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
-    )
+        cloudsc_xmod( loki-c )
 
-    # Define the CLAW-CPU build target for this variant
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-c
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-c/cloudsc_driver_loki_mod.c.F90
-            loki-c/cloudsc_fc.F90
-            loki-c/cloudsc_c.c
-            loki-c/yoethf_fc.F90
-            loki-c/yomcst_fc.F90
-            loki-c/yoecldp_fc.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
+        loki_transform_transpile(
+            FRONTEND ${LOKI_FRONTEND} CPP
+            HEADERS
+                ${COMMON_MODULE}/parkind1.F90
+                ${COMMON_MODULE}/yomphyder.F90
+                ${COMMON_MODULE}/yomcst.F90
+                ${COMMON_MODULE}/yoethf.F90
+                ${COMMON_MODULE}/yoecldp.F90
+                ${COMMON_MODULE}/fcttre_mod.F90
+                ${COMMON_MODULE}/fccld_mod.F90
+            DRIVER ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
+            SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
+            INCLUDES ${COMMON_INCLUDE}
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+            OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c
+            OUTPUT
+                loki-c/cloudsc_driver_loki_mod.c.F90
+                loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
+                loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
+                loki-c/yoecldp_fc.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        )
 
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-c-serial
-        COMMAND bin/dwarf-cloudsc-loki-c
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-c-omp
-        COMMAND bin/dwarf-cloudsc-loki-c
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
-        CONDITION HAVE_MPI
-    )
+        # Define the CLAW-CPU build target for this variant
+        ecbuild_add_executable( TARGET dwarf-cloudsc-loki-c
+            SOURCES
+                dwarf_cloudsc.F90
+                loki-c/cloudsc_driver_loki_mod.c.F90
+                loki-c/cloudsc_fc.F90
+                loki-c/cloudsc_c.c
+                loki-c/yoethf_fc.F90
+                loki-c/yomcst_fc.F90
+                loki-c/yoecldp_fc.F90
+            LIBS
+                cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS}
+        )
+
+        ecbuild_add_test(
+            TARGET dwarf-cloudsc-loki-c-serial
+            COMMAND bin/dwarf-cloudsc-loki-c
+            ARGS 1 100 16
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+            OMP 1
+        )
+        ecbuild_add_test(
+            TARGET dwarf-cloudsc-loki-c-omp
+            COMMAND bin/dwarf-cloudsc-loki-c
+            ARGS 4 100 16
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+            OMP 4
+            CONDITION HAVE_MPI
+        )
+
+    endif()
 
     # Create symlink for the input data
     if( HAVE_SERIALBOX )

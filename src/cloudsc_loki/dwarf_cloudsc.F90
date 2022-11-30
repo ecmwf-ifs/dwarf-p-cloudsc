@@ -59,7 +59,7 @@ if (IRANK == NUMPROC - 1) then
   NGPTOT = NGPTOTG - (NUMPROC - 1) * NGPTOT
 end if
 
-! Get the block size (NPROMA) for which to run the benchmark  
+! Get the block size (NPROMA) for which to run the benchmark
 IF (IARGS >= 3) THEN
   CALL GET_COMMAND_ARGUMENT(3, CLARG, LENARG)
   READ(CLARG(1:LENARG),*) NPROMA
@@ -93,5 +93,8 @@ CALL CLOUDSC_DRIVER(NUMOMP, NPROMA, GLOBAL_STATE%KLEV, NGPTOT, NGPTOTG, GLOBAL_S
 
 ! Validate the output against serialized reference data
 CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT, NGPTOTG)
+
+! Tear down MPI environment
+CALL CLOUDSC_MPI_END()
 
 END PROGRAM DWARF_CLOUDSC
