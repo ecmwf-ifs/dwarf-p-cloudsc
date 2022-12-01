@@ -31,13 +31,13 @@ MODULE FCTTRE_MOD
 !     ------------------------------------------------------------------
 
   USE PARKIND1, ONLY : JPIM, JPRB
-
-  USE YOMCST, ONLY : RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV, RA, RPI
-  USE YOETHF, ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
+  IMPLICIT NONE
+  REAL(KIND=JPRB),PUBLIC, PROTECTED :: &
+ &                 RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV, RA, RPI,          &
+ &                 R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES,                     &
  &                   R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
  &                   RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
-
-  IMPLICIT NONE
+  LOGICAL, PUBLIC, PROTECTED :: CONSTANTS_INITIALIZED = .FALSE.
   CONTAINS
 
   !     *****************************************************************
@@ -45,6 +45,81 @@ MODULE FCTTRE_MOD
   !                NO CONSIDERATION OF MIXED PHASES
 
   !     *****************************************************************
+  SUBROUTINE FCTTRE_CONSTANTS_SET(  &
+ &                 RG_IN, RD_IN, RCPD_IN, RETV_IN, RLVTT_IN, &
+ &                 RLSTT_IN, RLMLT_IN, RTT_IN, RV_IN, RA_IN, RPI_IN, &
+ &                 R2ES_IN, R3LES_IN, R3IES_IN, R4LES_IN, R4IES_IN, R5LES_IN, R5IES_IN, &
+ &                 R5ALVCP_IN, R5ALSCP_IN, RALVDCP_IN, RALSDCP_IN, RALFDCP_IN, RTWAT_IN, RTICE_IN, RTICECU_IN, &
+ &                 RTWAT_RTICE_R_IN, RTWAT_RTICECU_R_IN, RKOOP1_IN, RKOOP2_IN)
+  REAL(KIND=JPRB), INTENT(IN) :: &
+ &                 RG_IN, RD_IN, RCPD_IN, RETV_IN, RLVTT_IN, RLSTT_IN, RLMLT_IN, RTT_IN, RV_IN, RA_IN, RPI_IN, &
+ &                 R2ES_IN, R3LES_IN, R3IES_IN, R4LES_IN, R4IES_IN, R5LES_IN, R5IES_IN, &
+ &                 R5ALVCP_IN, R5ALSCP_IN, RALVDCP_IN, RALSDCP_IN, RALFDCP_IN, RTWAT_IN, RTICE_IN, RTICECU_IN, &
+ &                 RTWAT_RTICE_R_IN, RTWAT_RTICECU_R_IN, RKOOP1_IN, RKOOP2_IN
+
+    RG              = RG_IN
+    RD              = RD_IN
+    RCPD            = RCPD_IN
+    RETV            = RETV_IN
+    RLVTT           = RLVTT_IN
+    RLSTT           = RLSTT_IN
+    RLMLT           = RLMLT_IN
+    RTT             = RTT_IN
+    RV              = RV_IN
+    RA              = RA_IN
+    RPI             = RPI_IN
+    R2ES            = R2ES_IN
+    R3LES           = R3LES_IN
+    R3IES           = R3IES_IN
+    R4LES           = R4LES_IN
+    R4IES           = R4IES_IN
+    R5LES           = R5LES_IN
+    R5IES           = R5IES_IN
+    R5ALVCP         = R5ALVCP_IN
+    R5ALSCP         = R5ALSCP_IN
+    RALVDCP         = RALVDCP_IN
+    RALSDCP         = RALSDCP_IN
+    RALFDCP         = RALFDCP_IN
+    RTWAT           = RTWAT_IN
+    RTICE           = RTICE_IN
+    RTICECU         = RTICECU_IN
+    RTWAT_RTICE_R   = RTWAT_RTICE_R_IN
+    RTWAT_RTICECU_R = RTWAT_RTICECU_R_IN
+    RKOOP1          = RKOOP1_IN
+    RKOOP2          = RKOOP2_IN
+    CONSTANTS_INITIALIZED = .TRUE.
+
+  END SUBROUTINE FCTTRE_CONSTANTS_SET 
+
+  SUBROUTINE FCTTRE_CONSTANTS_PRINT()  
+     print *,"FCTTRE"
+     print *,  "   RETV: ",RETV
+     print *,  "     RG: ",RG
+     print *,  "   RCPD: ",RCPD
+     print *,  "  RLVTT: ",RLVTT
+     print *,  "  RLSTT: ",RLSTT
+     print *,  "  RLMLT: ",RLMLT
+     print *,  "    RTT: ",RTT
+     print *,  "     RD: ",RD
+     print *,  "   R2ES: ",R2ES
+     print *,  "  R3LES: ",R3LES
+     print *,  "  R3IES: ",R3IES
+     print *,  "  R4LES: ",R4LES
+     print *,  "  R4IES: ",R4IES
+     print *,  "  R5LES: ",R5LES
+     print *,  "  R5IES: ",R5IES
+     print *,  "R5ALVCP: ",R5ALVCP
+     print *,  "R5ALSCP: ",R5ALSCP
+     print *,  "RALVDCP: ",RALVDCP
+     print *,  "RALSDCP: ",RALSDCP
+     print *,  "  RTICE: ",RTICE
+     print *,  "  RTICECU: ",RTICECU
+     print *,  "  RTWAT: ",RTWAT
+     print *,  "RTWAT_RTICE_R: ",RTWAT_RTICE_R
+     print *,  "RTWAT_RTICECU_R: ",RTWAT_RTICECU_R
+    
+  END SUBROUTINE FCTTRE_CONSTANTS_PRINT
+  
 
   PURE ELEMENTAL FUNCTION FOEDELTA(PTARE)
     REAL(KIND=JPRB) :: FOEDELTA
