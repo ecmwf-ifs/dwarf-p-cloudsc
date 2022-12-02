@@ -37,6 +37,10 @@ MODULE FCTTRE_MOD
  &                 R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES,                     &
  &                   R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
  &                   RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
+!$acc declare copyin (RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV, RA, RPI         )
+!$acc declare copyin (R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES                    ) 
+!$acc declare copyin (R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU)
+!$acc declare copyin (RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2                    )
   LOGICAL, PUBLIC, PROTECTED :: CONSTANTS_INITIALIZED = .FALSE.
   CONTAINS
 
@@ -359,9 +363,9 @@ MODULE FCTTRE_MOD
     !$acc routine seq
 
     FOELSON = EXP( -6096.9385_JPRB/PTARE + 21.2409642_JPRB &
-	             - 2.711193E-2_JPRB * PTARE    &
-                     + 1.673952E-5_JPRB * PTARE**2 &
-		     + 2.433502_JPRB * LOG(PTARE))
+                      - 2.711193E-2_JPRB * PTARE    &
+                      + 1.673952E-5_JPRB * PTARE**2 &
+                      + 2.433502_JPRB * LOG(PTARE))
   END FUNCTION FOELSON
 
   PURE ELEMENTAL FUNCTION FOELES_V(PTARE)

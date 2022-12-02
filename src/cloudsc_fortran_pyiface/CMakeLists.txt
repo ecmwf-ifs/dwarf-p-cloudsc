@@ -15,24 +15,24 @@ ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE
 if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 
     # Define the binary build target for this variant
-    ecbuild_add_executable( TARGET dwarf-cloudsc-fortran
+    ecbuild_add_executable( TARGET dwarf-cloudsc-fortran-pyiface
         SOURCES
             dwarf_cloudsc.F90
             cloudsc_driver_mod.F90
             cloudsc.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-    target_link_libraries( dwarf-cloudsc-fortran PRIVATE cloudsc-common-lib )
+    target_link_libraries( dwarf-cloudsc-fortran-pyiface PRIVATE cloudsc-common-lib )
 
-    target_include_directories(dwarf-cloudsc-fortran PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(dwarf-cloudsc-fortran PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../common)
+    target_include_directories(dwarf-cloudsc-fortran-pyiface PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(dwarf-cloudsc-fortran-pyiface PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../common)
 
     if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-fortran PRIVATE OpenMP::OpenMP_Fortran )
+        target_link_libraries( dwarf-cloudsc-fortran-pyiface PRIVATE OpenMP::OpenMP_Fortran )
     endif()
 
     if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-fortran PRIVATE MPI::MPI_Fortran )
+        target_link_libraries( dwarf-cloudsc-fortran-pyiface PRIVATE MPI::MPI_Fortran )
     endif()
 
     # Create symlink for the input data
@@ -42,8 +42,8 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     endif()
 
     if( HAVE_HDF5 )
-      target_include_directories( dwarf-cloudsc-fortran PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-      target_link_libraries( dwarf-cloudsc-fortran PRIVATE ${HDF5_LIBRARIES} )
+      target_include_directories( dwarf-cloudsc-fortran-pyiface PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+      target_link_libraries( dwarf-cloudsc-fortran-pyiface PRIVATE ${HDF5_LIBRARIES} )
       execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
           ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
       execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
