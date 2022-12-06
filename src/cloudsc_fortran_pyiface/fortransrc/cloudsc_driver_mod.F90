@@ -22,7 +22,9 @@ CONTAINS
      & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, &
      & NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV,  &
      & KFLDX, PTSPHY, &
-     & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
+     & PT, PQ,  &
+!TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
+     & BUFFER_TMP, BUFFER_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
      & PHRSW,    PHRLW, &
      & PVERVEL,  PAP,      PAPH, &
@@ -56,9 +58,11 @@ CONTAINS
     REAL(KIND=JPRB),    INTENT(IN)    :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB),    INTENT(IN)    :: PT(:,:,:)    ! T at start of callpar
     REAL(KIND=JPRB),    INTENT(IN)    :: PQ(:,:,:)    ! Q at start of callpar
-    TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_CML(:) ! cumulative tendency used for final output
-    TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_TMP(:) ! cumulative tendency used as input
-    TYPE(STATE_TYPE),   INTENT(OUT)   :: TENDENCY_LOC(:) ! local tendency from cloud scheme
+!   TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_CML(:) ! cumulative tendency used for final output
+!   TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_TMP(:) ! cumulative tendency used as input
+!   TYPE(STATE_TYPE),   INTENT(OUT)   :: TENDENCY_LOC(:) ! local tendency from cloud scheme
+    REAL(KIND=JPRB), INTENT(INOUT)    :: BUFFER_LOC(:,:,:,:)
+    REAL(KIND=JPRB), INTENT(INOUT)    :: BUFFER_TMP(:,:,:,:)
     REAL(KIND=JPRB),    INTENT(IN)    :: PVFA(:,:,:)  ! CC from VDF scheme
     REAL(KIND=JPRB),    INTENT(IN)    :: PVFL(:,:,:)  ! Liq from VDF scheme
     REAL(KIND=JPRB),    INTENT(IN)    :: PVFI(:,:,:)  ! Ice from VDF scheme
@@ -148,13 +152,19 @@ CONTAINS
 
          !-- These were uninitialized : meaningful only when we compare error differences
          PCOVPTOT(:,:,IBL) = 0.0_JPRB
-         TENDENCY_LOC(IBL)%cld(:,:,NCLV) = 0.0_JPRB
+!        TENDENCY_LOC(IBL)%cld(:,:,NCLV) = 0.0_JPRB
+         BUFFER_LOC(:,:,3+NCLV,IBL) = 0.0_JPRB
 
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
               & NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV, &
               & PTSPHY,&
-              & PT(:,:,IBL), PQ(:,:,IBL), TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
+              & PT(:,:,IBL), PQ(:,:,IBL),  &
+!              & TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
+              &  BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,3,IBL),  &
+              &  BUFFER_TMP(:,:,4:NCLV,IBL),  &
+              &  BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,3,IBL),  &
+              &  BUFFER_LOC(:,:,4:NCLV,IBL),  &
               & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
               & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
               & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&

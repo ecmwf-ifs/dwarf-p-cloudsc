@@ -8,7 +8,12 @@
  * nor does it submit to any jurisdiction.
  */
 
-//#define _GNU_SOURCE
+#define _GNU_SOURCE
+#if defined(__APPLE__)
+static int sched_getcpu() { return 0; }
+#else
+#include <sched.h>
+#endif
 
 #include <sched.h>
 
