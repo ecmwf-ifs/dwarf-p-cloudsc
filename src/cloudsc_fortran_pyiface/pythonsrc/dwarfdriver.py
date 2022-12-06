@@ -53,7 +53,7 @@ for fieldname in input_fort_fields.keys():
 clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
                          numomp, nproma, nlev, ngptot, ngptotg,
                          NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV,
-                         kfdlx, ptsphy,
+                         kfldx, ptsphy,
                          pt, pq,
                          buffer_tmp, buffer_loc,
                          pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
@@ -71,7 +71,14 @@ clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
                          pfplsl, pfplsn, pfhpsl, pfhpsn,
                          ydomcst, ydoethf, ydecldp, ydephli)
 
-output_fields = convert_fortran_output_to_python (nproma,nlev,nblocks,plude, pcovptot, pfplsl, pfplsn, pfhpsl, pfhpsn, buffer_loc )
+output_fields = convert_fortran_output_to_python (nproma,nlev,nblocks,
+                                                  plude, pcovptot,
+                                                  pfplsl, pfplsn, pfhpsl, pfhpsn, 
+                                                  pfsqlf,   pfsqif ,  pfcqnng,  pfcqlng,
+                                                  pfsqrf,   pfsqsf ,  pfcqrng,  pfcqsng,
+                                                  pfsqltur, pfsqitur,
+                                                  prainfrac_toprfz,
+                                                  buffer_loc )
 
 print ("Python-side validation:")
 cloudsc_validate(output_fields, ref_fields)
