@@ -15,12 +15,23 @@ def define_fortran_fields(nproma,nlev,nblocks):
     fields = OrderedDict()
 
     argnames_nlev = [
-        'pt', 'pq', 'pap', 'plu', 'plude', 'pmfu', 'pmfd',
-        'pa', 'psupsat', 'pcovptot'
+        'pt', 'pq',
+        'pvfa', 'pvfl', 'pvfi', 'pdyna', 'pdynl', 'pdyni',
+        'phrsw', 'phrlw','pvervel','pap','plu','plude',
+        'psnde', 'pmfu', 'pmfd',
+        'pa', 'psupsat', 
+        'plcrit_aer','picrit_aer', 'pre_ice', 
+        'pccn', 'pnice',
+        'pcovptot',
+
     ]
 
     argnames_nlevp = [
-        'paph', 'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn'
+        'paph', 
+        'pfsqlf',   'pfsqif' ,  'pfcqnng',  'pfcqlng',
+        'pfsqrf',   'pfsqsf' ,  'pfcqrng',  'pfcqsng',
+        'pfsqltur', 'pfsqitur' ,
+        'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn'
     ]
 
     argnames_withnclv= [
@@ -28,11 +39,15 @@ def define_fortran_fields(nproma,nlev,nblocks):
     ]
 
     argnames_buffer = [
-        'buffer_cml', 'buffer_loc'
+        'buffer_tmp', 'buffer_loc'
     ]
  
     argnames_tend = [
         'tendency_loc_a','tendency_loc_t','tendency_loc_q'
+    ]
+    
+    argnames_nproma = [
+        'plsm', 'ldcum', 'ktype', 'prainfrac_toprfz'
     ]
 
     for argname in argnames_nlev:
@@ -50,6 +65,9 @@ def define_fortran_fields(nproma,nlev,nblocks):
     for argname in argnames_tend:
         fields[argname] = np.zeros(shape=(nproma,nlev,nblocks), order='F')
 
+    for argname in argnames_tend:
+        fields[argname] = np.zeros(shape=(nproma,nblocks), order='F')
+
     fields['ydomcst']=clsc.yomcst.TOMCST()
     fields['ydoethf']=clsc.yoethf.TOETHF()
     fields['ydecldp']=clsc.yoecldp.TECLDP()
@@ -64,26 +82,39 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks,  transpose=False):
     fields = OrderedDict()
 
     argnames_nlev = [
-        'pt', 'pq', 'pap', 'plu', 'plude', 'pmfu', 'pmfd',
-        'pa', 'psupsat', 'pcovptot'
+        'pt', 'pq',
+        'pvfa', 'pvfl', 'pvfi', 'pdyna', 'pdynl', 'pdyni',
+        'phrsw', 'phrlw','pvervel','pap','plu','plude',
+        'psnde', 'pmfu', 'pmfd',
+        'pa', 'psupsat', 
+        'plcrit_aer','picrit_aer', 'pre_ice', 
+        'pccn', 'pnice',
+        'pcovptot ',
     ]
-
     argnames_nlevp = [
         'paph'
     ]
 
     argnames_withnclv= [
-        'pclv','tendency_cml_cld'
+        'pclv','tendency_tmp_cld'
     ]
 
     argnames_tend = [
-        'tendency_cml_t','tendency_cml_q'
+        'tendency_tmp_t','tendency_tmp_q','tendency_tmp_a'
     ]
 
     argnames = [
-        'pt', 'pq', 'pap', 'paph', 'plu', 'plude', 'pmfu', 'pmfd',
-        'pa', 'pclv', 'psupsat', 'tendency_cml_t', 'tendency_cml_q',
-        'tendency_cml_cld'
+        'pt', 'pq',
+        'pvfa', 'pvfl', 'pvfi', 'pdyna', 'pdynl', 'pdyni',
+        'phrsw', 'phrlw','pvervel','pap','plu','plude',
+        'psnde', 'pmfu', 'pmfd',
+        'pa', 'psupsat', 
+        'plcrit_aer','picrit_aer', 'pre_ice', 
+        'pccn', 'pnice',
+        'pcovptot ',
+        'paph'
+        'pclv','tendency_tmp_cld'
+        'tendency_tmp_t','tendency_tmp_q','tendency_tmp_a'
     ]
 
     with h5py.File(path, 'r') as f:
@@ -116,26 +147,31 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks,  transpose=False):
                                    np.ascontiguousarray(f[argname.upper()]),(nblocks,nlev,nproma),order='C')))
 
     argnames_nlev = [
-        'pqsat', 'pcovptot'
+        'pcovptot'
     ]
 
     argnames_nlevp = [
         'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn'
+        'pfsqlf',   'pfsqif' ,  'pfcqnng',  'pfcqlng',
+        'pfsqrf',   'pfsqsf' ,  'pfcqrng',  'pfcqsng',
+        'pfsqltur', 'pfsqitur' ,
     ]
 
     argnames_buffer = [
-        'buffer_cml'
+        'buffer_loc','buffer_tmp'
     ]
  
     argnames_tend = [
         'tendency_loc_a','tendency_loc_t','tendency_loc_q',
-        'tendency_cml_a'
     ]
     
     argnames_tend_cld = [
         'tendency_loc_cld'
     ]
 
+    argnames_nproma = [
+        'prainfrac_toprfz'
+    ]
 
     for argname in argnames_nlev:
         fields[argname] = np.zeros(shape=(nproma,nlev  ,nblocks), order='F')
@@ -155,21 +191,26 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks,  transpose=False):
     for argname in argnames_buffer:
         fields[argname] = np.zeros(shape=(nproma,nlev,3+NCLV,nblocks), order='F')
 
-    pack_buffer_using_tendencies(fields['buffer_cml'],
-                                 fields['tendency_cml_a'],
-                                 fields['tendency_cml_t'],
-                                 fields['tendency_cml_q'],
-                                 fields['tendency_cml_cld'])
+    for argname in argnames_nproma:
+        fields[argname] = np.zeros(shape=(nproma,nblocks), order='F')
+
+    pack_buffer_using_tendencies(fields['buffer_tmp'],
+                                 fields['tendency_tmp_a'],
+                                 fields['tendency_tmp_t'],
+                                 fields['tendency_tmp_q'],
+                                 fields['tendency_tmp_cld'])
     return fields
 
 def pack_buffer_using_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tendency_cld):
      buffervar[:,:,0       ,:]=tendency_t  [:,:,:]
+     buffervar[:,:,1       ,:]=tendency_a  [:,:,:]
      buffervar[:,:,2       ,:]=tendency_q  [:,:,:]
      buffervar[:,:,3:3+NCLV-1,:]=tendency_cld[:,:,0:NCLV-1,:]
 
 def  unpack_buffer_to_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tendency_cld):
      tendency_t  [:,:,:]=buffervar[:,:,0       ,:]
-     tendency_q  [:,:,:]=buffervar[:,:,1       ,:]
+     tendency_a  [:,:,:]=buffervar[:,:,1       ,:]
+     tendency_q  [:,:,:]=buffervar[:,:,2       ,:]
      tendency_cld[:,:,0:NCLV-1,:]=buffervar[:,:,3:3+NCLV-1,:]
 
 def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
@@ -216,6 +257,82 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
 
         yrethf.rvtmp2 = 0.0
 
+        yrecldp%laericeauto           = f['LAERICEAUTO'][0]         
+        yrecldp% laericesed           = f['LAERICESED'][0]
+        yrecldp%laerliqautolsp        = f['LAERLIQAUTOLSP'][0]
+        yrecldp%laerliqcoll           = f['LAERLIQCOLL'][0]
+        yrecldp%lcldbudget            = f['LCLDBUDGET'][0]
+        yrecldp%ncldtop               = f['NCLDTOP'][0]
+        yrecldp%nssopt                = f['NSSOPT'][0]
+        yrecldp%ramid                 = f['RAMID'][0]
+        yrecldp%ramin                 = f['RAMIN'][0]
+        yrecldp%rccn                  = f['RCCN'][0]
+        yrecldp%rclcrit_land          = f['RCLCRIT_LAND'][0]
+        yrecldp%rclcrit_sea           = f['RCLCRIT_SEA'][0]
+        yrecldp%rcldiff               = f['RCLDIFF'][0]
+        yrecldp%rcldiff_convi         = f['RCLDIFF_CONVI'][0]
+        yrecldp%rcldtopcf             = f['RCLDTOPCF'][0]
+        yrecldp%rcl_apb1              = f['RCL_APB1'][0]
+        yrecldp%rcl_apb2              = f['RCL_APB2'][0]
+        yrecldp%rcl_apb3              = f['RCL_APB3'][0]
+        yrecldp%rcl_cdenom1           = f['RCL_CDENOM1'][0]
+        yrecldp%rcl_cdenom2           = f['RCL_CDENOM2'][0]
+        yrecldp%rcl_cdenom3           = f['RCL_CDENOM3'][0]
+        yrecldp%rcl_const1i           = f['RCL_CONST1I'][0]
+        yrecldp%rcl_const1r           = f['RCL_CONST1R'][0]
+        yrecldp%rcl_const1s           = f['RCL_CONST1S'][0]
+        yrecldp%rcl_const2i           = f['RCL_CONST2I'][0]
+        yrecldp%rcl_const2r           = f['RCL_CONST2R'][0]
+        yrecldp%rcl_const2s           = f['RCL_CONST2S'][0]
+        yrecldp%rcl_const3i           = f['RCL_CONST3I'][0]
+        yrecldp%rcl_const3r           = f['RCL_CONST3R'][0]
+        yrecldp%rcl_const3s           = f['RCL_CONST3S'][0]
+        yrecldp%rcl_const4i           = f['RCL_CONST4I'][0]
+        yrecldp%rcl_const4r           = f['RCL_CONST4R'][0]
+        yrecldp%rcl_const4s           = f['RCL_CONST4S'][0]
+        yrecldp%rcl_const5i           = f['RCL_CONST5I'][0]
+        yrecldp%rcl_const5r           = f['RCL_CONST5R'][0]
+        yrecldp%rcl_const5s           = f['RCL_CONST5S'][0]
+        yrecldp%rcl_const6i           = f['RCL_CONST6I'][0]
+        yrecldp%rcl_const6r           = f['RCL_CONST6R'][0]
+        yrecldp%rcl_const6s           = f['RCL_CONST6S'][0]
+        yrecldp%rcl_const7s           = f['RCL_CONST7S'][0]
+        yrecldp%rcl_const8s           = f['RCL_CONST8S'][0]
+        yrecldp%rcl_fac1              = f['RCL_FAC1'][0]
+        yrecldp%rcl_fac2              = f['RCL_FAC2'][0]
+        yrecldp%rcl_fzrab             = f['RCL_FZRAB'][0]
+        yrecldp%rcl_ka273             = f['RCL_KA273'][0]
+        yrecldp%rcl_kkaac             = f['RCL_KKAAC'][0]
+        yrecldp%rcl_kkaau             = f['RCL_KKAAU'][0]
+        yrecldp%rcl_kkbac             = f['RCL_KKBAC'][0]
+        yrecldp%rcl_kkbaun            = f['RCL_KKBAUN'][0]
+        yrecldp%rcl_kkbauq            = f['RCL_KKBAUQ'][0]
+        yrecldp%rcl_kk_cloud_num_land = f'[YRECLDP%RCL_KK_CLOUD_NUM_LAND'][0]
+        yrecldp%rcl_kk_cloud_num_sea  = f'[YRECLDP%RCL_KK_CLOUD_NUM_SEA'][0]
+        yrecldp%rcl_x3i               = f['RCL_X3I'][0]
+        yrecldp%rcovpmin              = f['RCOVPMIN'][0]
+        yrecldp%rdensref              = f['RDENSREF'][0]
+        yrecldp%rdepliqrefdepth       = f['RDEPLIQREFDEPTH'][0]
+        yrecldp%rdepliqrefrate        = f['RDEPLIQREFRATE'][0]
+        yrecldp%ricehi1               = f['RICEHI1'][0]
+        yrecldp%ricehi2               = f['RICEHI2'][0]
+        yrecldp%riceinit              = f['RICEINIT'][0]
+        yrecldp%rkconv                = f['RKCONV'][0]
+        yrecldp%rkooptau              = f['RKOOPTAU'][0]
+        yrecldp%rlcritsnow            = f['RLCRITSNOW'][0]
+        yrecldp%rlmin                 = f['RLMIN'][0]
+        yrecldp%rnice                 = f['RNICE'][0]
+        yrecldp%rpecons               = f['RPECONS'][0]
+        yrecldp%rprc1                 = f['RPRC1'][0]
+        yrecldp%rprecrhmax            = f['RPRECRHMAX'][0]
+        yrecldp%rsnowlin1             = f['RSNOWLIN1'][0]
+        yrecldp%rsnowlin2             = f['RSNOWLIN2'][0]
+        yrecldp%rtaumel               = f['RTAUMEL'][0]
+        yrecldp%rthomo                = f['RTHOMO'][0]
+        yrecldp%rvice                 = f['RVICE'][0]
+        yrecldp%rvrain                = f['RVRAIN'][0]
+        yrecldp%rvrfactor             = f['RVRFACTOR'][0]
+        yrecldp%rvsnow                = f['RVSNOW'][0]
         klev = f['KLEV'][0]
         pap = np.ascontiguousarray(f['PAP'])
         paph = np.ascontiguousarray(f['PAPH'])

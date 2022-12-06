@@ -36,7 +36,6 @@ ref_fields = load_reference_fields(path=ref_path)
 
 
 NCLV = 5      # number of microphysics variables
-nclv = NCLV
 NCLDQL = 1    # liquid cloud water
 NCLDQI = 2    # ice cloud water
 NCLDQR = 3    # rain water
@@ -52,17 +51,25 @@ for fieldname in input_fort_fields.keys():
 
 
 clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
-                         numomp,nproma,nlev,NCLV,NCLDQL,NCLDQI,
-                         ngptot,nblocks,ngptotg,
-                         ptsphy,
-                         pt,pq,
-                         buffer_cml,buffer_loc,
-                         pap, paph,
-                         plu, plude, pmfu, pmfd,
-                         pa,pclv,psupsat,
-                         pcovptot,
+                         numomp, nproma, nlev, ngptot, ngptotg,
+                         NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV,
+                         kfdlx, ptsphy,
+                         pt, pq,
+                         buffer_tmp, buffer_loc,
+                         pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
+                         phrsw, phrlw, 
+                         pvervel, pap, paph,
+                         plsm, ldcum, ktype,
+                         plu, plude, psnde, pmfu, pmfd,
+                         pa, pclv, psupsat,
+                         plcrit_aer, picrit_aer, pre_ice, 
+                         pccn, pnice,
+                         pcovptot, prainfrac_toprfz,
+                         pfsqlf,   pfsqif ,  pfcqnng,  pfcqlng, 
+                         pfsqrf,   pfsqsf ,  pfcqrng,  pfcqsng, 
+                         pfsqltur, pfsqitur,  
                          pfplsl, pfplsn, pfhpsl, pfhpsn,
-                         ydomcst,ydoethf,ydecldp,ydephli)
+                         ydomcst, ydoethf, ydecldp, ydephli)
 
 output_fields = convert_fortran_output_to_python (nproma,nlev,nblocks,plude, pcovptot, pfplsl, pfplsn, pfhpsl, pfhpsn, buffer_loc )
 
