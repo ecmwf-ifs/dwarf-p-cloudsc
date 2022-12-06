@@ -56,12 +56,12 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
             ./pythonsrc/cloudsc_data.py
         )
 
-#  add_custom_target( pythonexecs ALL SOURCES ${PYTHON_SOURCES}
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pythonsrc  ${CMAKE_CURRENT_BINARY_DIR}/pythonsrc
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/pythonsrc  ../../bin/pythonexec
-#        COMMAND sh -c "rm -f ../../bin/pythonexec/*.f90"
-#        COMMENT "Copy python scripts to executable directory"
-#       )
+   add_custom_target( pythonexecs ALL SOURCES ${PYTHON_SOURCES}
+         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pythonsrc  ${CMAKE_CURRENT_BINARY_DIR}/pythonsrc
+         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/pythonsrc  ../../bin/pythonexec
+         COMMAND sh -c "rm -f ../../bin/pythonexec/*.f90"
+         COMMENT "Copy Python driver to Fortran kernel to executable directory"
+        )
 
     target_link_libraries( ${DWARF_CLOUDSC_LIB} PRIVATE cloudsc-common-lib HDF5::HDF5 )
     # Define the binary build target for this variant
@@ -125,7 +125,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
          COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/pythonsrc/  ../../bin/pythonexec/
          COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/../../lib/  ${CMAKE_CURRENT_BINARY_DIR}/../../bin/pythonexec
          COMMAND sh -c "rm -f ../../bin/pythonexec/*.f90"
-         COMMENT "Running F90wrap"
+         COMMENT "Running F90wrap/F2PY after Fortran build completed"
          DEPENDS dwarf-cloudsc-lib
          VERBATIM
       )

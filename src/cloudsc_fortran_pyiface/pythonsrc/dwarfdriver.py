@@ -25,7 +25,6 @@ for fieldname in clsfields.keys():
      locals()[fieldname]=itemgetter(fieldname)(clsfields)
 
 
-clsc.yoecld.allocate_ceta(ydecld,nlev)
 
 rootpath = Path(__file__).resolve().parents[3]
 input_path = rootpath/'config-files/input.h5'
@@ -44,7 +43,7 @@ NCLDQR = 3    # rain water
 NCLDQS = 4    # snow
 NCLDQV = 5    # vapour
 
-ydecldp, ydomcst, ydoethf, ydephli, ydecld = load_input_parameters(input_path,ydecldp,ydephli,ydomcst,ydoethf,ydecld)
+ydecldp, ydomcst, ydoethf, ydephli = load_input_parameters(input_path,ydecldp,ydephli,ydomcst,ydoethf)
 
 input_fort_fields = load_input_fortran_fields(input_path,nproma,nlev,nblocks)
 
@@ -63,7 +62,7 @@ clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
                          pa,pclv,psupsat,
                          pcovptot,
                          pfplsl, pfplsn, pfhpsl, pfhpsn,
-                         ydomcst,ydoethf,ydecld,ydecldp,ydephli,ydphnc)
+                         ydomcst,ydoethf,ydecldp,ydephli)
 
 output_fields = convert_fortran_output_to_python (nproma,nlev,nblocks,plude, pcovptot, pfplsl, pfplsn, pfhpsl, pfhpsn, buffer_loc )
 

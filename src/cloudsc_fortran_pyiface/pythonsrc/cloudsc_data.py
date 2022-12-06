@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-import cloudsc2 as clsc
+import cloudsc as clsc
 from pathlib import Path
 from collections import OrderedDict
 
@@ -52,10 +52,8 @@ def define_fortran_fields(nproma,nlev,nblocks):
 
     fields['ydomcst']=clsc.yomcst.TOMCST()
     fields['ydoethf']=clsc.yoethf.TOETHF()
-    fields['ydecld' ]=clsc.yoecld.TECLD()
     fields['ydecldp']=clsc.yoecldp.TECLDP()
     fields['ydephli']=clsc.yoephli.TEPHLI()
-    fields['ydphnc' ]=clsc.yophnc.TPHNC()
 
     return fields
 
@@ -174,7 +172,7 @@ def  unpack_buffer_to_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tend
      tendency_q  [:,:,:]=buffervar[:,:,1       ,:]
      tendency_cld[:,:,0:NCLV-1,:]=buffervar[:,:,3:3+NCLV-1,:]
 
-def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf,yrecld):
+def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
     with h5py.File(path, 'r') as f:
         tecldp_keys = [k for k in f.keys() if 'YRECLDP' in k]
         for k in tecldp_keys:
@@ -221,12 +219,10 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf,yrecld):
         klev = f['KLEV'][0]
         pap = np.ascontiguousarray(f['PAP'])
         paph = np.ascontiguousarray(f['PAPH'])
-        yrecld.ceta = np.ndarray(order="C", shape=(klev, ))
-        yrecld.ceta[:] = pap[0:,0] / paph[klev,0]
 
         yrephli.lphylin = True
 
-    return yrecldp, yrmcst, yrethf, yrephli, yrecld
+    return yrecldp, yrmcst, yrethf, yrephli
 
 
 def load_reference_fortran_fields(path):
