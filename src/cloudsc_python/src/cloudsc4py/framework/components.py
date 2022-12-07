@@ -24,6 +24,8 @@ if TYPE_CHECKING:
 
 
 class ComputationalGridComponent:
+    """Model component defined over a computational grid."""
+
     def __init__(self, computational_grid: ComputationalGrid, *, gt4py_config: GT4PyConfig) -> None:
         self.computational_grid = computational_grid
         self.gt4py_config = gt4py_config
@@ -51,6 +53,8 @@ class ComputationalGridComponent:
 
 
 class DiagnosticComponent(ComputationalGridComponent, SymplDiagnosticComponent):
+    """Grid-aware variant of Sympl's ``DiagnosticComponent``."""
+
     def __init__(
         self,
         computational_grid: ComputationalGrid,
@@ -68,6 +72,11 @@ class DiagnosticComponent(ComputationalGridComponent, SymplDiagnosticComponent):
     @abstractmethod
     @cached_property
     def _input_properties(self) -> PropertyDict:
+        """
+        Dictionary where each key is the name of an input field, and the corresponding value is a
+        dictionary specifying the units for that field ('units') and the identifier of the grid over
+        which it is defined ('grid').
+        """
         ...
 
     def allocate_diagnostic(self, name: str) -> Storage:
@@ -80,10 +89,17 @@ class DiagnosticComponent(ComputationalGridComponent, SymplDiagnosticComponent):
     @abstractmethod
     @cached_property
     def _diagnostic_properties(self) -> PropertyDict:
+        """
+        Dictionary where each key is the name of a field diagnosed by the component, and the
+        corresponding value is a dictionary specifying the units for that field ('units') and the
+        identifier of the grid over which it is defined ('grid').
+        """
         ...
 
 
 class ImplicitTendencyComponent(ComputationalGridComponent, SymplImplicitTendencyComponent):
+    """Grid-aware variant of Sympl's ``ImplicitTendencyComponent``."""
+
     def __init__(
         self,
         computational_grid: ComputationalGrid,
@@ -101,6 +117,11 @@ class ImplicitTendencyComponent(ComputationalGridComponent, SymplImplicitTendenc
     @abstractmethod
     @cached_property
     def _input_properties(self) -> PropertyDict:
+        """
+        Dictionary where each key is the name of an input field, and the corresponding value is a
+        dictionary specifying the units for that field ('units') and the identifier of the grid over
+        which it is defined ('grid').
+        """
         ...
 
     def allocate_tendency(self, name: str) -> Storage:
@@ -113,6 +134,11 @@ class ImplicitTendencyComponent(ComputationalGridComponent, SymplImplicitTendenc
     @abstractmethod
     @cached_property
     def _tendency_properties(self) -> PropertyDict:
+        """
+        Dictionary where each key is the name of a tendency field computed by the component, and the
+        corresponding value is a dictionary specifying the units for that field ('units') and the
+        identifier of the grid over which it is defined ('grid').
+        """
         ...
 
     def allocate_diagnostic(self, name: str) -> Storage:
@@ -125,4 +151,9 @@ class ImplicitTendencyComponent(ComputationalGridComponent, SymplImplicitTendenc
     @abstractmethod
     @cached_property
     def _diagnostic_properties(self) -> PropertyDict:
+        """
+        Dictionary where each key is the name of a field diagnosed by the component, and the
+        corresponding value is a dictionary specifying the units for that field ('units') and the
+        identifier of the grid over which it is defined ('grid').
+        """
         ...

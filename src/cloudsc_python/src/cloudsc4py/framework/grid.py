@@ -5,7 +5,7 @@ import numpy as np
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Tuple
+    from typing import Dict, Tuple
 
 
 class DimSymbol:
@@ -74,16 +74,3 @@ class ComputationalGrid:
             (I, J): Grid((nx, ny), ("x", "y")),
             (K,): Grid((nz,), ("z",), (nz + 1,)),
         }
-
-
-def get_mask(grid_id: Tuple[DimSymbol, ...], data_shape: Tuple[int, ...]) -> List[bool]:
-    """Compute the mask for a storage defined over `grid_id`."""
-    out = []
-    for target_name in ("I", "J", "K"):
-        for dim_symbol in grid_id:
-            if dim_symbol.name == target_name:
-                out.append(True)
-                break
-        else:
-            out.append(False)
-    return out + [True] * len(data_shape)

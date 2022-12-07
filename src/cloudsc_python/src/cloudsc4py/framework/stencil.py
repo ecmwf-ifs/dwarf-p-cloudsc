@@ -17,6 +17,7 @@ STENCIL_COLLECTION = {}
 
 
 def function_collection(name: str):
+    """Decorator for GT4Py functions."""
     if name in FUNCTION_COLLECTION:
         raise RuntimeError(f"Another function called `{name}` found.")
 
@@ -28,6 +29,7 @@ def function_collection(name: str):
 
 
 def stencil_collection(name: str):
+    """Decorator for GT4Py stencil definitions."""
     if name in STENCIL_COLLECTION:
         raise RuntimeError(f"Another stencil called `{name}` found.")
 
@@ -43,6 +45,7 @@ def compile_stencil(
     gt4py_config: GT4PyConfig,
     externals: Dict[str, Any] = None,
 ) -> StencilObject:
+    """Automate and customize the compilation of GT4Py stencils."""
     stencil_info = STENCIL_COLLECTION.get(name, None)
     if stencil_info is None:
         raise RuntimeError(f"Unknown stencil `{name}`.")

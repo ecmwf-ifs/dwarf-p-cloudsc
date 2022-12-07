@@ -7,23 +7,28 @@ from typing import TYPE_CHECKING
 import gt4py
 from sympl._core.data_array import DataArray
 
-from cloudsc4py.framework.grid import get_mask
-
 if TYPE_CHECKING:
-    from typing import Literal, Optional
+    from typing import Dict, List, Literal, Optional, Tuple
 
     from cloudsc4py.framework.config import GT4PyConfig
     from cloudsc4py.framework.grid import ComputationalGrid, DimSymbol
+    from cloudsc4py.utils.typingx import Storage
 
 
 def zeros(
     computational_grid: ComputationalGrid,
-    grid_id: tuple[DimSymbol, ...],
-    data_shape: Optional[tuple[int, ...]] = None,
+    grid_id: Tuple[DimSymbol, ...],
+    data_shape: Optional[Tuple[int, ...]] = None,
     *,
     gt4py_config: GT4PyConfig,
     dtype: Literal["bool", "float", "int"],
-) -> gt4py.storage.Storage:
+) -> Storage:
+    """
+    Create an array defined over the grid ``grid_id`` of ``computational_grid``
+    and fill it with zeros.
+
+    Relying on GT4Py utilities to optimally allocate memory based on the chosen backend.
+    """
     grid = computational_grid.grids[grid_id]
     data_shape = data_shape or ()
     shape = grid.storage_shape + data_shape
@@ -32,12 +37,13 @@ def zeros(
 
 
 def get_data_array(
-    buffer: gt4py.storage.Storage,
+    buffer: Storage,
     computational_grid: ComputationalGrid,
-    grid_id: tuple[DimSymbol, ...],
+    grid_id: Tuple[DimSymbol, ...],
     units: str,
-    data_dims: Optional[tuple[str, ...]] = None,
+    data_dims: Optional[Tuple[str, ...]] = None,
 ) -> DataArray:
+    """Create a ``DataArray`` out of ``buffer``."""
     grid = computational_grid.grids[grid_id]
     data_dims = data_dims or ()
     dims = grid.dims + data_dims
@@ -49,14 +55,18 @@ def get_data_array(
 
 def allocate_data_array(
     computational_grid: ComputationalGrid,
-    grid_id: tuple[DimSymbol, ...],
+    grid_id: Tuple[DimSymbol, ...],
     units: str,
-    data_shape: Optional[tuple[int, ...]] = None,
-    data_dims: Optional[tuple[str, ...]] = None,
+    data_shape: Optional[Tuple[int, ...]] = None,
+    data_dims: Optional[Tuple[str, ...]] = None,
     *,
     gt4py_config: GT4PyConfig,
     dtype: Literal["bool", "float", "int"],
 ) -> DataArray:
+    """
+    Create a ``DataArray`` defined over the grid ``grid_id`` of ``computational_grid``
+    and fill it with zeros.
+    """
     buffer = zeros(
         computational_grid, grid_id, data_shape=data_shape, gt4py_config=gt4py_config, dtype=dtype
     )
@@ -64,6 +74,13 @@ def allocate_data_array(
 
 
 def get_dtype_from_name(field_name: str) -> str:
+    """
+    Retrieve the datatype of a field from its name.
+
+    Assume that the name of a bool field is of the form 'b_{some_name}',
+    the name of a float field is of the form 'f_{some_name}',
+    and the name of an integer field is of the form 'i_{some_name}'.
+    """
     if field_name.startswith("b"):
         return "bool"
     elif field_name.startswith("f"):
@@ -74,21 +91,35 @@ def get_dtype_from_name(field_name: str) -> str:
         raise RuntimeError(f"Cannot retrieve dtype for field `{field_name}`.")
 
 
-def get_data_shape_from_name(field_name: str) -> tuple[int]:
+def get_data_shape_from_name(field_name: str) -> Tuple[int, ...]:
+    """
+    Retrieve the data dimension of a field from its name.
+
+    Assume that the name of an n-dimensional field, with n > 1, is '{some_name}_n'.
+    """
     data_dims = field_name.split("_", maxsplit=1)[0][1:]
     out = tuple(int(c) for c in data_dims)
     return out
 
 
-TEMPORARY_STORAGE_POOL: dict[int, list[gt4py.storage.Storage]] = {}
+TEMPORARY_STORAGE_POOL: Dict[int, List[Storage]] = {}
 
 
 @contextmanager
 def managed_temporary_storage(
     computational_grid: ComputationalGrid,
-    *args: tuple[tuple[DimSymbol, ...], Literal["bool", "float", "int"]],
+    *args: Tuple[Tuple[DimSymbol, ...], Literal["bool", "float", "int"]],
     gt4py_config: GT4PyConfig,
 ):
+    """
+    Get temporary storages defined over the grids of ``computational_grid``.
+
+    Each ``arg`` is a tuple where the first element specifies the grid identifier, and the second
+    element specifies the datatype.
+
+    The storages are either created on-the-fly, or retrieved from ``TEMPORARY_STORAGE_POOL``
+    if available. On exit, all storages are included in ``TEMPORARY_STORAGE_POOL`` for later use.
+    """
     grid_hashes = []
     storages = []
     for grid_id, dtype in args:
@@ -115,7 +146,7 @@ def managed_temporary_storage(
 @contextmanager
 def managed_temporary_storage_pool():
     """
-    Context manager clearing the pool of temporary storages on entry and exit.
+    Clear the pool of temporary storages ``TEMPORARY_STORAGE_POOL`` on entry and exit.
 
     Useful when running multiple simulations using different backends within the same session.
     All simulations using the same backend should be wrapped by this context manager.
