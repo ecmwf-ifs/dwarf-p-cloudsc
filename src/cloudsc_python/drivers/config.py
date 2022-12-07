@@ -68,6 +68,7 @@ class PythonConfig(BaseModel):
     sympl_enable_checks: bool
 
     @validator("gt4py_config")
+    @classmethod
     def add_dtypes(cls, v, values) -> GT4PyConfig:
         return v.with_dtypes(values["data_types"])
 
