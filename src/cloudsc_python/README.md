@@ -34,8 +34,15 @@ All the aforementioned steps can be executed in a single shot by executing the B
 ```shell
 $ FRESH_INSTALL=1 VENV=venv INSTALL_CUPY=1 CUPY_VERSION=cupy-cudaXXX [PIP_UPGRADE=1 INSTALL_PRE_COMMIT=1] ./bootstrap_venv.sh
 ```
-The easiest way to run the dwarf is through the driver script `drivers/run.py`. Execute
-```shell
-$ (venv) python drivers/run.py --help
-```
-to get the full list of command-line options.
+
+The scheme comes in two forms: one where computations are carried out in a single stencil
+(see `src/cloudsc4py/{physics,_stencils}/cloudsc.py`), and one where calculations are split into two
+stencils (one computing tendencies on the main vertical levels, the other computing fluxes at the
+interface levels; see `src/cloudsc4py/{physics,_stencils}/cloudsc_split.py`).
+
+The easiest way to run the dwarf is through the driver scripts `drivers/run.py` and `drivers/run_split.py`.
+Run the two scripts with `--help` option to get the full list of command-line options.
+
+For the sake of convenience, we provide the driver `drivers/run_fortran.py` to invoke one of the
+FORTRAN variants of the dwarf from Python, and the Bash script `drivers/run_batch.sh` to run the
+FORTRAN and Python implementations under different settings.
