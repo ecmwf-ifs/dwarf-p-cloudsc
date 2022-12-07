@@ -12,24 +12,25 @@ if TYPE_CHECKING:
 def to_csv(
     output_file: str,
     host_name: str,
-    backend: str,
-    nx: int,
+    variant: str,
+    num_cols: int,
     num_runs: int,
     runtime_mean: float,
     runtime_stddev: float,
 ) -> None:
+    """Write mean and standard deviation of measured runtimes to a CSV file."""
     if not os.path.exists(output_file):
         with open(output_file, "w") as csv_file:
             writer = csv.writer(csv_file, delimiter=",")
-            writer.writerow(("date", "host", "backend", "nx", "num_runs", "mean", "stddev"))
+            writer.writerow(("date", "host", "variant", "num_cols", "num_runs", "mean", "stddev"))
     with open(output_file, "a") as csv_file:
         writer = csv.writer(csv_file, delimiter=",")
         writer.writerow(
             (
                 datetime.date.today().strftime("%Y%m%d"),
                 host_name,
-                backend,
-                nx,
+                variant,
+                num_cols,
                 num_runs,
                 runtime_mean,
                 runtime_stddev,
@@ -38,6 +39,7 @@ def to_csv(
 
 
 def print_performance(runtimes: list[float]) -> Tuple[float, float]:
+    """Print means and standard deviation of measure runtimes to screen."""
     n = len(runtimes)
     mean = sum(runtimes) / n
     stddev = (sum((runtime - mean) ** 2 for runtime in runtimes) / (n - 1 if n > 1 else n)) ** 0.5

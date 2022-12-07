@@ -10,10 +10,13 @@ from cloudsc4py.framework.config import DataTypes, GT4PyConfig
 
 
 class IOConfig(BaseModel):
-    output_file: Optional[str]
+    """Gathers options for I/O."""
+
+    output_csv_file: Optional[str]
     host_name: Optional[str]
 
-    @validator("output_file")
+    @validator("output_csv_file")
+    @classmethod
     def check_extension(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
@@ -27,6 +30,7 @@ class IOConfig(BaseModel):
             return basename + ".csv"
 
     @validator("host_name")
+    @classmethod
     def set_host_name(cls, v: Optional[str]) -> str:
         return v or socket.gethostname()
 
@@ -35,9 +39,9 @@ class IOConfig(BaseModel):
         args["host_name"] = host_name
         return IOConfig(**args)
 
-    def with_output_file(self, output_file: str) -> IOConfig:
+    def with_output_csv_file(self, output_csv_file: str) -> IOConfig:
         args = self.dict()
-        args["output_file"] = output_file
+        args["output_csv_file"] = output_csv_file
         return IOConfig(**args)
 
 
@@ -45,8 +49,10 @@ default_io_config = IOConfig(output_file=None, host_name=None)
 
 
 class PythonConfig(BaseModel):
+    """Gathers options controlling execution of Python/GT4Py code."""
+
     # domain
-    nx: Optional[int]
+    num_cols: Optional[int]
 
     # validation
     enable_validation: bool
@@ -78,16 +84,16 @@ class PythonConfig(BaseModel):
         args["sympl_enable_checks"] = enabled
         return PythonConfig(**args)
 
+    def with_num_cols(self, num_cols: Optional[int]) -> PythonConfig:
+        args = self.dict()
+        if num_cols is not None:
+            args["num_cols"] = num_cols
+        return PythonConfig(**args)
+
     def with_num_runs(self, num_runs: Optional[int]) -> PythonConfig:
         args = self.dict()
         if num_runs is not None:
             args["num_runs"] = num_runs
-        return PythonConfig(**args)
-
-    def with_nx(self, nx: Optional[int]) -> PythonConfig:
-        args = self.dict()
-        if nx is not None:
-            args["nx"] = nx
         return PythonConfig(**args)
 
     def with_validation(self, enabled: bool) -> PythonConfig:
@@ -98,7 +104,7 @@ class PythonConfig(BaseModel):
 
 config_files_dir = normpath(join(dirname(__file__), "../../../config-files"))
 default_python_config = PythonConfig(
-    nx=None,
+    num_cols=1,
     enable_validation=True,
     input_file=join(config_files_dir, "input.h5"),
     reference_file=join(config_files_dir, "reference.h5"),
@@ -110,26 +116,28 @@ default_python_config = PythonConfig(
 
 
 class FortranConfig(BaseModel):
+    """Gathers options controlling execution of FORTRAN code."""
+
     build_dir: str
-    mode: str
+    variant: str
     nproma: int
+    num_cols: int
     num_runs: int
     num_threads: int
-    nx: int
 
     def with_build_dir(self, build_dir: str) -> FortranConfig:
         args = self.dict()
         args["build_dir"] = build_dir
         return FortranConfig(**args)
 
-    def with_mode(self, mode: str) -> FortranConfig:
-        args = self.dict()
-        args["mode"] = mode
-        return FortranConfig(**args)
-
     def with_nproma(self, nproma: int) -> FortranConfig:
         args = self.dict()
         args["nproma"] = nproma
+        return FortranConfig(**args)
+
+    def with_num_cols(self, num_cols: int) -> FortranConfig:
+        args = self.dict()
+        args["num_cols"] = num_cols
         return FortranConfig(**args)
 
     def with_num_runs(self, num_runs: int) -> FortranConfig:
@@ -142,12 +150,12 @@ class FortranConfig(BaseModel):
         args["num_threads"] = num_threads
         return FortranConfig(**args)
 
-    def with_nx(self, nx: int) -> FortranConfig:
+    def with_variant(self, variant: str) -> FortranConfig:
         args = self.dict()
-        args["nx"] = nx
+        args["variant"] = variant
         return FortranConfig(**args)
 
 
 default_fortran_config = FortranConfig(
-    build_dir=".", mode="fortran", nproma=32, num_runs=1, num_threads=1, nx=1
+    build_dir=".", variant="fortran", nproma=32, num_cols=1, num_runs=1, num_threads=1
 )

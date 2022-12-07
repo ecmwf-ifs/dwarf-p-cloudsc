@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import click
-from typing import Optional
+import csv
+import datetime
+import os
+from typing import Optional, Type
 
 from cloudsc4py.framework.grid import ComputationalGrid
 from cloudsc4py.physics.cloudsc import Cloudsc
@@ -14,10 +17,10 @@ from config import PythonConfig, IOConfig, default_python_config, default_io_con
 from utils import print_performance, to_csv
 
 
-def core(config: PythonConfig, io_config: IOConfig) -> None:
+def core(config: PythonConfig, io_config: IOConfig, cloudsc_cls: Type) -> None:
     hdf5_reader = HDF5Reader(config.input_file, config.data_types)
 
-    nx = config.nx or hdf5_reader.get_nlon()
+    nx = config.num_cols or hdf5_reader.get_nlon()
     nz = hdf5_reader.get_nlev()
     computational_grid = ComputationalGrid(nx, 1, nz)
 
@@ -29,7 +32,7 @@ def core(config: PythonConfig, io_config: IOConfig) -> None:
     yomcst_parameters = hdf5_reader.get_yomcst_parameters()
     yrecldp_parameters = hdf5_reader.get_yrecldp_parameters()
 
-    cloudsc = Cloudsc(
+    cloudsc = cloudsc_cls(
         computational_grid,
         yoecldp_paramaters,
         yoethf_parameters,
@@ -44,16 +47,16 @@ def core(config: PythonConfig, io_config: IOConfig) -> None:
     for i in range(config.num_runs):
         with timing(f"run_{i}") as timer:
             cloudsc(state, dt, out_tendencies=tends, out_diagnostics=diags)
-        runtimes.append(timer.get_time(f"run_{i}", units="ms"))
+        runtimes.append(timer.get_time(f"run_{i}") * 1000)
 
     runtime_mean, runtime_stddev = print_performance(runtimes)
 
-    if io_config.output_file is not None:
+    if io_config.output_csv_file is not None:
         to_csv(
-            io_config.output_file,
+            io_config.output_csv_file,
             io_config.host_name,
             config.gt4py_config.backend,
-            config.nx,
+            nx,
             config.num_runs,
             runtime_mean,
             runtime_stddev,
@@ -88,31 +91,95 @@ def core(config: PythonConfig, io_config: IOConfig) -> None:
 
 
 @click.command()
-@click.option("--backend", type=str, default=None)
-@click.option("--enable-checks/--disable-checks", is_flag=True, type=bool, default=False)
-@click.option("--enable-validation/--disable-validation", is_flag=True, type=bool, default=True)
-@click.option("--num-runs", type=int, default=None)
-@click.option("--nx", type=int, default=None)
-@click.option("--output-file", type=str, default=None)
-@click.option("--host-alias", type=str, default=None)
+@click.option(
+    "--backend",
+    type=str,
+    default=None,
+    help="GT4Py backend."
+    "\n\nOptions: numpy, gt:cpu_kfirst, gt:cpu_ifirst, gt:gpu, cuda, dace:cpu, dace:gpu."
+    "\n\nDefault: numpy.",
+)
+@click.option(
+    "--enable-checks/--disable-checks",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Enable/disable sanity checks performed by Sympl and GT4Py.\n\nDefault: enabled.",
+)
+@click.option(
+    "--enable-validation/--disable-validation",
+    is_flag=True,
+    type=bool,
+    default=True,
+    help="Enable/disable data validation.\n\nDefault: enabled.",
+)
+@click.option("--num-cols", type=int, default=None, help="Number of domain columns.\n\nDefault: 1.")
+@click.option(
+    "--num-runs",
+    type=int,
+    default=1,
+    help="Number of executions.\n\nDefault: 1.",
+)
+@click.option("--host-alias", type=str, default=None, help="Name of the host machine (optional).")
+@click.option(
+    "--output-csv-file",
+    type=str,
+    default=None,
+    help="Path to the CSV file where writing performance counters (optional).",
+)
+@click.option(
+    "--output-csv-file-stencils",
+    type=str,
+    default=None,
+    help="Path to the CSV file where writing performance counters for each stencil (optional).",
+)
 def main(
     backend: Optional[str],
     enable_checks: bool,
     enable_validation: bool,
+    num_cols: Optional[int],
     num_runs: Optional[int],
-    nx: Optional[int],
-    output_file: Optional[str],
     host_alias: Optional[str],
+    output_csv_file: Optional[str],
+    output_csv_file_stencils: Optional[str],
 ) -> None:
+    """
+    Driver for the GT4Py-based implementation of CLOUDSC.
+
+    Computations are carried out in a single stencil.
+    """
     config = (
         default_python_config.with_backend(backend)
         .with_checks(enable_checks)
         .with_validation(enable_validation)
+        .with_num_cols(num_cols)
         .with_num_runs(num_runs)
-        .with_nx(nx)
     )
-    io_config = default_io_config.with_output_file(output_file).with_host_name(host_alias)
-    core(config, io_config)
+    io_config = default_io_config.with_output_csv_file(output_csv_file).with_host_name(host_alias)
+    core(config, io_config, cloudsc_cls=Cloudsc)
+
+    if output_csv_file_stencils is not None:
+        call_time = None
+        for key, value in config.gt4py_config.exec_info.items():
+            if "cloudsc" in key:
+                call_time = value["total_call_time"] * 1000 / config.num_runs
+
+        if not os.path.exists(output_csv_file_stencils):
+            with open(output_csv_file_stencils, "w") as f:
+                writer = csv.writer(f, delimiter=",")
+                writer.writerow(("date", "host", "backend", "num_cols", "num_runs", "cloudsc"))
+        with open(output_csv_file_stencils, "a") as f:
+            writer = csv.writer(f, delimiter=",")
+            writer.writerow(
+                (
+                    datetime.date.today().strftime("%Y%m%d"),
+                    io_config.host_name,
+                    config.gt4py_config.backend,
+                    config.num_cols,
+                    config.num_runs,
+                    call_time,
+                )
+            )
 
 
 if __name__ == "__main__":
