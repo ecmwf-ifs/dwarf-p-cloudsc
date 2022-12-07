@@ -19,7 +19,7 @@ def validate_storage_2d(src: Storage, trg: Storage) -> bool:
     trg_np = to_numpy(trg)
     mi = min(src_np.shape[0], trg_np.shape[0])
     mj = min(src_np.shape[1], trg_np.shape[1])
-    return np.allclose(src_np[:mi, :mj], trg_np[:mi, :mj])
+    return np.allclose(src_np[:mi, :mj], trg_np[:mi, :mj], atol=1e-18, rtol=1e-12)
 
 
 def validate_storage_3d(src: Storage, trg: Storage) -> bool:
@@ -28,7 +28,7 @@ def validate_storage_3d(src: Storage, trg: Storage) -> bool:
     mi = min(src_np.shape[0], trg_np.shape[0])
     mj = min(src_np.shape[1], trg_np.shape[1])
     mk = min(src_np.shape[2], trg_np.shape[2])
-    return np.allclose(src_np[:mi, :mj, :mk], trg_np[:mi, :mj, :mk])
+    return np.allclose(src_np[:mi, :mj, :mk], trg_np[:mi, :mj, :mk], atol=1e-18, rtol=1e-12)
 
 
 def validate_field(src: DataArray, trg: DataArray) -> bool:
