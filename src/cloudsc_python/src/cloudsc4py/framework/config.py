@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Any, Dict, Optional, Union, Type
 
 
@@ -21,6 +21,15 @@ class GT4PyConfig(BaseModel):
     rebuild: bool = False
     validate_args: bool = False
     verbose: bool = True
+
+    @validator("exec_info")
+    @classmethod
+    def set_exec_info(cls, v: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        v = v or {}
+        return {**v, "__aggregate_data": True}
+
+    def reset_exec_info(self):
+        self.exec_info = {"__aggregate_data": self.exec_info.get("__aggregate_data", True)}
 
     def with_backend(self, backend: Optional[str]) -> GT4PyConfig:
         args = self.dict()
