@@ -1,5 +1,5 @@
 click
-gt4py@git+https://github.com/gridtools/gt4py.git#egg=gt4py
+gt4py[dace]@git+https://github.com/gridtools/gt4py.git#egg=gt4py
 h5py
 numpy
 pandas
