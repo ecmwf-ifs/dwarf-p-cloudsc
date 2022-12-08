@@ -42,6 +42,7 @@ projects :
         optional: true
         require : ecbuild
         cmake   : >
+            BUILD_field_api=OFF
             ENABLE_FIELD_API_TESTS=OFF
             ENABLE_FIELD_API_FIAT_BUILD=OFF
             FIELD_API_UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
@@ -77,6 +78,7 @@ options :
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
             ENABLE_CLOUDSC_GPU_SCC_FIELD=ON
             ENABLE_FIELD_API=ON
+            BUILD_field_api=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
