@@ -159,6 +159,8 @@ REAL(KIND=JPRB) :: RGAMD
 REAL(KIND=JPRB) :: RSNAN
 
 !$acc declare copyin(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+!$omp declare target(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+
 
 !    ------------------------------------------------------------------
 

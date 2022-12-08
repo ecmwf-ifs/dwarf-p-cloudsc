@@ -334,7 +334,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   // FOEDELTA (PTARE) = MAX (0.0_JPRB,SIGN(1.0_JPRB,PTARE-RTT))
   // REAL(KIND=JPRB) :: FOEALFA
   // FOEALFA (PTARE) = MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,PTARE))-RTICE)&
-  //  &*RTWAT_RTICE_R)**2) 
+  //  &*RTWAT_RTICE_R)**2)
   // REAL(KIND=JPRB) :: FOEEWM,FOEDEM,FOELDCPM
   // FOEEWM ( PTARE ) = R2ES *&
   //      &(FOEALFA(PTARE)*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES))+&
@@ -343,11 +343,11 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   //              &(1.0_JPRB-FOEALFA(PTARE))*R5ALSCP*(1.0_JPRB/(PTARE-R4IES)**2)
   // FOELDCPM ( PTARE ) = FOEALFA(PTARE)*RALVDCP+&
   //             &(1.0_JPRB-FOEALFA(PTARE))*RALSDCP
-  // REAL(KIND=JPRB) :: FOEELIQ, FOEEICE 
+  // REAL(KIND=JPRB) :: FOEELIQ, FOEEICE
   // FOEELIQ( PTARE ) = R2ES*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES))
   // FOEEICE( PTARE ) = R2ES*EXP(R3IES*(PTARE-RTT)/(PTARE-R4IES))
   // #include "fccld.func.h"
-  // REAL(KIND=JPRB) :: FOKOOP 
+  // REAL(KIND=JPRB) :: FOKOOP
   // FOKOOP (PTARE) = MIN(RKOOP1-RKOOP2*PTARE,FOEELIQ(PTARE)/FOEEICE(PTARE))
   //===============================================================================
   //IF (LHOOK) CALL DR_HOOK('CLOUDSC',0,ZHOOK_HANDLE)
@@ -402,7 +402,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   iphase[3-1] = 1;
   iphase[2-1] = 2;
   iphase[4-1] = 2;    // ---------------------------------------------------
-  // Set up melting/freezing index, 
+  // Set up melting/freezing index,
   // if an ice category melts/freezes, where does it go?
   // ---------------------------------------------------
   imelt[5-1] = -99;
@@ -457,7 +457,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   //             1.  *** INITIAL VALUES FOR VARIABLES ***
   //######################################################################
   // ----------------------
-  // non CLV initialization 
+  // non CLV initialization
   // ----------------------
   for (jk=1; jk<=klev; jk+=1) {
     for (jl=kidia; jl<=kfdia; jl+=1) {
@@ -584,25 +584,25 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     for (jl=kidia; jl<=kfdia; jl+=1) {
       //----------------------------------------
       // old *diagnostic* mixed phase saturation
-      //---------------------------------------- 
+      //----------------------------------------
       zfoealfa[jk-1][jl-1] = (double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztp1[jk-1][jl-1])) - rtice)*rtwat_rtice_r, 2)));
       zfoeewmt[jk-1][jl-1] = fmin((double)(r2es*((double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztp1[jk-1][jl-1])) - rtice)*rtwat_rtice_r, 2)))*exp((r3les*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4les)) + (1.0 - (double)(fmin(1.0, pow((fmax(rtice, fmin(rtwat, ztp1[jk-1][jl-1])) - rtice)*rtwat_rtice_r, 2))))*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies))))/pap[jk-1][jl-1], 0.5);
       zqsmix[jk-1][jl-1] = zfoeewmt[jk-1][jl-1];
       zqsmix[jk-1][jl-1] = zqsmix[jk-1][jl-1]/(1.0 - retv*zqsmix[jk-1][jl-1]);        //---------------------------------------------
       // ice saturation T<273K
-      // liquid water saturation for T>273K 
+      // liquid water saturation for T>273K
       //---------------------------------------------
       zalfa = (double)(fmax(0.0, copysign(1.0, ztp1[jk-1][jl-1] - rtt)));
       zfoeew[jk-1][jl-1] = fmin((zalfa*(double)(r2es*exp((r3les*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4les))) + (1.0 - zalfa)*(double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies))))/pap[jk-1][jl-1], 0.5);
       zfoeew[jk-1][jl-1] = fmin(0.5, zfoeew[jk-1][jl-1]);
       zqsice[jk-1][jl-1] = zfoeew[jk-1][jl-1]/(1.0 - retv*zfoeew[jk-1][jl-1]);        //----------------------------------
       // liquid water saturation
-      //---------------------------------- 
+      //----------------------------------
       zfoeeliqt[jk-1][jl-1] = fmin((double)(r2es*exp((r3les*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4les)))/pap[jk-1][jl-1], 0.5);
       zqsliq[jk-1][jl-1] = zfoeeliqt[jk-1][jl-1];
       zqsliq[jk-1][jl-1] = zqsliq[jk-1][jl-1]/(1.0 - retv*zqsliq[jk-1][jl-1]);        //      //----------------------------------
       //      // ice water saturation
-      //      //---------------------------------- 
+      //      //----------------------------------
       //      ZFOEEICET(JL,JK)=MIN(FOEEICE(ZTP1(JL,JK))/PAP(JL,JK),0.5_JPRB)
       //      ZQSICE(JL,JK)=ZFOEEICET(JL,JK)
       //      ZQSICE(JL,JK)=ZQSICE(JL,JK)/(1.0_JPRB-RETV*ZQSICE(JL,JK))
@@ -642,11 +642,11 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   //----------------------------------------------------------------------
   // This is test code. Instead of resetting cloud water or cloud cover
   // to zero if one of the two is zero, here we slave the cloud cover
-  // to the cloud water variable. I.e. if cloud cover is zero it is 
+  // to the cloud water variable. I.e. if cloud cover is zero it is
   // set to an appropriate non-zero value.
   // It uses a Beta curve to get the variance and then derive cloud cover.
-  // It is quite slow since it involves iteration, and should be left 
-  // until a fully prognostic variance equation for total water is 
+  // It is quite slow since it involves iteration, and should be left
+  // until a fully prognostic variance equation for total water is
   // implemented
   //-----------------------------------------------------------------------
   //IF (.FALSE.) THEN
@@ -655,24 +655,24 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
   // & ( KIDIA, KFDIA, KLON  , KLEV  , 1    , KLEV, &
   // &   ZTP1, ZQP1, ZQSMIX, ZLI, PAP, &
   //---output
-  // &   ZVAR, ZQTMIN, ZQTMAX ) //last two are dummy args  
+  // &   ZVAR, ZQTMIN, ZQTMAX ) //last two are dummy args
   //  CALL COVER &
   //---input
   // & ( KIDIA, KFDIA , KLON, KLEV, 1, KLEV, &
   // &   ZA, ZTP1,  ZQP1, ZQSMIX, ZLI, PAP, ZVAR, &
   //---output
-  // &   ZQTMAX, ZABETA )  
+  // &   ZQTMAX, ZABETA )
   //  DO JK=1,KLEV
   //    DO JL=KIDIA,KFDIA
   //      IF (ZLI(JL,JK)/MAX(ZA(JL,JK),ZEPSEC)>RCLDMAX) THEN
-  //        ZA(JL,JK)=ZABETA(JL,JK) // not part of tendency       
+  //        ZA(JL,JK)=ZABETA(JL,JK) // not part of tendency
   //      ENDIF
   //    ENDDO
   //  ENDDO
   //ENDIF
   //--------------------------------------
   // NPM
-  // Initialize liq water temperature T_L 
+  // Initialize liq water temperature T_L
   // Not used at present
   //--------------------------------------
   //ZTL(:,:)=ZTP1(:,:)
@@ -759,17 +759,17 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       zlcond2[jl-1] = 0.0;
       zsupsat[jl-1] = 0.0;
       zlevapl[jl-1] = 0.0;
-      zlevapi[jl-1] = 0.0;        //-------------------------------------                
-      // solvers for cloud fraction                          
-      //-------------------------------------                
+      zlevapi[jl-1] = 0.0;        //-------------------------------------
+      // solvers for cloud fraction
+      //-------------------------------------
       zsolab[jl-1] = 0.0;
       zsolac[jl-1] = 0.0;
       zicetot[jl-1] = 0.0;
     }
 
-    //------------------------------------------           
-    // reset matrix so missing pathways are set            
-    //------------------------------------------           
+    //------------------------------------------
+    // reset matrix so missing pathways are set
+    //------------------------------------------
     for (jm=1; jm<=5; jm+=1) {
       for (jn=1; jn<=5; jn+=1) {
         for (jl=kidia; jl<=kfdia; jl+=1) {
@@ -781,9 +781,9 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
     }
 
-    //----------------------------------                   
-    // reset new microphysics variables                    
-    //----------------------------------                   
+    //----------------------------------
+    // reset new microphysics variables
+    //----------------------------------
     for (jm=1; jm<=5; jm+=1) {
       for (jl=kidia; jl<=kfdia; jl+=1) {
         zfallsrce[jm-1][jl-1] = 0.0;
@@ -861,15 +861,15 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //---------------------------------------------------------------------
     //  3.1  ICE SUPERSATURATION ADJUSTMENT
     //---------------------------------------------------------------------
-    // Note that the supersaturation adjustment is made with respect to 
-    // liquid saturation:  when T>0C 
+    // Note that the supersaturation adjustment is made with respect to
+    // liquid saturation:  when T>0C
     // ice saturation:     when T<0C
-    //                     with an adjustment made to allow for ice 
+    //                     with an adjustment made to allow for ice
     //                     supersaturation in the clear sky
     // Note also that the KOOP factor automatically clips the supersaturation
     // to a maximum set by the liquid water saturation mixing ratio
     // important for temperatures near to but below 0C
-    //----------------------------------------------------------------------- 
+    //-----------------------------------------------------------------------
     //DIR$ NOFUSION
     for (jl=kidia; jl<=kfdia; jl+=1) {
       //-----------------------------------
@@ -890,7 +890,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       }
 
       //-------------------------------------------------------------------
-      // 3.1.2 Calculate supersaturation wrt Koop including dqs/dT 
+      // 3.1.2 Calculate supersaturation wrt Koop including dqs/dT
       //       correction factor
       // [#Note: QSICE or QSLIQ]
       //-------------------------------------------------------------------
@@ -913,14 +913,14 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       {
         if (ztp1[jk-1][jl-1] > yrecldp->rthomo)
         {
-          // Turn supersaturation into liquid water        
+          // Turn supersaturation into liquid water
           zsolqa[5-1][1-1][jl-1] = zsolqa[5-1][1-1][jl-1] + zsupsat[jl-1];
           zsolqa[1-1][5-1][jl-1] = zsolqa[1-1][5-1][jl-1] - zsupsat[jl-1];            // Include liquid in first guess
           zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] + zsupsat[jl-1];
         } else {
-          // Turn supersaturation into ice water        
+          // Turn supersaturation into ice water
           zsolqa[5-1][2-1][jl-1] = zsolqa[5-1][2-1][jl-1] + zsupsat[jl-1];
-          zsolqa[2-1][5-1][jl-1] = zsolqa[2-1][5-1][jl-1] - zsupsat[jl-1];            // Add ice to first guess for deposition term 
+          zsolqa[2-1][5-1][jl-1] = zsolqa[2-1][5-1][jl-1] - zsupsat[jl-1];            // Add ice to first guess for deposition term
           zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + zsupsat[jl-1];
         }
 
@@ -938,12 +938,12 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	{
 	  // Turn supersaturation into liquid water
 	  zsolqa[1-1][1-1][jl-1] = zsolqa[1-1][1-1][jl-1] + psupsat[jk-1][jl-1];
-	  zpsupsatsrce[1-1][jl-1] = psupsat[jk-1][jl-1];                // Add liquid to first guess for deposition term 
+	  zpsupsatsrce[1-1][jl-1] = psupsat[jk-1][jl-1];                // Add liquid to first guess for deposition term
 	  zqxfg[1-1][jl-1] = zqxfg[1-1][jl-1] + psupsat[jk-1][jl-1];                // Store cloud budget diagnostics if required
 	} else {
 	  // Turn supersaturation into ice water
 	  zsolqa[2-1][2-1][jl-1] = zsolqa[2-1][2-1][jl-1] + psupsat[jk-1][jl-1];
-	  zpsupsatsrce[2-1][jl-1] = psupsat[jk-1][jl-1];                // Add ice to first guess for deposition term 
+	  zpsupsatsrce[2-1][jl-1] = psupsat[jk-1][jl-1];                // Add ice to first guess for deposition term
 	  zqxfg[2-1][jl-1] = zqxfg[2-1][jl-1] + psupsat[jk-1][jl-1];                // Store cloud budget diagnostics if required
 	}
 
@@ -957,11 +957,11 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //  3.2  DETRAINMENT FROM CONVECTION
     //---------------------------------------------------------------------
     // * Diagnostic T-ice/liq split retained for convection
-    //    Note: This link is now flexible and a future convection 
+    //    Note: This link is now flexible and a future convection
     //    scheme can detrain explicit seperate budgets of:
     //    cloud water, ice, rain and snow
-    // * There is no (1-ZA) multiplier term on the cloud detrainment 
-    //    term, since is now written in mass-flux terms  
+    // * There is no (1-ZA) multiplier term on the cloud detrainment
+    //    term, since is now written in mass-flux terms
     // [#Note: Should use ZFOEALFACU used in convection rather than ZFOEALFA]
     //---------------------------------------------------------------------
     if (jk >= yrecldp->ncldtop && jk < klev)
@@ -996,7 +996,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //---------------------------------------------------------------------
     //-----------------------------------------------
     // Subsidence source from layer above
-    //               and 
+    //               and
     // Evaporation of cloud within the layer
     //-----------------------------------------------
     if (jk > yrecldp->ncldtop)
@@ -1018,9 +1018,9 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
       }
 
-      // Now have to work out how much liquid evaporates at arrival point 
-      // since there is no prognostic memory for in-cloud humidity, i.e. 
-      // we always assume cloud is saturated. 
+      // Now have to work out how much liquid evaporates at arrival point
+      // since there is no prognostic memory for in-cloud humidity, i.e.
+      // we always assume cloud is saturated.
       for (jl=kidia; jl<=kfdia; jl+=1) {
 	zdtdp = ((zrdcp*0.5)*(ztp1[jk-1-1][jl-1] + ztp1[jk-1][jl-1]))/paph[jk-1][jl-1];
 	zdtforc = zdtdp*(pap[jk-1][jl-1] - pap[jk-1-1][jl-1]);            //[#Note: Diagnostic mixed phase should be replaced below]
@@ -1058,7 +1058,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     }
 
     //---------------------------------------------------------------------
-    // Subsidence sink of cloud to the layer below 
+    // Subsidence sink of cloud to the layer below
     // (Implicit - re. CFL limit on convective mass flux)
     //---------------------------------------------------------------------
     for (jl=kidia; jl<=kfdia; jl+=1) {
@@ -1077,7 +1077,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //----------------------------------------------------------------------
     // 3.4  EROSION OF CLOUDS BY TURBULENT MIXING
     //----------------------------------------------------------------------
-    // NOTE: In default tiedtke scheme this process decreases the cloud 
+    // NOTE: In default tiedtke scheme this process decreases the cloud
     //       area but leaves the specific cloud water content
     //       within clouds unchanged
     //----------------------------------------------------------------------
@@ -1095,13 +1095,13 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
     // At the moment, works on mixed RH profile and partitioned ice/liq fraction
     // so that it is similar to previous scheme
-    // Should apply RHw for liquid cloud and RHi for ice cloud separately 
+    // Should apply RHw for liquid cloud and RHi for ice cloud separately
     for (jl=kidia; jl<=kfdia; jl+=1) {
       if (zli[jk-1][jl-1] > zepsec)
       {
 	// Calculate environmental humidity
 	//      ZQE=(ZQX(JL,JK,NCLDQV)-ZA(JL,JK)*ZQSMIX(JL,JK))/&
-	//    &      MAX(ZEPSEC,1.0_JPRB-ZA(JL,JK))  
+	//    &      MAX(ZEPSEC,1.0_JPRB-ZA(JL,JK))
 	//      ZE=ZLDIFDT(JL)*MAX(ZQSMIX(JL,JK)-ZQE,0.0_JPRB)
 	ze = zldifdt[jl-1]*fmax(zqsmix[jk-1][jl-1] - zqx[5-1][jk-1][jl-1], 0.0);
 	zleros = za[jk-1][jl-1]*ze;
@@ -1124,15 +1124,15 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //  Note: For the separate prognostic Qi and Ql, one would ideally use
     //  Qsat/DT wrt liquid/Koop here, since the physics is that new clouds
     //  forms by liquid droplets [liq] or when aqueous aerosols [Koop] form.
-    //  These would then instantaneous freeze if T<-38C or lead to ice growth 
-    //  by deposition in warmer mixed phase clouds.  However, since we do 
-    //  not have a separate prognostic equation for in-cloud humidity or a 
-    //  statistical scheme approach in place, the depositional growth of ice 
-    //  in the mixed phase can not be modelled and we resort to supersaturation  
-    //  wrt ice instanteously converting to ice over one timestep 
+    //  These would then instantaneous freeze if T<-38C or lead to ice growth
+    //  by deposition in warmer mixed phase clouds.  However, since we do
+    //  not have a separate prognostic equation for in-cloud humidity or a
+    //  statistical scheme approach in place, the depositional growth of ice
+    //  in the mixed phase can not be modelled and we resort to supersaturation
+    //  wrt ice instanteously converting to ice over one timestep
     //  (see Tompkins et al. QJRMS 2007 for details)
-    //  Thus for the initial implementation the diagnostic mixed phase is 
-    //  retained for the moment, and the level of approximation noted.  
+    //  Thus for the initial implementation the diagnostic mixed phase is
+    //  retained for the moment, and the level of approximation noted.
     //----------------------------------------------------------------------
     for (jl=kidia; jl<=kfdia; jl+=1) {
       zdtdp = (zrdcp*ztp1[jk-1][jl-1])/pap[jk-1][jl-1];
@@ -1231,7 +1231,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
         //-------------------------------------------------------------------------
         // All increase goes into liquid unless so cold cloud homogeneously freezes
-        // Include new liquid formation in first guess value, otherwise liquid 
+        // Include new liquid formation in first guess value, otherwise liquid
         // remains at cold temperatures until next timestep.
         //-------------------------------------------------------------------------
         if (ztp1[jk-1][jl-1] > yrecldp->rthomo)
@@ -1271,7 +1271,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
         //      ENDIF
         //---------------------------
         // Supersaturation options
-        //---------------------------      
+        //---------------------------
         if (yrecldp->nssopt == 0)
         {
           // No scheme
@@ -1280,7 +1280,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
         } else {
           if (yrecldp->nssopt == 1)
           {
-            // Tompkins 
+            // Tompkins
             zqe = (zqx[5-1][jk-1][jl-1] - za[jk-1][jl-1]*zqsice[jk-1][jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
             zqe = fmax(0.0, zqe);
           } else {
@@ -1312,7 +1312,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
         if (zqe >= zqsice[jk-1][jl-1]*zfac*zrhc && zqe < zqsice[jk-1][jl-1]*zfac)
         {
-          // note: not **2 on 1-a term if ZQE is used. 
+          // note: not **2 on 1-a term if ZQE is used.
           // Added correction term ZFAC to numerator 15/03/2010
           zacond = -((1.0 - za[jk-1][jl-1])*zfac)*zdqs[jl-1]*1.0/fmax(2.0*(zfac*zqsice[jk-1][jl-1] - zqe), zepsec);
           zacond = fmin(zacond, 1.0 - za[jk-1][jl-1]);            // Linear term:
@@ -1342,7 +1342,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
           zsolac[jl-1] = zsolac[jl-1] + zacond;            // Store cloud fraction diagnostic if required
           //------------------------------------------------------------------------
           // All increase goes into liquid unless so cold cloud homogeneously freezes
-          // Include new liquid formation in first guess value, otherwise liquid 
+          // Include new liquid formation in first guess value, otherwise liquid
           // remains at cold temperatures until next timestep.
           //------------------------------------------------------------------------
           if (ztp1[jk-1][jl-1] > yrecldp->rthomo)
@@ -1363,14 +1363,14 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     }
 
     //----------------------------------------------------------------------
-    // 3.7 Growth of ice by vapour deposition 
+    // 3.7 Growth of ice by vapour deposition
     //----------------------------------------------------------------------
     // Following Rotstayn et al. 2001:
     // does not use the ice nuclei number from cloudaer.F90
-    // but rather a simple Meyers et al. 1992 form based on the 
-    // supersaturation and assuming clouds are saturated with 
+    // but rather a simple Meyers et al. 1992 form based on the
+    // supersaturation and assuming clouds are saturated with
     // respect to liquid water (well mixed), (or Koop adjustment)
-    // Growth considered as sink of liquid water if present so 
+    // Growth considered as sink of liquid water if present so
     // Bergeron-Findeisen adjustment in autoconversion term no longer needed
     //----------------------------------------------------------------------
     //--------------------------------------------------------
@@ -1383,7 +1383,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     {
       for (jl=kidia; jl<=kfdia; jl+=1) {
 	//--------------------------------------------------------------
-	// Calculate distance from cloud top 
+	// Calculate distance from cloud top
 	// defined by cloudy layer below a layer with cloud frac <0.01
 	// ZDZ = ZDP(JL)/(ZRHO(JL)*RG)
 	//--------------------------------------------------------------
@@ -1395,8 +1395,8 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	}
 
 	//--------------------------------------------------------------
-	// only treat depositional growth if liquid present. due to fact 
-	// that can not model ice growth from vapour without additional 
+	// only treat depositional growth if liquid present. due to fact
+	// that can not model ice growth from vapour without additional
 	// in-cloud water vapour variable
 	//--------------------------------------------------------------
 	if (zqxfg[1-1][jl-1] > yrecldp->rlmin && ztp1[jk-1][jl-1] < rtt)
@@ -1417,26 +1417,26 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	  //------------------
 	  zinew = pow((0.666*zcvds)*ptsphy + pow(zice0, 0.666), 1.5);              //---------------------------
 	  // grid-mean deposition rate:
-	  //--------------------------- 
+	  //---------------------------
 	  zdepos = fmax(za[jk-1][jl-1]*(zinew - zice0), 0.0);              //--------------------------------------------------------------------
 	  // Limit deposition to liquid water amount
-	  // If liquid is all frozen, ice would use up reservoir of water 
-	  // vapour in excess of ice saturation mixing ratio - However this 
-	  // can not be represented without a in-cloud humidity variable. Using 
-	  // the grid-mean humidity would imply a large artificial horizontal 
-	  // flux from the clear sky to the cloudy area. We thus rely on the 
+	  // If liquid is all frozen, ice would use up reservoir of water
+	  // vapour in excess of ice saturation mixing ratio - However this
+	  // can not be represented without a in-cloud humidity variable. Using
+	  // the grid-mean humidity would imply a large artificial horizontal
+	  // flux from the clear sky to the cloudy area. We thus rely on the
 	  // supersaturation check to clean up any remaining supersaturation
 	  //--------------------------------------------------------------------
 	  zdepos = fmin(zdepos, zqxfg[1-1][jl-1]);              //--------------------------------------------------------------------
 	  // At top of cloud, reduce deposition rate near cloud top to account for
-	  // small scale turbulent processes, limited ice nucleation and ice fallout 
+	  // small scale turbulent processes, limited ice nucleation and ice fallout
 	  //--------------------------------------------------------------------
 	  //      ZDEPOS = ZDEPOS*MIN(RDEPLIQREFRATE+ZCLDTOPDIST(JL)/RDEPLIQREFDEPTH,1.0_JPRB)
 	  // Change to include dependence on ice nuclei concentration
-	  // to increase deposition rate with decreasing temperatures 
+	  // to increase deposition rate with decreasing temperatures
 	  zinfactor = fmin(zicenuclei[jl-1]/15000.0, 1.0);
 	  zdepos = zdepos*fmin(zinfactor + (1.0 - zinfactor)*(yrecldp->rdepliqrefrate + zcldtopdist[jl-1]/yrecldp->rdepliqrefdepth), 1.0);              //--------------
-	  // add to matrix 
+	  // add to matrix
 	  //--------------
 	  zsolqa[1-1][2-1][jl-1] = zsolqa[1-1][2-1][jl-1] + zdepos;
 	  zsolqa[2-1][1-1][jl-1] = zsolqa[2-1][1-1][jl-1] - zdepos;
@@ -1456,7 +1456,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       {
 	for (jl=kidia; jl<=kfdia; jl+=1) {
 	  //--------------------------------------------------------------
-	  // Calculate distance from cloud top 
+	  // Calculate distance from cloud top
 	  // defined by cloudy layer below a layer with cloud frac <0.01
 	  // ZDZ = ZDP(JL)/(ZRHO(JL)*RG)
 	  //--------------------------------------------------------------
@@ -1468,8 +1468,8 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	  }
 
 	  //--------------------------------------------------------------
-	  // only treat depositional growth if liquid present. due to fact 
-	  // that can not model ice growth from vapour without additional 
+	  // only treat depositional growth if liquid present. due to fact
+	  // that can not model ice growth from vapour without additional
 	  // in-cloud water vapour variable
 	  //--------------------------------------------------------------
 	  if (zqxfg[1-1][jl-1] > yrecldp->rlmin && ztp1[jk-1][jl-1] < rtt)
@@ -1490,22 +1490,22 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	    zterm2 = (0.65*yrecldp->rcl_const6i)*pow(zpr02, yrecldp->rcl_const4i) + (((yrecldp->rcl_const3i*sqrt(zcorrfac))*sqrt(zrho[jl-1]))*pow(zpr02, yrecldp->rcl_const5i))/sqrt(zcorrfac2);
 	    zdepos = fmax(((za[jk-1][jl-1]*zterm1)*zterm2)*ptsphy, 0.0);                //--------------------------------------------------------------------
 	    // Limit deposition to liquid water amount
-	    // If liquid is all frozen, ice would use up reservoir of water 
-	    // vapour in excess of ice saturation mixing ratio - However this 
-	    // can not be represented without a in-cloud humidity variable. Using 
-	    // the grid-mean humidity would imply a large artificial horizontal 
-	    // flux from the clear sky to the cloudy area. We thus rely on the 
+	    // If liquid is all frozen, ice would use up reservoir of water
+	    // vapour in excess of ice saturation mixing ratio - However this
+	    // can not be represented without a in-cloud humidity variable. Using
+	    // the grid-mean humidity would imply a large artificial horizontal
+	    // flux from the clear sky to the cloudy area. We thus rely on the
 	    // supersaturation check to clean up any remaining supersaturation
 	    //--------------------------------------------------------------------
 	    zdepos = fmin(zdepos, zqxfg[1-1][jl-1]);                //--------------------------------------------------------------------
 	    // At top of cloud, reduce deposition rate near cloud top to account for
-	    // small scale turbulent processes, limited ice nucleation and ice fallout 
+	    // small scale turbulent processes, limited ice nucleation and ice fallout
 	    //--------------------------------------------------------------------
 	    // Change to include dependence on ice nuclei concentration
-	    // to increase deposition rate with decreasing temperatures 
+	    // to increase deposition rate with decreasing temperatures
 	    zinfactor = fmin(zicenuclei[jl-1]/15000.0, 1.0);
 	    zdepos = zdepos*fmin(zinfactor + (1.0 - zinfactor)*(yrecldp->rdepliqrefrate + zcldtopdist[jl-1]/yrecldp->rdepliqrefdepth), 1.0);                //--------------
-	    // add to matrix 
+	    // add to matrix
 	    //--------------
 	    zsolqa[1-1][2-1][jl-1] = zsolqa[1-1][2-1][jl-1] + zdepos;
 	    zsolqa[2-1][1-1][jl-1] = zsolqa[2-1][1-1][jl-1] - zdepos;
@@ -1543,7 +1543,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       {
 	for (jl=kidia; jl<=kfdia; jl+=1) {
 	  //------------------------
-	  // source from layer above 
+	  // source from layer above
 	  //------------------------
 	  if (jk > yrecldp->ncldtop)
 	  {
@@ -1556,11 +1556,11 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	  //-------------------------------------------------
 	  // sink to next layer, constant fall speed
 	  //-------------------------------------------------
-	  // if aerosol effect then override 
+	  // if aerosol effect then override
 	  //  note that for T>233K this is the same as above.
 	  if (yrecldp->laericesed && jm == 2)
 	  {
-	    zre_ice = pre_ice[jk-1][jl-1];                // The exponent value is from 
+	    zre_ice = pre_ice[jk-1][jl-1];                // The exponent value is from
 	    // Morrison et al. JAS 2005 Appendix
 	    zvqx[2-1] = 0.002*pow(zre_ice, 1.0);
 	  }
@@ -1577,17 +1577,17 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
     //---------------------------------------------------------------
     // Precip cover overlap using MAX-RAN Overlap
-    // Since precipitation is now prognostic we must 
+    // Since precipitation is now prognostic we must
     //   1) apply an arbitrary minimum coverage (0.3) if precip>0
     //   2) abandon the 2-flux clr/cld treatment
     //   3) Thus, since we have no memory of the clear sky precip
-    //      fraction, we mimic the previous method by reducing 
-    //      ZCOVPTOT(JL), which has the memory, proportionally with 
-    //      the precip evaporation rate, taking cloud fraction 
+    //      fraction, we mimic the previous method by reducing
+    //      ZCOVPTOT(JL), which has the memory, proportionally with
+    //      the precip evaporation rate, taking cloud fraction
     //      into account
-    //   #3 above leads to much smoother vertical profiles of 
-    //   precipitation fraction than the Klein-Jakob scheme which 
-    //   monotonically increases precip fraction and then resets 
+    //   #3 above leads to much smoother vertical profiles of
+    //   precipitation fraction than the Klein-Jakob scheme which
+    //   monotonically increases precip fraction and then resets
     //   it to zero in a step function once clear-sky precip reaches
     //   zero.
     //---------------------------------------------------------------
@@ -1624,7 +1624,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	  zzco = (ptsphy*yrecldp->rsnowlin1)*exp(yrecldp->rsnowlin2*(ztp1[jk-1][jl-1] - rtt));
 	  if (yrecldp->laericeauto)
 	  {
-	    zlcrit = picrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=0.027 
+	    zlcrit = picrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=0.027
 	    zzco = zzco*pow(yrecldp->rnice/pnice[jk-1][jl-1], 0.333);
 	  } else {
 	    zlcrit = yrecldp->rlcritsnow;
@@ -1653,10 +1653,10 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	  zzco = yrecldp->rkconv*ptsphy;
 	  if (yrecldp->laerliqautolsp)
 	  {
-	    zlcrit = plcrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=125 cm-3 
+	    zlcrit = plcrit_aer[jk-1][jl-1];                // 0.3 = N**0.333 with N=125 cm-3
 	    zzco = zzco*pow(yrecldp->rccn/pccn[jk-1][jl-1], 0.333);
 	  } else {
-	    // Modify autoconversion threshold dependent on: 
+	    // Modify autoconversion threshold dependent on:
 	    //  land (polluted, high CCN, smaller droplets, higher threshold)
 	    //  sea  (clean, low CCN, larger droplets, lower threshold)
 	    if (plsm[jl-1] > 0.5)
@@ -1670,15 +1670,15 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
 	  //------------------------------------------------------------------
 	  // Parameters for cloud collection by rain and snow.
-	  // Note that with new prognostic variable it is now possible 
+	  // Note that with new prognostic variable it is now possible
 	  // to REPLACE this with an explicit collection parametrization
-	  //------------------------------------------------------------------   
+	  //------------------------------------------------------------------
 	  zprecip = (zpfplsx[4-1][jk-1][jl-1] + zpfplsx[3-1][jk-1][jl-1])*1.0/fmax(zepsec, zcovptot[jl-1]);
 	  zcfpr = 1.0 + yrecldp->rprc1*sqrt(fmax(zprecip, 0.0));              //      ZCFPR=1.0_JPRB + RPRC1*SQRT(MAX(ZPRECIP,0.0_JPRB))*&
 	  //       &ZCOVPTOT(JL)/(MAX(ZA(JL,JK),ZEPSEC))
 	  if (yrecldp->laerliqcoll)
 	  {
-	    // 5.0 = N**0.333 with N=125 cm-3 
+	    // 5.0 = N**0.333 with N=125 cm-3
 	    zcfpr = zcfpr*pow(yrecldp->rccn/pccn[jk-1][jl-1], 0.333);
 	  }
 
@@ -1770,10 +1770,8 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       for (jl=kidia; jl<=kfdia; jl+=1) {
 	if (ztp1[jk-1][jl-1] <= rtt && zliqcld[jl-1] > zepsec)
 	{
-	  // Fallspeed air density correction 
-	  // TODO: THIS IS A BUG! Due to a missing ``_JPRB`` in the original,
-	  // we need to cast the exponent down to single precision to re-create.
-	  zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], (float)0.4);
+	  // Fallspeed air density correction
+	  zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], 0.4);
 	  //------------------------------------------------------------------
 	  // Riming of snow by cloud water - implicit in lwc
 	  //------------------------------------------------------------------
@@ -1822,12 +1820,12 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       if (zicetot[jl-1] > zepsec && ztp1[jk-1][jl-1] > rtt)
       {
 	// Calculate subsaturation
-	zsubsat = fmax(zqsice[jk-1][jl-1] - zqx[5-1][jk-1][jl-1], 0.0);            // Calculate difference between dry-bulb (ZTP1) and the temperature 
+	zsubsat = fmax(zqsice[jk-1][jl-1] - zqx[5-1][jk-1][jl-1], 0.0);            // Calculate difference between dry-bulb (ZTP1) and the temperature
 	// at which the wet-bulb=0degC (RTT-ZSUBSAT*....) using an approx.
 	// Melting only occurs if the wet-bulb temperature >0
-	// i.e. warming of ice particle due to melting > cooling 
+	// i.e. warming of ice particle due to melting > cooling
 	// due to evaporation.
-	ztdmtw0 = ztp1[jk-1][jl-1] - rtt - zsubsat*(ztw1 + ztw2*(pap[jk-1][jl-1] - ztw3) - ztw4*(ztp1[jk-1][jl-1] - ztw5));            // Not implicit yet... 
+	ztdmtw0 = ztp1[jk-1][jl-1] - rtt - zsubsat*(ztw1 + ztw2*(pap[jk-1][jl-1] - ztw3) - ztw4*(ztp1[jk-1][jl-1] - ztw5));            // Not implicit yet...
 	// Ensure ZCONS1 is positive so that ZMELTMAX=0 if ZTDMTW0<0
 	zcons1 = fabs((ptsphy*(1.0 + 0.5*ztdmtw0))/yrecldp->rtaumel);
 	zmeltmax[jl-1] = fmax((ztdmtw0*zcons1)*zrldcp, 0.0);
@@ -1843,7 +1841,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	for (jl=kidia; jl<=kfdia; jl+=1) {
 	  if (zicetot[jl-1] > zepsec && zmeltmax[jl-1] > zepsec)
 	  {
-	    // Apply melting in same proportion as frozen hydrometeor fractions 
+	    // Apply melting in same proportion as frozen hydrometeor fractions
 	    zalfa = zqxfg[jm-1][jl-1]/zicetot[jl-1];
 	    zmelt = fmin(zqxfg[jm-1][jl-1], zalfa*zmeltmax[jl-1]);                // needed in first guess
 	    // This implies that zqpretot has to be recalculated below
@@ -1890,7 +1888,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	    zfrz = ((ptsphy*(yrecldp->rcl_const5r/zrho[jl-1]))*(exp(ztemp) - 1.0))*pow(zlambda, yrecldp->rcl_const6r);
 	    zfrzmax[jl-1] = fmax(zfrz, 0.0);
 	  } else {
-	    // Majority of raindrops only partially melted 
+	    // Majority of raindrops only partially melted
 	    // Refreeze with a shorter timescale (reverse of melting...for now)
 	    zcons1 = fabs((ptsphy*(1.0 + 0.5*(rtt - ztp1[jk-1][jl-1])))/yrecldp->rtaumel);
 	    zfrzmax[jl-1] = fmax(((rtt - ztp1[jk-1][jl-1])*zcons1)*zrldcp, 0.0);
@@ -1910,10 +1908,10 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     }
 
     //----------------------------------------------------------------------
-    // 4.4c  FREEZING of LIQUID 
+    // 4.4c  FREEZING of LIQUID
     //----------------------------------------------------------------------
     for (jl=kidia; jl<=kfdia; jl+=1) {
-      // not implicit yet... 
+      // not implicit yet...
       zfrzmax[jl-1] = fmax((yrecldp->rthomo - ztp1[jk-1][jl-1])*zrldcp, 0.0);
     }
 
@@ -1960,7 +1958,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	  // add evaporation term to explicit sink.
 	  // this has to be explicit since if treated in the implicit
 	  // term evaporation can not reduce rain to zero and model
-	  // produces small amounts of rainfall everywhere. 
+	  // produces small amounts of rainfall everywhere.
 	  //---------------------------------------------------------
 	  // Evaporate rain
 	  zevap = fmin(zdpevap, zqxfg[3-1][jl-1]);
@@ -1985,10 +1983,10 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       {
 	for (jl=kidia; jl<=kfdia; jl+=1) {
 	  //-----------------------------------------------------------------------
-	  // Calculate relative humidity limit for rain evaporation 
+	  // Calculate relative humidity limit for rain evaporation
 	  // to avoid cloud formation and saturation of the grid box
 	  //-----------------------------------------------------------------------
-	  // Limit RH for rain evaporation dependent on precipitation fraction 
+	  // Limit RH for rain evaporation dependent on precipitation fraction
 	  zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
 	  zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);              // Critical relative humidity
 	  //ZRHC=RAMID
@@ -2008,7 +2006,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	    // Abel and Boutle (2012) evaporation
 	    //-------------------------------------------
 	    // Calculate local precipitation (kg/kg)
-	    zpreclr = zqxfg[3-1][jl-1]/zcovptot[jl-1];                // Fallspeed air density correction 
+	    zpreclr = zqxfg[3-1][jl-1]/zcovptot[jl-1];                // Fallspeed air density correction
 	    zfallcorr = pow(yrecldp->rdensref/zrho[jl-1], 0.4);                // Saturation vapour pressure with respect to liquid phase
 	    zesatliq = (rv/rd)*(double)(r2es*exp((r3les*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4les)));                // Slope of particle size distribution
 	    zlambda = pow(yrecldp->rcl_fac1/((zrho[jl-1]*zpreclr)), yrecldp->rcl_fac2);
@@ -2022,7 +2020,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	    // Add evaporation term to explicit sink.
 	    // this has to be explicit since if treated in the implicit
 	    // term evaporation can not reduce rain to zero and model
-	    // produces small amounts of rainfall everywhere. 
+	    // produces small amounts of rainfall everywhere.
 	    //---------------------------------------------------------
 	    // Limit rain evaporation
 	    zevap = fmin(zdpevap, zqxfg[3-1][jl-1]);
@@ -2033,7 +2031,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	    // to mimic the previous scheme which had a diagnostic
 	    // 2-flux treatment, abandoned due to the new prognostic precip
 	    //-------------------------------------------------------------
-	    zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[3-1][jl-1]));                // Update fg field 
+	    zcovptot[jl-1] = fmax(yrecldp->rcovpmin, zcovptot[jl-1] - fmax(0.0, ((zcovptot[jl-1] - za[jk-1][jl-1])*zevap)/zqxfg[3-1][jl-1]));                // Update fg field
 	    zqxfg[3-1][jl-1] = zqxfg[3-1][jl-1] - zevap;
 	  }
 
@@ -2071,7 +2069,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	  // add evaporation term to explicit sink.
 	  // this has to be explicit since if treated in the implicit
 	  // term evaporation can not reduce snow to zero and model
-	  // produces small amounts of snowfall everywhere. 
+	  // produces small amounts of snowfall everywhere.
 	  //---------------------------------------------------------
 	  // Evaporate snow
 	  zevap = fmin(zdpevap, zqxfg[4-1][jl-1]);
@@ -2094,7 +2092,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       {
 	for (jl=kidia; jl<=kfdia; jl+=1) {
 	  //-----------------------------------------------------------------------
-	  // Calculate relative humidity limit for snow evaporation 
+	  // Calculate relative humidity limit for snow evaporation
 	  //-----------------------------------------------------------------------
 	  zzrh = yrecldp->rprecrhmax + ((1.0 - yrecldp->rprecrhmax)*zcovpmax[jl-1])*1.0/fmax(zepsec, 1.0 - za[jk-1][jl-1]);
 	  zzrh = fmin(fmax(zzrh, yrecldp->rprecrhmax), 1.0);
@@ -2108,8 +2106,8 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	    // Calculate local precipitation (kg/kg)
 	    zpreclr = zqx[4-1][jk-1][jl-1]/zcovptot[jl-1];
 	    zvpice = ((double)(r2es*exp((r3ies*(ztp1[jk-1][jl-1] - rtt))/(ztp1[jk-1][jl-1] - r4ies)))*rv)/rd;                // Particle size distribution
-	    // ZTCG increases Ni with colder temperatures - essentially a 
-	    // Fletcher or Meyers scheme? 
+	    // ZTCG increases Ni with colder temperatures - essentially a
+	    // Fletcher or Meyers scheme?
 	    ztcg = 1.0;                // ZFACX1I modification is based on Andrew Barrett's results
 	    zfacx1s = 1.0;
 	    zaplusb = yrecldp->rcl_apb1*zvpice - yrecldp->rcl_apb2*zvpice*ztp1[jk-1][jl-1] + (pap[jk-1][jl-1]*yrecldp->rcl_apb3)*pow(ztp1[jk-1][jl-1], 3);
@@ -2185,7 +2183,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     // 5.2 solver for the microphysics
     //--------------------------------
     //--------------------------------------------------------------
-    // Truncate explicit sinks to avoid negatives 
+    // Truncate explicit sinks to avoid negatives
     // Note: Species are treated in the order in which they run out
     // since the clipping will alter the balance for the other vars
     //--------------------------------------------------------------
@@ -2229,7 +2227,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     }
 
     //--------------------------------------------
-    // scale the sink terms, in the correct order, 
+    // scale the sink terms, in the correct order,
     // recalculating the scale factor each time
     //--------------------------------------------
     for (jm=1; jm<=5; jm+=1) {
@@ -2291,7 +2289,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     // 5.2.2 Solver
     //------------------------
     //------------------------
-    // set the LHS of equation  
+    // set the LHS of equation
     //------------------------
     for (jm=1; jm<=5; jm+=1) {
       for (jn=1; jn<=5; jn+=1) {
@@ -2323,7 +2321,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     }
 
     //------------------------
-    // set the RHS of equation  
+    // set the RHS of equation
     //------------------------
     for (jm=1; jm<=5; jm+=1) {
       for (jl=kidia; jl<=kfdia; jl+=1) {
@@ -2347,9 +2345,9 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //       assumes a good behaviour (i.e. non-zero diagonal
     //       terms with comparable orders) of the matrix stored
     //       in ZQLHS. For the moment this is the case but
-    //       be aware to preserve it when doing eventual 
+    //       be aware to preserve it when doing eventual
     //       modifications.
-    // Non pivoting recursive factorization 
+    // Non pivoting recursive factorization
     for (jn=1; jn<=4; jn+=1) {
       for (jm=jn + 1; jm<=5; jm+=1) {
 	for (jl=kidia; jl<=kfdia; jl+=1) {
@@ -2367,8 +2365,8 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 
     }
 
-    // Backsubstitution 
-    //  step 1 
+    // Backsubstitution
+    //  step 1
     for (jn=2; jn<=5; jn+=1) {
       for (jm=1; jm<=jn - 1; jm+=1) {
 	for (jl=kidia; jl<=kfdia; jl+=1) {
@@ -2453,7 +2451,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
     //              6  *** UPDATE TENDANCIES ***
     //######################################################################
     //--------------------------------
-    // 6.1 Temperature and CLV budgets 
+    // 6.1 Temperature and CLV budgets
     //--------------------------------
     for (jm=1; jm<=4; jm+=1) {
       for (jl=kidia; jl<=kfdia; jl+=1) {
@@ -2478,7 +2476,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       }
 
       //----------------------------------------------------------------------
-      // New prognostic tendencies - ice,liquid rain,snow 
+      // New prognostic tendencies - ice,liquid rain,snow
       // Note: CLV arrays use PCLV in calculation of tendency while humidity
       //       uses ZQX. This is due to clipping at start of cloudsc which
       //       include the tendency already in tendency_loc%T and tendency_loc%q. ZQX was reset
@@ -2495,7 +2493,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       //----------------------
       tendency_loc_q[jk-1][jl-1] = tendency_loc_q[jk-1][jl-1] + (zqxn[5-1][jl-1] - zqx[5-1][jk-1][jl-1])*zqtmst;
       //-------------------
-      // 6.3 cloud cover 
+      // 6.3 cloud cover
       //-----------------------
       tendency_loc_a[jk-1][jl-1] = tendency_loc_a[jk-1][jl-1] + zda[jl-1]*zqtmst;
     }
@@ -2560,7 +2558,7 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
       zalfaw = zfoealfa[jk-1][jl-1];          // Liquid , LS scheme minus detrainment
       pfsqlf[jk+1-1][jl-1] = pfsqlf[jk+1-1][jl-1] + (zqxn2d[1-1][jk-1][jl-1] - zqx0[1-1][jk-1][jl-1] + pvfl[jk-1][jl-1]*ptsphy - zalfaw*plude[jk-1][jl-1])*zgdph_r;          // liquid, negative numbers
       pfcqlng[jk+1-1][jl-1] = pfcqlng[jk+1-1][jl-1] + zlneg[1-1][jk-1][jl-1]*zgdph_r;          // liquid, vertical diffusion
-      pfsqltur[jk+1-1][jl-1] = pfsqltur[jk+1-1][jl-1] + (pvfl[jk-1][jl-1]*ptsphy)*zgdph_r;          // Rain, LS scheme 
+      pfsqltur[jk+1-1][jl-1] = pfsqltur[jk+1-1][jl-1] + (pvfl[jk-1][jl-1]*ptsphy)*zgdph_r;          // Rain, LS scheme
       pfsqrf[jk+1-1][jl-1] = pfsqrf[jk+1-1][jl-1] + (zqxn2d[3-1][jk-1][jl-1] - zqx0[3-1][jk-1][jl-1])*zgdph_r;          // rain, negative numbers
       pfcqrng[jk+1-1][jl-1] = pfcqrng[jk+1-1][jl-1] + zlneg[3-1][jk-1][jl-1]*zgdph_r;          // Ice , LS scheme minus detrainment
       pfsqif[jk+1-1][jl-1] = pfsqif[jk+1-1][jl-1] + (zqxn2d[2-1][jk-1][jl-1] - zqx0[2-1][jk-1][jl-1] + pvfi[jk-1][jl-1]*ptsphy - (1.0 - zalfaw)*plude[jk-1][jl-1])*zgdph_r;          // ice, negative numbers
