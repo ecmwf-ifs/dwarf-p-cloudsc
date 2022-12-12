@@ -222,9 +222,6 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
             attrkey = k.lower()
             setattr(yrethf, attrkey, f[k][0])
 
-    return yrecldp, yrmcst, yrethf, yrephli
-
-
 def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
     """
     convert_fortran_output_to_python converts Fortran-format fields that are to be compared to

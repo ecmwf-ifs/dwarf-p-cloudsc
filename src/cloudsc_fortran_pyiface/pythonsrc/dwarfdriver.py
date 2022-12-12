@@ -4,15 +4,15 @@ Driver that:
 - invokes Fortran kernel computation,
 - validates against reference results read from another .h5 file.
 """
+import sys
+from pathlib import Path
+from operator import itemgetter
 import cloudsc as clsc
 from cloudsc_data import define_fortran_fields
 from cloudsc_data import load_input_fortran_fields, load_input_parameters
 from cloudsc_data import load_reference_fields
-from cloudsc_data import convert_fortran_output_to_python 
+from cloudsc_data import convert_fortran_output_to_python
 from cloudsc_data import cloudsc_validate
-import sys
-from pathlib import Path
-from operator import itemgetter
 sys.path.append('../../build/src/cloudsc_fortran_pyiface')
 sys.path.append('../../build/lib')
 sys.path.append('.')
@@ -49,8 +49,7 @@ NCLDQR = 3    # rain water
 NCLDQS = 4    # snow
 NCLDQV = 5    # vapour
 
-ydecldp, ydomcst, ydoethf, ydephli = load_input_parameters(
-                                          input_path,ydecldp,ydephli,ydomcst,ydoethf)
+load_input_parameters(input_path, ydecldp, ydephli, ydomcst, ydoethf)
 
 input_fort_fields = load_input_fortran_fields(input_path,NPROMA,NLEV,NBLOCKS,clsfields)
 
@@ -69,7 +68,7 @@ clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
                          plsm, ldcum, ktype,
                          plu, plude, psnde, pmfu, pmfd,
                          pa, pclv, psupsat,
-                         plcrit_aer, picrit_aer, pre_ice, 
+                         plcrit_aer, picrit_aer, pre_ice,
                          pccn, pnice,
                          pcovptot, prainfrac_toprfz,
                          pfsqlf,   pfsqif ,  pfcqnng,  pfcqlng,
