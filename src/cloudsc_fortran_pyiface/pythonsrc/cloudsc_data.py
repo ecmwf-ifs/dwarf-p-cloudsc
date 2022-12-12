@@ -207,14 +207,14 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
     return yrecldp, yrmcst, yrethf, yrephli
 
 
-def convert_fortran_output_to_python (nproma,nlev,nblocks,
-                                      plude, pcovptot,
-                                      pfplsl, pfplsn, pfhpsl, pfhpsn,
-                                      pfsqlf, pfsqif, pfcqnng,  pfcqlng,
-                                      pfsqrf, pfsqsf, pfcqrng,  pfcqsng,
-                                      pfsqltur, pfsqitur,
-                                      prainfrac_toprfz,
-                                      buffer_loc ):
+def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
+                                 #    plude, pcovptot,
+                                 #    pfplsl, pfplsn, pfhpsl, pfhpsn,
+                                 #    pfsqlf, pfsqif, pfcqnng,  pfcqlng,
+                                 #    pfsqrf, pfsqsf, pfcqrng,  pfcqsng,
+                                 #    pfsqltur, pfsqitur,
+                                 #    prainfrac_toprfz,
+                                 #    buffer_loc ):
     """
 
     """
@@ -247,13 +247,13 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,
     ]
 
     for argname in argnames_nlev:
-        fields[argname] = np.ascontiguousarray(np.transpose(locals()[argname][:,:,0]))
+        fields[argname] = np.ascontiguousarray(np.transpose(input_fields[argname][:,:,0]))
 
     for argname in argnames_nlevp:
-        fields[argname] = np.ascontiguousarray(np.transpose(locals()[argname][:,:,0]))
+        fields[argname] = np.ascontiguousarray(np.transpose(input_fields[argname][:,:,0]))
 
     for argname in argnames_nproma:
-        fields[argname] = np.ascontiguousarray(np.transpose(locals()[argname][:,0]))
+        fields[argname] = np.ascontiguousarray(np.transpose(input_fields[argname][:,0]))
 
     for argname in argnames_tend:
         locals()[argname] = np.zeros(shape=(nproma,nlev,nblocks), order='F')
@@ -262,7 +262,7 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,
         locals()[argname] = np.zeros(shape=(nproma,nlev,NCLV,nblocks), order='F')
 
 
-    unpack_buffer_to_tendencies(locals() ['buffer_loc'],
+    unpack_buffer_to_tendencies(input_fields ['buffer_loc'],
                                 locals() ['tendency_loc_a'],
                                 locals() ['tendency_loc_t'],
                                 locals() ['tendency_loc_q'],
