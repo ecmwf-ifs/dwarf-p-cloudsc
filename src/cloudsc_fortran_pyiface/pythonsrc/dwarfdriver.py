@@ -1,28 +1,35 @@
-import sys 
+"""
+Driver that:
+- loads input variables and parameters from .h5 file,
+- invokes Fortran kernel computation,
+- validates against reference results read from another .h5 file.
+"""
+import cloudsc as clsc
+from cloudsc_data import define_fortran_fields
+from cloudsc_data import load_input_fortran_fields, load_input_parameters
+from cloudsc_data import load_reference_fields
+from cloudsc_data import convert_fortran_output_to_python 
+from cloudsc_data import cloudsc_validate
+import sys
+from pathlib import Path
+from operator import itemgetter
 sys.path.append('../../build/src/cloudsc_fortran_pyiface')
 sys.path.append('../../build/lib')
 sys.path.append('.')
-from pathlib import Path
-import numpy as np
-from collections import OrderedDict
-import cloudsc as clsc
-from cloudsc_data import define_fortran_fields,load_input_parameters,load_input_fortran_fields,cloudsc_validate,convert_fortran_output_to_python,load_reference_fields
-from operator import itemgetter
 
- 
-nproma=100
-numomp=1
-nlev=137
-ngptot=100
-ngptotg=100
-nblocks=1
-ndim=5
-ptsphy=3600.
+NPROMA=100
+NUMOMP=1
+NLEV=137
+NGPTOT=100
+NGPTOTG=100
+NBLOCKS=1
+NDIM=5
+PTSPHY=3600.
 
-clsfields=define_fortran_fields(nproma,nlev,nblocks)
+clsfields=define_fortran_fields(NPROMA,NLEV,NBLOCKS)
 
 for fieldname in clsfields.keys():
-     locals()[fieldname]=itemgetter(fieldname)(clsfields)
+    locals()[fieldname]=itemgetter(fieldname)(clsfields)
 
 
 
@@ -42,22 +49,22 @@ NCLDQR = 3    # rain water
 NCLDQS = 4    # snow
 NCLDQV = 5    # vapour
 
-ydecldp, ydomcst, ydoethf, ydephli = load_input_parameters(input_path,ydecldp,ydephli,ydomcst,ydoethf)
+ydecldp, ydomcst, ydoethf, ydephli = load_input_parameters(
+                                          input_path,ydecldp,ydephli,ydomcst,ydoethf)
 
-input_fort_fields = load_input_fortran_fields(input_path,nproma,nlev,nblocks,clsfields)
+input_fort_fields = load_input_fortran_fields(input_path,NPROMA,NLEV,NBLOCKS,clsfields)
 
 for fieldname in input_fort_fields.keys():
-     locals()[fieldname]=input_fort_fields[fieldname]
-
+    locals()[fieldname]=input_fort_fields[fieldname]
 
 clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
-                         numomp, nproma, nlev, ngptot, ngptotg,
+                         NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG,
                          NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV,
-                         kfldx, ptsphy,
+                         kfldx, PTSPHY,
                          pt, pq,
                          buffer_tmp, buffer_loc,
                          pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
-                         phrsw, phrlw, 
+                         phrsw, phrlw,
                          pvervel, pap, paph,
                          plsm, ldcum, ktype,
                          plu, plude, psnde, pmfu, pmfd,
@@ -65,20 +72,13 @@ clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
                          plcrit_aer, picrit_aer, pre_ice, 
                          pccn, pnice,
                          pcovptot, prainfrac_toprfz,
-                         pfsqlf,   pfsqif ,  pfcqnng,  pfcqlng, 
-                         pfsqrf,   pfsqsf ,  pfcqrng,  pfcqsng, 
-                         pfsqltur, pfsqitur,  
+                         pfsqlf,   pfsqif ,  pfcqnng,  pfcqlng,
+                         pfsqrf,   pfsqsf ,  pfcqrng,  pfcqsng,
+                         pfsqltur, pfsqitur,
                          pfplsl, pfplsn, pfhpsl, pfhpsn,
                          ydomcst, ydoethf, ydecldp, ydephli)
 
-output_fields = convert_fortran_output_to_python (nproma,nlev,nblocks,input_fort_fields)
-#                                                 plude, pcovptot,
-#                                                 pfplsl, pfplsn, pfhpsl, pfhpsn, 
-#                                                 pfsqlf,   pfsqif ,  pfcqnng,  pfcqlng,
-#                                                 pfsqrf,   pfsqsf ,  pfcqrng,  pfcqsng,
-#                                                 pfsqltur, pfsqitur,
-#                                                 prainfrac_toprfz,
-#                                                 buffer_loc )
+output_fields = convert_fortran_output_to_python (NPROMA,NLEV,NBLOCKS,input_fort_fields)
 
 print ("Python-side validation:")
 cloudsc_validate(output_fields, ref_fields)
