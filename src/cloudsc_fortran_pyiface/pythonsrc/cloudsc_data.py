@@ -1,3 +1,11 @@
+"""
+cloudsc_data module consist of utilities that:
+- load variables serving as an input to a Fortran computational kernel;
+- load physical parameters needed by a Fortran kernel;
+- load reference results that will be compared with an output of Fortran computation;
+- validates reference vs. computed fields;
+- other, purely technical utilities.
+"""
 from collections import OrderedDict
 import h5py
 import numpy as np
@@ -9,10 +17,11 @@ NCLV = 5      # number of microphysics variables
 
 def define_fortran_fields(nproma,nlev,nblocks):
     """
-
+    define_fortran_fields returns:
+    - zero NumPy arrays that will further be used as an output of Fortran kernel computation.
+    - empty Fortran paramter datatypes that are created used constructors supplied by f90wrap.
     """
     fields = OrderedDict()
-
 
     argnames_nlev = [
         'pcovptot'
@@ -75,10 +84,9 @@ def define_fortran_fields(nproma,nlev,nblocks):
 
 def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
     """
-
+    load_input_fortran_fields returns:
+    - set of variables needed to initiate computation of the Fortran kernel.
     """
-#    fields = OrderedDict()
-
     argnames_nlev = [
         'pt', 'pq',
         'pvfa', 'pvfl', 'pvfi', 'pdyna', 'pdynl', 'pdyni',
@@ -164,18 +172,31 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
     return fields
 
 def pack_buffer_using_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tendency_cld):
+    """
+    pack_buffer_using_tendencies serves as a packager of a single-variable
+    (that may consist of multiple fields, e.g. moist species)
+    tendencies into a continous buffer
+    """
     buffervar[:,:,0       ,:]=tendency_t  [:,:,:]
     buffervar[:,:,1       ,:]=tendency_a  [:,:,:]
     buffervar[:,:,2       ,:]=tendency_q  [:,:,:]
     buffervar[:,:,3:3+NCLV-1,:]=tendency_cld[:,:,0:NCLV-1,:]
 
 def unpack_buffer_to_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tendency_cld):
+    """
+    unpack_buffer_to_tendencies continuous unpacks buffer into a set of a single-variable
+    (that may consist of multiple fields, e.g. moist species) tendencies.
+    """
     tendency_t  [:,:,:]=buffervar[:,:,0       ,:]
     tendency_a  [:,:,:]=buffervar[:,:,1       ,:]
     tendency_q  [:,:,:]=buffervar[:,:,2       ,:]
     tendency_cld[:,:,0:NCLV-1,:]=buffervar[:,:,3:3+NCLV-1,:]
 
 def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
+    """
+    load_input_parameters returns:
+    - four parameter datatypes that are filled using names read from the reference .h5 file
+    """
     with h5py.File(path, 'r') as f:
         tecldp_keys = [k for k in f.keys() if 'YRECLDP' in k]
         for k in tecldp_keys:
@@ -201,22 +222,13 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
             attrkey = k.lower()
             setattr(yrethf, attrkey, f[k][0])
 
-#       pap = np.ascontiguousarray(f['PAP'])
-#       paph = np.ascontiguousarray(f['PAPH'])
-
     return yrecldp, yrmcst, yrethf, yrephli
 
 
 def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
-                                 #    plude, pcovptot,
-                                 #    pfplsl, pfplsn, pfhpsl, pfhpsn,
-                                 #    pfsqlf, pfsqif, pfcqnng,  pfcqlng,
-                                 #    pfsqrf, pfsqsf, pfcqrng,  pfcqsng,
-                                 #    pfsqltur, pfsqitur,
-                                 #    prainfrac_toprfz,
-                                 #    buffer_loc ):
     """
-
+    convert_fortran_output_to_python converts Fortran-format fields that are to be compared to
+    reference results into a Python format.
     """
 
     fields = OrderedDict()
@@ -231,19 +243,16 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
         'pfsqltur', 'pfsqitur'
     ]
 
-    argnames_buffer = [
-        'buffer_loc'
+    argnames_nproma = [
+        'prainfrac_toprfz'
     ]
+
     argnames_tend = [
         'tendency_loc_a','tendency_loc_t','tendency_loc_q'
     ]
 
     argnames_tend_cld = [
         'tendency_loc_cld'
-    ]
-
-    argnames_nproma = [
-        'prainfrac_toprfz'
     ]
 
     for argname in argnames_nlev:
@@ -281,7 +290,7 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
 
 def load_reference_fields (path):
     """
-
+    load_reference_fields loads reference results of Fortran computation from the .h5 file
     """
 
     fields = OrderedDict()
@@ -332,6 +341,10 @@ def load_reference_fields (path):
     return fields
 
 def cloudsc_validate(fields, ref_fields):
+    """
+    cloudsc_validate compares computed output of a Fortran kernel with reference results
+    previously read from the .h5 file.
+    """
     # List of refencece fields names in order
     _field_names = [
         'plude', 'pcovptot','prainfrac_toprfz',
