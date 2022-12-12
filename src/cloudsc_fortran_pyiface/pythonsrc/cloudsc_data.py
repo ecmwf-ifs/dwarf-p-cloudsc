@@ -1,8 +1,7 @@
+from collections import OrderedDict
 import h5py
 import numpy as np
 import cloudsc as clsc
-from pathlib import Path
-from collections import OrderedDict
 
 
 NCLV = 5      # number of microphysics variables
@@ -23,17 +22,17 @@ def define_fortran_fields(nproma,nlev,nblocks):
         'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn',
         'pfsqlf',   'pfsqif' ,  'pfcqnng',  'pfcqlng',
         'pfsqrf',   'pfsqsf' ,  'pfcqrng',  'pfcqsng',
-        'pfsqltur', 'pfsqitur' 
+        'pfsqltur', 'pfsqitur'
     ]
 
     argnames_buffer = [
         'buffer_loc','buffer_tmp'
     ]
- 
+
     argnames_tend = [
         'tendency_loc_a','tendency_loc_t','tendency_loc_q',
     ]
-    
+
     argnames_tend_cld = [
         'tendency_loc_cld'
     ]
@@ -74,7 +73,7 @@ def define_fortran_fields(nproma,nlev,nblocks):
 
     return fields
 
-def load_input_fortran_fields(path, nproma, nlev, nblocks, fields,  transpose=False):
+def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
     """
 
     """
@@ -85,8 +84,8 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields,  transpose=Fa
         'pvfa', 'pvfl', 'pvfi', 'pdyna', 'pdynl', 'pdyni',
         'phrsw', 'phrlw','pvervel','pap','plu','plude',
         'psnde', 'pmfu', 'pmfd',
-        'pa', 'psupsat', 
-        'plcrit_aer','picrit_aer', 'pre_ice', 
+        'pa', 'psupsat',
+        'plcrit_aer','picrit_aer','pre_ice',
         'pccn', 'pnice'
     ]
     argnames_nlevp = [
@@ -100,7 +99,7 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields,  transpose=Fa
     argnames_tend = [
         'tendency_tmp_t','tendency_tmp_q','tendency_tmp_a'
     ]
-  
+
     argnames_scalar = [
          'kfldx'
     ]
@@ -115,36 +114,47 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields,  transpose=Fa
         fields['KLEV'] = f['KLEV'][0]
         fields['PTSPHY'] = f['PTSPHY'][0]
 
-        klon = fields['KLON']
-        klev = fields['KLEV']
-
         for argname in argnames_nlev:
-               print('Loading field:',argname)
-               fields[argname] = np.asfortranarray(np.transpose(np.reshape(
-                                   np.ascontiguousarray(f[argname.upper()]),(nblocks,nlev,nproma),order='C')))
+            print('Loading field:',argname)
+            fields[argname] = np.asfortranarray(
+                                 np.transpose(
+                                    np.reshape(
+                                       np.ascontiguousarray(f[argname.upper()]),
+                                       (nblocks,nlev,nproma),order='C')))
 
         for argname in argnames_nlevp:
-               print('Loading field:',argname)
-               fields[argname] = np.asfortranarray(np.transpose(np.reshape(
-                                   np.ascontiguousarray(f[argname.upper()]),(nblocks,nlev+1,nproma),order='C')))
+            print('Loading field:',argname)
+            fields[argname] = np.asfortranarray(
+                                 np.transpose(
+                                    np.reshape(
+                                       np.ascontiguousarray(f[argname.upper()]),
+                                       (nblocks,nlev+1,nproma),order='C')))
 
         for argname in argnames_withnclv:
-               print('Loading field:',argname)
-               fields[argname] = np.asfortranarray(np.transpose(np.reshape(
-                                   np.ascontiguousarray(f[argname.upper()]),(nblocks,NCLV,nlev,nproma),order='C')))
+            print('Loading field:',argname)
+            fields[argname] = np.asfortranarray(
+                                 np.transpose(
+                                    np.reshape(
+                                       np.ascontiguousarray(f[argname.upper()]),
+                                       (nblocks,NCLV,nlev,nproma),order='C')))
 
         for argname in argnames_tend:
-               print('Loading field:',argname)
-               fields[argname] = np.asfortranarray(np.transpose(np.reshape(
-                                   np.ascontiguousarray(f[argname.upper()]),(nblocks,nlev,nproma),order='C')))
+            print('Loading field:',argname)
+            fields[argname] = np.asfortranarray(
+                                 np.transpose(np.reshape(
+                                    np.ascontiguousarray(f[argname.upper()]),
+                                    (nblocks,nlev,nproma),order='C')))
 
         for argname in argnames_nproma:
-               print('Loading field:',argname)
-               fields[argname] = np.asfortranarray(np.transpose(np.reshape(
-                                   np.ascontiguousarray(f[argname.upper()]),(nblocks,nproma),order='C')))
+            print('Loading field:',argname)
+            fields[argname] = np.asfortranarray(
+                                 np.transpose(np.reshape(
+                                    np.ascontiguousarray(f[argname.upper()]),
+                                    (nblocks,nproma),order='C')))
+
         for argname in argnames_scalar:
-               print('Loading field:',argname)
-               fields[argname] = f[argname.upper()][0]
+            print('Loading field:',argname)
+            fields[argname] = f[argname.upper()][0]
 
     pack_buffer_using_tendencies(fields['buffer_tmp'      ],
                                  fields['tendency_tmp_a'  ],
@@ -154,16 +164,16 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields,  transpose=Fa
     return fields
 
 def pack_buffer_using_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tendency_cld):
-     buffervar[:,:,0       ,:]=tendency_t  [:,:,:]
-     buffervar[:,:,1       ,:]=tendency_a  [:,:,:]
-     buffervar[:,:,2       ,:]=tendency_q  [:,:,:]
-     buffervar[:,:,3:3+NCLV-1,:]=tendency_cld[:,:,0:NCLV-1,:]
+    buffervar[:,:,0       ,:]=tendency_t  [:,:,:]
+    buffervar[:,:,1       ,:]=tendency_a  [:,:,:]
+    buffervar[:,:,2       ,:]=tendency_q  [:,:,:]
+    buffervar[:,:,3:3+NCLV-1,:]=tendency_cld[:,:,0:NCLV-1,:]
 
-def  unpack_buffer_to_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tendency_cld):
-     tendency_t  [:,:,:]=buffervar[:,:,0       ,:]
-     tendency_a  [:,:,:]=buffervar[:,:,1       ,:]
-     tendency_q  [:,:,:]=buffervar[:,:,2       ,:]
-     tendency_cld[:,:,0:NCLV-1,:]=buffervar[:,:,3:3+NCLV-1,:]
+def unpack_buffer_to_tendencies(buffervar,tendency_a,tendency_t,tendency_q,tendency_cld):
+    tendency_t  [:,:,:]=buffervar[:,:,0       ,:]
+    tendency_a  [:,:,:]=buffervar[:,:,1       ,:]
+    tendency_q  [:,:,:]=buffervar[:,:,2       ,:]
+    tendency_cld[:,:,0:NCLV-1,:]=buffervar[:,:,3:3+NCLV-1,:]
 
 def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
     with h5py.File(path, 'r') as f:
@@ -177,11 +187,11 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
             attrkey = k.replace('YREPHLI_', '').lower()
             setattr(yrephli, attrkey, f[k][0])
 
-        tomcst_keys = ['RG', 'RD', 'RCPD', 'RETV', 'RLVTT', 'RLSTT', 'RLMLT', 'RTT', 'RV',  ]
+        tomcst_keys = ['RG', 'RD', 'RCPD', 'RETV', 'RLVTT', 'RLSTT', 'RLMLT', 'RTT', 'RV' ]
         for k in tomcst_keys:
             attrkey = k.lower()
             setattr(yrmcst, attrkey, f[k][0])
-        
+
         toethf_keys = ['R2ES', 'R3LES', 'R3IES', 'R4LES', 'R4IES', 'R5LES', 'R5IES',
                        'R5ALVCP', 'R5ALSCP', 'RALVDCP', 'RALSDCP', 'RALFDCP',
                        'RTWAT', 'RTICE', 'RTICECU', 'RTWAT_RTICE_R', 'RTWAT_RTICECU_R',
@@ -197,48 +207,12 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
     return yrecldp, yrmcst, yrethf, yrephli
 
 
-def cloudsc_validate(fields, ref_fields, cloudsc_args):
-    # List of refencece fields names in order
-    _field_names = [
-        'plude', 'pcovptot', 'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn',
-        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', 'tendency_loc_cld'
-    ]
-    kidia = cloudsc_args['kidia']
-    kfdia = cloudsc_args['kfdia']
-    ngptot = kfdia - kidia + 1
-
-    print("             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%")
-    for name in _field_names:
-        if len(fields[name].shape) == 1:
-            f = fields[name][kidia-1:kfdia]
-            ref = ref_fields[name][kidia-1:kfdia]
-        elif len(fields[name].shape) == 2:
-            f = fields[name][:,kidia-1:kfdia]
-            ref = ref_fields[name][:,kidia-1:kfdia]
-        elif len(fields[name].shape) == 3:
-            f = fields[name][:,:,kidia-1:kfdia]
-            ref = ref_fields[name][:,:,kidia-1:kfdia]
-        else:
-            f = fields[name]
-            ref = ref_fields[name]
-        zsum = np.sum(np.absolute(ref))
-        zerrsum = np.sum(np.absolute(f - ref))
-        zeps = np.finfo(np.float64).eps
-        print(' {fname:>20}     {fmin:20.13e}  {fmax:20.13e}  {absmax:20.13e} '\
-              ' {absavg:20.13e}  {maxrel:20.13e}'.format(
-                  fname=name.upper(), fmin=f.min(), fmax=f.max(),
-                  absmax=np.absolute(f - ref).max(),
-                  absavg=np.sum(np.absolute(f - ref)) / ngptot,
-                  maxrel=0.0 if zerrsum < zeps else (zerrsum/(1.0+zsum) if zsum < zeps else zerrsum/zsum)
-              )
-        )
-
 def convert_fortran_output_to_python (nproma,nlev,nblocks,
-                                      plude, pcovptot, 
+                                      plude, pcovptot,
                                       pfplsl, pfplsn, pfhpsl, pfhpsn,
                                       pfsqlf, pfsqif, pfcqnng,  pfcqlng,
-                                      pfsqrf,   pfsqsf ,  pfcqrng,  pfcqsng,
-                                      pfsqltur, pfsqitur, 
+                                      pfsqrf, pfsqsf, pfcqrng,  pfcqsng,
+                                      pfsqltur, pfsqitur,
                                       prainfrac_toprfz,
                                       buffer_loc ):
     """
@@ -263,14 +237,14 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,
     argnames_tend = [
         'tendency_loc_a','tendency_loc_t','tendency_loc_q'
     ]
-    
+
     argnames_tend_cld = [
         'tendency_loc_cld'
     ]
-    
-    argnames_nproma = [ 
+
+    argnames_nproma = [
         'prainfrac_toprfz'
-    ] 
+    ]
 
     for argname in argnames_nlev:
         fields[argname] = np.ascontiguousarray(np.transpose(locals()[argname][:,:,0]))
@@ -294,12 +268,14 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,
                                 locals() ['tendency_loc_q'],
                                 locals() ['tendency_loc_cld'])
 
-    fields['tendency_loc_a'  ] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_a'  ][:,:,0]))
-    fields['tendency_loc_t'  ] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_t'  ][:,:,0])) 
-    fields['tendency_loc_q'  ] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_q'  ][:,:,0])) 
-    fields['tendency_loc_cld'] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_cld'][:,:,:,0])) 
-
- 
+    fields['tendency_loc_a'  ] = np.ascontiguousarray(
+                                    np.transpose(locals()['tendency_loc_a'  ][:,:,0]))
+    fields['tendency_loc_t'  ] = np.ascontiguousarray(
+                                    np.transpose(locals()['tendency_loc_t'  ][:,:,0]))
+    fields['tendency_loc_q'  ] = np.ascontiguousarray(
+                                    np.transpose(locals()['tendency_loc_q'  ][:,:,0]))
+    fields['tendency_loc_cld'] = np.ascontiguousarray(
+                                    np.transpose(locals()['tendency_loc_cld'][:,:,:,0]))
 
     return fields
 
@@ -312,7 +288,7 @@ def load_reference_fields (path):
     argnames_nlev = [
         'plude', 'pcovptot'
     ]
-   
+
     argnames_nproma = [
          'prainfrac_toprfz'
     ]
@@ -327,7 +303,7 @@ def load_reference_fields (path):
     argnames_tend = [
         'tendency_loc_a','tendency_loc_t','tendency_loc_q',
     ]
-    
+
     argnames_tend_cld = [
         'tendency_loc_cld'
     ]
@@ -336,11 +312,11 @@ def load_reference_fields (path):
         for argname in argnames_nlev:
             print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
-    
+
         for argname in argnames_nlevp:
             print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
-    
+
         for argname in argnames_nproma:
             print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
@@ -348,10 +324,10 @@ def load_reference_fields (path):
         for argname in argnames_tend:
             print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
-    
+
         for argname in argnames_tend_cld:
             print('Loading reference field:',argname)
-            fields[argname] = np.ascontiguousarray(f[argname.upper()]) 
+            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
     return fields
 
@@ -362,12 +338,11 @@ def cloudsc_validate(fields, ref_fields):
         'pfsqlf',   'pfsqif' ,  'pfcqnng',  'pfcqlng',
         'pfsqrf',   'pfsqsf' ,  'pfcqrng',  'pfcqsng',
         'pfsqltur', 'pfsqitur' ,
-        'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn', 
-        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', 'tendency_loc_cld',
-        
+        'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn',
+        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', 'tendency_loc_cld'
     ]
-    kidia = 1 
-    kfdia = 100 
+    kidia = 1
+    kfdia = 100
     ngptot = kfdia - kidia + 1
 
     print("             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%")
@@ -395,5 +370,3 @@ def cloudsc_validate(fields, ref_fields):
                   maxrel=0.0 if zerrsum < zeps else (zerrsum/(1.0+zsum) if zsum < zeps else zerrsum/zsum)
               )
         )
-
-
