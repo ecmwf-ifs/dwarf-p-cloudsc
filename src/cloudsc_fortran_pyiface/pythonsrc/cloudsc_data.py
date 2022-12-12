@@ -58,7 +58,7 @@ def define_fortran_fields(nproma,nlev,nblocks):
         print('Define null field:',argname)
         fields[argname] = np.zeros(shape=(nproma,nlev,nblocks), order='F')
 
-    for argname in argnames_tend:
+    for argname in argnames_tend_cld:
         print('Define null field:',argname)
         fields[argname] = np.zeros(shape=(nproma,nlev,NCLV,nblocks), order='F')
 
@@ -146,10 +146,10 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields,  transpose=Fa
                print('Loading field:',argname)
                fields[argname] = f[argname.upper()][0]
 
-    pack_buffer_using_tendencies(fields['buffer_tmp'],
-                                 fields['tendency_tmp_a'],
-                                 fields['tendency_tmp_t'],
-                                 fields['tendency_tmp_q'],
+    pack_buffer_using_tendencies(fields['buffer_tmp'      ],
+                                 fields['tendency_tmp_a'  ],
+                                 fields['tendency_tmp_t'  ],
+                                 fields['tendency_tmp_q'  ],
                                  fields['tendency_tmp_cld'])
     return fields
 
@@ -191,61 +191,17 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
             attrkey = k.lower()
             setattr(yrethf, attrkey, f[k][0])
 
-  #     yrethf.r2es = f['R2ES'][0]
-  #     yrethf.r3les = f['R3LES'][0]
-  #     yrethf.r3ies = f['R3IES'][0]
-  #     yrethf.r4les = f['R4LES'][0]
-  #     yrethf.r4ies = f['R4IES'][0]
-  #     yrethf.r5les = f['R5LES'][0]
-  #     yrethf.r5ies = f['R5IES'][0]
-  #     yrethf.r5alvcp = f['R5ALVCP'][0]
-  #     yrethf.r5alscp = f['R5ALSCP'][0]
-  #     yrethf.ralvdcp = f['RALVDCP'][0]
-  #     yrethf.ralsdcp = f['RALSDCP'][0]
-  #     yrethf.ralfdcp = f['RALFDCP'][0]
-  #     yrethf.rtwat = f['RTWAT'][0]
-  #     yrethf.rtice = f['RTICE'][0]
-  #     yrethf.rticecu = f['RTICECU'][0]
-  #     yrethf.rtwat_rtice_r = f['RTWAT_RTICE_R'][0]
-  #     yrethf.rtwat_rticecu_r = f['RTWAT_RTICECU_R'][0]
-  #     yrethf.rkoop1 = f['RKOOP1'][0]
-  #     yrethf.rkoop2 = f['RKOOP2'][0]
-
-        yrethf.rvtmp2 = 0.0
-
-        klev = f['KLEV'][0]
-        pap = np.ascontiguousarray(f['PAP'])
-        paph = np.ascontiguousarray(f['PAPH'])
-
-        yrephli.lphylin = True
+#       pap = np.ascontiguousarray(f['PAP'])
+#       paph = np.ascontiguousarray(f['PAPH'])
 
     return yrecldp, yrmcst, yrethf, yrephli
-
-
-def load_reference_fortran_fields(path):
-    """
-
-    """
-    fields = OrderedDict()
-
-    argnames = [
-        'plude', 'pcovptot', 'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn',
-        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', 'tendency_loc_cld',
-    ]
-
-    with h5py.File(path, 'r') as f:
-        for argname in argnames:
-            fields[argname.lower()] = np.ascontiguousarray(f[argname])
-
-    return fields
-
 
 
 def cloudsc_validate(fields, ref_fields, cloudsc_args):
     # List of refencece fields names in order
     _field_names = [
         'plude', 'pcovptot', 'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn',
-        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', # 'tendency_loc_cld',
+        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', 'tendency_loc_cld'
     ]
     kidia = cloudsc_args['kidia']
     kfdia = cloudsc_args['kfdia']
@@ -338,9 +294,11 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,
                                 locals() ['tendency_loc_q'],
                                 locals() ['tendency_loc_cld'])
 
-    fields['tendency_loc_a'] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_a'][:,:,0]))
-    fields['tendency_loc_t'] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_t'][:,:,0])) 
-    fields['tendency_loc_q'] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_q'][:,:,0])) 
+    fields['tendency_loc_a'  ] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_a'  ][:,:,0]))
+    fields['tendency_loc_t'  ] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_t'  ][:,:,0])) 
+    fields['tendency_loc_q'  ] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_q'  ][:,:,0])) 
+    fields['tendency_loc_cld'] = np.ascontiguousarray(np.transpose(locals()['tendency_loc_cld'][:,:,:,0])) 
+
  
 
     return fields
@@ -376,20 +334,24 @@ def load_reference_fields (path):
 
     with h5py.File(path, 'r') as f:
         for argname in argnames_nlev:
+            print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
     
         for argname in argnames_nlevp:
+            print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
     
         for argname in argnames_nproma:
+            print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_tend:
+            print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()])
     
         for argname in argnames_tend_cld:
+            print('Loading reference field:',argname)
             fields[argname] = np.ascontiguousarray(f[argname.upper()]) 
-
 
     return fields
 
@@ -401,7 +363,7 @@ def cloudsc_validate(fields, ref_fields):
         'pfsqrf',   'pfsqsf' ,  'pfcqrng',  'pfcqsng',
         'pfsqltur', 'pfsqitur' ,
         'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn', 
-        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', # 'tendency_loc_cld',
+        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t', 'tendency_loc_cld',
         
     ]
     kidia = 1 
