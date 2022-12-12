@@ -44,7 +44,7 @@ NCLDQV = 5    # vapour
 
 ydecldp, ydomcst, ydoethf, ydephli = load_input_parameters(input_path,ydecldp,ydephli,ydomcst,ydoethf)
 
-input_fort_fields = load_input_fortran_fields(input_path,nproma,nlev,nblocks)
+input_fort_fields = load_input_fortran_fields(input_path,nproma,nlev,nblocks,clsfields)
 
 for fieldname in input_fort_fields.keys():
      locals()[fieldname]=input_fort_fields[fieldname]
