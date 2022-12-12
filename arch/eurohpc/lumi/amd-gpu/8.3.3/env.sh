@@ -24,19 +24,19 @@ module_unload() {
 module reset
 
 # Load modules
-module_load PrgEnv-cray/8.3.3
-module_load LUMI/22.06
-module_load partition/C
-module_load buildtools/22.06
+module_load LUMI/22.08
+module_load partition/G
+module_load PrgEnv-aocc/8.3.3
+module_load craype-accel-amd-gfx90a
+module_load buildtools/22.08
+module_load cray-hdf5/1.12.1.5
 module_load cray-python/3.9.12.1
-module_load cce/13.0.0
 
-module list
+# Specify compilers
+export CC=amdclang CXX=amdclang++ FC=amdflang
+#export CC=cc CXX=CC FC=ftn
 
 set -x
-
-export HDF5_DIR=/users/bareuter/hdf5/1.12.1/cray-13.0.0/
-export HDF5_ROOT=$HDF5_DIR
 
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null

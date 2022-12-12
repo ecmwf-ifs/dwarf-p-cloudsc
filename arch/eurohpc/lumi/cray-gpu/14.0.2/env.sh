@@ -34,14 +34,12 @@ module_load cray-mpich/8.1.18
 module_load craype/2.7.17
 module_load craype-accel-amd-gfx90a
 module_load buildtools/22.08
+module_load cray-hdf5/1.12.1.5
 module_load cray-python/3.9.12.1
 
 module list
 
 set -x
-
-export HDF5_DIR=/users/bareuter/hdf5/1.12.1/cray-14.0.1/
-export HDF5_ROOT=$HDF5_DIR
 
 export CC=cc CXX=CC FC=ftn
 

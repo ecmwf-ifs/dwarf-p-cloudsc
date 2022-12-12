@@ -25,18 +25,16 @@ module reset
 
 # Load modules
 module_load PrgEnv-cray/8.3.3
-module_load LUMI/22.06
+module_load LUMI/22.08
 # module_load craype-x86-milan
 module_load craype-accel-host
-module_load buildtools/22.06
+module_load buildtools/22.08
+module_load cray-hdf5/1.12.1.5
 module_load cray-python/3.9.12.1
 
 module list
 
 set -x
-
-export HDF5_DIR=/users/bareuter/hdf5/1.12.1/cray-14.0.1/
-export HDF5_ROOT=$HDF5_DIR
 
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null
