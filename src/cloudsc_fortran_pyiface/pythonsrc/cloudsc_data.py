@@ -177,35 +177,39 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
             attrkey = k.replace('YREPHLI_', '').lower()
             setattr(yrephli, attrkey, f[k][0])
 
-        yrmcst.rg = f['RG'][0]
-        yrmcst.rd = f['RD'][0]
-        yrmcst.rcpd = f['RCPD'][0]
-        yrmcst.retv = f['RETV'][0]
-        yrmcst.rlvtt = f['RLVTT'][0]
-        yrmcst.rlstt = f['RLSTT'][0]
-        yrmcst.rlmlt = f['RLMLT'][0]
-        yrmcst.rtt = f['RTT'][0]
-        yrmcst.rv = f['RV'][0]
+        tomcst_keys = ['RG', 'RD', 'RCPD', 'RETV', 'RLVTT', 'RLSTT', 'RLMLT', 'RTT', 'RV',  ]
+        for k in tomcst_keys:
+            attrkey = k.lower()
+            setattr(yrmcst, attrkey, f[k][0])
+        
+        toethf_keys = ['R2ES', 'R3LES', 'R3IES', 'R4LES', 'R4IES', 'R5LES', 'R5IES',
+                       'R5ALVCP', 'R5ALSCP', 'RALVDCP', 'RALSDCP', 'RALFDCP',
+                       'RTWAT', 'RTICE', 'RTICECU', 'RTWAT_RTICE_R', 'RTWAT_RTICECU_R',
+                       'RKOOP1', 'RKOOP2'  ]
 
-        yrethf.r2es = f['R2ES'][0]
-        yrethf.r3les = f['R3LES'][0]
-        yrethf.r3ies = f['R3IES'][0]
-        yrethf.r4les = f['R4LES'][0]
-        yrethf.r4ies = f['R4IES'][0]
-        yrethf.r5les = f['R5LES'][0]
-        yrethf.r5ies = f['R5IES'][0]
-        yrethf.r5alvcp = f['R5ALVCP'][0]
-        yrethf.r5alscp = f['R5ALSCP'][0]
-        yrethf.ralvdcp = f['RALVDCP'][0]
-        yrethf.ralsdcp = f['RALSDCP'][0]
-        yrethf.ralfdcp = f['RALFDCP'][0]
-        yrethf.rtwat = f['RTWAT'][0]
-        yrethf.rtice = f['RTICE'][0]
-        yrethf.rticecu = f['RTICECU'][0]
-        yrethf.rtwat_rtice_r = f['RTWAT_RTICE_R'][0]
-        yrethf.rtwat_rticecu_r = f['RTWAT_RTICECU_R'][0]
-        yrethf.rkoop1 = f['RKOOP1'][0]
-        yrethf.rkoop2 = f['RKOOP2'][0]
+        for k in toethf_keys:
+            attrkey = k.lower()
+            setattr(yrethf, attrkey, f[k][0])
+
+  #     yrethf.r2es = f['R2ES'][0]
+  #     yrethf.r3les = f['R3LES'][0]
+  #     yrethf.r3ies = f['R3IES'][0]
+  #     yrethf.r4les = f['R4LES'][0]
+  #     yrethf.r4ies = f['R4IES'][0]
+  #     yrethf.r5les = f['R5LES'][0]
+  #     yrethf.r5ies = f['R5IES'][0]
+  #     yrethf.r5alvcp = f['R5ALVCP'][0]
+  #     yrethf.r5alscp = f['R5ALSCP'][0]
+  #     yrethf.ralvdcp = f['RALVDCP'][0]
+  #     yrethf.ralsdcp = f['RALSDCP'][0]
+  #     yrethf.ralfdcp = f['RALFDCP'][0]
+  #     yrethf.rtwat = f['RTWAT'][0]
+  #     yrethf.rtice = f['RTICE'][0]
+  #     yrethf.rticecu = f['RTICECU'][0]
+  #     yrethf.rtwat_rtice_r = f['RTWAT_RTICE_R'][0]
+  #     yrethf.rtwat_rticecu_r = f['RTWAT_RTICECU_R'][0]
+  #     yrethf.rkoop1 = f['RKOOP1'][0]
+  #     yrethf.rkoop2 = f['RKOOP2'][0]
 
         yrethf.rvtmp2 = 0.0
 
