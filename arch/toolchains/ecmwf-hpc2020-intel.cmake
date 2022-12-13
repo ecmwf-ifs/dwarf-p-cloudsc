@@ -128,10 +128,16 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -convert big_endian")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -traceback")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -align array64byte")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -warn nounused,nouncalled")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -xHost")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -march=core-avx2")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -finline-functions")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -finline-limit=500")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -finline-limit=1500")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Winline")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -no-fma")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -assume realloc_lhs")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fp-model precise")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -ftz")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fp-speculation=safe")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fast-transcendentals")
 
 ####################################################################
 # LINK FLAGS
