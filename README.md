@@ -67,7 +67,7 @@ The code is written in Fortran 2003 and it has been tested using the various com
 
     GCC 7.3, 9.3, 11.2
     Cray 8.7.7
-    NVHPC 20.9
+    NVHPC 20.9, 22.1
     Intel (classic)
 
 This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands
@@ -307,3 +307,10 @@ means we require the `.xmod` module description files for utility
 routines in `src/common` for processing the CLOUDSC source files with
 the OMNI frontend. These are stored in the source under
 `src/cloudsc_loki/xmod`.
+
+## Benchmarking
+
+To automate parameter space sweeps and ease testing across various platforms, a
+[JUBE](https://www.fz-juelich.de/jsc/jube) benchmark definition is included in
+the directory `benchmark`. See the included [README](benchmark/README.md) for
+further details and usage instructions.

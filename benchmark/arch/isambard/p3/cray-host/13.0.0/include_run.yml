@@ -1,0 +1,18 @@
+parameterset:
+  # The runtime options
+  - name: run_set
+    init_with: include/include_run.yml
+    parameter:
+      # Increase the default NPROMA value per variant
+      - name: default_nproma
+        mode: python
+        type: int
+        _: >
+          {
+            'dwarf-cloudsc-fortran': {'sp': 64, 'dp': 32}['$precision'],
+            'dwarf-cloudsc-c': {'sp': 64, 'dp': 32}['$precision'],
+            'dwarf-cloudsc-gpu-claw': 8192,
+            'dwarf-cloudsc-gpu-scc': 256,
+            'dwarf-cloudsc-gpu-scc-hoist': 128,
+            'dwarf-cloudsc-gpu-omp-scc-hoist': 128,
+          }['$target']

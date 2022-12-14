@@ -1,10 +1,14 @@
 *~
+.vscode
 ecbundle
 ecbundle/*
 build/*
 source/*
 serialbox2hdf5/venv
 serialbox2hdf5/serialbox
+benchmark/venv
+benchmark/rundir_*
+benchmark/jube-debug.log
 venv/
 __pycache__/
 .DS_Store

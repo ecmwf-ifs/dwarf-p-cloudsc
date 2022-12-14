@@ -9,6 +9,8 @@
 
 MODULE CLOUDSC_GPU_OMP_SCC_HOIST_MOD
 
+!$omp declare target(cloudsc_scc_hoist)
+
 CONTAINS
 
   SUBROUTINE CLOUDSC_SCC_HOIST (KIDIA, KFDIA, KLON, KLEV, PTSPHY, PT, PQ, TENDENCY_TMP_T, TENDENCY_TMP_Q, TENDENCY_TMP_A,  &
@@ -129,8 +131,6 @@ CONTAINS
 
 
     IMPLICIT NONE
-
-!$omp declare target
 
     !-------------------------------------------------------------------------------
     !                 Declare input/output arguments

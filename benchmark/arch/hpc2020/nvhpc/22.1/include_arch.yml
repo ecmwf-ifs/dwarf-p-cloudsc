@@ -1,0 +1,27 @@
+parameterset:
+  # System architecture specification
+  - name: arch_set
+    init_with: include/include_arch.yml
+    parameter:
+      # Architecture definition to pass to bundle build command
+      - {name: arch, _: "arch/ecmwf/hpc2020/nvhpc/22.1"}  # Choose from arch
+
+      # Number of NUMA domains on a node (e.g., the number of sockets)
+      - {name: numa_domains, type: int, _: 2}
+
+      # Number of cores per NUMA domain (e.g., number of cores per CPU)
+      - {name: cores_per_numa_domain, type: int, _: 64}
+
+      # Number of GPUs available on a node
+      - {name: gpus, type: int, _: 4}
+
+      # Set CUDA runtime heap size on GPU for SCC variant
+      - {name: PGI_ACC_CUDA_HEAPSIZE, export: true, _: 12G}
+
+      # MPI launch command to use (inject CUDA_VISIBLE_DEVICES)
+      - name: launch_cmd
+        mode: python
+        _: "'srun -n ${{ NPROC }} --cpus-per-task=${{ NUMOMP }} bash -c \"CUDA_VISIBLE_DEVICES=\\${SLURM_LOCALID}' if $mpi == 1 else ''"
+      - name: launch_cmd_end
+        mode: python
+        _: "'\"' if $mpi == 1 else ''"

@@ -1,0 +1,9 @@
+# Applies patterns to the stdout/stderr of the run step
+
+analyser:
+  - name: analyse_results
+    use: [results_pattern,timing_pattern]
+    reduce: true
+    analyse:
+      step: run
+      file: [stdout,stderr]

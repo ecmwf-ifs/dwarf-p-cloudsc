@@ -16,8 +16,6 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/yoethf.F90
     module/yoephli.F90
     module/yomphyder.F90
-    module/fcttre_mod.F90
-    module/fccld_mod.F90
     module/routines.F90
     module/abor1.F90
     module/timer_mod.F90
@@ -29,6 +27,13 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/cloudsc_global_state_mod.F90
     module/cloudsc_mpi_mod.F90
 )
+
+if(NOT ENABLE_USE_STMT_FUNC)
+    list(APPEND CLOUDSC_COMMON_SOURCES
+        module/fcttre_mod.F90
+        module/fccld_mod.F90
+    )
+endif()
 
 list(APPEND CLOUDSC_CUDA_SOURCES
     module/fccld_mod.cuf.F90

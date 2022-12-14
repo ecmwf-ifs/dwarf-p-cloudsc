@@ -1,0 +1,41 @@
+# The parameterization of the different build and run configurations
+
+# JUBE will create the parameter space as the cartesian product of all
+# parameters. Individual parameters are overwritten in the main benchmark
+# definition files for benchmark configurations where defaults are not
+# applicable (e.g., there is no OpenMP-requirement in GPU variants).
+
+parameterset:
+  # Generic options
+  - name: generic_set
+    parameter:
+      # Path to CLOUDSC main directory
+      - {name: cloudsc_home, _: $jube_benchmark_home/..}
+
+  # The build options
+  - name: build_set
+    parameter:
+      # Build single (sp) or double (dp) precision (or both by choosing `dp,sp`)
+      - {name: precision, tag: "sp+dp" , _: "dp,sp"}
+      - {name: precision, tag: "!sp" , _: "dp"}
+      - {name: precision, tag: "sp+!dp", _: "sp"}
+      - name: precision_flag
+        mode: python
+        _: "{'sp': '--single-precision', 'dp': ''}['$precision']"
+
+      # Choose IO library for reading inputs and reference data (`hdf5` or `serialbox`)
+      - {name: io_library, tag: "!serialbox", _: "hdf5"}
+      - {name: io_library, tag: "serialbox", _: "serialbox"}
+      - name: io_library_flag
+        mode: python
+        _: "{'hdf5': '', 'serialbox': '--with-serialbox'}['$io_library']"
+
+      # Enable/disable MPI
+      - {name: mpi, tag: "!mpi", type: int, _: "0"}
+      - {name: mpi, tag: "mpi", type: int, _: "1"}
+      - name: mpi_flag
+        mode: python
+        _: "['', '--with-mpi'][$mpi]"
+
+      # Specify other options that are passed to the build command
+      - {name: other_flags, _: ""}
