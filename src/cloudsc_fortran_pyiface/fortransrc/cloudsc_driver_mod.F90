@@ -163,9 +163,9 @@ CONTAINS
               & PT(:,:,IBL), PQ(:,:,IBL),  &
 !              & TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
               &  BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,3,IBL),  &
-              &  BUFFER_TMP(:,:,4:NCLV,IBL),  &
+              &  BUFFER_TMP(:,:,4,IBL),  &
               &  BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,3,IBL),  &
-              &  BUFFER_LOC(:,:,4:NCLV,IBL),  &
+              &  BUFFER_LOC(:,:,4,IBL),  &
               & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
               & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
               & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
