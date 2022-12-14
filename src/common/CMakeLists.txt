@@ -75,7 +75,9 @@ if( HAVE_ACC )
     SOURCES ${CLOUDSC_COMMON_SOURCES}
     TYPE STATIC
     DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    DEPENDS cloudsc-common-lib
   )
+  set_target_properties( cloudsc-common-lib-static PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module-static )
   target_include_directories( cloudsc-common-lib-static PUBLIC $<INSTALL_INTERFACE:include> )
   target_include_directories( cloudsc-common-lib-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
   target_include_directories( cloudsc-common-lib-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>)
