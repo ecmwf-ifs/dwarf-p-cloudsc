@@ -416,9 +416,62 @@ if( HAVE_CLOUDSC_LOKI )
         OMP 1
     )
 
-    ##############################################################################
-    # C-transpilation mode for generating vectorized C host code (experimental!)
-    ##############################################################################
+    ####################################################
+    ##  SCC CUF (CUDA Fortran)                        ##
+    ##   * SCC                                       ##
+    ##   * ...                                        ##
+    ##   * ...                                        ##
+    ####################################################
+
+    cloudsc_xmod( loki-scc-cuf )
+
+    loki_transform_convert(
+        MODE cuf FRONTENDS ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS
+            ${COMMON_MODULE}/yomcst.F90
+            ${COMMON_MODULE}/yomphyder.F90
+            ${COMMON_MODULE}/yoethf.F90
+            ${COMMON_MODULE}/yoecldp.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING
+        DATA_OFFLOAD REMOVE_OPENMP
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf
+        # TRAFOTYPE ${TRAFOTYPE}
+        OUTPUT
+            loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90
+            loki-scc-cuf/cuf_cloudsc.cuf.F90
+        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+    set_source_files_properties(
+    loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90 loki-scc-cuf/cuf_cloudsc.cuf.F90 PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128")
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-new
+        SOURCES
+            dwarf_cloudsc.F90
+            loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90
+            loki-scc-cuf/cuf_cloudsc.cuf.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
+    )
+
+    target_link_options(dwarf-cloudsc-loki-scc-cuf-new PUBLIC "-Mcuda")
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-scc-cuf-new-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-new
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+    #############################################################################
+    ## C-transpilation mode for generating vectorized C host code (experimental!)
+    #############################################################################
 
     if ( NOT HAVE_SINGLE_PRECISION )
 
