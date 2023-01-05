@@ -92,6 +92,10 @@ options :
         help  : Frontend parser to use for Loki transformations
         cmake : LOKI_FRONTEND={{value}}
 
+    - trafo-type :
+        help : Loki transformation type
+        cmake : TRAFOTYPE={{value}}
+
     - cloudsc-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
         cmake : ENABLE_CLOUDSC_PROTOTYPE1={{value}}

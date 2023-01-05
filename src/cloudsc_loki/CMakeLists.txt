@@ -418,15 +418,18 @@ if( HAVE_CLOUDSC_LOKI )
 
     ####################################################
     ##  SCC CUF (CUDA Fortran)                        ##
-    ##   * SCC                                       ##
-    ##   * ...                                        ##
-    ##   * ...                                        ##
+    ##   * SCC with CUDA Fortran (CUF)                ##
+    ##   * allows for 3 types/kind of transformation  ##
+    ##    * parametrised (dimensions) local arrays    ##
+    ##    * host side hoisted local arrays            ##
+    ##    * dynamic memory allocation for local       ##
+    ##      arrays (not recommended)                  ##
     ####################################################
 
     cloudsc_xmod( loki-scc-cuf )
 
     loki_transform_convert(
-        MODE cuf FRONTENDS ${LOKI_FRONTEND} CPP
+        MODE cuf FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
@@ -439,7 +442,7 @@ if( HAVE_CLOUDSC_LOKI )
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf
-        # TRAFOTYPE ${TRAFOTYPE}
+        TRAFOTYPE ${TRAFOTYPE}
         OUTPUT
             loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90
             loki-scc-cuf/cuf_cloudsc.cuf.F90
