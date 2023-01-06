@@ -116,7 +116,6 @@ CONTAINS
 
     !@cuf CALL YOMCST_UPDATE_DEVICE()
     !@cuf CALL YOETHF_UPDATE_DEVICE()
-    !@cuf print *, 'executing the CUF pragmas ...'
 
     if (irank == 0) then
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)

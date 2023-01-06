@@ -452,7 +452,7 @@ if( HAVE_CLOUDSC_LOKI )
     set_source_files_properties(
     loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90 loki-scc-cuf/cuf_cloudsc.cuf.F90 PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128")
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-new
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf
         SOURCES
             dwarf_cloudsc.F90
             loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90
@@ -462,11 +462,11 @@ if( HAVE_CLOUDSC_LOKI )
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    target_link_options(dwarf-cloudsc-loki-scc-cuf-new PUBLIC "-Mcuda")
+    target_link_options(dwarf-cloudsc-loki-scc-cuf PUBLIC "-Mcuda")
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-cuf-new-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-new
+        TARGET dwarf-cloudsc-loki-scc-cuf-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc-cuf
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
