@@ -134,7 +134,7 @@ CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_WRITE_INPUT', write_input)
 CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_WRITE_REFERENCE', write_reference)
 
 open(iu,file='cloudsc.bin',status='old',&
-     & access='stream', form='unformatted')
+     & access='stream', form='unformatted', convert='BIG_ENDIAN')
 
 read(iu) KLON,KLEV,KFLDX
 write(0,*) 'KLON,KLEV,KFLDX,NCLV=',KLON,KLEV,KFLDX,NCLV
