@@ -20,7 +20,9 @@ MODULE CLOUDSC_DRIVER_MOD
 CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER( &
-     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, KFLDX, PTSPHY, &
+     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, &
+     & NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV,  &
+     & KFLDX, PTSPHY, &
      & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
      & PHRSW,    PHRLW, &
@@ -34,13 +36,24 @@ CONTAINS
      & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG, &
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG, &
      & PFSQLTUR, PFSQITUR, &
-     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN &
-     & )
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+     & YDOMCST, YDOETHF, YDECLDP, YDEPHLI )
     ! Driver routine that performans the parallel NPROMA-blocking and
     ! invokes the CLOUDSC kernel
 
+    USE YOECLDP  , ONLY : TECLDP
+    USE YOEPHLI  , ONLY : TEPHLI
+    USE YOMCST   , ONLY : TOMCST
+    USE YOETHF   , ONLY : TOETHF
+
     INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG
     INTEGER(KIND=JPIM), INTENT(IN)    :: KFLDX
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQV
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQL
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQR
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQI
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQS
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLV
     REAL(KIND=JPRB),    INTENT(IN)    :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB),    INTENT(IN)    :: PT(:,:,:)    ! T at start of callpar
     REAL(KIND=JPRB),    INTENT(IN)    :: PQ(:,:,:)    ! Q at start of callpar
@@ -101,6 +114,11 @@ CONTAINS
     LOGICAL            :: LEC_PMON = .FALSE.
     CHARACTER(LEN=1)   :: CLEC_PMON
 
+    TYPE(TOMCST)    :: YDOMCST
+    TYPE(TOETHF)    :: YDOETHF
+    TYPE(TECLDP)    :: YDECLDP
+    TYPE(TEPHLI)    :: YDEPHLI
+
     CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
     IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
 
@@ -135,6 +153,7 @@ CONTAINS
 
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
+              & NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV, &
               & PTSPHY,&
               & PT(:,:,IBL), PQ(:,:,IBL), TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
               & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
@@ -155,7 +174,8 @@ CONTAINS
               & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
               & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
               & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-              & KFLDX)
+              & KFLDX, &
+              & YDOMCST, YDOETHF, YDECLDP, YDEPHLI)
 
          IF (LEC_PMON) THEN
            ! Sample power consuption
