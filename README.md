@@ -34,10 +34,12 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
 - **dwarf-cloudsc-gpu-kernels**: GPU-enabled version of the CLOUDSC dwarf
   that uses OpenACC and relies on the `!$acc kernels` directive to offload
   the computational kernel.
-- **dwarf-cloudsc-gpu-claw**: GPU-enabled and optimized version of CLOUDSC
-  that is based on an auto-generated version of CLOUDSC based on the CLAW
-  tool. The kernel in this demonstrator has been further optimized with
-  gang-level loop blocking to demonstrate potential performance gains.
+- **dwarf-cloudsc-gpu-claw** (deprecated!): GPU-enabled and optimized version of
+  CLOUDSC that is based on an auto-generated version of CLOUDSC based on the CLAW
+  tool. The kernel in this demonstrator has been further optimized with gang-level
+  loop blocking to demonstrate potential performance gains. This variant is defunct
+  on current Nvidia GPUs and therefore deactivated by default, requiring explicit
+  `--with-claw` flag to build.
 - **dwarf-cloudsc-gpu-scc**: GPU-enabled and optimized version of
   CLOUDSC that utilises the native blocked IFS memory layout via a
   "single-column coalesced" (SCC) loop layout. Here the outer NPROMA
@@ -52,15 +54,21 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   The block array arguments are fully dimensioned though, and
   multi-dimensional temporaries have been declared explicitly at the
   driver level.
+- **dwarf-cloudsc-gpu-scc-cuf**: GPU-enabled and optimized version of
+  CLOUDSC that uses the SCC loop layout in combination with CUDA-Fortran
+  (CUF) to explicitly allocate temporary arrays in device memory and
+  move parameter structures to constant memory. To enable this variant,
+  a suitable CUDA installation is required and the `--with-cuda` flag
+  needs to be passed at the build stage.
 
 ## Download and Installation
 
 The code is written in Fortran 2003 and it has been tested using the various compilers, including:
 
-    GCC 7.3, 9.3
+    GCC 7.3, 9.3, 11.2
     Cray 8.7.7
-    NVHPC 20.9
-    Intel
+    NVHPC 20.9, 22.1
+    Intel (classic)
 
 This application does not need MPI nor BLAS libraries for performance. Just a compiler that understands
 OpenMP directives. Fortran must be at least level F2003.
@@ -140,7 +148,7 @@ The default build configuration relies on HDF5 input and reference data for
 dwarf-cloudsc-fortran as well as GPU and Loki versions. The original
 dwarf-P-cloudMicrophysics-IFSScheme always uses raw Fortran binary format.
 
-**Please note:** The HDF55 installation needs to have the f03 interfaces installed.
+**Please note:** The HDF55 installation needs to have the f03 interfaces installed (default with HDF5 1.10+).
 
 As an alternative to HDF5, the [Serialbox](https://github.com/GridTools/serialbox)
 library can be used to load input and reference data. This, however, requires
@@ -160,6 +168,21 @@ Note that this is only available via Serialbox at the moment. Updates to HDF5
 input or reference data have to be done via manual conversion. A small
 Python script for this with usage instructions can be found in the
 [serialbox2hdf5](serialbox2hdf5/README.md) directory.
+
+### Building on ECMWF's Atos BullSequana XH2000
+
+To build on ECMWF's Atos BullSequana XH2000 supercomputer, run the following commands:
+
+```sh
+./cloudsc-bundle create
+./cloudsc-bundle build --arch arch/ecmwf/hpc2020/compiler/version [--single-precision] [--with-mpi]
+```
+
+Currently available `compiler/version` selections are:
+
+* `gnu/9.3.0` and `gnu/11.2.0`
+* `intel/2021.4.0`
+* `nvhpc/22.1` (use with `--with-gpu` on AC's GPU partition)
 
 ### A64FX version of CLOUDSC
 
@@ -186,6 +209,8 @@ cd build
 ./bin/dwarf-cloudsc-c 4 16384 32   # The standalone C version
 ```
 
+### Running on ECMWF's Atos BullSequana XH2000
+
 On the Atos system, a high-watermark run on a single socket can be performed as follows:
 
 ```sh
@@ -193,33 +218,52 @@ export OMP_NUM_THREADS=64
 OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS ./bin/dwarf-cloudsc-fortran $OMP_NUM_THREADS 163840 32
 ```
 
-For a build with the Intel 2021.1.1 compiler, performance of ~74 GF is achieved.
+For a double-precision build with the GNU 11.2.0 compiler, performance of
+~73 GF/s is achieved.
+
+To run the GPU variant on AC, which includes some GPU nodes, allocate
+an interactive session on a GPU node and run the binary as usual:
+
+```sh
+srun -N1 -q ng -p gpu --gres=gpu:4 --mem 200G --pty /bin/bash
+bin/dwarf-cloudsc-gpu-scc-hoist 1 262144 128
+```
+
+For a double-precision build with NVHPC 22.1, performance of ~340 GF/s
+on a single GPU is achieved.
+
+A multi-GPU run requires MPI (build with `--with-mpi`) with a dedicated MPI
+task for each GPU and (at the moment) manually assigning CUDA devices to each
+rank, as Slurm is not yet fully configured for the GPU partition.
+
+To use four GPUs on one node, allocate the relevant resources
+```sh
+salloc -N 1 --tasks-per-node 4 -q ng -p gpu --gres=gpu:4 --mem 200G
+```
+
+and then run the binary like this:
+
+```sh
+srun bash -c "CUDA_VISIBLE_DEVICES=\$SLURM_LOCALID bin/dwarf-cloudsc-gpu-scc-hoist 1 \$((\$SLURM_NPROCS*262144)) 128"
+```
+
+In principle, the same should work for multi-node execution (`-N 2`, `-N 4` etc.) once interconnect issues are resolved.
 
 ## Loki transformations for CLOUDSC
 
-Loki is an in-house developed source-to-source translation tool that
-allows us to create bespoke transformations for the IFS to target and
-experiment with emerging HPC architectures and programming models. We
-use the CLOUDSC dwarf as a demonstrator for targeted transformation
-capabilities of physics and grid point computations kernels, including
-conversion to C and GPU via downstream tools like CLAW.
+[Loki](https://github.com/ecmwf-ifs/loki) is an in-house developed
+source-to-source translation tool that allows us to create bespoke
+transformations for the IFS to target and experiment with emerging HPC
+architectures and programming models. We use the CLOUDSC dwarf as a demonstrator
+for targeted transformation capabilities of physics and grid point computations
+kernels, including conversion to C and GPU, directly or via downstream tools
+like CLAW.
 
-To use the Loki demonstrators, Loki and CLAW need to be installed as
-described in the
-[Loki install instructions](https://git.ecmwf.int/projects/RDX/repos/loki/browse/INSTALL.md).
-*Please note that the in-house "volta" machine needs some manual workarounds for this atm.*
-
-Once Loki and CLAW are installed and activated via `source loki-activate`,
-the following build flags enable the demonstrator build targets:
+The following build flags enable the demonstrator build targets on the
+ECMWF Atos HPC facility's GPU partition:
 
 ```sh
-# For general use on workstations with GNU
-# Please note that OpenACC needs to be disable with GNU,
-# since CLAW-generated code currently does not comply with GNU.
-./cloudsc-bundle build --clean --with-loki --loki-frontend=fp --arch=./arch/ecmwf/leap42/gnu/7.3.0
-
-# For GPU exploration on volta
-./cloudsc-bundle build --clean [--with-gpu]--with-loki --loki-frontend=fp --arch=./arch/ecmwf/volta/nvhpc/20.9
+./cloudsc-bundle build --clean [--with-gpu] --with-loki --loki-frontend=fp --arch=./arch/ecmwf/hpc2020/nvhpc/22.1
 ```
 
 The following Loki modes are included in the dwarf, each with a bespoke demonstrator build:
@@ -231,17 +275,20 @@ The following Loki modes are included in the dwarf, each with a bespoke demonstr
 - **cloudsc-loki-sca**: Pure single-column mode that strips all horizontal
   vector loops from the kernel and introduces an outer "column-loop"
   at the driver level.
-- **cloudsc-loki-claw-cpu**: Same as SCA, but also adds the necessary CLAW
-  annotations. The resulting cloudsc.claw.F90 file is then processed
-  by CLAW to re-insert vector loops for optimal CPU execution.
-- **cloudsc-loki-claw-gpu**: Creates the same CLAW-ready kernel file, but
-  triggers the GPU-specific optimizations in the CLAW compiler to
-  insert OpenACC-offload instructions in the driver and an OpenACC
-  parallel loop inside the kernel for each block. This needs to be run
-  with large block sizes (eg. NPROMA=1024-8192).
+- **cloudsc-loki-claw-cpu** (deprecated): Same as SCA, but also adds the
+  necessary CLAW annotations. The resulting cloudsc.claw.F90 file is then
+  processed by CLAW to re-insert vector loops for optimal CPU execution.
+- **cloudsc-loki-claw-gpu** (deprecated): Creates the same CLAW-ready kernel
+  file, but triggers the GPU-specific optimizations in the CLAW compiler to insert
+  OpenACC-offload instructions in the driver and an OpenACC parallel loop inside
+  the kernel for each block. This needs to be run with large block sizes (eg.
+  NPROMA=1024-8192).
 - **cloudsc-loki-c**: A prototype C transpilation pipeline that converts
   the kernel to C and calls it via iso_c_bindings interfaces from the
   driver.
+
+To enable the deprecated and, on GPU, defunct CLAW variants, the build-flag
+`--with-claw` needs to be specified explicitly.
 
 ### A note on frontends
 
@@ -260,3 +307,10 @@ means we require the `.xmod` module description files for utility
 routines in `src/common` for processing the CLOUDSC source files with
 the OMNI frontend. These are stored in the source under
 `src/cloudsc_loki/xmod`.
+
+## Benchmarking
+
+To automate parameter space sweeps and ease testing across various platforms, a
+[JUBE](https://www.fz-juelich.de/jsc/jube) benchmark definition is included in
+the directory `benchmark`. See the included [README](benchmark/README.md) for
+further details and usage instructions.

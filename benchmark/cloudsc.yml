@@ -1,0 +1,80 @@
+include-path:
+  - path: include
+
+# Global parameter set
+parameterset:
+- name: generic_set
+  init_with: include_parameterset.yml
+
+# Script templates
+fileset: !include include_fileset_substituteset.yml:["fileset"]
+substituteset: !include include_fileset_substituteset.yml:["substituteset"]
+
+benchmark:
+  ###############################################
+  - name: cpu
+    outpath: rundir_cpu
+    comment: Run CPU variants of CLOUDSC
+  ###############################################
+
+    # Benchmark parameters
+    parameterset:
+    - name: build_set
+      init_with: include_parameterset.yml
+    - name: arch_set
+      init_with: include_arch.yml
+    - name: run_set
+      init_with: include_run.yml
+      parameter:
+      # Available binaries
+      - name: target
+        mode: python
+        _: |
+          ','.join(
+            ['dwarf-cloudsc-fortran'] +
+            {'hdf5': [], 'serialbox': ['dwarf-cloudsc-c']}['$io_library']
+          )
+
+    # Benchmark execution steps
+    step: !include include_step.yml:["step"]
+
+    # Parse output and compile results table
+    patternset: !include include_patternset.yml:["patternset"]
+    analyser: !include include_analyser.yml:["analyser"]
+    result: !include include_result.yml:["result"]
+
+  ###############################################
+  - name: gpu
+    outpath: rundir_gpu
+    comment: Run GPU variants of CLOUDSC
+  ###############################################
+
+    # Benchmark parameters
+    parameterset:
+    - name: build_set
+      init_with: include_parameterset.yml
+      parameter:
+      - {name: other_flags, _: "--with-gpu"}
+    - name: arch_set
+      init_with: include_arch.yml
+    - name: run_set
+      init_with: include_run.yml
+      parameter:
+      # Available binaries
+      - name: target
+        _: 'dwarf-cloudsc-gpu-omp-scc-hoist,dwarf-cloudsc-gpu-scc,dwarf-cloudsc-gpu-scc-hoist'
+      # Number of MPI ranks to launch (to target multiple GPUs, if available)
+      - name: nproc
+        type: int
+        mode: python
+        _: "','.join(str(i+1) for i in range($gpus)) if $mpi == 1 else '1'"
+      # Always run without multi-threading
+      - {name: numomp, type: int, _: 1}
+
+    # Benchmark execution steps
+    step: !include include_step.yml:["step"]
+
+    # Parse output and compile results table
+    patternset: !include include_patternset.yml:["patternset"]
+    analyser: !include include_analyser.yml:["analyser"]
+    result: !include include_result.yml:["result"]

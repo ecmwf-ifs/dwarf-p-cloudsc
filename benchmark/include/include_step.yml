@@ -1,0 +1,33 @@
+# The operations to carry out as part of the benchmark
+
+# Each step is executed for every item of the "used" parameter spaces
+
+step:
+  # Creating the bundle
+  - name: create
+    shared: shared
+    use: generic_set
+    work_dir: $cloudsc_home
+    do: ./cloudsc-bundle create
+
+  # Compiling the code
+  - name: build
+    depend: create
+    use:
+      - arch_set
+      - build_template
+      - build_script
+      - build_set
+    do: ./mybuild.sh
+
+  # Running the dwarf
+  - name: run
+    depend: build
+    use:
+      - run_template
+      - run_script
+      - arch_set
+      - build_set
+      - run_set
+    iterations: 3
+    do: ./run.sh

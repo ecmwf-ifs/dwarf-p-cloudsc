@@ -9,12 +9,12 @@ cmake : >
 projects :
 
     - ecbuild :
-        git     : https://github.com/ecmwf/ecbuild 
-        version : 3.6.4 
+        git     : https://github.com/ecmwf/ecbuild
+        version : 3.6.4
         bundle  : false
 
     - serialbox :
-        git     : ${BITBUCKET}/escape/serialbox
+        git     : https://github.com/reuterbal/serialbox
         version : v2.5.4/patched
         optional: true
         cmake   : >
@@ -22,12 +22,14 @@ projects :
             SERIALBOX_BUILD_SHARED=ON
             SERIALBOX_ENABLE_FORTRAN=ON
             SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
+            SERIALBOX_ENABLE_SDB=OFF
+            SERIALBOX_EXAMPLES=OFF
             Serialbox_TARGETS_EXPORTED=TRUE
             CMAKE_CXX_EXTENSIONS=ON
 
     - loki :
-        git     : ${BITBUCKET}/rdx/loki
-        version : master
+        git     : https://github.com/ecmwf-ifs/loki
+        version : main
         optional: true
         require : ecbuild
         cmake   : >
@@ -51,11 +53,17 @@ options :
         cmake : ENABLE_SINGLE_PRECISION=ON
 
     - with-gpu :
-        help  : Enable GPU kernel (ACC kernels and CLAW-based)
+        help  : Enable GPU kernels
         cmake : >
-            ENABLE_CLOUDSC_GPU_CLAW=ON
             ENABLE_CLOUDSC_GPU_SCC=ON
             ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
+            ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=ON
+
+    - with-cuda :
+        help  : Enable GPU kernel variant based on CUDA-Fortran
+        cmake : >
+            ENABLE_CUDA=ON
+            ENABLE_CLOUDSC_GPU_SCC_CUF=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
@@ -67,10 +75,18 @@ options :
             ENABLE_CLOUDSC_LOKI=ON
             LOKI_ENABLE_NO_INSTALL=OFF
 
+    - with-claw :
+        help  : Enable deprecated (and defunct) CLAW-generated variants
+        cmake : >
+            ENABLE_CLOUDSC_GPU_CLAW=ON
+            ENABLE_CLOUDSC_LOKI_CLAW=ON
+            LOKI_ENABLE_CLAW=ON
+
     - without-loki-install :
         help  : Skip installation of Loki (Requires Loki to be on the PATH)
         cmake : >
             LOKI_ENABLE_NO_INSTALL=ON
+            LOKI_ENABLE_CLAW=OFF
 
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations
@@ -89,12 +105,16 @@ options :
         cmake : ENABLE_CLOUDSC_C={{value}}
 
     - cloudsc-gpu-claw :
-        help  : Build the optimized CLAW-based GPU version CLOUDSC  [ON|OFF]
+        help  : Build the deprecated CLAW-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_GPU_CLAW={{value}}
 
     - cloudsc-loki :
         help  : Build the optimized Loki-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_LOKI={{value}}
+
+    - cloudsc-loki-claw :
+        help  : Build the deprecated Loki+CLAW-based GPU version CLOUDSC  [ON|OFF]
+        cmake : ENABLE_CLOUDSC_LOKI_CLAW={{value}}
 
     - hdf5 :
         help : Enable use of HDF5 input file [ON|OFF]

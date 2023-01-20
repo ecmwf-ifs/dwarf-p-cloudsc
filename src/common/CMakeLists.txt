@@ -8,98 +8,87 @@
 
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
+
 list(APPEND CLOUDSC_COMMON_SOURCES
-  module/parkind1.F90
-  module/yoecldp.F90
-  module/yomcst.F90
-  module/yoethf.F90
-  module/yoephli.F90
-  module/yomphyder.F90
-  module/fcttre_mod.F90
-  module/fccld_mod.F90
-  module/routines.F90
-  module/abor1.F90
-  module/timer_mod.F90
-  module/mycpu.c
-  module/ec_pmon_mod.F90
-  module/file_io_mod.F90
-  module/expand_mod.F90
-  module/validate_mod.F90
-  module/cloudsc_global_state_mod.F90
-  module/cloudsc_mpi_mod.F90
+    module/parkind1.F90
+    module/yoecldp.F90
+    module/yomcst.F90
+    module/yoethf.F90
+    module/yoephli.F90
+    module/yomphyder.F90
+    module/routines.F90
+    module/abor1.F90
+    module/timer_mod.F90
+    module/mycpu.c
+    module/ec_pmon_mod.F90
+    module/file_io_mod.F90
+    module/expand_mod.F90
+    module/validate_mod.F90
+    module/cloudsc_global_state_mod.F90
+    module/cloudsc_mpi_mod.F90
 )
 
+if(NOT ENABLE_USE_STMT_FUNC)
+    list(APPEND CLOUDSC_COMMON_SOURCES
+        module/fcttre_mod.F90
+        module/fccld_mod.F90
+    )
+endif()
 
-ecbuild_add_library( TARGET cloudsc-common-lib
-  SOURCES ${CLOUDSC_COMMON_SOURCES}
-  TYPE SHARED
-  DEFINITIONS ${CLOUDSC_DEFINITIONS}
+list(APPEND CLOUDSC_CUDA_SOURCES
+    module/fccld_mod.cuf.F90
+    module/fcttre_mod.cuf.F90
+    module/yoethf.cuf.F90
+    module/yomcst.cuf.F90
 )
-target_include_directories( cloudsc-common-lib PUBLIC $<INSTALL_INTERFACE:include> )
-target_include_directories( cloudsc-common-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories( cloudsc-common-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>)
 
-if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
-  target_link_libraries( cloudsc-common-lib PRIVATE OpenMP::OpenMP_Fortran )
-endif()
+if( HAVE_CUDA )
+    # ========================================================================
+    # Compile CUDA fortran files with -MCuda.
+    #
+    # This is necessary since CMake's CUDA languages does not natively
+    # understand CUDA-Fortran (.cuf) yet. So we simply emulate .cuf with
+    # .cuf.F90 files and force the compile flags here.
+    # ========================================================================
+    cloudsc_add_compile_options(
+        SOURCES ${CLOUDSC_CUDA_SOURCES}
+        FLAGS "-Mcuda=maxregcount:128"
+    )
 
-if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-  target_sources( cloudsc-common-lib PRIVATE module/cloudsc_mpif.F90 )
-  target_link_libraries( cloudsc-common-lib PRIVATE MPI::MPI_Fortran )
-endif()
-
-if ( HAVE_HDF5 )
-  target_sources( cloudsc-common-lib PRIVATE module/hdf5_file_mod.F90 )
-  target_include_directories( cloudsc-common-lib PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-  target_link_libraries( cloudsc-common-lib PRIVATE ${HDF5_LIBRARIES} )
-endif()
-
-if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-  target_link_libraries( cloudsc-common-lib PRIVATE OpenACC::OpenACC_Fortran )
-endif()
-
-if( TARGET Serialbox::Serialbox_Fortran )
-  target_link_libraries( cloudsc-common-lib PRIVATE Serialbox::Serialbox_Fortran )
+    # Add CUDA-specific flags to the library if enabled
+    list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
 endif()
 
 
 if( HAVE_ACC )
-  # ========================================================================
-  # For OpenACC runs we can ensure global module variables from our utility
-  # modules are copied to devices via `!$acc declare copyin(<module_vars>)`
-  # However, this requries static linking as per this thread:
-  # https://www.pgroup.com/userforum/viewtopic.php?t=7296
-  # ========================================================================
-
-  ecbuild_add_library( TARGET cloudsc-common-lib-static
-    SOURCES ${CLOUDSC_COMMON_SOURCES}
-    TYPE STATIC
-    DEFINITIONS ${CLOUDSC_DEFINITIONS}
-  )
-  target_include_directories( cloudsc-common-lib-static PUBLIC $<INSTALL_INTERFACE:include> )
-  target_include_directories( cloudsc-common-lib-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-  target_include_directories( cloudsc-common-lib-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>)
-
-  if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
-    target_link_libraries( cloudsc-common-lib-static PRIVATE OpenMP::OpenMP_Fortran )
-  endif()
-
-  if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-    target_sources( cloudsc-common-lib-static PRIVATE module/cloudsc_mpif.F90 )
-    target_link_libraries( cloudsc-common-lib-static PRIVATE MPI::MPI_Fortran )
-  endif()
-
-  if ( HAVE_HDF5 )
-    target_sources( cloudsc-common-lib-static PRIVATE module/hdf5_file_mod.F90 )
-    target_include_directories( cloudsc-common-lib-static PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-    target_link_libraries( cloudsc-common-lib-static PRIVATE ${HDF5_LIBRARIES} )
-  endif()
-
-  if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
-    target_link_libraries( cloudsc-common-lib-static PRIVATE OpenACC::OpenACC_Fortran )
-  endif()
-
-  if( TARGET Serialbox::Serialbox_Fortran )
-    target_link_libraries( cloudsc-common-lib-static PRIVATE Serialbox::Serialbox_Fortran )
-  endif()
+    # ========================================================================
+    # For OpenACC runs we can ensure global module variables from our utility
+    # modules are copied to devices via `!$acc declare copyin(<module_vars>)`
+    # However, this requries static linking as per this thread:
+    # https://www.pgroup.com/userforum/viewtopic.php?t=7296
+    # ========================================================================
+    set( LIBRARY_TYPE STATIC )
+else()
+    set( LIBRARY_TYPE SHARED )
 endif()
+
+ecbuild_add_library( TARGET cloudsc-common-lib
+    TYPE ${LIBRARY_TYPE}
+    DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    SOURCES
+        ${CLOUDSC_COMMON_SOURCES}
+        $<${HAVE_MPI}:module/cloudsc_mpif.F90>
+        $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
+    PRIVATE_INCLUDES
+        $<${HAVE_HDF5}:${HDF5_Fortran_INCLUDE_DIRS}>
+    PUBLIC_INCLUDES
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>
+    PUBLIC_LIBS
+        $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
+        $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
+        $<${HAVE_MPI}:MPI::MPI_Fortran>
+        $<${HAVE_HDF5}:hdf5::hdf5_fortran>
+        $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
+)

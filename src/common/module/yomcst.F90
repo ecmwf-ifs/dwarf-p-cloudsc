@@ -36,7 +36,7 @@ REAL(KIND=JPRB) :: RNAVO
 ! A1.1 Astronomical constants
 ! * RDAY         : duration of the solar day
 ! * RDAYI        : invariant time unit of 86400s
-! * RHOUR        : duration of the solar hour 
+! * RHOUR        : duration of the solar hour
 ! * REA          : astronomical unit (mean distance Earth-sun)
 ! * REPSM        : polar axis tilting angle
 ! * RSIYEA       : duration of the sideral year
@@ -159,6 +159,8 @@ REAL(KIND=JPRB) :: RGAMD
 REAL(KIND=JPRB) :: RSNAN
 
 !$acc declare copyin(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+!$omp declare target(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+
 
 !    ------------------------------------------------------------------
 
@@ -174,6 +176,7 @@ CONTAINS
     CALL LOAD_SCALAR('RLMLT', RLMLT)
     CALL LOAD_SCALAR('RTT', RTT)
     CALL LOAD_SCALAR('RV', RV)
+!$acc update device(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
   END SUBROUTINE YOMCST_LOAD_PARAMETERS
 
 END MODULE YOMCST

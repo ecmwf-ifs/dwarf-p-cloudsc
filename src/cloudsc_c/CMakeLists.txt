@@ -19,42 +19,55 @@ if( HAVE_CLOUDSC_C )
 
     ecbuild_add_library(
         TARGET dwarf-cloudsc-c-lib
-	INSTALL_HEADERS LISTED
+        INSTALL_HEADERS LISTED
         SOURCES
-	    cloudsc/yoecldp_c.h
-	    cloudsc/yoethf_c.h
-	    cloudsc/yomcst_c.h
-	    cloudsc/load_state.h
-	    cloudsc/load_state.c
-	    cloudsc/cloudsc_c.h
-	    cloudsc/cloudsc_c.c
-	    cloudsc/cloudsc_driver.h
-	    cloudsc/cloudsc_driver.c
-	    cloudsc/cloudsc_validate.h
-	    cloudsc/cloudsc_validate.c
-	    cloudsc/mycpu.h
-	    cloudsc/mycpu.c
+            cloudsc/yoecldp_c.h
+            cloudsc/yoethf_c.h
+            cloudsc/yomcst_c.h
+            cloudsc/load_state.h
+            cloudsc/load_state.c
+            cloudsc/cloudsc_c.h
+            cloudsc/cloudsc_c.c
+            cloudsc/cloudsc_driver.h
+            cloudsc/cloudsc_driver.c
+            cloudsc/cloudsc_validate.h
+            cloudsc/cloudsc_validate.c
+            cloudsc/mycpu.h
+            cloudsc/mycpu.c
+        PUBLIC_INCLUDES
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
+        PUBLIC_LIBS
+            Serialbox::Serialbox_C
+            $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
-    target_link_libraries( dwarf-cloudsc-c-lib PRIVATE Serialbox::Serialbox_C )
-    if( HAVE_OMP AND TARGET OpenMP::OpenMP_C )
-        target_link_libraries( dwarf-cloudsc-c-lib PRIVATE OpenMP::OpenMP_C )
-    endif()
-    target_include_directories( dwarf-cloudsc-c-lib PUBLIC $<INSTALL_INTERFACE:include> )
-    target_include_directories( dwarf-cloudsc-c-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc> )
 
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-c
         SOURCES dwarf_cloudsc.c
-    )
-    target_link_libraries(
-        dwarf-cloudsc-c PRIVATE
-        dwarf-cloudsc-c-lib
+        LIBS dwarf-cloudsc-c-lib
     )
 
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
 
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-c-serial
+        COMMAND bin/dwarf-cloudsc-c
+        ARGS 1 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-c-omp
+        COMMAND bin/dwarf-cloudsc-c
+        ARGS 4 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 4
+        CONDITION HAVE_OMP
+    )
+
 else()
-    message(STATUS "Serialbox not found, disabling C prototype" )
+    ecbuild_info( "Serialbox not found, disabling C prototype" )
 endif()

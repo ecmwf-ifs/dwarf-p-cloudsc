@@ -284,9 +284,9 @@ MODULE FCTTRE_MOD
     !$acc routine seq
 
     FOELSON = EXP( -6096.9385_JPRB/PTARE + 21.2409642_JPRB &
-	             - 2.711193E-2_JPRB * PTARE    &
+                     - 2.711193E-2_JPRB * PTARE    &
                      + 1.673952E-5_JPRB * PTARE**2 &
-		     + 2.433502_JPRB * LOG(PTARE))
+                     + 2.433502_JPRB * LOG(PTARE))
   END FUNCTION FOELSON
 
   PURE ELEMENTAL FUNCTION FOELES_V(PTARE)

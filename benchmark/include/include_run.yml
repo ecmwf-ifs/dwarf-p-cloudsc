@@ -1,0 +1,53 @@
+parameterset:
+  # The runtime options
+  - name: run_set
+    parameter:
+      # Number of MPI ranks to launch (or iterate over NUMA domains)
+      - name: nproc
+        type: int
+        mode: python
+        _: |  # Powers of two until total number of available cores
+          ','.join(
+            [
+              str(2**i)
+              for i in range(int($numa_domains*$cores_per_numa_domain).bit_length()-1)
+            ] + [str($numa_domains*$cores_per_numa_domain)]
+            if $mpi == 1 else [
+              str(i+1) for i in range($numa_domains)
+            ]
+          )
+
+      # Number of OpenMP threads to use (per rank)
+      - name: numomp
+        type: int
+        mode: python
+        _: "$numa_domains*$cores_per_numa_domain//$nproc"
+
+      # Number of horizontal columns
+      - {name: ngptotg, type: int, _: 163840}
+
+      # Default NPROMA value per variant
+      - name: default_nproma
+        mode: python
+        type: int
+        _: >
+          {
+            'dwarf-cloudsc-fortran': {'sp': 32, 'dp': 16}['$precision'],
+            'dwarf-cloudsc-c': {'sp': 32, 'dp': 16}['$precision'],
+            'dwarf-cloudsc-gpu-claw': 8192,
+            'dwarf-cloudsc-gpu-scc': 256,
+            'dwarf-cloudsc-gpu-scc-hoist': 128,
+            'dwarf-cloudsc-gpu-omp-scc-hoist': 128,
+          }['$target']
+
+      # Optionally sweep neighbouring NPROMA values
+      - name: nproma
+        tag: "sweep_nproma"
+        type: int
+        mode: python
+        _: "','.join(str(int($default_nproma * 2**i)) for i in range(-2, 3))"
+      - {name: nproma, tag: "!sweep_nproma", _: $default_nproma}
+
+      # Executable(s) to benchmark
+      - name: target
+        _: "dwarf-cloudsc-fortran"

@@ -4,7 +4,7 @@ name: build
 on:
   # Triggers the workflow on push events
   push:
-    branches: [ '**' ]
+    branches: [ 'main', 'develop' ]
     tags-ignore: [ '**' ]
 
   # Triggers the workflow on pull request events
@@ -17,55 +17,98 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }}
-    
+    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }}
+
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-  
+    runs-on: ubuntu-20.04
+
     strategy:
       fail-fast: false  # false: try to complete all jobs
-      
+
       matrix:
-      
+
         arch:
-          - github/ubuntu/gnu/9.3.0
-          
-        io_library_flag: ['']  # Switch between Serialbox and HDF5
-        # FIXME: serialbox builds are currently disabled until a compatible serialbox version is available to Github actions
-        
+          - github/ubuntu/gnu/9.4.0
+
+        io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
+
         mpi_flag: ['', '--with-mpi']  # Enable MPI-parallel build
 
         prec_flag: ['', '--single-precision']  # Switch single/double precision
 
         gpu_flag: ['', '--with-gpu']  # GPU-variants enabled
 
+        loki_flag: ['', '--with-loki']  # Loki source-to-source translation enabled
+
+        claw_flag: ['']  # Flag to enable CLAW-generated variants
+
+        include:
+          # Add nvhpc build configurations with serialbox and HDF5
+          - arch: github/ubuntu/nvhpc/21.9
+            io_library_flag: ''
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: '--with-gpu'
+          - arch: github/ubuntu/nvhpc/21.9
+            io_library_flag: '--with-serialbox'
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: '--with-gpu'
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      # Sets-up environment and installs required packages
-      - name: Environment setup
+      # Installs required packages
+      - name: Package installation
         run: |
-          [[ "${{ matrix.mpi_flag }}" == "--with-mpi" ]] && sudo apt install libopenmpi-dev || true
-          [[ "${{ matrix.io_library_flag }}" != "--with-serialbox" ]] && sudo apt install libhdf5-dev || true
-      
+          sudo apt-get install libc-dev-bin gfortran-9 gcc-9 g++-9
+
+      # Install MPI
+      - name: Install MPI via Apt
+        if: contains( matrix.mpi_flag, 'with-mpi' )
+        run: sudo apt-get install libopenmpi-dev
+
+      # Install Compiler
+      - name: Install nvhpc
+        if: contains( matrix.arch, 'nvhpc' )
+        run: .github/scripts/bootstrap-nvhpc.sh
+
+      # Install HDF5
+      - name: Install HDF5 via Apt
+        if: ${{ ! contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' ) }}
+        run: sudo apt-get install libhdf5-dev
+
+      - name: Install HDF5 from source
+        if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
+        run: source arch/${{ matrix.arch }}/env.sh && .github/scripts/install-hdf5.sh
+
+      # Install Boost
+      - name: Install Boost libraries
+        if: contains( matrix.io_library_flag, 'with-serialbox' )
+        run: sudo apt install libboost-filesystem-dev libboost-system-dev
+
       # Check-out dependencies as part of the bundle creation
       - name: Bundle create
         run: ./cloudsc-bundle create
-        
+
       # Build the targets
       - name: Bundle build
         run: |
           ./cloudsc-bundle build --retry-verbose \
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
-          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }}
+          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
+          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }}
 
       # Verify targets exist
       - name: Verify targets
         env:
           io_library_flag: ${{ matrix.io_library_flag }}
+          prec_flag: ${{ matrix.prec_flag }}
           gpu_flag: ${{ matrix.gpu_flag }}
+          loki_flag: ${{ matrix.loki_flag }}
+          claw_flag: ${{ matrix.claw_flag }}
         run: .github/scripts/verify-targets.sh
 
       # Run double-precision targets
@@ -73,5 +116,6 @@ jobs:
       - name: Run targets
         env:
           mpi_flag: ${{ matrix.mpi_flag }}
+          arch: ${{ matrix.arch }}
         if: ${{ matrix.prec_flag == '' }}
         run: .github/scripts/run-targets.sh

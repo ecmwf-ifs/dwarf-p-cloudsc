@@ -1,0 +1,29 @@
+fileset:
+  - name: build_template
+    copy: templates/build-template.sh
+
+  - name: run_template
+    copy: templates/run-template.sh
+
+substituteset:
+  - name: build_script
+    iofile: {in: build-template.sh, out: mybuild.sh}
+    sub:
+    - {source: "${{ CLOUDSC_HOME }}", dest: $cloudsc_home}
+    - {source: "${{ JUBE_WP_ABSPATH }}", dest: $jube_wp_abspath}
+    - {source: "${{ ARCH }}", dest: $arch}
+    - {source: "${{ PRECISION_FLAG }}", dest: $precision_flag}
+    - {source: "${{ IO_LIBRARY_FLAG }}", dest: $io_library_flag}
+    - {source: "${{ MPI_FLAG }}", dest: $mpi_flag}
+    - {source: "${{ OTHER_FLAGS }}", dest: $other_flags}
+
+  - name: run_script
+    iofile: {in: run-template.sh, out: run.sh}
+    sub:
+    - {source: "${{ LAUNCH_CMD }}", dest: $launch_cmd}
+    - {source: "${{ LAUNCH_CMD_END }}", dest: $launch_cmd_end}
+    - {source: "${{ NPROC }}", dest: $nproc}
+    - {source: "${{ TARGET }}", dest: $target}
+    - {source: "${{ NUMOMP }}", dest: $numomp}
+    - {source: "${{ NGPTOTG }}", dest: $ngptotg}
+    - {source: "${{ NPROMA }}", dest: $nproma}
