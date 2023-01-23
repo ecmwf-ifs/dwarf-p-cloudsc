@@ -70,6 +70,7 @@ REAL(KIND=JPRB) :: RKOOP1
 REAL(KIND=JPRB) :: RKOOP2
 END TYPE TOETHF
 
+TYPE(TOETHF), ALLOCATABLE :: YRTHF
 
 !     J.-J. MORCRETTE                   91/07/14  ADAPTED TO I.F.S.
 
@@ -127,10 +128,33 @@ CONTAINS
     CALL LOAD_SCALAR('RTWAT_RTICECU_R', RTWAT_RTICECU_R)
     CALL LOAD_SCALAR('RKOOP1', RKOOP1)
     CALL LOAD_SCALAR('RKOOP2', RKOOP2)
-
+    CALL YRTHF_COPY_PARAMETERS()
 !$acc update device(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
 !$acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
 !$acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
   END SUBROUTINE YOETHF_LOAD_PARAMETERS
+
+  SUBROUTINE YRTHF_COPY_PARAMETERS()
+    ALLOCATE(YRTHF)
+    YRTHF%R2ES            = R2ES
+    YRTHF%R3LES           = R3LES
+    YRTHF%R3IES           = R3IES
+    YRTHF%R4LES           = R4LES
+    YRTHF%R4IES           = R4IES
+    YRTHF%R5LES           = R5LES
+    YRTHF%R5IES           = R5IES
+    YRTHF%R5ALVCP         = R5ALVCP
+    YRTHF%R5ALSCP         = R5ALSCP
+    YRTHF%RALVDCP         = RALVDCP
+    YRTHF%RALSDCP         = RALSDCP
+    YRTHF%RALFDCP         = RALFDCP
+    YRTHF%RTWAT           = RTWAT
+    YRTHF%RTICE           = RTICE
+    YRTHF%RTICECU         = RTICECU
+    YRTHF%RTWAT_RTICE_R   = RTWAT_RTICE_R
+    YRTHF%RTWAT_RTICECU_R = RTWAT_RTICECU_R
+    YRTHF%RKOOP1          = RKOOP1
+    YRTHF%RKOOP2          = RKOOP2
+  END SUBROUTINE YRTHF_COPY_PARAMETERS
 
 END MODULE YOETHF
