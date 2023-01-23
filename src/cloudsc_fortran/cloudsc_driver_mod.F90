@@ -21,7 +21,6 @@ CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER( &
      & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, &
-     & NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV,  &
      & KFLDX, PTSPHY, &
      & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
@@ -37,7 +36,7 @@ CONTAINS
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG, &
      & PFSQLTUR, PFSQITUR, &
      & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
-     & YDOMCST, YDOETHF, YDECLDP, YDEPHLI )
+     & YDOMCST, YDOETHF, YDECLDP )
     ! Driver routine that performans the parallel NPROMA-blocking and
     ! invokes the CLOUDSC kernel
 
@@ -48,12 +47,6 @@ CONTAINS
 
     INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG
     INTEGER(KIND=JPIM), INTENT(IN)    :: KFLDX
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQV
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQL
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQR
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQI
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLDQS
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NCLV
     REAL(KIND=JPRB),    INTENT(IN)    :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB),    INTENT(IN)    :: PT(:,:,:)    ! T at start of callpar
     REAL(KIND=JPRB),    INTENT(IN)    :: PQ(:,:,:)    ! Q at start of callpar
@@ -153,7 +146,7 @@ CONTAINS
 
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
-              & NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV, &
+              & NCLV, &
               & PTSPHY,&
               & PT(:,:,IBL), PQ(:,:,IBL), TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
               & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
@@ -175,7 +168,7 @@ CONTAINS
               & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
               & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
               & KFLDX, &
-              & YDOMCST, YDOETHF, YDECLDP, YDEPHLI)
+              & YDOMCST, YDOETHF, YDECLDP)
 
          IF (LEC_PMON) THEN
            ! Sample power consuption
