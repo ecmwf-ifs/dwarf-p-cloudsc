@@ -41,7 +41,6 @@ CONTAINS
     ! invokes the CLOUDSC kernel
 
     USE YOECLDP  , ONLY : TECLDP
-    USE YOEPHLI  , ONLY : TEPHLI
     USE YOMCST   , ONLY : TOMCST
     USE YOETHF   , ONLY : TOETHF
 
@@ -110,7 +109,6 @@ CONTAINS
     TYPE(TOMCST)    :: YDOMCST
     TYPE(TOETHF)    :: YDOETHF
     TYPE(TECLDP)    :: YDECLDP
-    TYPE(TEPHLI)    :: YDEPHLI
 
     CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
     IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
@@ -146,7 +144,6 @@ CONTAINS
 
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
-              & NCLV, &
               & PTSPHY,&
               & PT(:,:,IBL), PQ(:,:,IBL), TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
               & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
