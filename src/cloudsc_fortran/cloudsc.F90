@@ -9,7 +9,7 @@
 
 SUBROUTINE CLOUDSC &
  !---input
- & (KIDIA,    KFDIA,    KLON,    KLEV, NCLV, &
+ & (KIDIA,    KFDIA,    KLON,    KLEV, &
  & PTSPHY,&
  & PT, PQ, tendency_cml,tendency_tmp,tendency_loc, &
  & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
@@ -131,6 +131,7 @@ SUBROUTINE CLOUDSC &
 USE PARKIND1 , ONLY : JPIM, JPRB
 !USE YOMHOOK  , ONLY : LHOOK, DR_HOOK
 USE YOMPHYDER ,ONLY : STATE_TYPE
+USE YOECLDP  , ONLY : NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
 USE YOECLDP  , ONLY : TECLDP
 USE YOEPHLI  , ONLY : TEPHLI
 USE YOMCST   , ONLY : TOMCST
@@ -158,7 +159,6 @@ INTEGER(KIND=JPIM),INTENT(IN)    :: KLON             ! Number of grid points
 INTEGER(KIND=JPIM),INTENT(IN)    :: KLEV             ! Number of levels
 INTEGER(KIND=JPIM),INTENT(IN)    :: KIDIA 
 INTEGER(KIND=JPIM),INTENT(IN)    :: KFDIA 
-INTEGER(KIND=JPIM),INTENT(IN)    :: NCLV
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PTSPHY            ! Physics timestep
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PT(KLON,KLEV)    ! T at start of callpar
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PQ(KLON,KLEV)    ! Q at start of callpar
@@ -500,10 +500,7 @@ TYPE(TECLDP)      ,INTENT(IN) :: YDECLDP
 
 !===============================================================================
 !IF (LHOOK) CALL DR_HOOK('CLOUDSC',0,ZHOOK_HANDLE)
-ASSOCIATE( & 
- & NCLDQV=>YDECLDP%NCLDQV, NCLDQL=>YDECLDP%NCLDQL, NCLDQR=>YDECLDP%NCLDQR, &
- & NCLDQI=>YDECLDP%NCLDQI, NCLDQS=>YDECLDP%NCLDQS, &
- & LAERICEAUTO=>YDECLDP%LAERICEAUTO, LAERICESED=>YDECLDP%LAERICESED, &
+ASSOCIATE( LAERICEAUTO=>YDECLDP%LAERICEAUTO, LAERICESED=>YDECLDP%LAERICESED, &
  & LAERLIQAUTOLSP=>YDECLDP%LAERLIQAUTOLSP, LAERLIQCOLL=>YDECLDP%LAERLIQCOLL, &
  & LCLDBUDGET=>YDECLDP%LCLDBUDGET, NCLDTOP=>YDECLDP%NCLDTOP, &
  & NSSOPT=>YDECLDP%NSSOPT, RAMID=>YDECLDP%RAMID, RAMIN=>YDECLDP%RAMIN, &
@@ -550,7 +547,6 @@ ASSOCIATE( &
 !===============================================================================
 !  0.0     Beginning of timestep book-keeping
 !----------------------------------------------------------------------
-
 
 !######################################################################
 !             0.  *** SET UP CONSTANTS ***
