@@ -202,6 +202,11 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
         for k in tecldp_keys:
             attrkey = k.replace('YRECLDP_', '').lower()
             setattr(yrecldp, attrkey, f[k][0])
+        setattr(yrecldp, 'ncldql', 1)
+        setattr(yrecldp, 'ncldqi', 2)
+        setattr(yrecldp, 'ncldqr', 3)
+        setattr(yrecldp, 'ncldqs', 4)
+        setattr(yrecldp, 'ncldqv', 5)
 
         tephli_keys = [k for k in f.keys() if 'YREPHLI' in k]
         for k in tephli_keys:

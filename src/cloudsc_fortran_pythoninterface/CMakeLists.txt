@@ -20,8 +20,8 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     set (DWARF_CLOUDSC_LIB  dwarf-cloudsc-lib)
     ecbuild_add_library( TARGET ${DWARF_CLOUDSC_LIB}
         SOURCES
-            ../cloudsc_fortran/cloudsc_driver_mod.F90
-            ../cloudsc_fortran/cloudsc.F90
+            ../cloudsc_fortran2/cloudsc_driver_mod.F90
+            ../cloudsc_fortran2/cloudsc.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
     set (PYTHON_MODN cloudsc)
@@ -44,7 +44,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
      set (F2PY_DWARF_SOURCES  ${FORTRAN_PYTHON_DWARF_SOURCES})
      list(TRANSFORM F90WRAP_COMMON_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/../common/module/)
      list(TRANSFORM F90WRAP_COMMON_SOURCES APPEND .F90 )
-     list(TRANSFORM F90WRAP_DWARF_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/../cloudsc_fortran/)
+     list(TRANSFORM F90WRAP_DWARF_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/../cloudsc_fortran2/)
      list(TRANSFORM F90WRAP_DWARF_SOURCES APPEND .F90 )
      list(TRANSFORM F2PY_COMMON_SOURCES PREPEND f90wrap_)
      list(TRANSFORM F2PY_COMMON_SOURCES APPEND .f90 )
@@ -67,7 +67,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     # Define the binary build target for this variant
     ecbuild_add_executable( TARGET dwarf-cloudsc-fortran-pyiref
         SOURCES
-            ../cloudsc_fortran/dwarf_cloudsc.F90
+            ../cloudsc_fortran2/dwarf_cloudsc.F90
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
 

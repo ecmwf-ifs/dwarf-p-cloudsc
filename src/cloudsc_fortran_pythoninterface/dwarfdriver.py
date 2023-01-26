@@ -56,9 +56,8 @@ input_fort_fields = load_input_fortran_fields(input_path,NPROMA,NLEV,NBLOCKS,cls
 for fieldname in input_fort_fields.keys():
     locals()[fieldname]=input_fort_fields[fieldname]
 
-clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
-                         NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG,
-                         NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV,
+clsc.cloudsc_driver_mod.cloudsc_driver(
+                         NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, NCLV,
                          kfldx, PTSPHY,
                          pt, pq,
                          buffer_tmp, buffer_loc,
@@ -75,7 +74,7 @@ clsc.cloudsc_driver_pyiface_mod.cloudsc_driver_no_derv_tpes(
                          pfsqrf,   pfsqsf ,  pfcqrng,  pfcqsng,
                          pfsqltur, pfsqitur,
                          pfplsl, pfplsn, pfhpsl, pfhpsn,
-                         ydomcst, ydoethf, ydecldp, ydephli)
+                         ydomcst, ydoethf, ydecldp)
 
 output_fields = convert_fortran_output_to_python (NPROMA,NLEV,NBLOCKS,input_fort_fields)
 
