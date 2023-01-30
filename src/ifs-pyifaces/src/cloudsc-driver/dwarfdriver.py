@@ -5,17 +5,22 @@ Driver that:
 - validates against reference results read from another .h5 file.
 """
 import sys
+import os
+os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']+':../../lib'
 from pathlib import Path
 from operator import itemgetter
-import cloudsc as clsc
 from cloudsc_data import define_fortran_fields
 from cloudsc_data import load_input_fortran_fields, load_input_parameters
 from cloudsc_data import load_reference_fields
 from cloudsc_data import convert_fortran_output_to_python
 from cloudsc_data import cloudsc_validate
-sys.path.append('../../build/src/cloudsc_fortran_pyiface')
-sys.path.append('../../build/lib')
-sys.path.append('.')
+from importlib import import_module
+here = os.getcwd()
+cldir = here + '/../../cloudsc-dwarf/src/ifs-pyifaces'
+if cldir not in sys.path:
+    sys.path.append(cldir)
+print(sys.path)
+clsc = import_module('cloudsc')
 
 NPROMA=100
 NUMOMP=1

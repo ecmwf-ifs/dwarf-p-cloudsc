@@ -6,10 +6,21 @@ cloudsc_data module consist of utilities that:
 - validates reference vs. computed fields;
 - other, purely technical utilities.
 """
+import sys
+import os
+os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']+':../../lib'
+print(os.environ['LD_LIBRARY_PATH'])
 from collections import OrderedDict
 import h5py
 import numpy as np
-import cloudsc as clsc
+from importlib import import_module
+here = os.getcwd()
+cldir = here + '/../../cloudsc-dwarf/src/ifs-pyifaces'
+if cldir not in sys.path:
+    sys.path.append(cldir)
+print(sys.path)
+clsc = import_module('cloudsc')
+
 
 
 NCLV = 5      # number of microphysics variables
