@@ -19,7 +19,6 @@ here = os.getcwd()
 cldir = here + '/../../cloudsc-dwarf/src/ifs-pyifaces'
 if cldir not in sys.path:
     sys.path.append(cldir)
-print(sys.path)
 clsc = import_module('cloudsc')
 
 NPROMA=100

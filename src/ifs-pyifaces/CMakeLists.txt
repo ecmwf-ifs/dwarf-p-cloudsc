@@ -126,10 +126,9 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 	                                                           -I${CMAKE_CURRENT_BINARY_DIR}/../common/module
 	                                                           -L${CMAKE_CURRENT_BINARY_DIR}/../../../lib
                                                                    -lcloudsc-common-lib  -l${DWARF_CLOUDSC_LIB} ${F2PY_COMMON_SOURCES} ${F2PY_DWARF_SOURCES} 
-								   #			  > f2py_log.txt 2> f2py_log_err.txt
+								   > f2py_log.txt 2> f2py_log_err.txt
          COMMAND pwd 
          COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/src/cloudsc-driver/  ../../../bin/pythonexec/
-	 #         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/../../../lib/  ${CMAKE_CURRENT_BINARY_DIR}/../../../bin/pythonexec
          COMMAND sh -c "rm -f ../../bin/pythonexec/*.f90"
          COMMENT "Running F90wrap/F2PY after Fortran build completed"
          DEPENDS dwarf-cloudsc-lib

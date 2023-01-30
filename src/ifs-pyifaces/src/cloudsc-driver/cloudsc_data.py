@@ -9,7 +9,6 @@ cloudsc_data module consist of utilities that:
 import sys
 import os
 os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']+':../../lib'
-print(os.environ['LD_LIBRARY_PATH'])
 from collections import OrderedDict
 import h5py
 import numpy as np
@@ -18,7 +17,6 @@ here = os.getcwd()
 cldir = here + '/../../cloudsc-dwarf/src/ifs-pyifaces'
 if cldir not in sys.path:
     sys.path.append(cldir)
-print(sys.path)
 clsc = import_module('cloudsc')
 
 
