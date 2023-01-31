@@ -222,6 +222,10 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
             attrkey = k.lower()
             setattr(yrethf, attrkey, f[k][0])
 
+def field_fortran_to_c(ffield):
+    cfield=np.ascontiguousarray(np.transpose(ffield))
+    return cfield
+
 def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
     """
     convert_fortran_output_to_python converts Fortran-format fields that are to be compared to
@@ -253,13 +257,13 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
     ]
 
     for argname in argnames_nlev:
-        fields[argname] = np.ascontiguousarray(np.transpose(input_fields[argname][:,:,0]))
+        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0])
 
     for argname in argnames_nlevp:
-        fields[argname] = np.ascontiguousarray(np.transpose(input_fields[argname][:,:,0]))
+        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0]) 
 
     for argname in argnames_nproma:
-        fields[argname] = np.ascontiguousarray(np.transpose(input_fields[argname][:,0]))
+        fields[argname] = field_fortran_to_c(input_fields[argname][:,0])
 
     for argname in argnames_tend:
         locals()[argname] = np.zeros(shape=(nproma,nlev,nblocks), order='F')
@@ -274,14 +278,10 @@ def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
                                 locals() ['tendency_loc_q'],
                                 locals() ['tendency_loc_cld'])
 
-    fields['tendency_loc_a'  ] = np.ascontiguousarray(
-                                    np.transpose(locals()['tendency_loc_a'  ][:,:,0]))
-    fields['tendency_loc_t'  ] = np.ascontiguousarray(
-                                    np.transpose(locals()['tendency_loc_t'  ][:,:,0]))
-    fields['tendency_loc_q'  ] = np.ascontiguousarray(
-                                    np.transpose(locals()['tendency_loc_q'  ][:,:,0]))
-    fields['tendency_loc_cld'] = np.ascontiguousarray(
-                                    np.transpose(locals()['tendency_loc_cld'][:,:,:,0]))
+    fields['tendency_loc_a'  ] = field_fortran_to_c(locals()['tendency_loc_a'  ][:,:,0])
+    fields['tendency_loc_t'  ] = field_fortran_to_c(locals()['tendency_loc_t'  ][:,:,0])
+    fields['tendency_loc_q'  ] = field_fortran_to_c(locals()['tendency_loc_q'  ][:,:,0])
+    fields['tendency_loc_cld'] = field_fortran_to_c(locals()['tendency_loc_cld'][:,:,:,0])
 
     return fields
 
