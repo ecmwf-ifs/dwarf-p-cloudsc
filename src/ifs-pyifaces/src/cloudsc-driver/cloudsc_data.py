@@ -90,6 +90,11 @@ def define_fortran_fields(nproma,nlev,nblocks):
 
     return fields
 
+def field_c_to_fortran(dims,cfield):
+    ffield=np.asfortranarray(np.transpose(np.reshape(
+              np.ascontiguousarray(cfield),dims,order='C')))
+    return ffield
+
 def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
     """
     load_input_fortran_fields returns:
@@ -132,41 +137,23 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
 
         for argname in argnames_nlev:
             print('Loading field:',argname)
-            fields[argname] = np.asfortranarray(
-                                 np.transpose(
-                                    np.reshape(
-                                       np.ascontiguousarray(f[argname.upper()]),
-                                       (nblocks,nlev,nproma),order='C')))
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()])
 
         for argname in argnames_nlevp:
             print('Loading field:',argname)
-            fields[argname] = np.asfortranarray(
-                                 np.transpose(
-                                    np.reshape(
-                                       np.ascontiguousarray(f[argname.upper()]),
-                                       (nblocks,nlev+1,nproma),order='C')))
+            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()])
 
         for argname in argnames_withnclv:
             print('Loading field:',argname)
-            fields[argname] = np.asfortranarray(
-                                 np.transpose(
-                                    np.reshape(
-                                       np.ascontiguousarray(f[argname.upper()]),
-                                       (nblocks,NCLV,nlev,nproma),order='C')))
+            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()])
 
         for argname in argnames_tend:
             print('Loading field:',argname)
-            fields[argname] = np.asfortranarray(
-                                 np.transpose(np.reshape(
-                                    np.ascontiguousarray(f[argname.upper()]),
-                                    (nblocks,nlev,nproma),order='C')))
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()])
 
         for argname in argnames_nproma:
             print('Loading field:',argname)
-            fields[argname] = np.asfortranarray(
-                                 np.transpose(np.reshape(
-                                    np.ascontiguousarray(f[argname.upper()]),
-                                    (nblocks,nproma),order='C')))
+            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()])
 
         for argname in argnames_scalar:
             print('Loading field:',argname)
