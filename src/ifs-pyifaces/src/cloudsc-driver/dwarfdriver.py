@@ -6,7 +6,6 @@ Driver that:
 """
 import sys
 import os
-os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']+':../../lib'
 from pathlib import Path
 from operator import itemgetter
 from cloudsc_data import define_fortran_fields
@@ -27,7 +26,6 @@ NLEV=137
 NGPTOT=100
 NGPTOTG=100
 NBLOCKS=1
-NDIM=5
 PTSPHY=3600.
 
 clsfields=define_fortran_fields(NPROMA,NLEV,NBLOCKS)
@@ -47,11 +45,6 @@ ref_fields = load_reference_fields(path=ref_path)
 
 
 NCLV = 5      # number of microphysics variables
-NCLDQL = 1    # liquid cloud water
-NCLDQI = 2    # ice cloud water
-NCLDQR = 3    # rain water
-NCLDQS = 4    # snow
-NCLDQV = 5    # vapour
 
 load_input_parameters(input_path, ydecldp, ydephli, ydomcst, ydoethf)
 

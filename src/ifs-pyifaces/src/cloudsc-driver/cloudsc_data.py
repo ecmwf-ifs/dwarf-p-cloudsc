@@ -8,7 +8,6 @@ cloudsc_data module consist of utilities that:
 """
 import sys
 import os
-os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']+':../../lib'
 from collections import OrderedDict
 import h5py
 import numpy as np
