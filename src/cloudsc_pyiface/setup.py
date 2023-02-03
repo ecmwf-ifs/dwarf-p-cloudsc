@@ -17,4 +17,3 @@ if sys.version_info.major < 3:
     sys.exit(1)
 
 
-setup(use_scm_version=False)

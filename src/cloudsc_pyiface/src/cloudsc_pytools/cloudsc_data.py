@@ -13,7 +13,7 @@ import h5py
 import numpy as np
 from importlib import import_module
 here = os.getcwd()
-cldir = here + '/../../cloudsc-dwarf/src/ifs-pyifaces'
+cldir = here + '/../../cloudsc-dwarf/src/cloudsc_pyiface'
 if cldir not in sys.path:
     sys.path.append(cldir)
 clsc = import_module('cloudsc')
@@ -91,9 +91,21 @@ def define_fortran_fields(nproma,nlev,nblocks):
     return fields
 
 def field_c_to_fortran(dims,cfield):
-    ffield=np.asfortranarray(np.transpose(np.reshape(
+    ffieldtmp=np.asfortranarray(np.transpose(np.reshape(
               np.ascontiguousarray(cfield),dims,order='C')))
-    return ffield
+    bfield=field_linear_to_block(dims,ffieldtmp)
+    return bfield
+
+def field_linear_to_block(dims,lfield):
+   #ldims=len(dims)
+   #if ldims == 2:
+   #      clsc.expand_mod.expand_r1(lfield, bfield,  nlon, nproma, ngptot, nblocks)  
+   #elif ldims == 3:
+   #      clsc.expand_mod.expand_r2(lfield, bfield,  nlon, nproma, nlev, ngptot, nblocks)  
+   #elif ldims == 4:
+   #      clsc.expand_mod.expand_r3(lfield, bfield,  nlon, nproma, nlev, ndim,  ngptot, nblocks)  
+    bfield=lfield
+    return bfield
 
 def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
     """

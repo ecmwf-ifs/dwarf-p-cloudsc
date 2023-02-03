@@ -15,7 +15,7 @@ from cloudsc_data import convert_fortran_output_to_python
 from cloudsc_data import cloudsc_validate
 from importlib import import_module
 here = os.getcwd()
-cldir = here + '/../../cloudsc-dwarf/src/ifs-pyifaces'
+cldir = here + '/../../cloudsc-dwarf/src/cloudsc_pyiface'
 if cldir not in sys.path:
     sys.path.append(cldir)
 clsc = import_module('cloudsc')
