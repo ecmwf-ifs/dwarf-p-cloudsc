@@ -11,12 +11,12 @@
 #ifndef YOECLDP_H
 #define YOECLDP_H
 
-int nclv;      // number of microphysics variables
-int ncldql;    // liquid cloud water
-int ncldqi;    // ice cloud water
-int ncldqr;    // rain water
-int ncldqs;    // snow
-int ncldqv;    // vapour
+//int nclv;      // number of microphysics variables
+//int ncldql;    // liquid cloud water
+//int ncldqi;    // ice cloud water
+//int ncldqr;    // rain water
+//int ncldqs;    // snow
+//int ncldqv;    // vapour
 
 struct TECLDP {
   double ramid;
@@ -136,10 +136,10 @@ struct TECLDP {
   double nshapep;
   double nshapeq;
   int nbeta;
-  double rbeta[0][100];
-  double rbetap1[0][100];
+  //double rbeta[0][100];
+  //double rbetap1[0][100];
 } ;
 
-struct TECLDP *yrecldp;
+//struct TECLDP *yrecldp;
 
 #endif

@@ -36,8 +36,8 @@ void print_error(const char *name, double zminval, double zmaxval, double zmaxer
   //-- If you get 4 exclamation marks next to your error output,
   //   then it is likely that some uninitialized variables exists or
   //   some other screw-up -- watch out this !!!!
-  char *clwarn;
-  clwarn = (zrelerr > 10.0 * zeps) ? " !!!!" : "     ";
+  //char *clwarn;
+  const char* clwarn = (zrelerr > 10.0 * zeps) ? " !!!!" : "     ";
   zrelerr = 100.0 * zrelerr;
 
   printf(" %+20s %dD%d %20.13le %20.13le %20.13le %20.13le %20.13le %s\n",
@@ -101,7 +101,6 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
       for (jk = 0; jk < bsize; jk++) {
 	zminval = fmin(zminval, field[b][jl][jk]);
 	zmaxval = fmax(zmaxval, field[b][jl][jk]);
-
 	// Difference against reference result in one-norm sense
 	zdiff = fabs(field[b][jl][jk] - reference[b][jl][jk]);
 	zmaxerr = fmax(zmaxerr, zdiff);
@@ -236,5 +235,7 @@ int cloudsc_validate(const int nlon, const int nlev, const int nclv, const int n
   free(ref_tend_loc_q);
   free(ref_tend_loc_t);
   free(ref_tend_loc_cld);
+
+  return 0;
 
 }

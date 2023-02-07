@@ -15,6 +15,7 @@
 #include "yoethf_c.h"
 #include "yoecldp_c.h"
 
+struct TECLDP ;
 
 void query_state(int *klon, int *klev);
 
@@ -25,8 +26,14 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
 		double* tend_tmp_t, double* tend_tmp_q, double* tend_tmp_a, double* tend_tmp_cld,
 		double* pvfa, double* pvfl, double* pvfi, double* pdyna, double* pdynl, double* pdyni, 
 		double* phrsw, double* phrlw, double* pvervel, double* pap, double* paph, double* plsm,
-		int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
-		double* pmfd, double* pa, double* pclv, double* psupsat);
+		int* ldcum, int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
+		double* pmfd, double* pa, double* pclv, double* psupsat, struct TECLDP* yrecldp,
+		double* rg, double* rd, double* rcpd, double* retv, double* rlvtt, double* rlstt,
+    double* rlmlt, double* rtt, double* rv, double* r2es, double* r3les, double* r3ies,
+    double* r4les, double* r4ies, double* r5les, double* r5ies, double* r5alvcp, double* r5alscp,
+    double* ralvdcp, double* ralsdcp, double* ralfdcp, double* rtwat,
+    double* rtice, double* rticecu, double* rtwat_rtice_r, double *rtwat_rticecu_r,
+    double* rkoop1, double* rkoop2);
 
 
 void load_reference(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,

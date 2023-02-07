@@ -14,26 +14,27 @@ ecbuild_add_option( FEATURE CLOUDSC_CUDA
 
 if( HAVE_CLOUDSC_CUDA )
 
-    set( CMAKE_C_STANDARD 11 )
-    set( CMAKE_C_STANDARD_REQUIRED ON )
+
+    enable_language(CUDA)
+    enable_language(CXX)
 
     ecbuild_add_library(
         TARGET dwarf-cloudsc-cuda-lib
-        INSTALL_HEADERS LISTED
+	INSTALL_HEADERS LISTED
         SOURCES
-            cloudsc/yoecldp_c.h
-            cloudsc/yoethf_c.h
-            cloudsc/yomcst_c.h
-            cloudsc/load_state.h
-            cloudsc/load_state.c
+	    cloudsc/yoecldp_c.h
+	    cloudsc/yoethf_c.h
+	    cloudsc/yomcst_c.h
+	    cloudsc/load_state.h
+            cloudsc/load_state.cu
             cloudsc/cloudsc_c.h
-            cloudsc/cloudsc_c.c
+            cloudsc/cloudsc_c.cu
             cloudsc/cloudsc_driver.h
-            cloudsc/cloudsc_driver.c
+            cloudsc/cloudsc_driver.cu
             cloudsc/cloudsc_validate.h
-            cloudsc/cloudsc_validate.c
+            cloudsc/cloudsc_validate.cu
             cloudsc/mycpu.h
-            cloudsc/mycpu.c
+            cloudsc/mycpu.cu
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
@@ -42,11 +43,33 @@ if( HAVE_CLOUDSC_CUDA )
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
 
+
+    target_compile_options(dwarf-cloudsc-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+    #                   --generate-line-info
+    #                   --relocatable-device-code=true
+    #		       -g -G
+                       -gencode arch=compute_80,code=sm_80
+                       >)
+
+    target_include_directories(dwarf-cloudsc-cuda-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
+   
+    #target_link_options(dwarf-cloudsc-cuda-lib PUBLIC "-Mcuda") 
+    set_target_properties( dwarf-cloudsc-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    
+    #target_include_directories( dwarf-cloudsc-cuda-lib PUBLIC
+    #    ${CMAKE_CURRENT_SOURCE_DIR}
+    #    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    #    ${CUDA_INCLUDE_DIRS})
+
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-cuda
-        SOURCES dwarf_cloudsc.c
+        SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-cuda-lib
     )
+
+    target_link_libraries(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-lib)
+
+
 
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink

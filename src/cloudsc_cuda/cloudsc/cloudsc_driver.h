@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <omp.h>
+#include "cuda.h"
+#include "cuda_runtime.h"
+//#include “cuda/cuda.h”
 
 #include "yomcst_c.h"
 #include "yoethf_c.h"

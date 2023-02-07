@@ -46,14 +46,13 @@ void expand_1d(double *buffer, double *field_in, int nlon, int nproma, int ngpto
 
   // Zero out the remainder of last block
   /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
+  int bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
   printf("zeroing last block : %d \n",bsize);
   for (i=bsize; i<nproma; i++) {
-    for (l=0; l<nlev; l++) {
-      field[nblocks-1][l][i] = 0.0;
-    }
+    field[nblocks-1][i] = 0.0;
   }
   */
+  
 
 }
 
@@ -74,14 +73,13 @@ void expand_1d_int(int *buffer, int *field_in, int nlon, int nproma, int ngptot,
 
   // Zero out the remainder of last block
   /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
+  int bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
   printf("zeroing last block : %d \n",bsize);
   for (i=bsize; i<nproma; i++) {
-    for (l=0; l<nlev; l++) {
-      field[nblocks-1][l][i] = 0;
-    }
+    field[nblocks-1][i] = 0;
   }
   */
+  
 }
 
 void expand_2d(double *buffer_in, double *field_in, int nlon, int nlev, int nproma, int ngptot, int nblocks)
@@ -103,7 +101,7 @@ void expand_2d(double *buffer_in, double *field_in, int nlon, int nlev, int npro
 
   // Zero out the remainder of last block
   /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
+  int bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
   printf("zeroing last block : %d \n",bsize);
   for (i=bsize; i<nproma; i++) {
     for (l=0; l<nlev; l++) {
@@ -134,9 +132,9 @@ void expand_3d(double *buffer_in, double *field_in, int nlon, int nlev, int nclv
     }
   }
 
-  // Zero out the remainder of last block
-  /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
+  // Zero out the remainder of last block 
+   /* 
+  int bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
   printf("zeroing last block : %d \n",bsize);
   for (i=bsize; i<nproma; i++) {
     for (l=0; l<nlev; l++) {
@@ -144,6 +142,7 @@ void expand_3d(double *buffer_in, double *field_in, int nlon, int nlev, int nclv
     }
   }
   */
+  
 
 }
 
@@ -196,8 +195,14 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
     double* tend_tmp_t, double* tend_tmp_q, double* tend_tmp_a, double* tend_tmp_cld,
     double* pvfa, double* pvfl, double* pvfi, double* pdyna, double* pdynl, double* pdyni, 
     double* phrsw, double* phrlw, double* pvervel, double* pap, double* paph, double* plsm,
-    int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
-    double* pmfd, double* pa, double* pclv, double* psupsat)
+    int* ldcum, int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
+    double* pmfd, double* pa, double* pclv, double* psupsat, struct TECLDP* yrecldp,
+    double* rg, double* rd, double* rcpd, double* retv, double* rlvtt, double* rlstt, 
+    double* rlmlt, double* rtt, double* rv, double* r2es, double* r3les, double* r3ies,
+    double* r4les, double* r4ies, double* r5les, double* r5ies, double* r5alvcp, double* r5alscp,
+    double* ralvdcp, double* ralsdcp, double* ralfdcp, double* rtwat, 
+    double* rtice, double* rticecu, double* rtwat_rtice_r, double *rtwat_rticecu_r,
+    double* rkoop1, double* rkoop2 )
 {
   serialboxSerializer_t* serializer = serialboxSerializerCreate(Read, "./data", "input", "Binary");
   serialboxMetainfo_t* metainfo = serialboxSerializerGetGlobalMetainfo(serializer);
@@ -233,6 +238,7 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
   load_and_expand_2d(serializer, savepoint, "PAP", nlon, nlev, nproma, ngptot, nblocks, pap);
   load_and_expand_2d(serializer, savepoint, "PAPH", nlon, nlev+1, nproma, ngptot, nblocks, paph);
   load_and_expand_1d(serializer, savepoint, "PLSM", nlon, nproma, ngptot, nblocks, plsm);
+  load_and_expand_1d_int(serializer, savepoint, "LDCUM", nlon, nproma, ngptot, nblocks, ldcum);
   load_and_expand_1d_int(serializer, savepoint, "KTYPE", nlon, nproma, ngptot, nblocks, ktype);
   load_and_expand_2d(serializer, savepoint, "PLU", nlon, nlev, nproma, ngptot, nblocks, plu);
   load_and_expand_2d(serializer, savepoint, "PLUDE", nlon, nlev, nproma, ngptot, nblocks, plude);
@@ -246,34 +252,34 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
   *ptsphy = serialboxMetainfoGetFloat64(metainfo, "PTSPHY");
 
   /* Populate global parameter values from meta-data */
-  rg = serialboxMetainfoGetFloat64(metainfo, "RG");
-  rd = serialboxMetainfoGetFloat64(metainfo, "RD");
-  rcpd = serialboxMetainfoGetFloat64(metainfo, "RCPD");
-  retv = serialboxMetainfoGetFloat64(metainfo, "RETV");
-  rlvtt = serialboxMetainfoGetFloat64(metainfo, "RLVTT");
-  rlstt = serialboxMetainfoGetFloat64(metainfo, "RLSTT");
-  rlmlt = serialboxMetainfoGetFloat64(metainfo, "RLMLT");
-  rtt = serialboxMetainfoGetFloat64(metainfo, "RTT");
-  rv = serialboxMetainfoGetFloat64(metainfo, "RV");
-  r2es = serialboxMetainfoGetFloat64(metainfo, "R2ES");
-  r3les = serialboxMetainfoGetFloat64(metainfo, "R3LES");
-  r3ies = serialboxMetainfoGetFloat64(metainfo, "R3IES");
-  r4les = serialboxMetainfoGetFloat64(metainfo, "R4LES");
-  r4ies = serialboxMetainfoGetFloat64(metainfo, "R4IES");
-  r5les = serialboxMetainfoGetFloat64(metainfo, "R5LES");
-  r5ies = serialboxMetainfoGetFloat64(metainfo, "R5IES");
-  r5alvcp = serialboxMetainfoGetFloat64(metainfo, "R5ALVCP");
-  r5alscp = serialboxMetainfoGetFloat64(metainfo, "R5ALSCP");
-  ralvdcp = serialboxMetainfoGetFloat64(metainfo, "RALVDCP");
-  ralsdcp = serialboxMetainfoGetFloat64(metainfo, "RALSDCP");
-  ralfdcp = serialboxMetainfoGetFloat64(metainfo, "RALFDCP");
-  rtwat = serialboxMetainfoGetFloat64(metainfo, "RTWAT");
-  rtice = serialboxMetainfoGetFloat64(metainfo, "RTICE");
-  rticecu = serialboxMetainfoGetFloat64(metainfo, "RTICECU");
-  rtwat_rtice_r = serialboxMetainfoGetFloat64(metainfo, "RTWAT_RTICE_R");
-  rtwat_rticecu_r = serialboxMetainfoGetFloat64(metainfo, "RTWAT_RTICECU_R");
-  rkoop1 = serialboxMetainfoGetFloat64(metainfo, "RKOOP1");
-  rkoop2 = serialboxMetainfoGetFloat64(metainfo, "RKOOP2");
+  *rg = serialboxMetainfoGetFloat64(metainfo, "RG");
+  *rd = serialboxMetainfoGetFloat64(metainfo, "RD");
+  *rcpd = serialboxMetainfoGetFloat64(metainfo, "RCPD");
+  *retv = serialboxMetainfoGetFloat64(metainfo, "RETV");
+  *rlvtt = serialboxMetainfoGetFloat64(metainfo, "RLVTT");
+  *rlstt = serialboxMetainfoGetFloat64(metainfo, "RLSTT");
+  *rlmlt = serialboxMetainfoGetFloat64(metainfo, "RLMLT");
+  *rtt = serialboxMetainfoGetFloat64(metainfo, "RTT");
+  *rv = serialboxMetainfoGetFloat64(metainfo, "RV");
+  *r2es = serialboxMetainfoGetFloat64(metainfo, "R2ES");
+  *r3les = serialboxMetainfoGetFloat64(metainfo, "R3LES");
+  *r3ies = serialboxMetainfoGetFloat64(metainfo, "R3IES");
+  *r4les = serialboxMetainfoGetFloat64(metainfo, "R4LES");
+  *r4ies = serialboxMetainfoGetFloat64(metainfo, "R4IES");
+  *r5les = serialboxMetainfoGetFloat64(metainfo, "R5LES");
+  *r5ies = serialboxMetainfoGetFloat64(metainfo, "R5IES");
+  *r5alvcp = serialboxMetainfoGetFloat64(metainfo, "R5ALVCP");
+  *r5alscp = serialboxMetainfoGetFloat64(metainfo, "R5ALSCP");
+  *ralvdcp = serialboxMetainfoGetFloat64(metainfo, "RALVDCP");
+  *ralsdcp = serialboxMetainfoGetFloat64(metainfo, "RALSDCP");
+  *ralfdcp = serialboxMetainfoGetFloat64(metainfo, "RALFDCP");
+  *rtwat = serialboxMetainfoGetFloat64(metainfo, "RTWAT");
+  *rtice = serialboxMetainfoGetFloat64(metainfo, "RTICE");
+  *rticecu = serialboxMetainfoGetFloat64(metainfo, "RTICECU");
+  *rtwat_rtice_r = serialboxMetainfoGetFloat64(metainfo, "RTWAT_RTICE_R");
+  *rtwat_rticecu_r = serialboxMetainfoGetFloat64(metainfo, "RTWAT_RTICECU_R");
+  *rkoop1 = serialboxMetainfoGetFloat64(metainfo, "RKOOP1");
+  *rkoop2 = serialboxMetainfoGetFloat64(metainfo, "RKOOP2");
 
   yrecldp->ramid = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RAMID");
   yrecldp->rcldiff = serialboxMetainfoGetFloat64(metainfo, "YRECLDP_RCLDIFF");

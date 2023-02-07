@@ -8,23 +8,23 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "yomcst_c.h"
-#include "yoethf_c.h"
+#include "cuda.h"
 #include "yoecldp_c.h"
+//struct TECLDP ;
+#include <stdio.h>
 
-void cloudsc_c(int kidia, int kfdia, int klon/*, int klev*/, double ptsphy, double * restrict v_pt, double * restrict v_pq,
-	      //double * restrict v_tendency_cml_t, double * restrict v_tendency_cml_q, double * restrict v_tendency_cml_a, double * restrict v_tendency_cml_cld,
-	      double * restrict v_tendency_tmp_t, double * restrict v_tendency_tmp_q, double * restrict v_tendency_tmp_a, double * restrict v_tendency_tmp_cld,
-	      double * restrict v_tendency_loc_t, double * restrict v_tendency_loc_q, double * restrict v_tendency_loc_a, double * restrict v_tendency_loc_cld,
-	      double * restrict v_pvfa, double * restrict v_pvfl, double * restrict v_pvfi, double * restrict v_pdyna, double * restrict v_pdynl, double * restrict v_pdyni,
-	      double * restrict v_phrsw, double * restrict v_phrlw, double * restrict v_pvervel, double * restrict v_pap, double * restrict v_paph, double * restrict v_plsm,
-	      double * restrict v_ldcum,
-	      int * restrict v_ktype, double * restrict v_plu, double * restrict v_plude, double * restrict v_psnde, double * restrict v_pmfu,
-	      double * restrict v_pmfd, double * restrict v_pa, double * restrict v_pclv, double * restrict v_psupsat, double * restrict v_plcrit_aer, double * restrict v_picrit_aer,
-	      double * restrict v_pre_ice, double * restrict v_pccn, double * restrict v_pnice, double * restrict v_pcovptot, double * restrict v_prainfrac_toprfz, double * restrict v_pfsqlf,
-	      double * restrict v_pfsqif, double * restrict v_pfcqnng, double * restrict v_pfcqlng, double * restrict v_pfsqrf, double * restrict v_pfsqsf, double * restrict v_pfcqrng,
-	      double * restrict v_pfcqsng, double * restrict v_pfsqltur, double * restrict v_pfsqitur, double * restrict v_pfplsl, double * restrict v_pfplsn, double * restrict v_pfhpsl,
-	      double * restrict v_pfhpsn,
+__global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy, double *  v_pt, double *  v_pq,
+	      double *  v_tendency_tmp_t, double *  v_tendency_tmp_q, double *  v_tendency_tmp_a, double *  v_tendency_tmp_cld,
+	      double *  v_tendency_loc_t, double *  v_tendency_loc_q, double *  v_tendency_loc_a, double *  v_tendency_loc_cld,
+	      double *  v_pvfa, double *  v_pvfl, double *  v_pvfi, double *  v_pdyna, double *  v_pdynl, double *  v_pdyni,
+	      double *  v_phrsw, double *  v_phrlw, double *  v_pvervel, double *  v_pap, double *  v_paph, double *  v_plsm,
+	      int *  v_ldcum,
+	      int *  v_ktype, double *  v_plu, double *  v_plude, double *  v_psnde, double *  v_pmfu,
+	      double *  v_pmfd, double *  v_pa, double *  v_pclv, double *  v_psupsat, double *  v_plcrit_aer, double *  v_picrit_aer,
+	      double *  v_pre_ice, double *  v_pccn, double *  v_pnice, double *  v_pcovptot, double *  v_prainfrac_toprfz, double *  v_pfsqlf,
+	      double *  v_pfsqif, double *  v_pfcqnng, double *  v_pfcqlng, double *  v_pfsqrf, double *  v_pfsqsf, double *  v_pfcqrng,
+	      double *  v_pfcqsng, double *  v_pfsqltur, double *  v_pfsqitur, double *  v_pfplsl, double *  v_pfplsn, double *  v_pfhpsl,
+	      double *  v_pfhpsn,
 	      struct TECLDP *yrecldp, int nblocks,
               double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
               double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
