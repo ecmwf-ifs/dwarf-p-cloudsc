@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Driver that:
 - loads input variables and parameters from .h5 file,
