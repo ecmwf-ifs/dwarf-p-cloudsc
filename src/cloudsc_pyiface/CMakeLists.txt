@@ -12,7 +12,7 @@ ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE
     CONDITION HDF5_FOUND
 )
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE_BINARY
-    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran" DEFAULT ON 
+    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran" DEFAULT OFF 
     CONDITION HAVE_CLOUDSC_FORTRAN_PYIFACE 
 )
 
@@ -20,11 +20,12 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
    # Define module directory to facilitate f90wrap/f2py execution
    ecbuild_enable_fortran(MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../module)
    message (STATUS "Module directory set to:")
-   message (STATUS  ${CMAKE_CURRENT_BINARY_DIR}/../../module)
+   message (STATUS  ${CMAKE_Fortran_MODULE_DIRECTORY})
    
 
    # Set names and lists to abstract the f90wrap/f2py process  
    set (DWARF_CLOUDSC_LIB  dwarf-cloudsc-lib)
+   set (DWARF_COMMON_LIB  cloudsc-common-lib)
    set (PYTHON_MODN cloudsc)
    set(FORTRAN_PYTHON_COMMON_SOURCES
             yomphyder
@@ -38,6 +39,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
             cloudsc_driver_mod
        )
    set (COMMON_MOD_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../common/module/)
+   set (COMMON_MOD_BIN_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/../common/module/)
    set (FORTRAN_SRC_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/fortransrc/)
    # Manipulate lists to prepare abstracted command-line input/output for f90wrap/f2py 
      set (F90WRAP_COMMON_SOURCES ${FORTRAN_PYTHON_COMMON_SOURCES})
@@ -59,7 +61,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
             ./fortransrc/cloudsc_driver_mod.F90
             ./fortransrc/cloudsc.F90
         LIBS
-            cloudsc-common-lib
+             ${DWARF_COMMON_LIB} 
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
    )
 
@@ -71,8 +73,8 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
            SOURCES
                ./fortransrc/dwarf_cloudsc.F90
            LIBS
-               cloudsc-common-lib   
-                dwarf-cloudsc-lib
+               ${DWARF_COMMON_LIB} 
+               ${DWARF_CLOUDSC_LIB} 
            DEFINITIONS ${CLOUDSC_DEFINITIONS}
        )
 
@@ -106,13 +108,14 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 	   	 > f90wrap_log.txt 2> f90wrap_log_err.txt 
          COMMAND echo "Executing f2py-f90wrap from location: "
          COMMAND which f2py-f90wrap
+         COMMAND echo ${CMAKE_BINARY_DIR}
          COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS 
 	          LDFLAGS=-Wl,-rpath,../../lib NPY_DISTUTILS_APPEND_FLAGS=1  
 		  f2py-f90wrap -c -m _${PYTHON_MODN}
-	         -I${CMAKE_CURRENT_BINARY_DIR}/../../module
-                 -I${CMAKE_CURRENT_BINARY_DIR}/../common/module
-                 -L${CMAKE_CURRENT_BINARY_DIR}/../../../lib
-                 -lcloudsc-common-lib 
+	         -I${CMAKE_Fortran_MODULE_DIRECTORY}
+                 -I${COMMON_MOD_BIN_LOCATION}
+                 -L${CMAKE_BINARY_DIR}/lib
+                 -l${DWARF_COMMON_LIB}
 		 -l${DWARF_CLOUDSC_LIB}
 		   ${F2PY_COMMON_SOURCES} 
 		   ${F2PY_DWARF_SOURCES} 
@@ -123,7 +126,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
           COMMAND ${Python_EXECUTABLE} -m pip install -U .
           COMMAND ${CMAKE_COMMAND} -E make_directory ../../../bin/pythonexec
           COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/drivers/cloudsc_pydriver.py  ../../../bin/pythonexec/
-          COMMENT "Completed execution of F90wrap/F2PY interface to cloudsc. "
+          COMMAND echo "Completed execution of F90wrap/F2PY interface to cloudsc. "
           DEPENDS dwarf-cloudsc-lib
           VERBATIM
       )
