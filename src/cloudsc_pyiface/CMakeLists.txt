@@ -119,15 +119,15 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 	 #COMMAND python3 -m venv cstest
 	 #COMMAND source ./cstest/bin/activate
 	 #COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && pip install -e .
-         COMMAND echo "Executing f90wrap"
+         COMMAND echo "Executing f90wrap from location: "
          COMMAND which f90wrap
          COMMAND  f90wrap -m${PYTHON_MODN} 
 	                    ${F90WRAP_COMMON_SOURCES} 
 			    ${F90WRAP_DWARF_SOURCES} 
 			    -k ${CMAKE_CURRENT_SOURCE_DIR}/src/cloudscpytools/kind_map 
 	   	 > f90wrap_log.txt 2> f90wrap_log_err.txt 
-         COMMAND echo "Executing f2py-f90wrap"
-         COMMAND echo  ${CMAKE_CURRENT_BINARY_DIR}
+         COMMAND echo "Executing f2py-f90wrap from location: "
+         COMMAND which f2py-f90wrap
          COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS 
 	          LDFLAGS=-Wl,-rpath,../../lib NPY_DISTUTILS_APPEND_FLAGS=1  
 		  f2py-f90wrap -c -m _${PYTHON_MODN}

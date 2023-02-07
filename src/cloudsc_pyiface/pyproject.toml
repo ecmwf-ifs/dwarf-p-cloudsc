@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloudscpytools"
+version = "0.1.0"
+authors = [
+    {name = "Zbigniew Piotrowski", email = "zbigniew.piotrowski@ecmwf.int"}
+]
+description = "Python driver that enables execution of the Fortran CLOUDSC dwarf from Python"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "../../LICENSE"}
+classifiers = [
+   " Development Status :: 3 - Alpha ",
+   " Intended Audience:: Science / Research ",
+   " License :: OSI Approved:: Apache License, Version 2.0 ",
+   " Natural Language :: English ",
+   " Operating System :: POSIX ",
+   " Programming Language :: Python :: 3.8 ",
+   " Programming Language :: Python :: 3.9 ",
+   " Topic :: Scientific/Engineering :: Atmospheric Science "
+]
+dependencies = [
+    "f90wrap",
+    "click",
+    "h5py"
+]
+
+[project.urls]
+repository = "https://github.com/ecmwf-ifs/dwarf-p-cloudsc"
+
+[tool.setuptools.packages.find]
+where = ["src"]  
+exclude = ["drivers"]
