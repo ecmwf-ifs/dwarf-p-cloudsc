@@ -13,7 +13,6 @@ cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
 cmake_policy( SET CMP0077 NEW )
 
 find_package( ecbuild REQUIRED )
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
 # define the project
 project( dwarf-p-cloudsc LANGUAGES C Fortran )
@@ -93,6 +92,12 @@ if( HAVE_SERIALBOX )
 endif()
 
 ecbuild_find_package( NAME loki )
+
+ecbuild_find_package( NAME Python )
+
+if ( Python_FOUND )
+  execute_process(COMMAND ${Python_EXECUTABLE} -m pip install f90wrap h5py)
+endif()
 
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION
