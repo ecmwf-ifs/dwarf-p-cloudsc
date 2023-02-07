@@ -13,6 +13,7 @@ cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
 cmake_policy( SET CMP0077 NEW )
 
 find_package( ecbuild REQUIRED )
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
 # define the project
 project( dwarf-p-cloudsc LANGUAGES C Fortran )

@@ -8,8 +8,12 @@
 
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE
-    DESCRIPTION "Build the Python interface to cloudsc-fortran" DEFAULT ON
+    DESCRIPTION "Build the Python interface to (customized) cloudsc-fortran" DEFAULT ON
     CONDITION HDF5_FOUND
+)
+ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE_BINARY
+    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran" DEFAULT OFF
+    CONDITION HAVE_CLOUDSC_FORTRAN_PYIFACE 
 )
 
 if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
@@ -40,9 +44,9 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
         )
 
      set (F90WRAP_COMMON_SOURCES ${FORTRAN_PYTHON_COMMON_SOURCES})
-     set (F90WRAP_DWARF_SOURCES  ${FORTRAN_PYTHON_DWARF_SOURCES})
-     set (F2PY_COMMON_SOURCES ${FORTRAN_PYTHON_COMMON_SOURCES})
-     set (F2PY_DWARF_SOURCES  ${FORTRAN_PYTHON_DWARF_SOURCES})
+     set ( F90WRAP_DWARF_SOURCES  ${FORTRAN_PYTHON_DWARF_SOURCES})
+     set (   F2PY_COMMON_SOURCES ${FORTRAN_PYTHON_COMMON_SOURCES})
+     set (    F2PY_DWARF_SOURCES  ${FORTRAN_PYTHON_DWARF_SOURCES})
      list(TRANSFORM F90WRAP_COMMON_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/../common/module/)
      list(TRANSFORM F90WRAP_COMMON_SOURCES APPEND .F90 )
      list(TRANSFORM F90WRAP_DWARF_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/fortransrc/)
@@ -65,39 +69,37 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 #       )
 
     target_link_libraries( ${DWARF_CLOUDSC_LIB} PRIVATE cloudsc-common-lib HDF5::HDF5 )
-    # Define the binary build target for this variant
-    ecbuild_add_executable( TARGET dwarf-cloudsc-fortran-pyiref
-        SOURCES
-            ./fortransrc/dwarf_cloudsc.F90
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
 
-    target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE cloudsc-common-lib ${DWARF_CLOUDSC_LIB})
+if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
+       # Define the binary build target for this variant
+       ecbuild_add_executable( TARGET dwarf-cloudsc-fortran-pyiref
+           SOURCES
+               ./fortransrc/dwarf_cloudsc.F90
+           DEFINITIONS ${CLOUDSC_DEFINITIONS}
+       )
 
-    target_include_directories(dwarf-cloudsc-fortran-pyiref PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(dwarf-cloudsc-fortran-pyiref PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../common)
+       target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE cloudsc-common-lib ${DWARF_CLOUDSC_LIB})
 
-    if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
-        target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE OpenMP::OpenMP_Fortran )
-    endif()
+       target_include_directories(dwarf-cloudsc-fortran-pyiref PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+       target_include_directories(dwarf-cloudsc-fortran-pyiref PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../common)
 
-    if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
-        target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE MPI::MPI_Fortran )
-    endif()
+       if( HAVE_OMP AND TARGET OpenMP::OpenMP_Fortran )
+           target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE OpenMP::OpenMP_Fortran )
+       endif()
 
-    # Create symlink for the input data
-    if( HAVE_SERIALBOX )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-    endif()
+       if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+           target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE MPI::MPI_Fortran )
+       endif()
 
-    if( HAVE_HDF5 )
-      target_include_directories( dwarf-cloudsc-fortran-pyiref PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
-      target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE ${HDF5_LIBRARIES} )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
+       if( HAVE_HDF5 )
+         target_include_directories( dwarf-cloudsc-fortran-pyiref PRIVATE ${HDF5_Fortran_INCLUDE_DIRS} )
+         target_link_libraries( dwarf-cloudsc-fortran-pyiref PRIVATE ${HDF5_LIBRARIES} )
+         execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+             ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
+         execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+             ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
+       endif()
+
     endif()
 
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
@@ -112,16 +114,17 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
       ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/reference.h5 )
 
-      add_custom_command(TARGET dwarf-cloudsc-fortran-pyiref POST_BUILD
+      add_custom_command(TARGET ${DWARF_CLOUDSC_LIB}  POST_BUILD
          #COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
 	 #COMMAND python3 -m venv cstest
 	 #COMMAND source ./cstest/bin/activate
 	 #COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && pip install -e .
          COMMAND echo "Executing f90wrap"
+         COMMAND which f90wrap
          COMMAND  f90wrap -m${PYTHON_MODN} 
 	                    ${F90WRAP_COMMON_SOURCES} 
 			    ${F90WRAP_DWARF_SOURCES} 
-			    -k ${CMAKE_CURRENT_SOURCE_DIR}/src/cloudsc_pytools/kind_map -P 
+			    -k ${CMAKE_CURRENT_SOURCE_DIR}/src/cloudscpytools/kind_map 
 	   	 > f90wrap_log.txt 2> f90wrap_log_err.txt 
          COMMAND echo "Executing f2py-f90wrap"
          COMMAND echo  ${CMAKE_CURRENT_BINARY_DIR}
@@ -136,13 +139,14 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 		 -l${DWARF_CLOUDSC_LIB}
 		   ${F2PY_COMMON_SOURCES} 
 		   ${F2PY_DWARF_SOURCES} 
-		   			     > f2py_log.txt 2> f2py_log_err.txt
+	 	   			     > f2py_log.txt 2> f2py_log_err.txt
+          COMMAND echo "Runnning pip using the following Python executable"
+          COMMAND echo ${Python_EXECUTABLE}
+          COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_MODN}.py ./src/cloudscpytools
+          COMMAND ${Python_EXECUTABLE} -m pip install -U .
           COMMAND ${CMAKE_COMMAND} -E make_directory ../../../bin/pythonexec
-          COMMAND ls -ltr  ../../../bin
-          COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/cloudsc_pytools/cloudsc_data.py  ../../../bin/pythonexec/
           COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/drivers/cloudsc_pydriver.py  ../../../bin/pythonexec/
-       #  COMMAND sh -c "rm -f ../../bin/pythonexec/*.f90"
-         COMMENT "Running F90wrap/F2PY after Fortran build completed"
+          COMMENT "Completed execution of F90wrap/F2PY interface to cloudsc. "
          DEPENDS dwarf-cloudsc-lib
          VERBATIM
       )
