@@ -14,7 +14,6 @@ SUBROUTINE CLOUDSC &
  & PT, PQ, &
  & PTMPTENT,PTMPTENA,PTMPTENQ,PTMPTENCLD, &
  & PLOCTENT,PLOCTENA,PLOCTENQ,PLOCTENCLD, &
-!  tendency_cml,tendency_tmp,tendency_loc, &
  & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
  & PHRSW,    PHRLW,&
  & PVERVEL,  PAP,      PAPH,&
@@ -164,9 +163,6 @@ INTEGER(KIND=JPIM),INTENT(IN)    :: NCLV
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PTSPHY            ! Physics timestep
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PT(KLON,KLEV)    ! T at start of callpar
 REAL(KIND=JPRB)   ,INTENT(IN)    :: PQ(KLON,KLEV)    ! Q at start of callpar
-!TYPE (STATE_TYPE) , INTENT (IN)  :: tendency_cml   ! cumulative tendency used for final output
-!TYPE (STATE_TYPE) , INTENT (IN)  :: tendency_tmp   ! cumulative tendency used as input
-!TYPE (STATE_TYPE) , INTENT (OUT) :: tendency_loc   ! local tendency from cloud scheme
 REAL(KIND=JPRB)   ,INTENT(INOUT)    :: PLOCTENT(KLON,KLEV)
 REAL(KIND=JPRB)   ,INTENT(INOUT)    :: PLOCTENQ(KLON,KLEV)
 REAL(KIND=JPRB)   ,INTENT(INOUT)    :: PLOCTENA(KLON,KLEV)
@@ -561,7 +557,6 @@ ASSOCIATE( &
 !===============================================================================
 !  0.0     Beginning of timestep book-keeping
 !----------------------------------------------------------------------
-PRINT *,'NCLV CLS', NCLV,NCLDQL, RG
 
 !######################################################################
 !             0.  *** SET UP CONSTANTS ***

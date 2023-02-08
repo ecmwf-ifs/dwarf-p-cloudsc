@@ -5,16 +5,10 @@ Driver that:
 - invokes Fortran kernel computation,
 - validates against reference results read from another .h5 file.
 """
-import sys
-import os
 from pathlib import Path
 from operator import itemgetter
 from cloudscpytools import cloudsc_data
 from importlib import import_module
-#here = os.getcwd()
-#cldir = here + '/../../cloudsc-dwarf/src/cloudsc_pyiface'
-#if cldir not in sys.path:
-#    sys.path.append(cldir)
 clsc = import_module('cloudsc')
 
 NPROMA=100

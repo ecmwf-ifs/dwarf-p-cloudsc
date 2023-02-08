@@ -12,11 +12,12 @@ ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE
     CONDITION HDF5_FOUND
 )
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE_BINARY
-    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran" DEFAULT OFF 
+    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran" DEFAULT ON 
     CONDITION HAVE_CLOUDSC_FORTRAN_PYIFACE 
 )
 
 if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
+   set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
    # Define module directory to facilitate f90wrap/f2py execution
    ecbuild_enable_fortran(MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../module)
    message (STATUS "Module directory set to:")
@@ -83,7 +84,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
         TARGET dwarf-cloudsc-fortran-pyiref
         COMMAND bin/dwarf-cloudsc-fortran-pyiref
         ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         OMP 1
                    )
     endif()
@@ -96,7 +97,6 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
     endif()
 
 # F90wrap execution section
-
       add_custom_command(TARGET ${DWARF_CLOUDSC_LIB}  POST_BUILD
          COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
          COMMAND echo "Executing f90wrap from location: "
@@ -108,10 +108,17 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 	   	 > f90wrap_log.txt 2> f90wrap_log_err.txt 
          COMMAND echo "Executing f2py-f90wrap from location: "
          COMMAND which f2py-f90wrap
-         COMMAND echo ${CMAKE_BINARY_DIR}
+         COMMAND echo "F2PY will use Fortran compiler:"
+         COMMAND echo  ${CMAKE_Fortran_COMPILER} 
+         COMMAND echo "with flags:"
+         COMMAND echo  ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE_CAPS}} 
          COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS 
-	          LDFLAGS=-Wl,-rpath,../../lib NPY_DISTUTILS_APPEND_FLAGS=1  
-		  f2py-f90wrap -c -m _${PYTHON_MODN}
+	          LDFLAGS=-Wl,-rpath,${CMAKE_BINARY_DIR}/lib NPY_DISTUTILS_APPEND_FLAGS=1  
+		  f2py-f90wrap -c 
+                 --f90exec=${CMAKE_Fortran_COMPILER}
+                 --f90flags=${CMAKE_Fortran_FLAGS} 
+                 --f90flags=${CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE_CAPS}}
+                 -m _${PYTHON_MODN}
 	         -I${CMAKE_Fortran_MODULE_DIRECTORY}
                  -I${COMMON_MOD_BIN_LOCATION}
                  -L${CMAKE_BINARY_DIR}/lib
@@ -119,15 +126,17 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 		 -l${DWARF_CLOUDSC_LIB}
 		   ${F2PY_COMMON_SOURCES} 
 		   ${F2PY_DWARF_SOURCES} 
-	     			     > f2py_log.txt 2> f2py_log_err.txt
+	     	    > f2py_log.txt 2> f2py_log_err.txt
           COMMAND echo "Runnning pip using the following Python executable"
           COMMAND echo ${Python_EXECUTABLE}
+          COMMAND echo "Copy output of f90wrap to CLOUDSC Python driver package directory"
           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_MODN}.py ./src/cloudscpytools
+          COMMAND echo "Running pip install -U"
           COMMAND ${Python_EXECUTABLE} -m pip install -U .
-          COMMAND ${CMAKE_COMMAND} -E make_directory ../../../bin/pythonexec
-          COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/drivers/cloudsc_pydriver.py  ../../../bin/pythonexec/
+          COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/pythonexec
+          COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/drivers/cloudsc_pydriver.py  ${CMAKE_BINARY_DIR}/bin/pythonexec/
           COMMAND echo "Completed execution of F90wrap/F2PY interface to cloudsc. "
-          DEPENDS dwarf-cloudsc-lib
+          DEPENDS ${DWARF_CLOUDSC_LIB}
           VERBATIM
       )
 
@@ -135,7 +144,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
              TARGET dwarf-cloudsc-lib
              COMMAND cloudsc_pydriver.py
              ARGS 1 100 16
-             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../../bin/pythonexec
+             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin/pythonexec
              OMP 1
                           )
 endif()

@@ -22,7 +22,6 @@ CONTAINS
      & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, NCLV, &
      & KFLDX, PTSPHY, &
      & PT, PQ,  &
-!    TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
      & BUFFER_TMP, BUFFER_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
      & PHRSW,    PHRLW, &
@@ -144,13 +143,11 @@ CONTAINS
          PCOVPTOT(:,:,IBL) = 0.0_JPRB
 !        TENDENCY_LOC(IBL)%cld(:,:,NCLV) = 0.0_JPRB
          BUFFER_LOC(:,:,3+NCLV,IBL) = 0.0_JPRB
-         PRINT *,'Driver NCLV', NCLV
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
               & NCLV, &
               & PTSPHY,&
               & PT(:,:,IBL), PQ(:,:,IBL), &
-!             TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
               & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,3,IBL),  &
               & BUFFER_TMP(:,:,4,IBL),  &
               & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,3,IBL),  &
