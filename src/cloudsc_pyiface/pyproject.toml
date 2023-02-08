@@ -25,7 +25,8 @@ classifiers = [
 dependencies = [
     "f90wrap",
     "click",
-    "h5py"
+    "h5py",
+    "importlib"
 ]
 
 [project.urls]

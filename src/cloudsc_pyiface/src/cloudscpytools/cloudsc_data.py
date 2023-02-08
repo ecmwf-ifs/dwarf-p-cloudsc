@@ -6,10 +6,15 @@ cloudsc_data module consist of utilities that:
 - validates reference vs. computed fields;
 - other, purely technical utilities.
 """
+import sys,os
 from collections import OrderedDict
 import h5py
 import numpy as np
 from importlib import import_module
+here = os.getcwd()
+cldir = here + '/../../cloudsc-dwarf/src/cloudsc_pyiface'
+if cldir not in sys.path:
+    sys.path.append(cldir)
 clsc = import_module('cloudsc')
 
 
