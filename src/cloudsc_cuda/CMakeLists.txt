@@ -69,6 +69,58 @@ if( HAVE_CLOUDSC_CUDA )
 
     target_link_libraries(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-lib)
 
+    ###### SCC-CUDA-HOIST ####
+    ecbuild_add_library(
+        TARGET dwarf-cloudsc-cuda-hoist-lib
+        INSTALL_HEADERS LISTED
+        SOURCES
+            cloudsc/yoecldp_c.h
+            cloudsc/yoethf_c.h
+            cloudsc/yomcst_c.h
+            cloudsc/load_state.h
+            cloudsc/load_state.cu
+            cloudsc/cloudsc_c_hoist.h
+            cloudsc/cloudsc_c_hoist.cu
+            cloudsc/cloudsc_driver_hoist.h
+            cloudsc/cloudsc_driver_hoist.cu
+            cloudsc/cloudsc_validate.h
+            cloudsc/cloudsc_validate.cu
+            cloudsc/mycpu.h
+            cloudsc/mycpu.cu
+        PUBLIC_INCLUDES
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
+        PUBLIC_LIBS
+            Serialbox::Serialbox_C
+            $<${HAVE_OMP}:OpenMP::OpenMP_C>
+    )
+
+
+    target_compile_options(dwarf-cloudsc-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+    #                   --generate-line-info
+    #                   --relocatable-device-code=true
+    #                  -g -G
+                       -gencode arch=compute_80,code=sm_80
+                       >)
+
+    target_include_directories(dwarf-cloudsc-cuda-hoist-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
+
+    #target_link_options(dwarf-cloudsc-cuda-lib PUBLIC "-Mcuda") 
+    set_target_properties( dwarf-cloudsc-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+    #target_include_directories( dwarf-cloudsc-cuda-lib PUBLIC
+    #    ${CMAKE_CURRENT_SOURCE_DIR}
+    #    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    #    ${CUDA_INCLUDE_DIRS})
+
+    ecbuild_add_executable(
+        TARGET  dwarf-cloudsc-cuda-hoist
+        SOURCES dwarf_cloudsc_hoist.cpp
+        LIBS dwarf-cloudsc-cuda-hoist-lib
+    )
+
+    target_link_libraries(dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-hoist-lib)
+    ###
 
 
     # Create symlink for the input data
