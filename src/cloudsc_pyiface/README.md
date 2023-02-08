@@ -1,5 +1,6 @@
 This is a driver allowing to execute IFS physics from within a Python script
 Steps to run and perform basic test  on ATOS:
+Uncomment #add_subdirectory(cloudsc_pyiface) in ./src/CMakeLists.txt (at the moment needed to mitigate CI incompatibility) 
 module load python3
 python3 -m venv cleanvenv
 source ./cleanvenv/bin/activate
