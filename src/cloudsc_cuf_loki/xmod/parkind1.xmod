@@ -1,0 +1,185 @@
+<OmniFortranModule version="1.0">
+  <name>parkind1</name>
+  <depends>
+  </depends>
+  <typeTable>
+    <FbasicType type="I1ff08e0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1ff2ca0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1ff5110" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1ff7550" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1ffa2c0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1ffc9b0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1fff370" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I2001de0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I2004850" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I200a5e0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I200d220" is_parameter="true" ref="Fint"/>
+  </typeTable>
+  <identifiers>
+    <id type="I1ff08e0" sclass="flocal" original_name="jpit" declared_in="parkind1">
+      <name>jpit</name>
+    </id>
+    <id type="I1ff2ca0" sclass="flocal" original_name="jpis" declared_in="parkind1">
+      <name>jpis</name>
+    </id>
+    <id type="I1ff5110" sclass="flocal" original_name="jpim" declared_in="parkind1">
+      <name>jpim</name>
+    </id>
+    <id type="I1ff7550" sclass="flocal" original_name="jpib" declared_in="parkind1">
+      <name>jpib</name>
+    </id>
+    <id type="I1ffa2c0" sclass="flocal" original_name="jpia" declared_in="parkind1">
+      <name>jpia</name>
+    </id>
+    <id type="I1ffc9b0" sclass="flocal" original_name="jprt" declared_in="parkind1">
+      <name>jprt</name>
+    </id>
+    <id type="I1fff370" sclass="flocal" original_name="jprs" declared_in="parkind1">
+      <name>jprs</name>
+    </id>
+    <id type="I2001de0" sclass="flocal" original_name="jprm" declared_in="parkind1">
+      <name>jprm</name>
+    </id>
+    <id type="I2004850" sclass="flocal" original_name="jprb" declared_in="parkind1">
+      <name>jprb</name>
+    </id>
+    <id type="I200a5e0" sclass="flocal" original_name="jprd" declared_in="parkind1">
+      <name>jprd</name>
+    </id>
+    <id type="I200d220" sclass="flocal" original_name="jplm" declared_in="parkind1">
+      <name>jplm</name>
+    </id>
+  </identifiers>
+  <declarations>
+    <varDecl lineno="11" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I1ff08e0">jpit</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="12" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I1ff2ca0">jpis</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="13" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I1ff5110">jpim</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">9</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="14" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I1ff7550">jpib</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">12</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="19" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I1ffa2c0">jpia</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">9</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="28" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I1ffc9b0">jprt</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">2</FintConstant>
+            <FintConstant type="Fint">1</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="29" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I1fff370">jprs</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">4</FintConstant>
+            <FintConstant type="Fint">2</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="30" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I2001de0">jprm</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">6</FintConstant>
+            <FintConstant type="Fint">37</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="32" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I2004850">jprb</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="39" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I200a5e0">jprd</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="44" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/parkind1.F90">
+      <name type="I200d220">jplm</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">9</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+  </declarations>
+  <interfaceDecls>
+  </interfaceDecls>
+  <aux_info>
+  </aux_info>
+</OmniFortranModule>

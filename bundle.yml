@@ -29,7 +29,7 @@ projects :
 
     - loki :
         git     : https://github.com/ecmwf-ifs/loki
-        version : main
+        version : nams_cuf_transformation
         optional: true
         require : ecbuild
         cmake   : >
@@ -73,6 +73,7 @@ options :
         help  : Enable Loki source-to-source transformations
         cmake : >
             ENABLE_CLOUDSC_LOKI=ON
+            ENABLE_CLOUDSC_CUF_LOKI=ON
             LOKI_ENABLE_NO_INSTALL=OFF
 
     - with-claw :
@@ -91,10 +92,6 @@ options :
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations
         cmake : LOKI_FRONTEND={{value}}
-
-    - trafo-type :
-        help : Loki transformation type
-        cmake : TRAFOTYPE={{value}}
 
     - cloudsc-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
@@ -115,6 +112,10 @@ options :
     - cloudsc-loki :
         help  : Build the optimized Loki-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_LOKI={{value}}
+
+    - cloudsc-loki-cuf :
+        help  : Built the optimized Loki-based CUDA Fortran GPU version CLOUDSC [ON|OFF]
+        cmake : ENABLE_CLOUDSC_CUF_LOKI={{value}}
 
     - cloudsc-loki-claw :
         help  : Build the deprecated Loki+CLAW-based GPU version CLOUDSC  [ON|OFF]
