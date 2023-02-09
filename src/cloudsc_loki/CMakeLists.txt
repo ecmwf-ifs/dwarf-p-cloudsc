@@ -426,10 +426,11 @@ if( HAVE_CLOUDSC_LOKI )
     ##      arrays (not recommended)                  ##
     ####################################################
 
-    cloudsc_xmod( loki-scc-cuf )
+    # scc-cuf-parametrise
+    cloudsc_xmod( loki-scc-cuf-parametrise )
 
     loki_transform_convert(
-        MODE cuf FRONTEND ${LOKI_FRONTEND} CPP
+        MODE cuf-parametrise FRONTEND ${LOKI_FRONTEND} CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
@@ -441,32 +442,123 @@ if( HAVE_CLOUDSC_LOKI )
         DEFINITIONS CLOUDSC_GPU_TIMING
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf
-        TRAFOTYPE ${TRAFOTYPE}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
         OUTPUT
-            loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90
-            loki-scc-cuf/cuf_cloudsc.cuf.F90
+            loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
+            loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
         DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     set_source_files_properties(
-    loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90 loki-scc-cuf/cuf_cloudsc.cuf.F90 PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128")
+    loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90 loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90 PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128")
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-parametrise
         SOURCES
             dwarf_cloudsc.F90
-            loki-scc-cuf/cuf_cloudsc_driver_loki_mod.cuf.F90
-            loki-scc-cuf/cuf_cloudsc.cuf.F90
+            loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
+            loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    target_link_options(dwarf-cloudsc-loki-scc-cuf PUBLIC "-Mcuda")
+    target_link_options(dwarf-cloudsc-loki-scc-cuf-parametrise PUBLIC "-Mcuda")
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-cuf-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-cuf
+        TARGET dwarf-cloudsc-loki-scc-cuf-parametrise-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-parametrise
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+    # scc-cuf-hoist
+    cloudsc_xmod( loki-scc-cuf-hoist )
+
+    loki_transform_convert(
+        MODE cuf-hoist FRONTEND ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS
+            ${COMMON_MODULE}/yomcst.F90
+            ${COMMON_MODULE}/yomphyder.F90
+            ${COMMON_MODULE}/yoethf.F90
+            ${COMMON_MODULE}/yoecldp.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING
+        DATA_OFFLOAD REMOVE_OPENMP
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
+        OUTPUT
+            loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
+            loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
+        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+    set_source_files_properties(
+    loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90 loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90 PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128")
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-hoist
+        SOURCES
+            dwarf_cloudsc.F90
+            loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
+            loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
+    )
+
+    target_link_options(dwarf-cloudsc-loki-scc-cuf-hoist PUBLIC "-Mcuda")
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-scc-cuf-hoist-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-hoist
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+    # scc-cuf-dynamic
+    cloudsc_xmod( loki-scc-cuf-dynamic )
+
+    loki_transform_convert(
+        MODE cuf-dynamic FRONTEND ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS
+            ${COMMON_MODULE}/yomcst.F90
+            ${COMMON_MODULE}/yomphyder.F90
+            ${COMMON_MODULE}/yoethf.F90
+            ${COMMON_MODULE}/yoecldp.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING
+        DATA_OFFLOAD REMOVE_OPENMP
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-dynamic
+        OUTPUT
+            loki-scc-cuf-dynamic/cuf_cloudsc_driver_loki_mod.cuf_dynamic.F90
+            loki-scc-cuf-dynamic/cuf_cloudsc.cuf_dynamic.F90
+        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+    set_source_files_properties(
+    loki-scc-cuf-dynamic/cuf_cloudsc_driver_loki_mod.cuf_dynamic.F90 loki-scc-cuf-dynamic/cuf_cloudsc.cuf_dynamic.F90 PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128")
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-dynamic
+        SOURCES
+            dwarf_cloudsc.F90
+            loki-scc-cuf-dynamic/cuf_cloudsc_driver_loki_mod.cuf_dynamic.F90
+            loki-scc-cuf-dynamic/cuf_cloudsc.cuf_dynamic.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
+    )
+
+    target_link_options(dwarf-cloudsc-loki-scc-cuf-dynamic PUBLIC "-Mcuda")
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-scc-cuf-dynamic-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-dynamic
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
