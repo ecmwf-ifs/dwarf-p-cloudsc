@@ -8,7 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "cloudsc_driver_hoist.h"
+#include "cloudsc_driver.h"
 
 #include <omp.h>
 #include "mycpu.h"
@@ -293,25 +293,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double *d_pfplsn;
   double *d_pfhpsl;
   double *d_pfhpsn;
-
-  double *d_zfoealfa;
-  double *d_ztp1; 
-  double *d_zli;
-  double *d_za; 
-  double *d_zaorig; 
-  double *d_zliqfrac;
-  double *d_zicefrac; 
-  double *d_zqx; 
-  double *d_zqx0;
-  double *d_zpfplsx; 
-  double *d_zlneg;
-  double *d_zqxn2d;
-  double *d_zqsmix; 
-  double *d_zqsliq; 
-  double *d_zqsice;
-  double *d_zfoeewmt; 
-  double *d_zfoeew; 
-  double *d_zfoeeliqt;
   // end device declarations
 
   //
@@ -371,25 +352,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMalloc(&d_pfplsn, sizeof(double) * nblocks*(nlev+1)*nproma);
   cudaMalloc(&d_pfhpsl, sizeof(double) * nblocks*(nlev+1)*nproma);
   cudaMalloc(&d_pfhpsn, sizeof(double) * nblocks*(nlev+1)*nproma);
-
-  cudaMalloc(&d_zfoealfa, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_ztp1, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zli, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_za, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zaorig, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zliqfrac, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zicefrac, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zqx, sizeof(double) * nblocks*(nlev+1)*nproma*nclv);
-  cudaMalloc(&d_zqx0, sizeof(double) * nblocks*(nlev+1)*nproma*nclv);
-  cudaMalloc(&d_zpfplsx, sizeof(double) * nblocks*(nlev+1)*nproma*nclv);
-  cudaMalloc(&d_zlneg, sizeof(double) * nblocks*(nlev+1)*nproma*nclv);
-  cudaMalloc(&d_zqxn2d, sizeof(double) * nblocks*(nlev+1)*nproma*nclv);
-  cudaMalloc(&d_zqsmix, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zqsliq, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zqsice, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zfoeewmt, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zfoeew, sizeof(double) * nblocks*(nlev+1)*nproma);
-  cudaMalloc(&d_zfoeeliqt, sizeof(double) * nblocks*(nlev+1)*nproma);
   //
 
   load_state(klon, nlev, nclv, numcols, nproma, &ptsphy, plcrit_aer, picrit_aer,
@@ -531,8 +493,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     double start = omp_get_wtime();
 
     dim3 blockdim(nproma, 1, 1);
-    //dim3 griddim(1, 1, ceil(((double)numcols) / ((double)nproma)));
-    dim3 griddim(ceil(((double)numcols) / ((double)nproma)), 1, 1);
+    dim3 griddim(1, 1, ceil(((double)numcols) / ((double)nproma)));
     int jkglo = 0;
     int ibl = (jkglo - 1) / nproma + 1;
     int icend = min(nproma, numcols - jkglo + 1);
@@ -568,13 +529,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
         rv, r2es, r3les, r3ies, r4les, r4ies, r5les,
         r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp,
         rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r,
-        rkoop1, rkoop2,
-	d_zfoealfa, d_ztp1, d_zli,
-        d_za, d_zaorig, d_zliqfrac,
-        d_zicefrac, d_zqx, d_zqx0,
-        d_zpfplsx, d_zlneg, d_zqxn2d,
-        d_zqsmix, d_zqsliq, d_zqsice,
-        d_zfoeewmt, d_zfoeew, d_zfoeeliqt);
+        rkoop1, rkoop2);
 
       //icalls += 1;
       //igpc += bsize;
@@ -805,25 +760,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaFree(d_pfplsn);
   cudaFree(d_pfhpsl);
   cudaFree(d_pfhpsn);
-
-  cudaFree(d_zfoealfa);
-  cudaFree(d_ztp1);
-  cudaFree(d_zli);
-  cudaFree(d_za);
-  cudaFree(d_zaorig);
-  cudaFree(d_zliqfrac);
-  cudaFree(d_zicefrac);
-  cudaFree(d_zqx);
-  cudaFree(d_zqx0);
-  cudaFree(d_zpfplsx);
-  cudaFree(d_zlneg);
-  cudaFree(d_zqxn2d);
-  cudaFree(d_zqsmix);
-  cudaFree(d_zqsliq);
-  cudaFree(d_zqsice);
-  cudaFree(d_zfoeewmt);
-  cudaFree(d_zfoeew);
-  cudaFree(d_zfoeeliqt);
   // end free device
 }
 
