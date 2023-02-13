@@ -98,7 +98,7 @@ if( HAVE_CLOUDSC_CUDA )
 
 
     target_compile_options(dwarf-cloudsc-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-	    #                   --generate-line-info
+	    #	                       --generate-line-info
 	    #           --relocatable-device-code=true
 	    #           -g -G
                        -gencode arch=compute_80,code=sm_80
@@ -151,9 +151,9 @@ if( HAVE_CLOUDSC_CUDA )
 
 
     target_compile_options(dwarf-cloudsc-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-             	    --generate-line-info
-                      --relocatable-device-code=true
-                      -g -G
+	    # 	    --generate-line-info
+	    #          --relocatable-device-code=true
+	    #          -g -G
                        -gencode arch=compute_80,code=sm_80
                        >)
 
