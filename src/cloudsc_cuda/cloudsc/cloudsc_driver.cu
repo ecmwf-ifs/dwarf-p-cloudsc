@@ -124,9 +124,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   ncldqs = 4;    // snow
   ncldqv = 5;    // vapour
 
-  //struct Vector *y = (struct Vector*)malloc(sizeof(struct Vector));
-  //TECLDP *yrecldp ;
-  //yrecldp = malloc(sizeof(struct TECLDP));
   struct TECLDP *yrecldp = (struct TECLDP*)malloc(sizeof(struct TECLDP));
 
   query_state(&klon, &nlev);
@@ -163,7 +160,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   pap        = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   paph       = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
   plsm       = (double*) malloc( sizeof(double) * nblocks*nproma );
-  ldcum      = (int*) malloc( sizeof(int) * nblocks*nproma ); // TODO: correct size?
+  ldcum      = (int*) malloc( sizeof(int) * nblocks*nproma );
   ktype      = (int*) malloc( sizeof(int) * nblocks*nproma );
   plu        = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   plude      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
@@ -174,7 +171,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   pclv       = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
   psupsat    = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   pcovptot   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-
   prainfrac_toprfz = (double*) malloc( sizeof(double) * nblocks*nproma );
   pfsqlf    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
   pfsqif    = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
@@ -222,22 +218,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double rkoop2;
 
   // device declarations
-    /* pt, pq,
-    tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
-    tend_loc_t, tend_loc_q, tend_loc_a, tend_loc_cld,
-    pvfa, pvfl, pvfi,
-    pdyna, pdynl, pdyni,
-    phrsw, phrlw, pvervel,
-    pap, paph, plsm, ldcum, ktype,
-    plu, plude, psnde, pmfu, pmfd,
-    pa, pclv, psupsat,
-    plcrit_aer, picrit_aer, pre_ice, pccn, pnice,
-    pcovptot, prainfrac_toprfz, pfsqlf,
-    pfsqif, pfcqnng, pfcqlng,
-    pfsqrf, pfsqsf, pfcqrng,
-    pfcqsng, pfsqltur, pfsqitur,
-    pfplsl, pfplsn, pfhpsl, pfhpsn, yrecldp */
-
   double *d_plcrit_aer;
   double *d_picrit_aer;
   double *d_pre_ice;
@@ -245,11 +225,11 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double *d_pnice;
   double *d_pt;
   double *d_pq;
-	double *d_tend_loc_t;
+  double *d_tend_loc_t;
   double *d_tend_loc_q;
   double *d_tend_loc_a;
   double *d_tend_loc_cld;
-	double *d_tend_tmp_t;
+  double *d_tend_tmp_t;
   double *d_tend_tmp_q;
   double *d_tend_tmp_a;
   double *d_tend_tmp_cld;
@@ -259,16 +239,15 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double *d_pdyna;
   double *d_pdynl;
   double *d_pdyni;
-	double *d_phrsw;
+  double *d_phrsw;
   double *d_phrlw;
   double *d_pvervel;
   double *d_pap;
   double *d_paph;
   double *d_plsm;
-  int *d_ldcum;
   int *d_ktype;
   double *d_plu;
-	double *d_plude;
+  double *d_plude;
   double *d_psnde;
   double *d_pmfu;
   double *d_pmfd;
@@ -276,7 +255,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double *d_pclv;
   double *d_psupsat;
   struct TECLDP *d_yrecldp;
-
   double *d_pcovptot;
   double *d_prainfrac_toprfz;
   double *d_pfsqlf;
@@ -295,7 +273,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double *d_pfhpsn;
   // end device declarations
 
-  //
   cudaMalloc(&d_plcrit_aer, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_picrit_aer, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pre_ice, sizeof(double) * nblocks*nlev*nproma);
@@ -303,11 +280,11 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMalloc(&d_pnice, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pt, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pq, sizeof(double) * nblocks*nlev*nproma);
-	cudaMalloc(&d_tend_loc_t, sizeof(double) * nblocks*nlev*nproma);
+  cudaMalloc(&d_tend_loc_t, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_tend_loc_q, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_tend_loc_a, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_tend_loc_cld, sizeof(double) * nblocks*nlev*nproma*nclv);
-	cudaMalloc(&d_tend_tmp_t, sizeof(double) * nblocks*nlev*nproma);
+  cudaMalloc(&d_tend_tmp_t, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_tend_tmp_q, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_tend_tmp_a, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_tend_tmp_cld, sizeof(double) * nblocks*nlev*nproma*nclv);
@@ -317,25 +294,22 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMalloc(&d_pdyna, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pdynl, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pdyni, sizeof(double) * nblocks*nlev*nproma);
-	cudaMalloc(&d_phrsw, sizeof(double) * nblocks*nlev*nproma);
+  cudaMalloc(&d_phrsw, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_phrlw, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pvervel, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pap, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_paph, sizeof(double) * nblocks*(nlev+1)*nproma);
   cudaMalloc(&d_plsm, sizeof(double) * nblocks*nproma);
-  cudaMalloc(&d_ldcum, sizeof(int) * nblocks*nproma);
   cudaMalloc(&d_ktype, sizeof(int) * nblocks*nproma);
   cudaMalloc(&d_plu, sizeof(double) * nblocks*nlev*nproma);
-	cudaMalloc(&d_plude, sizeof(double) * nblocks*nlev*nproma);
+  cudaMalloc(&d_plude, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_psnde, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pmfu, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pmfd, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pa, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_pclv, sizeof(double) * nblocks*nlev*nproma*nclv);
   cudaMalloc(&d_psupsat, sizeof(double) * nblocks*nlev*nproma);
-
   cudaMalloc(&d_yrecldp, sizeof(struct TECLDP));
-
   cudaMalloc(&d_pcovptot, sizeof(double) * nblocks*nlev*nproma);
   cudaMalloc(&d_prainfrac_toprfz, sizeof(double) * nblocks*nproma);
   cudaMalloc(&d_pfsqlf, sizeof(double) * nblocks*(nlev+1)*nproma);
@@ -352,81 +326,22 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMalloc(&d_pfplsn, sizeof(double) * nblocks*(nlev+1)*nproma);
   cudaMalloc(&d_pfhpsl, sizeof(double) * nblocks*(nlev+1)*nproma);
   cudaMalloc(&d_pfhpsn, sizeof(double) * nblocks*(nlev+1)*nproma);
-  //
 
   load_state(klon, nlev, nclv, numcols, nproma, &ptsphy, plcrit_aer, picrit_aer,
 	     pre_ice, pccn, pnice, pt, pq,
 	     tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
 	     tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
 	     pvfa, pvfl, pvfi, pdyna, pdynl, pdyni,
-	     phrsw, phrlw, pvervel, pap, paph, plsm, ldcum, ktype, plu,
+	     phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu,
 	     plude, psnde, pmfu, pmfd, pa, pclv, psupsat, yrecldp,
 	     &rg, &rd, &rcpd, &retv, &rlvtt, &rlstt,
-       &rlmlt, &rtt, &rv, &r2es, &r3les, &r3ies,
-       &r4les, &r4ies, &r5les, &r5ies, &r5alvcp, &r5alscp,
-       &ralvdcp, &ralsdcp, &ralfdcp, &rtwat,
-       &rtice, &rticecu, &rtwat_rtice_r, &rtwat_rticecu_r,
-       &rkoop1, &rkoop2 );
-
-  //double rd;
-  //rd = yomcst__get__rd();
-  //double rcpd;
-  //rcpd = yomcst__get__rcpd();
-  //double retv;
-  //retv = yomcst__get__retv();
-  //double rlvtt;
-  //rlvtt = yomcst__get__rlvtt();
-  //double rlstt;
-  //rlstt = yomcst__get__rlstt();
-  //double rlmlt;
-  //rlmlt = yomcst__get__rlmlt();
-  //double rtt;
-  //rtt = yomcst__get__rtt();
-  //double rv;
-  //rv = yomcst__get__rv();
-  //double r2es;
-  //r2es = yoethf__get__r2es();
-  //double r3les;
-  //r3les = yoethf__get__r3les();
-  //double r3ies;
-  //r3ies = yoethf__get__r3ies();
-  //double r4les;
-  //r4les = yoethf__get__r4les();
-  //double r4ies;
-  //r4ies = yoethf__get__r4ies();
-  //double r5les;
-  //r5les = yoethf__get__r5les();
-  //double r5ies;
-  //r5ies = yoethf__get__r5ies();
-  //double r5alvcp;
-  //r5alvcp = yoethf__get__r5alvcp();
-  //double r5alscp;
-  //r5alscp = yoethf__get__r5alscp();
-  //double ralvdcp;
-  //ralvdcp = yoethf__get__ralvdcp();
-  //double ralsdcp;
-  //ralsdcp = yoethf__get__ralsdcp();
-  //double ralfdcp;
-  //ralfdcp = yoethf__get__ralfdcp();
-  //double rtwat;
-  //rtwat = yoethf__get__rtwat();
-  //double rtice;
-  //rtice = yoethf__get__rtice();
-  //double rticecu;
-  //rticecu = yoethf__get__rticecu();
-  //double rtwat_rtice_r;
-  //rtwat_rtice_r = yoethf__get__rtwat_rtice_r();
-  //double rtwat_rticecu_r;
-  //rtwat_rticecu_r = yoethf__get__rtwat_rticecu_r();
-  //double rkoop1;
-  //rkoop1 = yoethf__get__rkoop1();
-  //double rkoop2;
-  //rkoop2 = yoethf__get__rkoop2();
-
+             &rlmlt, &rtt, &rv, &r2es, &r3les, &r3ies,
+             &r4les, &r4ies, &r5les, &r5ies, &r5alvcp, &r5alscp,
+             &ralvdcp, &ralsdcp, &ralfdcp, &rtwat,
+             &rtice, &rticecu, &rtwat_rtice_r, &rtwat_rticecu_r,
+             &rkoop1, &rkoop2 );
 
   // host to device
-  // cudaMemcpy(d_x, x, N*sizeof(float), cudaMemcpyHostToDevice);
-
   cudaMemcpy(d_plcrit_aer, plcrit_aer, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_picrit_aer, picrit_aer, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pre_ice, pre_ice, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
@@ -434,11 +349,11 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMemcpy(d_pnice, pnice, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pt, pt, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pq, pq, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_tend_loc_t, tend_loc_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_tend_loc_t, tend_loc_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_tend_loc_q, tend_loc_q, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_tend_loc_a, tend_loc_a, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_tend_loc_cld, tend_loc_cld, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_tend_tmp_t, tend_tmp_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_tend_tmp_t, tend_tmp_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_tend_tmp_q, tend_tmp_q, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_tend_tmp_a, tend_tmp_a, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_tend_tmp_cld, tend_tmp_cld, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyHostToDevice);
@@ -448,16 +363,15 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMemcpy(d_pdyna, pdyna, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pdynl, pdynl, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pdyni, pdyni, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_phrsw, phrsw, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_phrsw, phrsw, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_phrlw, phrlw, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pvervel, pvervel, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pap, pap, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_paph, paph, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_plsm, plsm, sizeof(double) * nblocks*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_ldcum, ldcum, sizeof(int) * nblocks*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_ktype, ktype, sizeof(int) * nblocks*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_plu, plu, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_plude, plude, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_plude, plude, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_psnde, psnde, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pmfu, pmfu, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pmfd, pmfd, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
@@ -465,28 +379,10 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMemcpy(d_pclv, pclv, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyHostToDevice);
   cudaMemcpy(d_psupsat, psupsat, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_yrecldp, yrecldp, sizeof(TECLDP), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pcovptot, pcovptot, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_prainfrac_toprfz, prainfrac_toprfz, sizeof(double) * nblocks*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfsqlf, pfsqlf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfsqif, pfsqif, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfcqnng, pfcqnng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfcqlng, pfcqlng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfsqrf, pfsqrf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfsqsf, pfsqsf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfcqrng, pfcqrng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfcqsng, pfcqsng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfsqltur, pfsqltur, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfsqitur, pfsqitur, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfplsl, pfplsl, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfplsn, pfplsn, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfhpsl, pfhpsl, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pfhpsn, pfhpsn, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyHostToDevice);
   // end host to device
 
   double t1 = omp_get_wtime();
 
-//#pragma omp parallel num_threads(numthreads) default(shared)
-//  {
     int b, bsize, icalls=0, igpc=numcols;
     int coreid = mycpu();
     int tid = omp_get_thread_num();
@@ -498,25 +394,13 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     int ibl = (jkglo - 1) / nproma + 1;
     int icend = min(nproma, numcols - jkglo + 1);
 
-/* #pragma omp parallel for num_threads(numthreads) default(shared) private(b, bsize) */
-//#pragma omp for schedule(runtime) nowait
-    //for (b = 0; b < nblocks; b++) {
-      //const int idx = b*nlev*nproma;
-      //const int idxp1 = b*(nlev+1)*nproma;
-      //const int idx1d = b*nproma;
-      //const int idx3d = b*nclv*nlev*nproma;
-      //bsize = min(nproma, numcols - b*nproma);
-
-      //for (int i = 0; i < nlev*nproma; i++) { pcovptot[idx+i] = 0.0; }
-      //for (int i = 0; i < nclv*nlev*nproma; i++) { tend_loc_cld[idx3d+i] = 0.0; }
-      //printf("executing kernel...\n");
-      cloudsc_c<<<griddim, blockdim>>>(1, icend/*bsize*/, nproma/*, nlev*/, ptsphy, d_pt, d_pq,
+    cloudsc_c<<<griddim, blockdim>>>(1, icend/*bsize*/, nproma/*, nlev*/, ptsphy, d_pt, d_pq,
     		d_tend_tmp_t, d_tend_tmp_q, d_tend_tmp_a, d_tend_tmp_cld,
     		d_tend_loc_t, d_tend_loc_q, d_tend_loc_a, d_tend_loc_cld,
     		d_pvfa, d_pvfl, d_pvfi,
     		d_pdyna, d_pdynl, d_pdyni,
     		d_phrsw, d_phrlw, d_pvervel,
-    		d_pap, d_paph, d_plsm, d_ldcum, d_ktype,
+    		d_pap, d_paph, d_plsm, d_ktype,
     		d_plu, d_plude, d_psnde, d_pmfu, d_pmfd,
     		d_pa, d_pclv, d_psupsat,
     		d_plcrit_aer, d_picrit_aer, d_pre_ice, d_pccn, d_pnice,
@@ -526,14 +410,11 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     		d_pfcqsng, d_pfsqltur, d_pfsqitur,
     		d_pfplsl, d_pfplsn, d_pfhpsl, d_pfhpsn, d_yrecldp,
     		nblocks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt,
-        rv, r2es, r3les, r3ies, r4les, r4ies, r5les,
-        r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp,
-        rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r,
-        rkoop1, rkoop2);
+                rv, r2es, r3les, r3ies, r4les, r4ies, r5les,
+                r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp,
+                rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r,
+                rkoop1, rkoop2);
 
-      //icalls += 1;
-      //igpc += bsize;
-    //}
 
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
@@ -541,45 +422,12 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     double end = omp_get_wtime();
 
     // device to host
-    // cudaMemcpy(y, d_y, N*sizeof(float), cudaMemcpyDeviceToHost);
-
-    cudaMemcpy(plcrit_aer, d_plcrit_aer, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(picrit_aer, d_picrit_aer, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pre_ice, d_pre_ice, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pccn, d_pccn, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pnice, d_pnice, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pt, d_pt, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pq, d_pq, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-  	cudaMemcpy(tend_loc_t, d_tend_loc_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+    cudaMemcpy(tend_loc_t, d_tend_loc_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
     cudaMemcpy(tend_loc_q, d_tend_loc_q, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
     cudaMemcpy(tend_loc_a, d_tend_loc_a, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
     cudaMemcpy(tend_loc_cld, d_tend_loc_cld, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyDeviceToHost);
-  	cudaMemcpy(tend_tmp_t, d_tend_tmp_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(tend_tmp_q, d_tend_tmp_q, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(tend_tmp_a, d_tend_tmp_a, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(tend_tmp_cld, d_tend_tmp_cld, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pvfa, d_pvfa, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pvfl, d_pvfl, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pvfi, d_pvfi, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pdyna, d_pdyna, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pdynl, d_pdynl, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pdyni, d_pdyni, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-  	cudaMemcpy(phrsw, d_phrsw, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
     cudaMemcpy(phrlw, d_phrlw, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pvervel, d_pvervel, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pap, d_pap, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(paph, d_paph, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(plsm, d_plsm, sizeof(double) * nblocks*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(ldcum, d_ldcum, sizeof(int) * nblocks*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(ktype, d_ktype, sizeof(int) * nblocks*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(plu, d_plu, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-  	cudaMemcpy(plude, d_plude, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(psnde, d_psnde, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pmfu, d_pmfu, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pmfd, d_pmfd, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pa, d_pa, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pclv, d_pclv, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyDeviceToHost);
-    cudaMemcpy(psupsat, d_psupsat, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+    cudaMemcpy(plude, d_plude, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
     cudaMemcpy(yrecldp, d_yrecldp, sizeof(TECLDP), cudaMemcpyDeviceToHost);
     cudaMemcpy(pcovptot, d_pcovptot, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
     cudaMemcpy(prainfrac_toprfz, d_prainfrac_toprfz, sizeof(double) * nblocks*nproma, cudaMemcpyDeviceToHost);
@@ -604,7 +452,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     zinfo[1][tid] = (double) coreid;
     zinfo[2][tid] = (double) icalls;
     zinfo[3][tid] = (double) igpc;
-  //}
 
   double t2 = omp_get_wtime();
 
@@ -683,7 +530,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   free(tend_cml_q);
   free(tend_cml_a);
   free(tend_cml_cld);
-
   free(prainfrac_toprfz);
   free(pfsqlf);
   free(pfsqif);
@@ -699,9 +545,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   free(pfplsn);
   free(pfhpsl);
   free(pfhpsn);
-
   free(yrecldp);
-
 
   // free device
   cudaFree(d_plcrit_aer);
@@ -731,7 +575,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaFree(d_pap);
   cudaFree(d_paph);
   cudaFree(d_plsm);
-  cudaFree(d_ldcum);
   cudaFree(d_ktype);
   cudaFree(d_plu);
   cudaFree(d_plude);
@@ -741,9 +584,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaFree(d_pa);
   cudaFree(d_pclv);
   cudaFree(d_psupsat);
-
   cudaFree(d_yrecldp);
-
   cudaFree(d_pcovptot);
   cudaFree(d_prainfrac_toprfz);
   cudaFree(d_pfsqlf);

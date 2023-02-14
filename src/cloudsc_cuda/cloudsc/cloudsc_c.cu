@@ -1,46 +1,44 @@
+/*
+ * (C) Copyright 1988- ECMWF.
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
+ * granted to it by virtue of its status as an intergovernmental organisation
+ * nor does it submit to any jurisdiction.
+ */
 #include "cloudsc_c.h"
 #include <float.h>
 //#include "yoecldp_c.h"
 
 __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
-  double *  pt,
-  double *  pq, double *  tendency_tmp_t,
-  double *  tendency_tmp_q, double *  tendency_tmp_a,
-  double *  tendency_tmp_cld, double *  tendency_loc_t,
-  double *  tendency_loc_q, double *  tendency_loc_a,
-  double *  tendency_loc_cld, double *  pvfa,
-  double *  pvfl, double *  pvfi, double *  pdyna,
-  double *  pdynl, double *  pdyni, double *  phrsw,
-  double *  phrlw, double *  pvervel, double *  pap,
-  double *  paph, double *  plsm, int *  ldcum,
-  int *  ktype, double *  plu, double *  plude,
-  double *  psnde, double *  pmfu, double *  pmfd,
-  double *  pa, double *  pclv, double *  psupsat,
-  double *  plcrit_aer, double *  picrit_aer,
-  double *  pre_ice, double *  pccn, double *  pnice,
-  double *  pcovptot, double *  prainfrac_toprfz,
-  double *  pfsqlf, double *  pfsqif, double *  pfcqnng,
-  double *  pfcqlng, double *  pfsqrf, double *  pfsqsf,
-  double *  pfcqrng, double *  pfcqsng,
-  double *  pfsqltur, double *  pfsqitur,
-  double *  pfplsl, double *  pfplsn, double *  pfhpsl,
-  double *  pfhpsn, struct TECLDP *yrecldp, int ngpblks,
+  const double * __restrict__  pt,
+  const double * __restrict__  pq, const double * __restrict__  tendency_tmp_t,
+  const double * __restrict__  tendency_tmp_q, const double * __restrict__  tendency_tmp_a,
+  const double * __restrict__  tendency_tmp_cld, double * __restrict__  tendency_loc_t,
+  double * __restrict__  tendency_loc_q, double * __restrict__  tendency_loc_a,
+  double * __restrict__  tendency_loc_cld, const double * __restrict__  pvfa,
+  const double * __restrict__  pvfl, const double * __restrict__  pvfi, const double * __restrict__  pdyna,
+  const double * __restrict__  pdynl, const double * __restrict__  pdyni, const double * __restrict__  phrsw,
+  double * __restrict__  phrlw, const double * __restrict__  pvervel, const double * __restrict__  pap,
+  const double * __restrict__  paph, const double * __restrict__  plsm,
+  const int *  ktype, const double * __restrict__  plu, double * __restrict__  plude,
+  const double * __restrict__  psnde, const double * __restrict__  pmfu, const double * __restrict__  pmfd,
+  const double * __restrict__  pa, const double * __restrict__  pclv, const double * __restrict__  psupsat,
+  const double * __restrict__  plcrit_aer, const double * __restrict__  picrit_aer,
+  const double * __restrict__  pre_ice, const double * __restrict__  pccn, const double * __restrict__  pnice,
+  double * __restrict__  pcovptot, double * __restrict__  prainfrac_toprfz,
+  double * __restrict__  pfsqlf, double * __restrict__  pfsqif, double * __restrict__  pfcqnng,
+  double * __restrict__  pfcqlng, double * __restrict__  pfsqrf, double * __restrict__  pfsqsf,
+  double * __restrict__  pfcqrng, double * __restrict__  pfcqsng,
+  double * __restrict__  pfsqltur, double * __restrict__  pfsqitur,
+  double * __restrict__  pfplsl, double * __restrict__  pfplsn, double * __restrict__  pfhpsl,
+  double * __restrict__  pfhpsn, struct TECLDP *yrecldp, int ngpblks,
   double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
   double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
   double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
   double rtwat, double rtice, double rticecu, double rtwat_rtice_r, double rtwat_rticecu_r,
   double rkoop1, double rkoop2) {
-
-  //printf("printing from kernel ...\n");
-
-  /*
-  //double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
-  //double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
-  //double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
-  //double rtwat, double rtice, double rticecu, double rtwat_rtice_r, double rtwat_rticecu_r,
-  //double rkoop1, double rkoop2
-  */
-
 
   //-------------------------------------------------------------------------------
   //                 Declare input/output arguments
@@ -318,130 +316,9 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   double zpfplsx[5 * (klev + 1)];
   double zlneg[5 * klev];
   double zqxn2d[5 * klev];
-  /* Array casts for pointer arguments */
-  /*
-  double *pt = v_pt;
-  double *pq = v_pq;
-  double *tendency_tmp_t = v_tendency_tmp_t;
-  double *tendency_tmp_q = v_tendency_tmp_q;
-  double *tendency_tmp_a = v_tendency_tmp_a;
-  double *tendency_tmp_cld = v_tendency_tmp_cld;
-  double *tendency_loc_t = v_tendency_loc_t;
-  double *tendency_loc_q = v_tendency_loc_q;
-  double *tendency_loc_a = v_tendency_loc_a;
-  double *tendency_loc_cld = tendency_loc_cld;
-  double *pvfa = v_pvfa;
-  double *pvfl = v_pvfl;
-  double *pvfi = v_pvfi;
-  double *pdyna = v_pdyna;
-  double *pdynl = v_pdynl;
-  double *pdyni = v_pdyni;
-  double *phrsw = v_phrsw;
-  double *phrlw = v_phrlw;
-  double *pvervel = v_pvervel;
-  double *pap = v_pap;
-  double *paph = v_paph;
-  double *plsm = v_plsm;
-  int *ldcum = v_ldcum;
-  int *ktype = v_ktype;
-  double *plu = v_plu;
-  double *plude = v_plude;
-  double *psnde = v_psnde;
-  double *pmfu = v_pmfu;
-  double *pmfd = v_pmfd;
-  double *pa = v_pa;
-  double *pclv = v_pclv;
-  double *psupsat = v_psupsat;
-  double *plcrit_aer = v_plcrit_aer;
-  double *picrit_aer = v_picrit_aer;
-  double *pre_ice = v_pre_ice;
-  double *pccn = v_pccn;
-  double *pnice = v_pnice;
-  double *pcovptot = v_pcovptot;
-  double *prainfrac_toprfz = v_prainfrac_toprfz;
-  double *pfsqlf = v_pfsqlf;
-  double *pfsqif = v_pfsqif;
-  double *pfcqnng = v_pfcqnng;
-  double *pfcqlng = v_pfcqlng;
-  double *pfsqrf = v_pfsqrf;
-  double *pfsqsf = v_pfsqsf;
-  double *pfcqrng = v_pfcqrng;
-  double *pfcqsng = v_pfcqsng;
-  double *pfsqltur = v_pfsqltur;
-  double *pfsqitur = v_pfsqitur;
-  double *pfplsl = v_pfplsl;
-  double *pfplsn = v_pfplsn;
-  double *pfhpsl = v_pfhpsl;
-  double *pfhpsn = v_pfhpsn;
-  */
-  /*
-  double rg;
-  rg = yomcst__get__rg();
-  double rd;
-  rd = yomcst__get__rd();
-  double rcpd;
-  rcpd = yomcst__get__rcpd();
-  double retv;
-  retv = yomcst__get__retv();
-  double rlvtt;
-  rlvtt = yomcst__get__rlvtt();
-  double rlstt;
-  rlstt = yomcst__get__rlstt();
-  double rlmlt;
-  rlmlt = yomcst__get__rlmlt();
-  double rtt;
-  rtt = yomcst__get__rtt();
-  double rv;
-  rv = yomcst__get__rv();
-  double r2es;
-  r2es = yoethf__get__r2es();
-  double r3les;
-  r3les = yoethf__get__r3les();
-  double r3ies;
-  r3ies = yoethf__get__r3ies();
-  double r4les;
-  r4les = yoethf__get__r4les();
-  double r4ies;
-  r4ies = yoethf__get__r4ies();
-  double r5les;
-  r5les = yoethf__get__r5les();
-  double r5ies;
-  r5ies = yoethf__get__r5ies();
-  double r5alvcp;
-  r5alvcp = yoethf__get__r5alvcp();
-  double r5alscp;
-  r5alscp = yoethf__get__r5alscp();
-  double ralvdcp;
-  ralvdcp = yoethf__get__ralvdcp();
-  double ralsdcp;
-  ralsdcp = yoethf__get__ralsdcp();
-  double ralfdcp;
-  ralfdcp = yoethf__get__ralfdcp();
-  double rtwat;
-  rtwat = yoethf__get__rtwat();
-  double rtice;
-  rtice = yoethf__get__rtice();
-  double rticecu;
-  rticecu = yoethf__get__rticecu();
-  double rtwat_rtice_r;
-  rtwat_rtice_r = yoethf__get__rtwat_rtice_r();
-  double rtwat_rticecu_r;
-  rtwat_rticecu_r = yoethf__get__rtwat_rticecu_r();
-  double rkoop1;
-  rkoop1 = yoethf__get__rkoop1();
-  double rkoop2;
-  rkoop2 = yoethf__get__rkoop2();
-  */
 
-
-  jl = threadIdx.x; //THREADIDX%X;
-  ibl = blockIdx.z; //BLOCKIDX%Z;
-
-
-
-
-
-
+  jl = threadIdx.x;
+  ibl = blockIdx.z; 
 
 
     //===============================================================================
