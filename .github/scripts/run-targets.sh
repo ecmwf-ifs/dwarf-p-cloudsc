@@ -16,6 +16,9 @@ then
   # Skip GPU targets from Loki if built with nvhpc (don't have GPU in test runner)
   skipped_targets+=(dwarf-cloudsc-loki-claw-gpu dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
 
+  # Skip CUDA targets if built with nvhpc
+  skipped_targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
+
   # Skip C target if built with nvhpc, segfaults for unknown reasons
   skipped_targets+=(dwarf-cloudsc-c)
 fi
