@@ -112,10 +112,6 @@ options :
         help  : Build the optimized Loki-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_LOKI={{value}}
 
-    - cloudsc-loki-cuf :
-        help  : Built the optimized Loki-based CUDA Fortran GPU version CLOUDSC [ON|OFF]
-        cmake : ENABLE_CLOUDSC_CUF_LOKI={{value}}
-
     - cloudsc-loki-claw :
         help  : Build the deprecated Loki+CLAW-based GPU version CLOUDSC  [ON|OFF]
         cmake : ENABLE_CLOUDSC_LOKI_CLAW={{value}}
