@@ -22,6 +22,10 @@ then
   then
     targets+=(dwarf-cloudsc-gpu-claw)
   fi
+  if [[ "$cuda_flag" == "--with-cuda" ]]
+  then
+    targets+=(dwarf-cloudsc-gpu-scc-cuf)
+  fi
 fi
 
 if [[ "$loki_flag" == "--with-loki" ]]
@@ -35,6 +39,10 @@ then
   if [[ "$claw_flag" == "--with-claw" ]]
   then
     targets+=(dwarf-cloudsc-loki-claw-cpu dwarf-cloudsc-loki-claw-gpu)
+  fi
+  if [[ "$cuda_flag" == "--with-cuda" ]]
+  then
+    targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   fi
 fi
 
