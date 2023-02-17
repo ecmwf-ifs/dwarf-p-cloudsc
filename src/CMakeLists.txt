@@ -9,7 +9,7 @@
 add_subdirectory(prototype1)
 add_subdirectory(common)
 add_subdirectory(cloudsc_fortran)
-#add_subdirectory(cloudsc_pyiface)
+add_subdirectory(cloudsc_pyiface)
 add_subdirectory(cloudsc_c)
 add_subdirectory(cloudsc_gpu)
 add_subdirectory(cloudsc_loki)

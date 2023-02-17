@@ -128,11 +128,11 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 		   ${F2PY_DWARF_SOURCES} 
 	     	    > f2py_log.txt 2> f2py_log_err.txt
           COMMAND echo "Runnning pip using the following Python executable"
-          COMMAND echo ${Python_EXECUTABLE}
+          COMMAND echo ${PYTHON_EXECUTABLE}
           COMMAND echo "Copy output of f90wrap to CLOUDSC Python driver package directory"
           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_MODN}.py ./src/cloudscpytools
           COMMAND echo "Running pip install -U"
-          COMMAND ${Python_EXECUTABLE} -m pip install -U .
+          COMMAND ${PYTHON_EXECUTABLE} -m pip install -U .
           COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/pythonexec
           COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/drivers/cloudsc_pydriver.py  ${CMAKE_BINARY_DIR}/bin/pythonexec/
           COMMAND echo "Completed execution of F90wrap/F2PY interface to cloudsc. "
