@@ -24,8 +24,6 @@ if( HAVE_CLOUDSC_CUDA )
 	INSTALL_HEADERS LISTED
         SOURCES
 	    cloudsc/yoecldp_c.h
-	    cloudsc/yoethf_c.h
-	    cloudsc/yomcst_c.h
 	    cloudsc/load_state.h
             cloudsc/load_state.cu
             cloudsc/cloudsc_c.h
@@ -46,22 +44,12 @@ if( HAVE_CLOUDSC_CUDA )
 
 
     target_compile_options(dwarf-cloudsc-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-    #                   --generate-line-info
-    #                   --relocatable-device-code=true
-    #		       -g -G
                        -gencode arch=compute_80,code=sm_80
                        >)
 
     target_include_directories(dwarf-cloudsc-cuda-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
-   
-    #target_link_options(dwarf-cloudsc-cuda-lib PUBLIC "-Mcuda") 
     set_target_properties( dwarf-cloudsc-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     
-    #target_include_directories( dwarf-cloudsc-cuda-lib PUBLIC
-    #    ${CMAKE_CURRENT_SOURCE_DIR}
-    #    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    #    ${CUDA_INCLUDE_DIRS})
-
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-cuda
         SOURCES dwarf_cloudsc.cpp
@@ -76,8 +64,6 @@ if( HAVE_CLOUDSC_CUDA )
         INSTALL_HEADERS LISTED
         SOURCES
             cloudsc/yoecldp_c.h
-            cloudsc/yoethf_c.h
-            cloudsc/yomcst_c.h
             cloudsc/load_state.h
             cloudsc/load_state.cu
             cloudsc/cloudsc_c_hoist.h
@@ -98,25 +84,15 @@ if( HAVE_CLOUDSC_CUDA )
 
 
     target_compile_options(dwarf-cloudsc-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-	    #	                       --generate-line-info
-	    #           --relocatable-device-code=true
-	    #           -g -G
                        -gencode arch=compute_80,code=sm_80
                        >)
 
     target_include_directories(dwarf-cloudsc-cuda-hoist-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
-
-    #target_link_options(dwarf-cloudsc-cuda-lib PUBLIC "-Mcuda") 
     set_target_properties( dwarf-cloudsc-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-    #target_include_directories( dwarf-cloudsc-cuda-lib PUBLIC
-    #    ${CMAKE_CURRENT_SOURCE_DIR}
-    #    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    #    ${CUDA_INCLUDE_DIRS})
 
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-cuda-hoist
-        SOURCES dwarf_cloudsc_hoist.cpp
+        SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-cuda-hoist-lib
     )
 
@@ -129,14 +105,12 @@ if( HAVE_CLOUDSC_CUDA )
         INSTALL_HEADERS LISTED
         SOURCES
             cloudsc/yoecldp_c.h
-            cloudsc/yoethf_c.h
-            cloudsc/yomcst_c.h
             cloudsc/load_state.h
             cloudsc/load_state.cu
             cloudsc/cloudsc_c_k_caching.h
             cloudsc/cloudsc_c_k_caching.cu
-            cloudsc/cloudsc_driver_k_caching.h
-            cloudsc/cloudsc_driver_k_caching.cu
+            cloudsc/cloudsc_driver.h
+            cloudsc/cloudsc_driver.cu
             cloudsc/cloudsc_validate.h
             cloudsc/cloudsc_validate.cu
             cloudsc/mycpu.h
@@ -151,32 +125,20 @@ if( HAVE_CLOUDSC_CUDA )
 
 
     target_compile_options(dwarf-cloudsc-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-	    # 	    --generate-line-info
-	    #          --relocatable-device-code=true
-	    #          -g -G
                        -gencode arch=compute_80,code=sm_80
                        >)
 
     target_include_directories(dwarf-cloudsc-cuda-k-caching-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
-
-    #target_link_options(dwarf-cloudsc-cuda-lib PUBLIC "-Mcuda")
     set_target_properties( dwarf-cloudsc-cuda-k-caching-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-    #target_include_directories( dwarf-cloudsc-cuda-lib PUBLIC
-    #    ${CMAKE_CURRENT_SOURCE_DIR}
-    #    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    #    ${CUDA_INCLUDE_DIRS})
 
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-cuda-k-caching
-        SOURCES dwarf_cloudsc_k_caching.cpp
+        SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-cuda-k-caching-lib
     )
 
     target_link_libraries(dwarf-cloudsc-cuda-k-caching dwarf-cloudsc-cuda-k-caching-lib)
     ###
-
-
 
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
@@ -201,3 +163,4 @@ if( HAVE_CLOUDSC_CUDA )
 else()
     ecbuild_info( "Serialbox not found, disabling C prototype" )
 endif()
+

@@ -14,12 +14,8 @@
 #include <omp.h>
 #include "cuda.h"
 #include "cuda_runtime.h"
-//#include “cuda/cuda.h”
 
-#include "yomcst_c.h"
-#include "yoethf_c.h"
 #include "yoecldp_c.h"
-
 #include "load_state.h"
 #include "cloudsc_c_hoist.h"
 #include "cloudsc_validate.h"
