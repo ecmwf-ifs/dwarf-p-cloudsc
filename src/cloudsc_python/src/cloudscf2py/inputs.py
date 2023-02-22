@@ -149,8 +149,11 @@ def load_reference_fields(path):
     fields = OrderedDict()
 
     argnames = [
-        'PLUDE', 'PCOVPTOT', 'PFPLSL', 'PFPLSN', 'PFHPSL', 'PFHPSN',
-        'TENDENCY_LOC_A', 'TENDENCY_LOC_Q', 'TENDENCY_LOC_T', 'TENDENCY_LOC_CLD',
+        'PLUDE', 'PCOVPTOT', 'PRAINFRAC_TOPRFZ', 'PFSQLF', 'PFSQIF',
+        'PFCQLNG', 'PFCQNNG', 'PFSQRF', 'PFSQSF', 'PFCQRNG', 'PFCQSNG',
+        'PFSQLTUR', 'PFSQITUR', 'PFPLSL', 'PFPLSN', 'PFHPSL', 'PFHPSN',
+        'TENDENCY_LOC_A', 'TENDENCY_LOC_Q', 'TENDENCY_LOC_T',
+        'TENDENCY_LOC_CLD'
     ]
 
     with h5py.File(path, 'r') as f:

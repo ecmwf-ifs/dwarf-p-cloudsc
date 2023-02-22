@@ -10,6 +10,7 @@
 
 import click
 from pathlib import Path
+import numpy as np
 
 
 def loki_generate_kernel(source_path, out_path, include_dir=None):
@@ -34,6 +35,47 @@ def loki_generate_kernel(source_path, out_path, include_dir=None):
     f2py.apply(kernel, role='kernel', path=out_path)
 
 
+def cloudsc_validate(fields, ref_fields, kidia, kfdia):
+    _field_names = [
+        'plude', 'pcovptot', 'prainfrac_toprfz', 'pfsqlf', 'pfsqif',
+        'pfcqlng', 'pfcqnng', 'pfsqrf', 'pfsqsf', 'pfcqrng', 'pfcqsng',
+        'pfsqltur', 'pfsqitur', 'pfplsl', 'pfplsn', 'pfhpsl', 'pfhpsn',
+        'tendency_loc_a', 'tendency_loc_q', 'tendency_loc_t',
+        'tendency_loc_cld'
+    ]
+    ngptot = kfdia - kidia + 1
+
+    print(
+        "             Variable Dim             MinValue             MaxValue"
+        "            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%"
+    )
+    for name in _field_names:
+        if len(fields[name].shape) == 1:
+            f = fields[name][kidia-1:kfdia]
+            ref = ref_fields[name][kidia-1:kfdia]
+        elif len(fields[name].shape) == 2:
+            f = fields[name][:,kidia-1:kfdia]
+            ref = ref_fields[name][:,kidia-1:kfdia]
+        elif len(fields[name].shape) == 3:
+            f = fields[name][:,:,kidia-1:kfdia]
+            ref = ref_fields[name][:,:,kidia-1:kfdia]
+        else:
+            f = fields[name]
+            ref = ref_fields[name]
+        zsum = np.sum(np.absolute(ref))
+        zerrsum = np.sum(np.absolute(f - ref))
+        zeps = np.finfo(np.float64).eps
+        print(
+            ' {fname:>20}     {fmin:20.13e}  {fmax:20.13e}  {absmax:20.13e} '
+            ' {absavg:20.13e}  {maxrel:20.13e}'.format(
+                fname=name.upper(), fmin=f.min(), fmax=f.max(),
+                absmax=np.absolute(f - ref).max(),
+                absavg=np.sum(np.absolute(f - ref)) / ngptot,
+                maxrel=0.0 if zerrsum < zeps else (zerrsum/(1.0+zsum) if zsum < zeps else zerrsum/zsum)
+            )
+        )
+
+
 def run_cloudsc_kernel(nthreads, ngptot, nproma, input_path, reference_path):
     from cloudscf2py import (
         load_input_fields, load_input_parameters, load_reference_fields,
@@ -54,7 +96,9 @@ def run_cloudsc_kernel(nthreads, ngptot, nproma, input_path, reference_path):
         yrecldp=yrecldp, ydcst=yrmcst, ydthf=yrethf,
     )
 
+    # Validate the output fields against reference data
     reference = load_reference_fields(path=reference_path)
+    cloudsc_validate(cloudsc_args, reference, kidia=1, kfdia=ngptot)
 
 
 @click.command()
