@@ -65,6 +65,11 @@ options :
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
 
+    - with-sycl :
+        help  : Enable SYCL
+        cmake : >
+            ENABLE_CLOUDSC_SYCL=ON
+
     - with-mpi :
         help  : Enable MPI-parallel kernel
         cmake : ENABLE_MPI=ON
@@ -103,6 +108,10 @@ options :
     - cloudsc-c :
         help  : Build the C version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_C={{value}}
+
+    - cloudsc-sycl:
+        help  : Build the SYCL version of CLOUDSC
+        cmake : ENABLE_CLOUDSC_SYCL={{value}}
 
     - cloudsc-gpu-claw :
         help  : Build the deprecated CLAW-based GPU version CLOUDSC  [ON|OFF]
