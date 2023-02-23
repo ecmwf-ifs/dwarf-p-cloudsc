@@ -107,10 +107,6 @@ options :
         help  : Frontend parser to use for Loki transformations
         cmake : LOKI_FRONTEND={{value}}
 
-    - field_api-old-copy :
-        help  : Use COPY for GPU offload rather than UPDATE_DEVICE/UPDATE_HOST
-        cmake : ENABLE_FIELD_API_OLD_COPY=ON
-
     - field_api-testing :
         help  : Enable field_api testing
         cmake : ENABLE_FIELD_API_TESTS=ON
