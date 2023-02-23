@@ -7,8 +7,9 @@
  * granted to it by virtue of its status as an intergovernmental organisation
  * nor does it submit to any jurisdiction.
  */
-#include "cloudsc_c_hoist.h"
 #include <float.h>
+#include <CL/sycl.hpp>
+#include <limits>
 
 __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   const double * __restrict__  pt,
@@ -43,7 +44,8 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   double * __restrict__ zicefrac, double * __restrict__ zqx, double * __restrict__ zqx0,
   double * __restrict__ zpfplsx, double * __restrict__ zlneg, double * __restrict__ zqxn2d,
   double * __restrict__ zqsmix, double * __restrict__ zqsliq, double * __restrict__ zqsice,
-  double * __restrict__ zfoeewmt, double * __restrict__ zfoeew, double * __restrict__ zfoeeliqt) {
+  double * __restrict__ zfoeewmt, double * __restrict__ zfoeew, double * __restrict__ zfoeeliqt,
+  cl::sycl:: stream out_stream, cl::sycl::nd_item<1> item_ct) {
 
   //-------------------------------------------------------------------------------
   //                 Declare input/output arguments
@@ -322,9 +324,8 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   //double zlneg[5 * klev];
   //double zqxn2d[5 * klev];
 
-  jl = threadIdx.x; 
-  ibl = blockIdx.x; //blockIdx.z;
-    
+  jl = item_ct.get_local_id(0); //threadIdx.x;
+  ibl = item_ct.get_group(0); // or 2? blockIdx.z; 
     
   //===============================================================================
   //IF (LHOOK) CALL DR_HOOK('CLOUDSC',0,ZHOOK_HANDLE)
@@ -338,7 +339,7 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   //             0.  *** SET UP CONSTANTS ***
   //######################################################################
   
-  zepsilon = (double) 100.*DBL_EPSILON;
+  zepsilon = (double) 100.*std::numeric_limits<double>::epsilon(); //DBL_EPSILON;
     
   // ---------------------------------------------------------------------
   // Set version of warm-rain autoconversion/accretion

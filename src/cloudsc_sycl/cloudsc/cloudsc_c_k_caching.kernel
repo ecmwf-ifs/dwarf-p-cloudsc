@@ -7,8 +7,10 @@
  * granted to it by virtue of its status as an intergovernmental organisation
  * nor does it submit to any jurisdiction.
  */
-#include "cloudsc_c.h"
 #include <float.h>
+#include <float.h>
+#include <CL/sycl.hpp>
+#include <limits>
 
 __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   const double * __restrict__  pt,
@@ -37,7 +39,8 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
   double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
   double rtwat, double rtice, double rticecu, double rtwat_rtice_r, double rtwat_rticecu_r,
-  double rkoop1, double rkoop2) {
+  double rkoop1, double rkoop2,
+  cl::sycl:: stream out_stream, cl::sycl::nd_item<1> item_ct) {
 
   //-------------------------------------------------------------------------------
   //                 Declare input/output arguments
@@ -322,14 +325,14 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   //double zlneg[5 * klev];
   //double zqxn2d[5 * klev];
 
-  jl = threadIdx.x; 
-  ibl = blockIdx.z; 
+  jl = item_ct.get_local_id(0); //threadIdx.x;
+  ibl = item_ct.get_group(0); // or 2? blockIdx.z;
 
   int jk_i;
   int jk_ip1;
   int jk_im1;
 
-  zepsilon = (double) 100.*DBL_EPSILON;
+  zepsilon = (double) 100.*std::numeric_limits<double>::epsilon(); //DBL_EPSILON;
 
   // ---------------------------------------------------------------------
   // Set version of warm-rain autoconversion/accretion

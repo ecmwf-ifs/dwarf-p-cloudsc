@@ -8,8 +8,8 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "cloudsc_driver_hoist.h"
-#include "cloudsc_c_hoist.kernel"
+#include "cloudsc_driver.h"
+#include "cloudsc_c_k_caching.kernel"
 
 #include <omp.h>
 #include "mycpu.h"
@@ -34,7 +34,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cl::sycl::queue q( device_select );
 
   printf("Running on %s\n", q.get_device().get_info<cl::sycl::info::device::name>().c_str());
-
+	
   double *tend_tmp_u;
   double *tend_tmp_v;
   double *tend_tmp_t;
@@ -147,6 +147,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   tend_tmp_q   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   tend_tmp_a   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   tend_tmp_cld = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
+
   plcrit_aer = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   picrit_aer = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   pre_ice    = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
@@ -166,7 +167,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   pap        = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   paph       = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
   plsm       = (double*) malloc( sizeof(double) * nblocks*nproma );
-  ldcum      = (int*) malloc( sizeof(int) * nblocks*nproma ); 
+  ldcum      = (int*) malloc( sizeof(int) * nblocks*nproma );
   ktype      = (int*) malloc( sizeof(int) * nblocks*nproma );
   plu        = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
   plude      = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
@@ -277,27 +278,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double *d_pfplsn;
   double *d_pfhpsl;
   double *d_pfhpsn;
-  double *d_zfoealfa;
-  double *d_ztp1; 
-  double *d_zli;
-  double *d_za; 
-  double *d_zaorig; 
-  double *d_zliqfrac;
-  double *d_zicefrac; 
-  double *d_zqx; 
-  double *d_zqx0;
-  double *d_zpfplsx; 
-  double *d_zlneg;
-  double *d_zqxn2d;
-  double *d_zqsmix; 
-  double *d_zqsliq; 
-  double *d_zqsice;
-  double *d_zfoeewmt; 
-  double *d_zfoeew; 
-  double *d_zfoeeliqt;
   // end device declarations
 
-  //
+
   d_plcrit_aer = cl::sycl::malloc_device<double>(nblocks*nlev*nproma, q);
   d_picrit_aer = cl::sycl::malloc_device<double>( nblocks*nlev*nproma, q);
   d_pre_ice = cl::sycl::malloc_device<double>(nblocks*nlev*nproma, q);
@@ -351,25 +334,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   d_pfplsn = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
   d_pfhpsl = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
   d_pfhpsn = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zfoealfa = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_ztp1 = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zli = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_za = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zaorig = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zliqfrac = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zicefrac = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zqx = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma*nclv, q);
-  d_zqx0 = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma*nclv, q);
-  d_zpfplsx = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma*nclv, q);
-  d_zlneg = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma*nclv, q);
-  d_zqxn2d = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma*nclv, q);
-  d_zqsmix = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zqsliq = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zqsice = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zfoeewmt = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zfoeew = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  d_zfoeeliqt = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
-  //
 
   load_state(klon, nlev, nclv, numcols, nproma, &ptsphy, plcrit_aer, picrit_aer,
 	     pre_ice, pccn, pnice, pt, pq,
@@ -386,6 +350,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
              &rkoop1, &rkoop2 );
 
   // host to device
+  // either
+  //  q.memcpy(bytes)
+  //  q.copy<>(count)
   q.memcpy(d_plcrit_aer, plcrit_aer, sizeof(double) * nblocks*nlev*nproma);
   q.memcpy(d_picrit_aer, picrit_aer, sizeof(double) * nblocks*nlev*nproma);
   q.memcpy(d_pre_ice, pre_ice, sizeof(double) * nblocks*nlev*nproma);
@@ -435,17 +402,17 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 
     //dim3 blockdim(nproma, 1, 1);
     //dim3 griddim(1, 1, ceil(((double)numcols) / ((double)nproma)));
-    //dim3 griddim(ceil(((double)numcols) / ((double)nproma)), 1, 1);
     int jkglo = 0;
     int ibl = (jkglo - 1) / nproma + 1;
     int icend = min(nproma, numcols - jkglo + 1);
+
 
     cl::sycl::range<1> global(numcols); //global(nblocks * nproma); //global(ceil(((double)numcols) / ((double)nproma)));//global(nblocks*nproma);
     cl::sycl::range<1> local(nproma);
 
     q.submit([&](cl::sycl::handler &h) {
         cl::sycl::stream out_stream(16384, 512, h);
-        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) {
+        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) {			 
 
     cloudsc_c/*<<<griddim, blockdim>>>*/(1, icend/*bsize*/, nproma/*, nlev*/, ptsphy, d_pt, d_pq,
     		d_tend_tmp_t, d_tend_tmp_q, d_tend_tmp_a, d_tend_tmp_cld,
@@ -466,24 +433,16 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
                 rv, r2es, r3les, r3ies, r4les, r4ies, r5les,
                 r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp,
                 rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r,
-                rkoop1, rkoop2,
-	        d_zfoealfa, d_ztp1, d_zli,
-                d_za, d_zaorig, d_zliqfrac,
-                d_zicefrac, d_zqx, d_zqx0,
-                d_zpfplsx, d_zlneg, d_zqxn2d,
-                d_zqsmix, d_zqsliq, d_zqsice,
-                d_zfoeewmt, d_zfoeew, d_zfoeeliqt, 
-		out_stream, item_ct1);
+                rkoop1, rkoop2, out_stream, item_ct1);
 
-
-    });
+	});
     });
 
     q.wait();
 
     //gpuErrchk( cudaPeekAtLastError() );
     //gpuErrchk( cudaDeviceSynchronize() );
- 
+
     double end = omp_get_wtime();
 
     // device to host
@@ -511,7 +470,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     q.memcpy(pfhpsl, d_pfhpsl, sizeof(double) * nblocks*(nlev+1)*nproma);
     q.memcpy(pfhpsn, d_pfhpsn, sizeof(double) * nblocks*(nlev+1)*nproma);
     q.wait();
-
+    // end device to host
 
     /* int msec = diff * 1000 / CLOCKS_PER_SEC; */
     zinfo[0][tid] = end - start;
@@ -555,9 +514,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 		   pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn,
 		   tend_loc_a, tend_loc_q, tend_loc_t, tend_loc_cld);
 
-  free(plcrit_aer); 
-  free(picrit_aer); 
-  free(pre_ice);    
+  free(plcrit_aer); // ALLOCATE(PLCRIT_AER(KLON,KLEV))
+  free(picrit_aer); // ALLOCATE(PICRIT_AER(KLON,KLEV))
+  free(pre_ice);    // ALLOCATE(PRE_ICE(KLON,KLEV))
   free(pccn);
   free(pnice);
   free(pt);
@@ -572,7 +531,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   free(phrlw);
   free(pvervel);
   free(pap);
-  free(paph); 
+  free(paph); // ALLOCATE(PAPH(KLON,KLEV+1))
   free(plsm);
   free(ktype);
   free(plu);
@@ -667,24 +626,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cl::sycl::free(d_pfplsn, q);
   cl::sycl::free(d_pfhpsl, q);
   cl::sycl::free(d_pfhpsn, q);
-  cl::sycl::free(d_zfoealfa,q );
-  cl::sycl::free(d_ztp1, q);
-  cl::sycl::free(d_zli, q);
-  cl::sycl::free(d_za, q);
-  cl::sycl::free(d_zaorig, q);
-  cl::sycl::free(d_zliqfrac, q);
-  cl::sycl::free(d_zicefrac, q);
-  cl::sycl::free(d_zqx, q);
-  cl::sycl::free(d_zqx0, q);
-  cl::sycl::free(d_zpfplsx, q);
-  cl::sycl::free(d_zlneg, q);
-  cl::sycl::free(d_zqxn2d, q);
-  cl::sycl::free(d_zqsmix, q);
-  cl::sycl::free(d_zqsliq, q);
-  cl::sycl::free(d_zqsice, q);
-  cl::sycl::free(d_zfoeewmt, q);
-  cl::sycl::free(d_zfoeew, q);
-  cl::sycl::free(d_zfoeeliqt, q);
   // end free device
 }
 
