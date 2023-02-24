@@ -24,9 +24,7 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/file_io_mod.F90
     module/expand_mod.F90
     module/validate_mod.F90
-    module/field_module.F90
     module/cloudsc_global_state_mod.F90
-    module/cloudsc_field_state_mod.F90
     module/cloudsc_mpi_mod.F90
 )
 
@@ -45,6 +43,11 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/field_module.F90
 )
 
+list(APPEND CLOUDSC_FIELD_SOURCES
+    module/field_module.F90
+    module/cloudsc_field_state_mod.F90
+)
+
 if( HAVE_CUDA )
     # ========================================================================
     # Compile CUDA fortran files with -MCuda.
@@ -60,6 +63,9 @@ if( HAVE_CUDA )
 
     # Add CUDA-specific flags to the library if enabled
     list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
+
+    # If CUDA is enabled, we can also compile the FIELD API utilities
+    list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_FIELD_SOURCES} )
 endif()
 
 
@@ -77,7 +83,9 @@ endif()
 
 ecbuild_add_library( TARGET cloudsc-common-lib
     TYPE ${LIBRARY_TYPE}
-    DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    DEFINITIONS
+        ${CLOUDSC_DEFINITIONS}
+	$<${HAVE_CUDA}:USE_FIELD_API>
     SOURCES
         ${CLOUDSC_COMMON_SOURCES}
         $<${HAVE_MPI}:module/cloudsc_mpif.F90>

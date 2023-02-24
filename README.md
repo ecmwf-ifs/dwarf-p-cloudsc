@@ -71,7 +71,9 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   API to manage device offload and copyback. The intent is to demonstrate
   the explicit use of pinned host memory to speed-up data transfers, as
   provided by the shipped prototype implmentation, and investigate the
-  effect of different data storage allocation layouts.
+  effect of different data storage allocation layouts. To enable this
+  variant, a suitable CUDA installation is required and the
+  `--with-cuda` flag needs to be passed at the build stage.
 
 ## Download and Installation
 

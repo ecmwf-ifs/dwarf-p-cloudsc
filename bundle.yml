@@ -58,7 +58,6 @@ options :
             ENABLE_CLOUDSC_GPU_SCC=ON
             ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
             ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=ON
-            ENABLE_CLOUDSC_GPU_SCC_FIELD=ON
 
     - with-cuda :
         help  : Enable GPU kernel variant based on CUDA-Fortran
@@ -66,6 +65,7 @@ options :
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
+            ENABLE_CLOUDSC_GPU_SCC_FIELD=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
