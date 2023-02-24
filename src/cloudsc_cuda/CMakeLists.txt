@@ -42,12 +42,14 @@ if( HAVE_CLOUDSC_CUDA )
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
 
-
+    target_include_directories(
+      dwarf-cloudsc-cuda-lib
+      PUBLIC 
+      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
     target_compile_options(dwarf-cloudsc-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-                       -gencode arch=compute_80,code=sm_80
-                       >)
-
-    target_include_directories(dwarf-cloudsc-cuda-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
+	    -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+	       
     set_target_properties( dwarf-cloudsc-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     
     ecbuild_add_executable(
@@ -57,6 +59,15 @@ if( HAVE_CLOUDSC_CUDA )
     )
 
     target_link_libraries(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-lib)
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-cuda-serial
+        COMMAND bin/dwarf-cloudsc-cuda
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+    ###
 
     ###### SCC-CUDA-HOIST ####
     ecbuild_add_library(
@@ -82,12 +93,14 @@ if( HAVE_CLOUDSC_CUDA )
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
 
-
+    target_include_directories(
+      dwarf-cloudsc-cuda-hoist-lib
+      PUBLIC
+      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
     target_compile_options(dwarf-cloudsc-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-                       -gencode arch=compute_80,code=sm_80
-                       >)
+                       -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
 
-    target_include_directories(dwarf-cloudsc-cuda-hoist-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
     set_target_properties( dwarf-cloudsc-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
@@ -97,6 +110,14 @@ if( HAVE_CLOUDSC_CUDA )
     )
 
     target_link_libraries(dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-hoist-lib)
+    
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-cuda-hoist-serial
+        COMMAND bin/dwarf-cloudsc-hoist-caching
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
     ###
 
     ###### SCC-CUDA-K-CACHING ####
@@ -123,12 +144,14 @@ if( HAVE_CLOUDSC_CUDA )
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
 
-
+    target_include_directories(
+      dwarf-cloudsc-cuda-k-caching-lib
+      PUBLIC
+      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
     target_compile_options(dwarf-cloudsc-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-                       -gencode arch=compute_80,code=sm_80
-                       >)
+                       -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
 
-    target_include_directories(dwarf-cloudsc-cuda-k-caching-lib PUBLIC "/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda/include")
     set_target_properties( dwarf-cloudsc-cuda-k-caching-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
@@ -138,27 +161,19 @@ if( HAVE_CLOUDSC_CUDA )
     )
 
     target_link_libraries(dwarf-cloudsc-cuda-k-caching dwarf-cloudsc-cuda-k-caching-lib)
+    
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-cuda-k-caching-serial
+        COMMAND bin/dwarf-cloudsc-cuda-k-caching
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
     ###
 
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-cuda-serial
-        COMMAND bin/dwarf-cloudsc-cuda
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-cuda-omp
-        COMMAND bin/dwarf-cloudsc-cuda
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
-        CONDITION HAVE_OMP
-    )
 
 else()
     ecbuild_info( "Serialbox not found, disabling C prototype" )

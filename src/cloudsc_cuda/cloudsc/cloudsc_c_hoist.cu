@@ -10,7 +10,7 @@
 #include "cloudsc_c_hoist.h"
 #include <float.h>
 
-__global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
+__global__ void cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy,
   const double * __restrict__  pt,
   const double * __restrict__  pq, const double * __restrict__  tendency_tmp_t,
   const double * __restrict__  tendency_tmp_q, const double * __restrict__  tendency_tmp_a,
@@ -55,8 +55,6 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   // PRE_ICE : ice Re
   // PCCN    : liquid cloud condensation nuclei
   // PNICE   : ice number concentration (cf. CCN)
-
-  const int klev = 137;  // Number of levels
 
   double zlcond1, zlcond2, zlevapl, zlevapi, zrainaut, zsnowaut, zliqcld, zicecld;
   double zlevap, zleros;

@@ -341,6 +341,8 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
              &rtice, &rticecu, &rtwat_rtice_r, &rtwat_rticecu_r,
              &rkoop1, &rkoop2 );
 
+  double t1 = omp_get_wtime();
+
   // host to device
   cudaMemcpy(d_plcrit_aer, plcrit_aer, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
   cudaMemcpy(d_picrit_aer, picrit_aer, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyHostToDevice);
@@ -381,77 +383,75 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaMemcpy(d_yrecldp, yrecldp, sizeof(TECLDP), cudaMemcpyHostToDevice);
   // end host to device
 
-  double t1 = omp_get_wtime();
+  int b, icalls=0, igpc=numcols;
+  int coreid = mycpu();
+  int tid = omp_get_thread_num();
+  double start = omp_get_wtime();
 
-    int b, bsize, icalls=0, igpc=numcols;
-    int coreid = mycpu();
-    int tid = omp_get_thread_num();
-    double start = omp_get_wtime();
+  dim3 blockdim(nproma, 1, 1);
+  dim3 griddim(1, 1, ceil(((double)numcols) / ((double)nproma)));
+  int jkglo = 0;
+  int ibl = (jkglo - 1) / nproma + 1;
+  int icend = min(nproma, numcols - jkglo + 1);
 
-    dim3 blockdim(nproma, 1, 1);
-    dim3 griddim(1, 1, ceil(((double)numcols) / ((double)nproma)));
-    int jkglo = 0;
-    int ibl = (jkglo - 1) / nproma + 1;
-    int icend = min(nproma, numcols - jkglo + 1);
-
-    cloudsc_c<<<griddim, blockdim>>>(1, icend/*bsize*/, nproma/*, nlev*/, ptsphy, d_pt, d_pq,
-    		d_tend_tmp_t, d_tend_tmp_q, d_tend_tmp_a, d_tend_tmp_cld,
-    		d_tend_loc_t, d_tend_loc_q, d_tend_loc_a, d_tend_loc_cld,
-    		d_pvfa, d_pvfl, d_pvfi,
-    		d_pdyna, d_pdynl, d_pdyni,
-    		d_phrsw, d_phrlw, d_pvervel,
-    		d_pap, d_paph, d_plsm, d_ktype,
-    		d_plu, d_plude, d_psnde, d_pmfu, d_pmfd,
-    		d_pa, d_pclv, d_psupsat,
-    		d_plcrit_aer, d_picrit_aer, d_pre_ice, d_pccn, d_pnice,
-    		d_pcovptot, d_prainfrac_toprfz, d_pfsqlf,
-    		d_pfsqif, d_pfcqnng, d_pfcqlng,
-    		d_pfsqrf, d_pfsqsf, d_pfcqrng,
-    		d_pfcqsng, d_pfsqltur, d_pfsqitur,
-    		d_pfplsl, d_pfplsn, d_pfhpsl, d_pfhpsn, d_yrecldp,
-    		nblocks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt,
+  cloudsc_c<<<griddim, blockdim>>>(1, icend, nproma, ptsphy, d_pt, d_pq,
+  		d_tend_tmp_t, d_tend_tmp_q, d_tend_tmp_a, d_tend_tmp_cld,
+  		d_tend_loc_t, d_tend_loc_q, d_tend_loc_a, d_tend_loc_cld,
+  		d_pvfa, d_pvfl, d_pvfi,
+  		d_pdyna, d_pdynl, d_pdyni,
+  		d_phrsw, d_phrlw, d_pvervel,
+  		d_pap, d_paph, d_plsm, d_ktype,
+  		d_plu, d_plude, d_psnde, d_pmfu, d_pmfd,
+  		d_pa, d_pclv, d_psupsat,
+  		d_plcrit_aer, d_picrit_aer, d_pre_ice, d_pccn, d_pnice,
+  		d_pcovptot, d_prainfrac_toprfz, d_pfsqlf,
+  		d_pfsqif, d_pfcqnng, d_pfcqlng,
+  		d_pfsqrf, d_pfsqsf, d_pfcqrng,
+  		d_pfcqsng, d_pfsqltur, d_pfsqitur,
+  		d_pfplsl, d_pfplsn, d_pfhpsl, d_pfhpsn, d_yrecldp,
+  		nblocks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt,
                 rv, r2es, r3les, r3ies, r4les, r4ies, r5les,
                 r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp,
                 rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r,
                 rkoop1, rkoop2);
 
 
-    gpuErrchk( cudaPeekAtLastError() );
-    gpuErrchk( cudaDeviceSynchronize() );
+  gpuErrchk( cudaPeekAtLastError() );
+  gpuErrchk( cudaDeviceSynchronize() );
 
-    double end = omp_get_wtime();
+  double end = omp_get_wtime();
 
-    // device to host
-    cudaMemcpy(tend_loc_t, d_tend_loc_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(tend_loc_q, d_tend_loc_q, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(tend_loc_a, d_tend_loc_a, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(tend_loc_cld, d_tend_loc_cld, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyDeviceToHost);
-    cudaMemcpy(phrlw, d_phrlw, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(plude, d_plude, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(yrecldp, d_yrecldp, sizeof(TECLDP), cudaMemcpyDeviceToHost);
-    cudaMemcpy(pcovptot, d_pcovptot, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(prainfrac_toprfz, d_prainfrac_toprfz, sizeof(double) * nblocks*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfsqlf, d_pfsqlf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfsqif, d_pfsqif, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfcqnng, d_pfcqnng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfcqlng, d_pfcqlng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfsqrf, d_pfsqrf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfsqsf, d_pfsqsf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfcqrng, d_pfcqrng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfcqsng, d_pfcqsng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfsqltur, d_pfsqltur, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfsqitur, d_pfsqitur, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfplsl, d_pfplsl, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfplsn, d_pfplsn, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfhpsl, d_pfhpsl, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    cudaMemcpy(pfhpsn, d_pfhpsn, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
-    // end device to host
+  // device to host
+  cudaMemcpy(tend_loc_t, d_tend_loc_t, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(tend_loc_q, d_tend_loc_q, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(tend_loc_a, d_tend_loc_a, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(tend_loc_cld, d_tend_loc_cld, sizeof(double) * nblocks*nlev*nproma*nclv, cudaMemcpyDeviceToHost);
+  cudaMemcpy(phrlw, d_phrlw, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(plude, d_plude, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(yrecldp, d_yrecldp, sizeof(TECLDP), cudaMemcpyDeviceToHost);
+  cudaMemcpy(pcovptot, d_pcovptot, sizeof(double) * nblocks*nlev*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(prainfrac_toprfz, d_prainfrac_toprfz, sizeof(double) * nblocks*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfsqlf, d_pfsqlf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfsqif, d_pfsqif, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfcqnng, d_pfcqnng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfcqlng, d_pfcqlng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfsqrf, d_pfsqrf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfsqsf, d_pfsqsf, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfcqrng, d_pfcqrng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfcqsng, d_pfcqsng, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfsqltur, d_pfsqltur, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfsqitur, d_pfsqitur, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfplsl, d_pfplsl, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfplsn, d_pfplsn, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfhpsl, d_pfhpsl, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  cudaMemcpy(pfhpsn, d_pfhpsn, sizeof(double) * nblocks*(nlev+1)*nproma, cudaMemcpyDeviceToHost);
+  // end device to host
 
-    /* int msec = diff * 1000 / CLOCKS_PER_SEC; */
-    zinfo[0][tid] = end - start;
-    zinfo[1][tid] = (double) coreid;
-    zinfo[2][tid] = (double) icalls;
-    zinfo[3][tid] = (double) igpc;
+  /* int msec = diff * 1000 / CLOCKS_PER_SEC; */
+  zinfo[0][tid] = end - start;
+  zinfo[1][tid] = (double) coreid;
+  zinfo[2][tid] = (double) icalls;
+  zinfo[3][tid] = (double) igpc;
 
   double t2 = omp_get_wtime();
 

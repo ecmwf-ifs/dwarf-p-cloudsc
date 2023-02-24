@@ -479,7 +479,6 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   // ----------------------
   for (jk = 0; jk <= klev + 1 + -1; jk += 1) {
 
-    // Fortran counting is beautiful!
     jk_i = (jk + 1) % 2;
     jk_ip1 = (jk + 2) % 2;
     jk_im1 = (jk) % 2; 
