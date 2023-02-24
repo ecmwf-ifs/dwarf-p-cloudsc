@@ -195,7 +195,10 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_CUF_K_CACHING_MOD
     ALLOCATE (PFPLSN_d(NPROMA, NLEV + 1, NGPBLKS))
     ALLOCATE (PFHPSL_d(NPROMA, NLEV + 1, NGPBLKS))
     ALLOCATE (PFHPSN_d(NPROMA, NLEV + 1, NGPBLKS))
-    
+   
+    ! Global timer for the parallel region
+    CALL TIMER%START(NUMOMP)
+
     ! Copy host to device
     PT_d = PT
     PQ_d = PQ
@@ -246,8 +249,6 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_CUF_K_CACHING_MOD
     PFHPSN_d = PFHPSN
     YRECLDP_d = YRECLDP
     
-    IBL = 1      ! Useless statement to show the compiler that the sepcification part is over!
-    
     !@cuf CALL YOMCST_UPDATE_DEVICE()
     !@cuf CALL YOETHF_UPDATE_DEVICE()
     
@@ -255,9 +256,6 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_CUF_K_CACHING_MOD
  1003 FORMAT(5X, 'NUMPROC=', I0, ', NUMOMP=', I0, ', NGPTOTG=', I0, ', NPROMA=', I0, ', NGPBLKS=', I0)
       WRITE(0, 1003) NUMPROC, NUMOMP, NGPTOTG, NPROMA, NGPBLKS
     END IF
-    
-    ! Global timer for the parallel region
-    CALL TIMER%START(NUMOMP)
     
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
