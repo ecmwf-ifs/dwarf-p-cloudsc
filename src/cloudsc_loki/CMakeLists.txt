@@ -373,6 +373,44 @@ if( HAVE_CLOUDSC_LOKI )
         ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
     )
 
+
+
+
+    cloudsc_xmod( loki-scc2 )
+
+    loki_transform_convert(
+        MODE scc2 FRONTEND ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS ${COMMON_MODULE}/yomphyder.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+        DATA_OFFLOAD REMOVE_OPENMP
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc2
+        OUTPUT loki-scc2/cloudsc.scc2.F90 loki-scc2/cloudsc_driver_loki_mod.scc2.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc2
+        SOURCES
+            dwarf_cloudsc.F90
+            loki-scc2/cloudsc_driver_loki_mod.scc2.F90
+            loki-scc2/cloudsc.scc2.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-scc2-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc2
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
+    )
+
     ####################################################
     ##  SCC-hoist mode                                ##
     ##   * SCC with vector loop hoisted               ##
