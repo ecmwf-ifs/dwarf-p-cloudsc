@@ -8,4 +8,9 @@
  * nor does it submit to any jurisdiction.
  */
 
+#ifndef MYCPU_H
+#define MYCPU_H
+
 int mycpu ();
+
+#endif

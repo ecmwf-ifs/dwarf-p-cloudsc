@@ -8,6 +8,9 @@
  * nor does it submit to any jurisdiction.
  */
 
+#ifndef CLOUDSC_C_H
+#define CLOUDSC_C_H
+
 #include "yomcst_c.h"
 #include "yoethf_c.h"
 #include "yoecldp_c.h"
@@ -24,3 +27,5 @@ int cloudsc_c(int kidia, int kfdia, int klon, int klev, double ptsphy, double * 
 	      double * restrict v_pfsqif, double * restrict v_pfcqnng, double * restrict v_pfcqlng, double * restrict v_pfsqrf, double * restrict v_pfsqsf, double * restrict v_pfcqrng,
 	      double * restrict v_pfcqsng, double * restrict v_pfsqltur, double * restrict v_pfsqitur, double * restrict v_pfplsl, double * restrict v_pfplsn, double * restrict v_pfhpsl,
 	      double * restrict v_pfhpsn);
+
+#endif

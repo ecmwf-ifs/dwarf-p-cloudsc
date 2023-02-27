@@ -22,8 +22,11 @@ if( HAVE_CLOUDSC_C )
         INSTALL_HEADERS LISTED
         SOURCES
             cloudsc/yoecldp_c.h
+            cloudsc/yoecldp_c.c
             cloudsc/yoethf_c.h
+            cloudsc/yoethf_c.c
             cloudsc/yomcst_c.h
+            cloudsc/yomcst_c.c
             cloudsc/load_state.h
             cloudsc/load_state.c
             cloudsc/cloudsc_c.h
