@@ -9,7 +9,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_CUDA
     DESCRIPTION "Build the CUDA version CLOUDSC using Serialbox" DEFAULT ON
-    CONDITION Serialbox_FOUND
+    CONDITION Serialbox_FOUND AND HAVE_CUDA
 )
 
 if( HAVE_CLOUDSC_CUDA )
@@ -49,7 +49,7 @@ if( HAVE_CLOUDSC_CUDA )
     )
     target_compile_options(dwarf-cloudsc-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
 	    -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
-	       
+
     set_target_properties( dwarf-cloudsc-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     
     ecbuild_add_executable(
@@ -113,7 +113,7 @@ if( HAVE_CLOUDSC_CUDA )
     
     ecbuild_add_test(
         TARGET dwarf-cloudsc-cuda-hoist-serial
-        COMMAND bin/dwarf-cloudsc-hoist-caching
+        COMMAND bin/dwarf-cloudsc-hoist
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -175,7 +175,5 @@ if( HAVE_CLOUDSC_CUDA )
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
 
-else()
-    ecbuild_info( "Serialbox not found, disabling C prototype" )
 endif()
 
