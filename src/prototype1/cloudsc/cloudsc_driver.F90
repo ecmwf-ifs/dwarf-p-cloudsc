@@ -37,9 +37,9 @@ TYPE (STATE_TYPE), ALLOCATABLE  :: ztendency_cml(:)   ! cumulative tendency used
 TYPE (STATE_TYPE), ALLOCATABLE  :: ztendency_tmp(:)   ! cumulative tendency used as input
 TYPE (STATE_TYPE), ALLOCATABLE  :: ztendency_loc(:)
 
-REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLCRIT_AER(:,:), zPLCRIT_AER(:,:,:) 
-REAL(KIND=JPRB)   ,ALLOCATABLE    :: PICRIT_AER(:,:), zPICRIT_AER(:,:,:) 
-REAL(KIND=JPRB)   ,ALLOCATABLE    :: PRE_ICE(:,:), zPRE_ICE(:,:,:) 
+REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLCRIT_AER(:,:), zPLCRIT_AER(:,:,:)
+REAL(KIND=JPRB)   ,ALLOCATABLE    :: PICRIT_AER(:,:), zPICRIT_AER(:,:,:)
+REAL(KIND=JPRB)   ,ALLOCATABLE    :: PRE_ICE(:,:), zPRE_ICE(:,:,:)
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PCCN(:,:), zPCCN(:,:,:)     ! liquid cloud condensation nuclei
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PNICE(:,:), zPNICE(:,:,:)    ! ice number concentration (cf. CCN)
 REAL(KIND=JPRB)                   :: PTSPHY            ! Physics timestep
@@ -56,25 +56,25 @@ REAL(KIND=JPRB)   ,ALLOCATABLE    :: PHRLW(:,:), zPHRLW(:,:,:) ! Long-wave heati
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PVERVEL(:,:), zPVERVEL(:,:,:) !Vertical velocity
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PAP(:,:), zPAP(:,:,:)   ! Pressure on full levels
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PAPH(:,:), zPAPH(:,:,:)! Pressure on half levels
-REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLSM(:), zPLSM(:,:)       ! Land fraction (0-1) 
+REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLSM(:), zPLSM(:,:)       ! Land fraction (0-1)
 LOGICAL           ,ALLOCATABLE    :: LDCUM(:), LLCUM(:,:)      ! Convection active
 INTEGER(KIND=JPIM),ALLOCATABLE    :: KTYPE(:), ITYPE(:,:)      ! Convection type 0,1,2
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLU(:,:), zPLU(:,:,:)   ! Conv. condensate
-REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLUDE(:,:), zPLUDE(:,:,:) ! Conv. detrained water 
+REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLUDE(:,:), zPLUDE(:,:,:) ! Conv. detrained water
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PLUDE_tmp(:,:)
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PSNDE(:,:), zPSNDE(:,:,:) ! Conv. detrained snow
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PMFU(:,:), zPMFU(:,:,:)  ! Conv. mass flux up
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PMFD(:,:), zPMFD(:,:,:)  ! Conv. mass flux down
-LOGICAL                           :: LDSLPHY 
+LOGICAL                           :: LDSLPHY
 LOGICAL                           :: LDMAINCALL       ! T if main call to cloudsc
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PA(:,:), zPA(:,:,:)    ! Original Cloud fraction (t)
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PEXTRA(:,:,:), zPEXTRA(:,:,:,:) ! extra fields
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PEXTRA_tmp(:,:,:)
-REAL(KIND=JPRB)   ,ALLOCATABLE    :: PCLV(:,:,:), zPCLV(:,:,:,:) 
+REAL(KIND=JPRB)   ,ALLOCATABLE    :: PCLV(:,:,:), zPCLV(:,:,:,:)
 REAL(KIND=JPRB)   ,ALLOCATABLE    :: PSUPSAT(:,:), zPSUPSAT(:,:,:)
 
 REAL(KIND=JPRB)   ,ALLOCATABLE   :: PCOVPTOT(:,:), zPCOVPTOT(:,:,:) ! Precip fraction
-REAL(KIND=JPRB)   ,ALLOCATABLE   :: PRAINFRAC_TOPRFZ(:), zPRAINFRAC_TOPRFZ(:,:) 
+REAL(KIND=JPRB)   ,ALLOCATABLE   :: PRAINFRAC_TOPRFZ(:), zPRAINFRAC_TOPRFZ(:,:)
 REAL(KIND=JPRB)   ,ALLOCATABLE   :: PFSQLF(:,:), zPFSQLF(:,:,:)  ! Flux of liquid
 REAL(KIND=JPRB)   ,ALLOCATABLE   :: PFSQIF(:,:), zPFSQIF(:,:,:)  ! Flux of ice
 REAL(KIND=JPRB)   ,ALLOCATABLE   :: PFCQLNG(:,:), zPFCQLNG(:,:,:) ! -ve corr for liq
@@ -113,6 +113,7 @@ CHARACTER(LEN=1) :: write_input, write_reference
 
 REAL(KIND=JPRB), parameter :: zhpm = 12482329.0_JPRB ! IBM P7 HPM flop count for 100 points at L137
 REAL(KIND=JPRB) :: zmflops ! MFlops/s rate
+REAL(KIND=JPRB) :: zthrput ! Throughput col/s
 REAL(KIND=JPRB) :: zfrac ! fraction of gp columns handled by thread
 
 INTEGER(KIND=JPIM) :: tid ! thread id from 0 .. NUMOMP - 1
@@ -120,7 +121,7 @@ INTEGER(KIND=JPIM) :: coreid ! core id thread belongs to
 INTEGER(KIND=JPIM) :: icalls ! number of calls to CLOUDSC == number of blocks handled by particular thread
 INTEGER(KIND=JPIM) :: igpc ! number of gp columns handled by particular thread
 
-REAL(KIND=JPRB) :: zinfo(4,0:NUMOMP - 1) 
+REAL(KIND=JPRB) :: zinfo(4,0:NUMOMP - 1)
 ! zinfo(1,tid) == thread (wall clock) time
 ! zinfo(2,tid) == coreid
 ! zinfo(3,tid) == number of calls CLOUDSC == number of block processed by this tid
@@ -139,9 +140,9 @@ open(iu,file='cloudsc.bin',status='old',&
 read(iu) KLON,KLEV,KFLDX
 write(0,*) 'KLON,KLEV,KFLDX,NCLV=',KLON,KLEV,KFLDX,NCLV
 
-ALLOCATE(PLCRIT_AER(KLON,KLEV)) 
-ALLOCATE(PICRIT_AER(KLON,KLEV)) 
-ALLOCATE(PRE_ICE(KLON,KLEV)) 
+ALLOCATE(PLCRIT_AER(KLON,KLEV))
+ALLOCATE(PICRIT_AER(KLON,KLEV))
+ALLOCATE(PRE_ICE(KLON,KLEV))
 ALLOCATE(PCCN(KLON,KLEV))
 ALLOCATE(PNICE(KLON,KLEV))
 ALLOCATE(PT(KLON,KLEV))
@@ -242,7 +243,7 @@ CALL CLOUDSC_IN &
      & PLCRIT_AER,PICRIT_AER,&
      & PRE_ICE,&
      & PCCN,     PNICE,&
-     & PEXTRA,   KFLDX)  
+     & PEXTRA,   KFLDX)
 
 close(iu)
 
@@ -284,7 +285,7 @@ PEXTRA_tmp = PEXTRA
 ! These are INTENT(OUT)
 ALLOCATE(PCOVPTOT(KLON,KLEV))
 PCOVPTOT = 0.0_JPRB ! this is not fully initialized in CLOUDSC
-ALLOCATE(PRAINFRAC_TOPRFZ(KLON)) 
+ALLOCATE(PRAINFRAC_TOPRFZ(KLON))
 ALLOCATE(PFSQLF(KLON,KLEV+1))
 ALLOCATE(PFSQIF(KLON,KLEV+1))
 ALLOCATE(PFCQLNG(KLON,KLEV+1))
@@ -348,7 +349,7 @@ DEALLOCATE(PEXTRA_tmp)
 CALL saveref('PCOVPTOT',PCOVPTOT)
 DEALLOCATE(PCOVPTOT)
 CALL saveref('PRAINFRAC_TOPRFZ',PRAINFRAC_TOPRFZ)
-DEALLOCATE(PRAINFRAC_TOPRFZ) 
+DEALLOCATE(PRAINFRAC_TOPRFZ)
 CALL saveref('PFSQLF',PFSQLF)
 DEALLOCATE(PFSQLF)
 CALL saveref('PFSQIF',PFSQIF)
@@ -396,19 +397,19 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
       if (NPROMA < 1) cycle
 
       call loadjj(KLON) ! sets NGPBLKS etc.
-      
+
 1003  format(5x,'=> CASE#',i0,' : NUMOMP=',i0,', NGPTOT=',i0,', NPROMA=',i0,', NGPBLKS=',i0,', OMP_SCHEDULE=',a)
       write(0,1003) JPR,NUMOMP,NGPTOT,NPROMA,NGPBLKS,trim(adjustl(cl_omp_schedule))
 
       ! Expand KLON grid point column input as if we had NGPTOT of them
       ! Create blocks for multi-threading
       ! e.g. from array PA(KLON,KLEV) we create zPA(NPROMA,KLEV,NGPBLKS)
-      
-      ALLOCATE(zPLCRIT_AER(NPROMA,KLEV,NGPBLKS)) 
+
+      ALLOCATE(zPLCRIT_AER(NPROMA,KLEV,NGPBLKS))
       call expand(KLON,KLEV,PLCRIT_AER,zPLCRIT_AER)
       ALLOCATE(zPICRIT_AER(NPROMA,KLEV,NGPBLKS))
       call expand(KLON,KLEV,PICRIT_AER,zPICRIT_AER)
-      ALLOCATE(zPRE_ICE(NPROMA,KLEV,NGPBLKS)) 
+      ALLOCATE(zPRE_ICE(NPROMA,KLEV,NGPBLKS))
       call expand(KLON,KLEV,PRE_ICE,zPRE_ICE)
       ALLOCATE(zPCCN(NPROMA,KLEV,NGPBLKS))
       call expand(KLON,KLEV,PCCN,zPCCN)
@@ -468,10 +469,10 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
       call expand(KLON,KLEV,NCLV,tendency_cml,ztendency_cml)
       CALL ALLOCATE_STATE_ARRAY(ztmp, ztendency_tmp,NPROMA,KLEV,NCLV,NGPBLKS)
       call expand(KLON,KLEV,NCLV,tendency_tmp,ztendency_tmp)
-      
+
       ! Intent OUT
       ALLOCATE(zPCOVPTOT(NPROMA,KLEV,NGPBLKS))
-      ALLOCATE(zPRAINFRAC_TOPRFZ(NPROMA,NGPBLKS)) 
+      ALLOCATE(zPRAINFRAC_TOPRFZ(NPROMA,NGPBLKS))
       ALLOCATE(zPFSQLF(NPROMA,KLEV+1,NGPBLKS))
       ALLOCATE(zPFSQIF(NPROMA,KLEV+1,NGPBLKS))
       ALLOCATE(zPFCQLNG(NPROMA,KLEV+1,NGPBLKS))
@@ -489,7 +490,7 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
       CALL ALLOCATE_STATE_ARRAY(zloc,ztendency_loc,NPROMA,KLEV,NCLV,NGPBLKS)
 
       t1 = ftimer()
-      
+
       !$omp parallel default(shared) private(JKGLO,IBL,ICEND,tloc,tid,coreid,icalls,igpc) &
       !$omp& num_threads(NUMOMP)
       tloc = ftimer()
@@ -550,10 +551,12 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
 
       t2 = ftimer()
 
-1000  format(1x,5a10,1x,a4,' : ',2a10)
-1001  format(1x,5i10,1x,i4,' : ',2i10,:,' @ core#',i0)
-1002  format(1x,5i10,1x,i4,' : ',2i10,  ' : TOTAL')
-      write(0,1000) 'NUMOMP','NGPTOT','#GP-cols','#BLKS','NPROMA','tid#','Time(msec)','MFlops/s'
+1000  format(1x,5a10,1x,a4,' : ',3a10)
+1001  format(1x,5i10,1x,i4,' : ',3i10,:,' @ core#',i0)
+1002  format(1x,5i10,1x,i4,' : ',3i10,  ' : TOTAL')
+1005  format(1x,'Reference MFLOP count for 100 columns :',1x,f10.1)
+      write(0,1005) 1.0E-06_JPRB * ZHPM
+      write(0,1000) 'NUMOMP','NGPTOT','#GP-cols','#BLKS','NPROMA','tid#','Time(msec)','MFlops/s','col/s'
       do tid=0,NUMOMP-1
          tloc = zinfo(1,tid)
          coreid = int(zinfo(2,tid))
@@ -562,24 +565,28 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
          zfrac = real(igpc,JPRB)/real(NGPTOT,JPRB)
          if (tloc > 0.0_JPRB) then
             zmflops = 1.0e-06_JPRB * zfrac * zhpm * (real(NGPTOT,JPRB)/real(100,JPRB))/tloc
+            zthrput = real(NGPTOT,JPRB)/tloc
          else
             zmflops = 0.0_JPRB
+            zthrput = 0.0_JPRB
          endif
          write(0,1001) numomp,ngptot,igpc,icalls,nproma,tid,&
-              & int(tloc*1000.0_JPRB),int(zmflops),coreid
+              & int(tloc*1000.0_JPRB),int(zmflops),int(zthrput),coreid
       enddo
       tdiff = t2-t1
       zfrac = 1.0_JPRB
       if (tdiff > 0.0_JPRB) then
          zmflops = 1.0e-06_JPRB * zfrac * zhpm * (real(NGPTOT,JPRB)/real(100,JPRB))/tdiff
+         zthrput = real(NGPTOT,JPRB)/tdiff
       else
          zmflops = 0.0_JPRB
+         zthrput = 0.0_JPRB
       endif
       write(0,1002) numomp,ngptot,int(sum(zinfo(4,:))),ngpblks,nproma,-1,&
-           & int(tdiff*1000.0_JPRB),int(zmflops)
+           & int(tdiff*1000.0_JPRB),int(zmflops),int(zthrput)
 
       CALL errhead(0)
-      
+
       DEALLOCATE(zPLCRIT_AER)
       DEALLOCATE(zPICRIT_AER)
       DEALLOCATE(zPRE_ICE)
@@ -613,7 +620,7 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
       DEALLOCATE(zPSUPSAT)
       CALL DEALLOCATE_STATE_ARRAY(zcml, ztendency_cml)
       CALL DEALLOCATE_STATE_ARRAY(ztmp, ztendency_tmp)
-      
+
       ! Intent OUT
       CALL errcalc(0,'PCOVPTOT',zPCOVPTOT)
       DEALLOCATE(zPCOVPTOT)
@@ -657,7 +664,7 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
       CALL errcalc(0,'tendency_loc%cld',ztendency_loc)
 
       CALL DEALLOCATE_STATE_ARRAY(zloc, ztendency_loc)
-      
+
 1004  format(5x,'=> END CASE#',i0)
       write(0,1004) JPR
 
