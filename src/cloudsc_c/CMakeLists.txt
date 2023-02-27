@@ -67,7 +67,10 @@ if( HAVE_CLOUDSC_C )
         COMMAND bin/dwarf-cloudsc-c
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
+        # The OpenMP C runtime for some reason doesn't appreciate setting the number of threads
+        # in the application when OMP_NUM_THREADS is set, therefore we disable this here
+        # OMP 4
+        ENVIRONMENT OMP_STACKSIZE=1G
         CONDITION HAVE_OMP
     )
 

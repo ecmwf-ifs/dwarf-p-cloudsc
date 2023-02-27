@@ -20,10 +20,7 @@ then
   skipped_targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
 
   # Skip C target if built with nvhpc, segfaults for unknown reasons
-  skipped_targets+=(dwarf-cloudsc-c)
-
-  # Skip Loki-C target if built with nvhpc, fails with SIGFPE for unknown reasons
-  skipped_targets+=(dwarf-cloudsc-loki-c)
+  skipped_targets+=(dwarf-cloudsc-c dwarf-cloudsc-loki-c)
 fi
 
 exit_code=0
