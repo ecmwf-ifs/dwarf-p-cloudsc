@@ -231,7 +231,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
-  printf(" Reference MFLOP count for 100 columns : %10.1f\n", zhpm);
+  printf(" Reference MFLOP count for 100 columns : %12.8f\n", 1.0e-06 * zhpm);
   printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
     "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
   double zfrac, zmflops, zthrput;

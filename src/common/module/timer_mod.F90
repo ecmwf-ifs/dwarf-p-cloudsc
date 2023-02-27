@@ -130,7 +130,7 @@ CONTAINS
 1001  format(1x,5i10,1x,i4,' : ',3i10,:,' @ rank#',i0,':core#',i0)
 1002  format(1x,5i10,1x,i4,' : ',3i10,  ' : TOTAL @ rank#', i0)
 1003  format(1x,i4,' x',i4,4i10,1x,i4,' : ',3i10,' : TOTAL')
-1004  format(1x,'Reference MFLOP count for 100 columns :',1x,f10.1)
+1004  format(1x,'Reference MFLOP count for 100 columns :',1x,f12.8)
     DO TID=0, SELF%NUMOMP-1
       TLOC = SELF%TTHREAD(TID)
       ZFRAC = REAL(SELF%IGPC(TID),JPRB)/REAL(NGPTOT,JPRB)

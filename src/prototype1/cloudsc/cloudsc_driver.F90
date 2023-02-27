@@ -554,7 +554,7 @@ if (NGPTOT >= 1 .and. allocated(NPROMAS_IN)) then
 1000  format(1x,5a10,1x,a4,' : ',3a10)
 1001  format(1x,5i10,1x,i4,' : ',3i10,:,' @ core#',i0)
 1002  format(1x,5i10,1x,i4,' : ',3i10,  ' : TOTAL')
-1005  format(1x,'Reference MFLOP count for 100 columns :',1x,f10.1)
+1005  format(1x,'Reference MFLOP count for 100 columns :',1x,f12.8)
       write(0,1005) 1.0E-06_JPRB * ZHPM
       write(0,1000) 'NUMOMP','NGPTOT','#GP-cols','#BLKS','NPROMA','tid#','Time(msec)','MFlops/s','col/s'
       do tid=0,NUMOMP-1
