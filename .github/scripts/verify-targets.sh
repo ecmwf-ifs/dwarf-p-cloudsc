@@ -25,6 +25,7 @@ then
   if [[ "$cuda_flag" == "--with-cuda" ]]
   then
     targets+=(dwarf-cloudsc-gpu-scc-cuf)
+    targets+=(dwarf-cloudsc-gpu-scc-cuf-k-caching)
   fi
 fi
 
