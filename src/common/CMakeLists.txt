@@ -8,7 +8,6 @@
 
 ecbuild_enable_fortran(REQUIRED MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module)
 
-
 list(APPEND CLOUDSC_COMMON_SOURCES
     module/parkind1.F90
     module/yoecldp.F90
@@ -21,6 +20,7 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/timer_mod.F90
     module/mycpu.c
     module/ec_pmon_mod.F90
+    module/oml_mod.F90
     module/file_io_mod.F90
     module/expand_mod.F90
     module/validate_mod.F90
@@ -40,6 +40,12 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/fcttre_mod.cuf.F90
     module/yoethf.cuf.F90
     module/yomcst.cuf.F90
+    module/field_module.F90
+)
+
+list(APPEND CLOUDSC_FIELD_SOURCES
+    module/field_module.F90
+    module/cloudsc_field_state_mod.F90
 )
 
 if( HAVE_CUDA )
@@ -57,6 +63,9 @@ if( HAVE_CUDA )
 
     # Add CUDA-specific flags to the library if enabled
     list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
+
+    # If CUDA is enabled, we can also compile the FIELD API utilities
+    list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_FIELD_SOURCES} )
 endif()
 
 
@@ -74,7 +83,9 @@ endif()
 
 ecbuild_add_library( TARGET cloudsc-common-lib
     TYPE ${LIBRARY_TYPE}
-    DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    DEFINITIONS
+        ${CLOUDSC_DEFINITIONS}
+	$<${HAVE_CUDA}:USE_FIELD_API>
     SOURCES
         ${CLOUDSC_COMMON_SOURCES}
         $<${HAVE_MPI}:module/cloudsc_mpif.F90>
@@ -92,3 +103,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
 )
+
+if( HAVE_CUDA )
+    target_link_options( cloudsc-common-lib INTERFACE "-Mcuda" )
+endif()

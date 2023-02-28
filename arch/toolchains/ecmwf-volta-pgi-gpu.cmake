@@ -50,6 +50,8 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Ktrap=fp")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Kieee")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mdaz")
 
+set(ECBUILD_Fortran_LINK_FLAGS "-gpu=pinned")
+
 set( ECBUILD_Fortran_FLAGS_BIT "-O2 -gopt" )
 
 set( ECBUILD_C_FLAGS "-O2 -gopt -traceback" )
