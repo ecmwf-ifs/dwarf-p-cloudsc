@@ -56,7 +56,7 @@ INTEGER(KIND=JPIM) :: NGPTOT           ! Local number of grid points
 
 
 #ifdef CLOUDSC_GPU_SCC_FIELD
-TYPE(CLOUDSC_FIELD_STATE) :: FIELD_STATE
+TYPE(CLOUDSC_FIELD_STATE) :: GLOBAL_STATE
 #else
 TYPE(CLOUDSC_GLOBAL_STATE) :: GLOBAL_STATE
 #endif
@@ -95,18 +95,13 @@ ENDIF
 #ifdef CLOUDSC_GPU_SCC_FIELD
 CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_PACKED_STORAGE', PACKED_STORAGE)
 USE_PACKED = TRIM(PACKED_STORAGE) == 'ON' .OR. TRIM(PACKED_STORAGE) == '1'
-CALL FIELD_STATE%LOAD(NPROMA, NGPTOT, NGPTOTG, USE_PACKED=USE_PACKED)
 
-print *, 'Executing CLOUDSC-GPU, "SCC" variant with FIELD API, PACKED STORAGE', USE_PACKED
+! Create a global memory state using FIELD objects from serialized input data
+CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT, NGPTOTG, USE_PACKED=USE_PACKED)
 
- ! Call the driver to perform the parallel loop over our kernel
-CALL CLOUDSC_DRIVER_GPU_SCC_FIELD( &
-     & NUMOMP, NPROMA, FIELD_STATE%KLEV, NGPTOT, FIELD_STATE%NBLOCKS, NGPTOTG, &
-     & FIELD_STATE%KFLDX, FIELD_STATE%PTSPHY, FIELD_STATE &
-     & )
 #else
 
-! TODO: Create a global global memory state from serialized input data
+! Create a global memory state from serialized input data
 CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT, NGPTOTG)
 #endif
 
@@ -253,12 +248,19 @@ CALL CLOUDSC_DRIVER_GPU_SCC_HOIST(NUMOMP, NPROMA, GLOBAL_STATE%KLEV, NGPTOT, GLO
 #endif
 
 
-! Validate the output against serialized reference data
 #ifdef CLOUDSC_GPU_SCC_FIELD
-CALL FIELD_STATE%VALIDATE(NPROMA, NGPTOT, NGPTOTG)
-#else
-CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT, NGPTOTG)
+print *, 'Executing CLOUDSC-GPU, "SCC" variant with FIELD API, PACKED STORAGE', USE_PACKED
+
+! Call the driver to perform the parallel loop over our kernel
+CALL CLOUDSC_DRIVER_GPU_SCC_FIELD( &
+     & NUMOMP, NPROMA, GLOBAL_STATE%KLEV, NGPTOT, GLOBAL_STATE%NBLOCKS, NGPTOTG, &
+     & GLOBAL_STATE%KFLDX, GLOBAL_STATE%PTSPHY, GLOBAL_STATE &
+     & )
 #endif
+
+
+! Validate the output against serialized reference data
+CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT, NGPTOTG)
 
 ! Tear down MPI environment
 CALL CLOUDSC_MPI_END()
