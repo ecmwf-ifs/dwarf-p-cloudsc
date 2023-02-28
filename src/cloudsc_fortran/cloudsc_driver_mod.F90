@@ -20,7 +20,8 @@ MODULE CLOUDSC_DRIVER_MOD
 CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER( &
-     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, KFLDX, PTSPHY, &
+     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, &
+     & KFLDX, PTSPHY, &
      & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
      & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
      & PHRSW,    PHRLW, &
@@ -34,10 +35,14 @@ CONTAINS
      & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG, &
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG, &
      & PFSQLTUR, PFSQITUR, &
-     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN &
-     & )
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+     & YDOMCST, YDOETHF, YDECLDP )
     ! Driver routine that performans the parallel NPROMA-blocking and
     ! invokes the CLOUDSC kernel
+
+    USE YOECLDP  , ONLY : TECLDP
+    USE YOMCST   , ONLY : TOMCST
+    USE YOETHF   , ONLY : TOETHF
 
     INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG
     INTEGER(KIND=JPIM), INTENT(IN)    :: KFLDX
@@ -101,6 +106,10 @@ CONTAINS
     LOGICAL            :: LEC_PMON = .FALSE.
     CHARACTER(LEN=1)   :: CLEC_PMON
 
+    TYPE(TOMCST)    :: YDOMCST
+    TYPE(TOETHF)    :: YDOETHF
+    TYPE(TECLDP)    :: YDECLDP
+
     CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
     IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
 
@@ -155,7 +164,8 @@ CONTAINS
               & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
               & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
               & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-              & KFLDX)
+              & KFLDX, &
+              & YDOMCST, YDOETHF, YDECLDP)
 
          IF (LEC_PMON) THEN
            ! Sample power consuption
