@@ -16,6 +16,7 @@
 - Z. Piotrowski (ECMWF)
 - B. Reuter (ECMWF)
 - D. Salmond (ECMWF)
+- M. Staneker (ECMWF)
 - M. Tiedtke (ECMWF)
 - A. Tompkins (ECMWF)
 - S. Ubbiali (ETH Zuerich)
