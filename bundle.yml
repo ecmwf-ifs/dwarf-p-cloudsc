@@ -65,6 +65,7 @@ options :
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_CUDA=ON
+            ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel

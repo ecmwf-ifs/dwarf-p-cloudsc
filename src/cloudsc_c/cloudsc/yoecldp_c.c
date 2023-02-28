@@ -8,22 +8,13 @@
  * nor does it submit to any jurisdiction.
  */
 
-#ifndef CLOUDSC_DRIVER_H
-#define CLOUDSC_DRIVER_H
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <omp.h>
-
-#include "yomcst_c.h"
-#include "yoethf_c.h"
 #include "yoecldp_c.h"
 
-#include "load_state.h"
-#include "cloudsc_c.h"
-#include "cloudsc_validate.h"
+int nclv;      // number of microphysics variables
+int ncldql;    // liquid cloud water
+int ncldqi;    // ice cloud water
+int ncldqr;    // rain water
+int ncldqs;    // snow
+int ncldqv;    // vapour
 
-void cloudsc_driver(int numthreads, int numcols, int nproma);
-
-#endif
+struct TECLDP *yrecldp;

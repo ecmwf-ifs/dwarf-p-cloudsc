@@ -63,10 +63,10 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double *pvervel; //! Vertical velocity
   double *pap;         //! Pressure on full levels
   double *paph;       //! Pressure on half levels
-  double *plsm;           //! Land fraction (0-1) 
+  double *plsm;           //! Land fraction (0-1)
   int    *ktype;          //! Convection type 0,1,2
   double *plu;         //! Conv. condensate
-  double *plude;     //! Conv. detrained water 
+  double *plude;     //! Conv. detrained water
   double *plude_tmp;
   double *psnde;     //! Conv. detrained snow
   double *pmfu;       //! Conv. mass flux up
@@ -231,9 +231,10 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
-  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s\n",
-    "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s");
-  double zfrac, zmflops;
+  printf(" Reference MFLOP count for 100 columns : %12.8f\n", 1.0e-06 * zhpm);
+  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
+    "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
+  double zfrac, zmflops, zthrput;
   for (int t = 0; t < numthreads; t++) {
     const double tloc = zinfo[0][t];
     const int coreid = (int) zinfo[1][t];
@@ -242,11 +243,13 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     zfrac = (double)igpc / (double)numcols;
     if (tloc > 0.0) {
       zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tloc;
+      zthrput = (double)numcols / tloc;
     } else {
       zmflops = 0.;
+      zthrput = 0.;
     }
-    printf(" %10d%10d%10d%10d%10d %4d : %10d%10d @ core#\n",
-	   numthreads, numcols, igpc, icalls, nproma, t, (int)(tloc * 1000.), (int)zmflops);
+    printf(" %10d%10d%10d%10d%10d %4d : %10d%10d%10d @ core#\n",
+	   numthreads, numcols, igpc, icalls, nproma, t, (int)(tloc * 1000.), (int)zmflops, (int)zthrput);
   }
   double tdiff = t2 - t1;
   zfrac = 1.0;
@@ -255,8 +258,8 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   } else {
     zmflops = 0.0;
   }
-  printf(" %10d%10d%10d%10d%10d %4d : %10d%10d TOTAL\n",
-	 numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops);
+  printf(" %10d%10d%10d%10d%10d %4d : %10d%10d%10d TOTAL\n",
+	 numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops, (int)zthrput);
 
   cloudsc_validate(klon, nlev, nclv, numcols, nproma,
 		   plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,
@@ -264,9 +267,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 		   pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn,
 		   tend_loc_a, tend_loc_q, tend_loc_t, tend_loc_cld);
 
-  free(plcrit_aer); // ALLOCATE(PLCRIT_AER(KLON,KLEV)) 
-  free(picrit_aer); // ALLOCATE(PICRIT_AER(KLON,KLEV)) 
-  free(pre_ice);    // ALLOCATE(PRE_ICE(KLON,KLEV)) 
+  free(plcrit_aer); // ALLOCATE(PLCRIT_AER(KLON,KLEV))
+  free(picrit_aer); // ALLOCATE(PICRIT_AER(KLON,KLEV))
+  free(pre_ice);    // ALLOCATE(PRE_ICE(KLON,KLEV))
   free(pccn);
   free(pnice);
   free(pt);

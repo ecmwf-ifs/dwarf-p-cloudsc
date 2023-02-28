@@ -43,7 +43,7 @@ CONTAINS
     ! Driver routine that invokes the optimized CLAW-based CLOUDSC GPU kernel
 
     INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG
-    INTEGER(KIND=JPIM)                                    :: KFLDX 
+    INTEGER(KIND=JPIM)                                    :: KFLDX
     REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB), INTENT(IN)    :: PT(NPROMA, NLEV, NGPBLKS) ! T at start of callpar
     REAL(KIND=JPRB), INTENT(IN)    :: PQ(NPROMA, NLEV, NGPBLKS) ! Q at start of callpar
@@ -135,7 +135,7 @@ CONTAINS
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-!$acc parallel loop gang
+!$acc parallel loop gang vector_length(NPROMA)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -167,7 +167,7 @@ CONTAINS
 
     ENDDO
 !$acc end parallel loop
-    
+
     CALL TIMER%THREAD_END(TID)
 
 !$acc end data

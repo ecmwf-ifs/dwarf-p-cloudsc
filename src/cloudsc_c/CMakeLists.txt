@@ -22,8 +22,11 @@ if( HAVE_CLOUDSC_C )
         INSTALL_HEADERS LISTED
         SOURCES
             cloudsc/yoecldp_c.h
+            cloudsc/yoecldp_c.c
             cloudsc/yoethf_c.h
+            cloudsc/yoethf_c.c
             cloudsc/yomcst_c.h
+            cloudsc/yomcst_c.c
             cloudsc/load_state.h
             cloudsc/load_state.c
             cloudsc/cloudsc_c.h
@@ -64,7 +67,10 @@ if( HAVE_CLOUDSC_C )
         COMMAND bin/dwarf-cloudsc-c
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
+        # The OpenMP C runtime for some reason doesn't appreciate setting the number of threads
+        # in the application when OMP_NUM_THREADS is set, therefore we disable this here
+        # OMP 4
+        ENVIRONMENT OMP_STACKSIZE=1G
         CONDITION HAVE_OMP
     )
 
