@@ -11,28 +11,28 @@
 #ifndef YOETHF_H
 #define YOETHF_H
 
-double r2es;
-double r3les;
-double r3ies;
-double r4les;
-double r4ies;
-double r5les;
-double r5ies;
-double rvtmp2;
-double rhoh2o;
-double r5alvcp;
-double r5alscp;
-double ralvdcp;
-double ralsdcp;
-double ralfdcp;
-double rtwat;
-double rtber;
-double rtbercu;
-double rtice;
-double rticecu;
-double rtwat_rtice_r;
-double rtwat_rticecu_r;
-double rkoop1;
-double rkoop2;
+extern double r2es;
+extern double r3les;
+extern double r3ies;
+extern double r4les;
+extern double r4ies;
+extern double r5les;
+extern double r5ies;
+extern double rvtmp2;
+extern double rhoh2o;
+extern double r5alvcp;
+extern double r5alscp;
+extern double ralvdcp;
+extern double ralsdcp;
+extern double ralfdcp;
+extern double rtwat;
+extern double rtber;
+extern double rtbercu;
+extern double rtice;
+extern double rticecu;
+extern double rtwat_rtice_r;
+extern double rtwat_rticecu_r;
+extern double rkoop1;
+extern double rkoop2;
 
 #endif
