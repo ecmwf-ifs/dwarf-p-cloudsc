@@ -38,8 +38,8 @@ CONTAINS
     !& REDUCTION(MIN:ZMINVAL, MAX:ZMAX_VAL_ERR, +:ZSUM_ERR_ABS)
     DO B=1, NBLOCKS
       BSIZE = MIN(NLON, NGPTOT - (B-1)*NLON)  ! Field block size
-      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(MERGE(1, 0, FIELD(:,B))))
-      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(MERGE(1, 0, FIELD(:,B))))
+      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(MERGE(1, 0, FIELD(1:BSIZE,B))))
+      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(MERGE(1, 0, FIELD(1:BSIZE,B))))
       DO JK=1, bsize
         ! Difference against reference result in one-norm sense
         ZDIFF = ABS(MERGE(1, 0, FIELD(JK,B)) - MERGE(1, 0, REF(JK,B)))
@@ -86,8 +86,8 @@ CONTAINS
     !& REDUCTION(MIN:ZMINVAL, MAX:ZMAX_VAL_ERR, +:ZSUM_ERR_ABS)
     DO B=1, NBLOCKS
       BSIZE = MIN(NLON, NGPTOT - (B-1)*NLON)  ! Field block size
-      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(:,B)))
-      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(:,B)))
+      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(1:BSIZE,B)))
+      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(1:BSIZE,B)))
       DO JK=1, bsize
         ! Difference against reference result in one-norm sense
         ZDIFF = ABS(FIELD(JK,B) - REF(JK,B))
@@ -134,8 +134,8 @@ CONTAINS
     !& REDUCTION(MIN:ZMINVAL, MAX:ZMAX_VAL_ERR, +:ZSUM_ERR_ABS)
     DO B=1, NBLOCKS
       BSIZE = MIN(NLON, NGPTOT - (B-1)*NLON)  ! Field block size
-      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(:,B)))
-      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(:,B)))
+      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(1:BSIZE,B)))
+      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(1:BSIZE,B)))
       DO JK=1, bsize
         ! Difference against reference result in one-norm sense
         ZDIFF = ABS(FIELD(JK,B) - REF(JK,B))
@@ -181,8 +181,8 @@ CONTAINS
     !& REDUCTION(MIN:ZMINVAL, MAX:ZMAX_VAL_ERR, +:ZSUM_ERR_ABS)
     DO B=1, NBLOCKS
       BSIZE = MIN(NLON, NGPTOT - (B-1)*NLON)  ! Field block size
-      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(:,:,B)))
-      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(:,:,B)))
+      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(1:BSIZE,:,B)))
+      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(1:BSIZE,:,B)))
       DO JL=1, NLEV
         DO JK=1, bsize
           ! Difference against reference result in one-norm sense
@@ -229,8 +229,8 @@ CONTAINS
     !& REDUCTION(MIN:ZMINVAL, MAX:ZMAX_VAL_ERR, +:ZSUM_ERR_ABS)
     DO B=1, NBLOCKS
       BSIZE = MIN(NLON, NGPTOT - (B-1)*NLON)  ! Field block size
-      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(:,:,:,B)))
-      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(:,:,:,B)))
+      ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD(1:BSIZE,:,:,B)))
+      ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD(1:BSIZE,:,:,B)))
       DO JM=1, NDIM
         DO JL=1, NLEV
           DO JK=1, bsize
