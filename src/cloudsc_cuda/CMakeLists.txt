@@ -47,8 +47,12 @@ if( HAVE_CLOUDSC_CUDA )
       PUBLIC 
       ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     )
-    target_compile_options(dwarf-cloudsc-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+      target_compile_options(dwarf-cloudsc-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
+    else()
+      target_compile_options(dwarf-cloudsc-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
 	    -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+    endif()
 
     set_target_properties( dwarf-cloudsc-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     
@@ -98,8 +102,12 @@ if( HAVE_CLOUDSC_CUDA )
       PUBLIC
       ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     )
-    target_compile_options(dwarf-cloudsc-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+      target_compile_options(dwarf-cloudsc-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
+    else()
+      target_compile_options(dwarf-cloudsc-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
                        -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+    endif()
 
     set_target_properties( dwarf-cloudsc-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
@@ -113,7 +121,7 @@ if( HAVE_CLOUDSC_CUDA )
     
     ecbuild_add_test(
         TARGET dwarf-cloudsc-cuda-hoist-serial
-        COMMAND bin/dwarf-cloudsc-hoist
+        COMMAND bin/dwarf-cloudsc-cuda-hoist
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -149,9 +157,12 @@ if( HAVE_CLOUDSC_CUDA )
       PUBLIC
       ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     )
-    target_compile_options(dwarf-cloudsc-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+      target_compile_options(dwarf-cloudsc-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
+    else()
+      target_compile_options(dwarf-cloudsc-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
                        -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
-
+    endif()
     set_target_properties( dwarf-cloudsc-cuda-k-caching-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
@@ -175,5 +186,7 @@ if( HAVE_CLOUDSC_CUDA )
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
 
+else()
+    ecbuild_info( "Serialbox and/or CUDA not found, disabling CUDA prototype(s)" )
 endif()
 

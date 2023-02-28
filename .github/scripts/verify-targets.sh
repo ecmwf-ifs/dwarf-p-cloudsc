@@ -26,6 +26,7 @@ then
   then
     targets+=(dwarf-cloudsc-gpu-scc-cuf)
     targets+=(dwarf-cloudsc-gpu-scc-cuf-k-caching)
+    targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
   fi
 fi
 
