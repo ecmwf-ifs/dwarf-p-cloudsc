@@ -60,6 +60,12 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   move parameter structures to constant memory. To enable this variant,
   a suitable CUDA installation is required and the `--with-cuda` flag
   needs to be passed at the build stage.
+- **dwarf-cloudsc-gpu-scc-cuf-k-caching**: GPU-enabled and further
+  optimized version of CLOUDSC that uses the SCC loop layout in
+  combination with loop fusion and temporary local array demotion, implemented
+  using CUDA-Fortran (CUF). To enable this variant,
+  a suitable CUDA installation is required and the `--with-cuda` flag
+  needs to be passed at the build stage.
 
 ## Download and Installation
 
