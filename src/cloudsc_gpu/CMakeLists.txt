@@ -45,7 +45,7 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT OFF
-    CONDITION Serialbox_FOUND OR HDF5_FOUND
+    CONDITION HAVE_CUDA AND ( Serialbox_FOUND OR HDF5_FOUND )
 )
 
 
@@ -238,6 +238,11 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
+
+    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+        target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
+    endif()
 endif()
 
 
