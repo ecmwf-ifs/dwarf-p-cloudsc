@@ -19,7 +19,7 @@ then
   # Skip CUDA targets if built with nvhpc
   skipped_targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
   skipped_targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
-
+  skipped_targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
   # Skip C target if built with nvhpc, segfaults for unknown reasons
   skipped_targets+=(dwarf-cloudsc-c dwarf-cloudsc-loki-c)
 fi
