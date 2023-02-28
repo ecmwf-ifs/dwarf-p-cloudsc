@@ -24,10 +24,12 @@ then
   fi
   if [[ "$cuda_flag" == "--with-cuda" ]]
   then
-    targets+=(dwarf-cloudsc-gpu-scc-cuf)
-    targets+=(dwarf-cloudsc-gpu-scc-cuf-k-caching)
-    targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
+    targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
     targets+=(dwarf-cloudsc-gpu-scc-field)
+  fi
+  if [[ "$cuda_flag" == "--with-cuda" && "$io_library_flag" == "--with-serialbox" ]]
+  then
+      targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
   fi
 fi
 
