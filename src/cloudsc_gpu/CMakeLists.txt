@@ -172,10 +172,6 @@ if( HAVE_CLOUDSC_GPU_SCC_CUF )
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    # Small hack around the fact that CMake does not understand
-    # CUDA-Fortran natively yet. So we simply force linking here.
-    target_link_options(dwarf-cloudsc-gpu-scc-cuf PUBLIC "-Mcuda")
-
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-cuf-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-cuf
@@ -203,10 +199,6 @@ if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
             cloudsc-common-lib
 	    DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF_K_CACHING
     )
-
-    # Small hack around the fact that CMake does not understand
-    # CUDA-Fortran natively yet. So we simply force linking here.
-    target_link_options(dwarf-cloudsc-gpu-scc-cuf-k-caching PUBLIC "-Mcuda")
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-cuf-k-caching-serial
