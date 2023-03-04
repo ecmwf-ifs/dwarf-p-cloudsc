@@ -26,6 +26,7 @@ dependencies = [
     "f90wrap",
     "click",
     "h5py",
+    "sorcery",
 ]
 
 [project.urls]

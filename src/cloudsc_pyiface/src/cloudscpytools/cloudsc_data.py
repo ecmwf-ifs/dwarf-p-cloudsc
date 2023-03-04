@@ -22,12 +22,16 @@ clsc = import_module('cloudsc')
 NCLV = 5      # number of microphysics variables
 
 
-def define_fortran_fields(nproma,nlev,nblocks):
+def define_fortran_fields(nparms): #nproma,nlev,nblocks):
     """
     define_fortran_fields returns:
     - zero NumPy arrays that will further be used as an output of Fortran kernel computation.
     - empty Fortran paramter datatypes that are created used constructors supplied by f90wrap.
     """
+    nproma =nparms['NPROMA']
+    nlev   =nparms['NLEV']
+    nblocks=nparms['NBLOCKS']
+
     fields = OrderedDict()
 
     argnames_nlev = [
@@ -89,13 +93,16 @@ def define_fortran_fields(nproma,nlev,nblocks):
 
     return fields
 
-def field_c_to_fortran(dims,cfield):
+def field_c_to_fortran(dims,cfield,nparms):
     ffieldtmp=np.asfortranarray(np.transpose(np.reshape(
               np.ascontiguousarray(cfield),dims,order='C')))
-    bfield=field_linear_to_block(dims,ffieldtmp)
+    bfield=field_linear_to_block(dims,ffieldtmp,nparms)
     return bfield
 
-def field_linear_to_block(dims,lfield):
+def field_linear_to_block(dims,lfield,nparms):
+    nproma =nparms['NPROMA']
+    nlev   =nparms['NLEV']
+    nblocks=nparms['NBLOCKS']
    #ldims=len(dims)
    #if ldims == 2:
    #      clsc.expand_mod.expand_r1(lfield, bfield,  nlon, nproma, ngptot, nblocks)  
@@ -106,11 +113,14 @@ def field_linear_to_block(dims,lfield):
     bfield=lfield
     return bfield
 
-def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
+def load_input_fortran_fields(path, nparms, fields):
     """
     load_input_fortran_fields returns:
     - set of variables needed to initiate computation of the Fortran kernel.
     """
+    nproma =nparms['NPROMA']
+    nlev   =nparms['NLEV']
+    nblocks=nparms['NBLOCKS']
     argnames_nlev = [
         'pt', 'pq',
         'pvfa', 'pvfl', 'pvfi', 'pdyna', 'pdynl', 'pdyni',
@@ -148,23 +158,23 @@ def load_input_fortran_fields(path, nproma, nlev, nblocks, fields):
 
         for argname in argnames_nlev:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms)
 
         for argname in argnames_nlevp:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()],nparms)
 
         for argname in argnames_withnclv:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()],nparms)
 
         for argname in argnames_tend:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms)
 
         for argname in argnames_nproma:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()],nparms)
 
         for argname in argnames_scalar:
             print('Loading field:',argname)
@@ -237,11 +247,14 @@ def field_fortran_to_c(ffield):
     cfield=np.ascontiguousarray(np.transpose(ffield))
     return cfield
 
-def convert_fortran_output_to_python (nproma,nlev,nblocks,input_fields):
+def convert_fortran_output_to_python (nparms,input_fields):
     """
     convert_fortran_output_to_python converts Fortran-format fields that are to be compared to
     reference results into a Python format.
     """
+    nproma =nparms['NPROMA']
+    nlev   =nparms['NLEV']
+    nblocks=nparms['NBLOCKS']
 
     fields = OrderedDict()
     argnames_nlev = [

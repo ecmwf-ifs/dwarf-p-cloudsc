@@ -4,6 +4,7 @@ from pathlib import Path
 from operator import itemgetter
 from cloudscpytools import cloudsc_data
 from importlib import import_module
+from sorcery import dict_of
 import click
 
 @click.command()
@@ -11,9 +12,8 @@ import click
     "--numomp",
     type=int,
     default=1,
-    help="Python driver to execute IFS physics kernel (CLOUDSC)."
-#    "\n\nOptions: numomp, ngptot, nproma",
-#    "\n\nNumber of OPenMP threads used for the benchmark. Default: 1",
+    help=
+     "Number of OPenMP threads used for the benchmark. Default: 1",
 )
 @click.option(
     "--ngptot",
@@ -33,9 +33,10 @@ def main(
     nproma: int
 ) -> None:
     """
-    Driver that:
-    - loads input variables and parameters from .h5 file,
-    - invokes Fortran kernel computation,
+    Python driver to execute IFS physics kernel (CLOUDSC). \n
+    Performs the following tasks: \n
+    - loads input variables and parameters from .h5 file,  \n
+    - invokes Fortran kernel computation, \n
     - validates against reference results read from another .h5 file.
     """
     
@@ -48,12 +49,14 @@ def main(
     NPROMA=nproma
     NUMOMP=numomp
     NLEV=137
+    NDIM=5
     NGPTOT=ngptot
     NGPTOTG=ngptot
     NBLOCKS= int( (ngptot / nproma) + min(ngptot % nproma, 1) ) 
     PTSPHY=3600.
+    npars = dict_of(NLEV, NGPTOT, NGPTOTG, NPROMA, NBLOCKS, NDIM)
     
-    clsfields=cloudsc_data.define_fortran_fields(NPROMA,NLEV,NBLOCKS)
+    clsfields=cloudsc_data.define_fortran_fields(npars) #NPROMA,NLEV,NBLOCKS)
     
     
     rootpath = Path(__file__).resolve().parents[3]
@@ -71,7 +74,7 @@ def main(
                                                    itemgetter('ydomcst')(clsfields),
                                                    itemgetter('ydoethf')(clsfields))
     
-    input_fort_fields = cloudsc_data.load_input_fortran_fields(input_path,NPROMA,NLEV,NBLOCKS,clsfields)
+    input_fort_fields = cloudsc_data.load_input_fortran_fields(input_path,npars,clsfields)
     
     clsc.cloudsc_driver_mod.cloudsc_driver(
                              NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, NCLV,
@@ -128,7 +131,7 @@ def main(
                              itemgetter('ydoethf')(clsfields), 
                              itemgetter('ydecldp')(clsfields))
     
-    output_fields = cloudsc_data.convert_fortran_output_to_python (NPROMA,NLEV,NBLOCKS,clsfields)
+    output_fields = cloudsc_data.convert_fortran_output_to_python (npars,clsfields)
     
     print ("Python-side validation:")
     cloudsc_data.cloudsc_validate(output_fields, ref_fields)

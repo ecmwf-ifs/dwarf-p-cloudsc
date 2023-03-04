@@ -7,7 +7,6 @@ source ./cleanvenv/bin/activate
 ./cloudsc-bundle create && ./cloudsc-bundle build --build-type=release --arch=./arch/ecmwf/hpc2020/intel/2021.4.0/ && cd build; . env.sh; ctest --verbose
 
 TODOs:
-- add click to accept command line parameters for Python driver
 - should Python be touched in the topmost cmakelists.txt ?
 - remove locals
 - activate expand routines (currently commented out for no input parameters are available) to enable block memory structure
