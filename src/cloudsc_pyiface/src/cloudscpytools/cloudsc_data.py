@@ -93,24 +93,49 @@ def define_fortran_fields(nparms): #nproma,nlev,nblocks):
 
     return fields
 
-def field_c_to_fortran(dims,cfield,nparms):
+def field_c_to_fortran(dims,cfield,nparms,KLON):
     ffieldtmp=np.asfortranarray(np.transpose(np.reshape(
               np.ascontiguousarray(cfield),dims,order='C')))
-    bfield=field_linear_to_block(dims,ffieldtmp,nparms)
+    bfield=field_linear_to_block(dims,ffieldtmp,nparms,KLON)
     return bfield
 
-def field_linear_to_block(dims,lfield,nparms):
+def field_linear_to_block(dims,lfield,nparms,nlon):
     nproma =nparms['NPROMA']
-    nlev   =nparms['NLEV']
+    #nlev   =nparms['NLEV']
+    nlev   =dims[1] #nparms['NLEV']
     nblocks=nparms['NBLOCKS']
-   #ldims=len(dims)
-   #if ldims == 2:
-   #      clsc.expand_mod.expand_r1(lfield, bfield,  nlon, nproma, ngptot, nblocks)  
-   #elif ldims == 3:
-   #      clsc.expand_mod.expand_r2(lfield, bfield,  nlon, nproma, nlev, ngptot, nblocks)  
-   #elif ldims == 4:
-   #      clsc.expand_mod.expand_r3(lfield, bfield,  nlon, nproma, nlev, ndim,  ngptot, nblocks)  
-    bfield=lfield
+    ngptot =nparms['NGPTOT']
+    ndim   =nparms['NDIM']
+    ldims=len(dims)
+    if lfield.dtype == "float64":
+       bfield=np.asfortranarray(np.transpose(np.zeros(shape=dims)))
+       if ldims == 2:
+             clsc.expand_mod.expand_r1(lfield, bfield,  nlon, nproma, ngptot, nblocks)  
+       elif ldims == 3:
+             clsc.expand_mod.expand_r2(lfield, bfield,  nlon, nproma, nlev, ngptot, nblocks)  
+       elif ldims == 4:
+#            clsc.expand_mod.expand_r3(lfield, bfield,  nlon, nproma, nlev, ndim,  ngptot, nblocks)  
+             bfield=lfield
+       else: 
+             print ("Wrong float ldim")
+    elif lfield.dtype == "bool":
+#Workaround - otherwise complains about type disagreement at runtime
+       bfield=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype='int32')))
+       if ldims == 2:
+             tlfield=lfield.astype('int32')
+             clsc.expand_mod.expand_l1(tlfield, bfield,  nlon, nproma, ngptot, nblocks)  
+       else: 
+             print ("Wrong bool ldim")
+    elif lfield.dtype == "int32":
+       bfield=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype='int32')))
+       if ldims == 2:
+             clsc.expand_mod.expand_i1(lfield, bfield,  nlon, nproma, ngptot, nblocks)  
+       else: 
+             print ("Wrong int ldim")
+    else:
+       print ("Wrong dtype")
+
+#    bfield=lfield
     return bfield
 
 def load_input_fortran_fields(path, nparms, fields):
@@ -155,26 +180,27 @@ def load_input_fortran_fields(path, nparms, fields):
         fields['KLON'] = f['KLON'][0]
         fields['KLEV'] = f['KLEV'][0]
         fields['PTSPHY'] = f['PTSPHY'][0]
+        KLON=fields['KLON']
 
         for argname in argnames_nlev:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms)
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
 
         for argname in argnames_nlevp:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()],nparms)
+            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()],nparms,KLON)
 
         for argname in argnames_withnclv:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()],nparms)
+            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()],nparms,KLON)
 
         for argname in argnames_tend:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms)
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
 
         for argname in argnames_nproma:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()],nparms)
+            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()],nparms,KLON)
 
         for argname in argnames_scalar:
             print('Loading field:',argname)
