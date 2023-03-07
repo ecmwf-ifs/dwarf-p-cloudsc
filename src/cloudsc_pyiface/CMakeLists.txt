@@ -128,7 +128,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 		   ${F2PY_COMMON_SOURCES} 
 		   ${F2PY_DWARF_SOURCES} 
 	     	    > f2py_log.txt
-                  #2> f2py_log_err.txt
+                   2> f2py_log_err.txt || (exit 0)
           COMMAND echo "Runnning pip using the following Python executable"
           COMMAND echo ${PYTHON_EXECUTABLE}
           COMMAND echo "Copy output of f90wrap to CLOUDSC Python driver package directory"
