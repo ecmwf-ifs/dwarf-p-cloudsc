@@ -273,6 +273,10 @@ contains
     real(kind=jprb), intent(inout) :: field(nproma, nlev, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
+    print *,"nlon, ngptot",nlon,ngptot
+    print *,"nproma,nlev,nblocks",nproma,nlev,nblocks
+    print *,"buffer shape",shape(buffer)
+    print *,"field shape",shape(field)
 
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
@@ -306,7 +310,10 @@ contains
     real(kind=jprb), intent(inout) :: field(nproma, nlev, ndim, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
-
+    print *,"nlon, ngptot",nlon,ngptot
+    print *,"nproma,nlev,ndim,nblocks",nproma,nlev,ndim,nblocks
+    print *,"buffer shape",shape(buffer)
+    print *,"field shape",shape(field)
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
@@ -334,4 +341,41 @@ contains
 !$omp end parallel do
   end subroutine expand_r3
 
+  subroutine expand_r3bis(buffer, field, nlon, nproma,  ndim, ngptot, nblocks)
+    real(kind=jprb), intent(inout) :: buffer(nlon, 137, ndim)
+    real(kind=jprb), intent(inout) :: field(nproma, 137, ndim, nblocks)
+    integer(kind=jpim), intent(in) :: nlon, ndim, nproma, ngptot, nblocks
+    integer(kind=jpim) :: nlev
+    integer :: b, gidx, bsize, fidx, fend, bidx, bend
+    nlev=137
+    print *,"nlon, ngptot",nlon,ngptot
+    print *,"nproma,nlev,ndim,nblocks",nproma,nlev,ndim,nblocks
+    print *,"buffer shape",shape(buffer)
+    print *,"field shape",shape(field)
+!$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
+    do b=1, nblocks
+       gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
+       bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
+
+       ! First read, might not be aligned
+       bidx = mod(gidx-1,nlon)+1
+       bend = min(nlon,bidx+bsize-1)
+       fidx = 1
+       fend = bend - bidx + 1
+       field(fidx:fend,:,:,b) = buffer(bidx:bend,:,:)
+
+       ! Fill block by looping over buffer
+       do while (fend < bsize)
+         fidx = fend + 1
+         bidx = 1
+         bend = min(bsize - fidx+1, nlon)
+         fend = fidx + bend - 1
+         field(fidx:fend,:,:,b) = buffer(bidx:bend,:,:)
+       end do
+
+       ! Zero out the remainder of last block
+       field(bsize+1:nproma,:,:,b) = 0.0_JPRB
+    end do
+!$omp end parallel do
+  end subroutine expand_r3bis
 end module expand_mod
