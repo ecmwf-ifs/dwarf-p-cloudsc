@@ -22,7 +22,7 @@ clsc = import_module('cloudsc')
 NCLV = 5      # number of microphysics variables
 
 
-def define_fortran_fields(nparms): #nproma,nlev,nblocks):
+def define_fortran_fields(nparms): 
     """
     define_fortran_fields returns:
     - zero NumPy arrays that will further be used as an output of Fortran kernel computation.
@@ -316,40 +316,47 @@ def convert_fortran_output_to_python (nparms,input_fields):
     ]
 
     for argname in argnames_nlev:
-        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0])
+#        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0])
+        fields[argname] = input_fields[argname]
 
     for argname in argnames_nlevp:
-        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0]) 
+#        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0]) 
+        fields[argname] = input_fields[argname] 
 
     for argname in argnames_nproma:
-        fields[argname] = field_fortran_to_c(input_fields[argname][:,0])
+#        fields[argname] = field_fortran_to_c(input_fields[argname][:,0])
+        fields[argname] = input_fields[argname]
 
     for argname in argnames_tend:
-        locals()[argname] = np.zeros(shape=(nproma,nlev,nblocks), order='F')
+        fields[argname] = np.zeros(shape=(nproma,nlev,nblocks), order='F')
 
     for argname in argnames_tend_cld:
-        locals()[argname] = np.zeros(shape=(nproma,nlev,NCLV,nblocks), order='F')
+        fields[argname] = np.zeros(shape=(nproma,nlev,NCLV,nblocks), order='F')
 
 
     unpack_buffer_to_tendencies(input_fields ['buffer_loc'],
-                                locals() ['tendency_loc_a'],
-                                locals() ['tendency_loc_t'],
-                                locals() ['tendency_loc_q'],
-                                locals() ['tendency_loc_cld'])
+                                      fields ['tendency_loc_a'],
+                                      fields ['tendency_loc_t'],
+                                      fields ['tendency_loc_q'],
+                                      fields ['tendency_loc_cld'])
 
-    fields['tendency_loc_a'  ] = field_fortran_to_c(locals()['tendency_loc_a'  ][:,:,0])
-    fields['tendency_loc_t'  ] = field_fortran_to_c(locals()['tendency_loc_t'  ][:,:,0])
-    fields['tendency_loc_q'  ] = field_fortran_to_c(locals()['tendency_loc_q'  ][:,:,0])
-    fields['tendency_loc_cld'] = field_fortran_to_c(locals()['tendency_loc_cld'][:,:,:,0])
+#   fields['tendency_loc_a'  ] = field_fortran_to_c(input_fields['tendency_loc_a'  ][:,:,0])
+#   fields['tendency_loc_t'  ] = field_fortran_to_c(input_fields['tendency_loc_t'  ][:,:,0])
+#   fields['tendency_loc_q'  ] = field_fortran_to_c(input_fields['tendency_loc_q'  ][:,:,0])
+#   fields['tendency_loc_cld'] = field_fortran_to_c(input_fields['tendency_loc_cld'][:,:,:,0])
 
     return fields
 
-def load_reference_fields (path):
+def load_reference_fields (path,nparms):
     """
     load_reference_fields loads reference results of Fortran computation from the .h5 file
     """
 
+    nproma =nparms['NPROMA']
+    nlev   =nparms['NLEV']
+    nblocks=nparms['NBLOCKS']
     fields = OrderedDict()
+
     argnames_nlev = [
         'plude', 'pcovptot'
     ]
@@ -374,25 +381,33 @@ def load_reference_fields (path):
     ]
 
     with h5py.File(path, 'r') as f:
+        fields['KLON'] = f['KLON'][0]
+        fields['KLEV'] = f['KLEV'][0]
+        KLON=fields['KLON']
         for argname in argnames_nlev:
             print('Loading reference field:',argname)
-            fields[argname] = np.ascontiguousarray(f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
+#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_nlevp:
             print('Loading reference field:',argname)
-            fields[argname] = np.ascontiguousarray(f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()],nparms,KLON)
+#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_nproma:
             print('Loading reference field:',argname)
-            fields[argname] = np.ascontiguousarray(f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()],nparms,KLON)
+#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_tend:
             print('Loading reference field:',argname)
-            fields[argname] = np.ascontiguousarray(f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
+#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_tend_cld:
             print('Loading reference field:',argname)
-            fields[argname] = np.ascontiguousarray(f[argname.upper()])
+            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()],nparms,KLON)
+#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
     return fields
 

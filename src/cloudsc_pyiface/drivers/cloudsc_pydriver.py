@@ -65,7 +65,7 @@ def main(
     
     # Get referennce solution fields from file
     ref_path = rootpath/'config-files/reference.h5'
-    ref_fields = cloudsc_data.load_reference_fields(path=ref_path)
+    ref_fields = cloudsc_data.load_reference_fields(path=ref_path,nparms=npars)
     
     
     NCLV = 5      # number of microphysics variables
