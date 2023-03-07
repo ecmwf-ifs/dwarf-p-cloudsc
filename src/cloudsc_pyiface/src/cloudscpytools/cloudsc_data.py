@@ -6,23 +6,20 @@ cloudsc_data module consist of utilities that:
 - validates reference vs. computed fields;
 - other, purely technical utilities.
 """
-import sys,os
+import sys
+import os
 from collections import OrderedDict
+from importlib   import import_module
 import h5py
 import numpy as np
-from importlib import import_module
 here = os.getcwd()
 cldir = here + '/../../cloudsc-dwarf/src/cloudsc_pyiface'
 if cldir not in sys.path:
     sys.path.append(cldir)
 clsc = import_module('cloudsc')
-
-
-
 NCLV = 5      # number of microphysics variables
 
-
-def define_fortran_fields(nparms): 
+def define_fortran_fields(nparms):
     """
     define_fortran_fields returns:
     - zero NumPy arrays that will further be used as an output of Fortran kernel computation.
@@ -93,15 +90,22 @@ def define_fortran_fields(nparms):
 
     return fields
 
-def field_c_to_fortran(dims,cfield,nparms,KLON):
-    #ffieldtmp=np.asfortranarray(np.transpose(np.reshape(
-    #          np.ascontiguousarray(cfield),dims,order='C')))
+def field_c_to_fortran(dims,cfield,nparms,klon):
+    """
+    field_c_to_fortran:
+    1) transposes C array input to Fortran array
+    2) rewrites Fortran linear array into block structure
+    """
     ffieldtmp=np.asfortranarray(np.transpose(
               np.ascontiguousarray(cfield)))
-    bfield=field_linear_to_block(dims,ffieldtmp,nparms,KLON)
+    bfield=field_linear_to_block(dims,ffieldtmp,nparms,klon)
     return bfield
 
 def field_linear_to_block(dims,lfield,nparms,nlon):
+    """
+    field_linear_to_block:
+    rewrites Fortran linear array into block structure
+    """
     nproma =nparms['NPROMA']
     nlev   =dims[1] #nparms['NLEV']
     nblocks=nparms['NBLOCKS']
@@ -109,43 +113,44 @@ def field_linear_to_block(dims,lfield,nparms,nlon):
     ndim   =nparms['NDIM']
     ldims=len(dims)
     if lfield.dtype == "float64":
-       if ldims == 2:
-             b2field=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype="float64")))
-             clsc.expand_mod.expand_r1(lfield, b2field,  nlon, nproma, ngptot, nblocks)  
-             bfield=b2field
-       elif ldims == 3:
-             b3field=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype="float64")))
-             clsc.expand_mod.expand_r2(lfield, b3field,  nlon, nproma, nlev, ngptot, nblocks)  
-             bfield=b3field
-       elif ldims == 4:
-             b4field=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype="float64")))
+        if ldims == 2:
+            b2field=np.asfortranarray(np.transpose(
+                                      np.zeros(shape=dims, dtype="float64")))
+            clsc.expand_mod.expand_r1(lfield, b2field,  nlon, nproma, ngptot, nblocks)
+            bfield=b2field
+        elif ldims == 3:
+            b3field=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype="float64")))
+            clsc.expand_mod.expand_r2(lfield, b3field,  nlon, nproma, nlev, ngptot, nblocks)
+            bfield=b3field
+        elif ldims == 4:
+            b4field=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype="float64")))
+#Note that we are using expand_r3bis here.
+#Original expand_r3 does not pass nlev from python to Fortran
 #            print ("This is 4D field")
 #            print ("lfield")
 #            print (lfield.shape)
 #            print ("bfield")
 #            print (b4field.shape)
-             clsc.expand_mod.expand_r3bis(lfield, b4field,  nlon, nproma, ndim,  ngptot, nblocks)  
-             bfield=b4field
-       else: 
-             print ("Wrong float ldim")
+            clsc.expand_mod.expand_r3bis(lfield, b4field,  nlon, nproma, ndim,  ngptot, nblocks)
+            bfield=b4field
+        else:
+            print ("Wrong float ldim")
     elif lfield.dtype == "bool":
-#Workaround - otherwise complains about type disagreement at runtime
-       bfield=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype='int32')))
-       if ldims == 2:
-             tlfield=lfield.astype('int32')
-             clsc.expand_mod.expand_l1(tlfield, bfield,  nlon, nproma, ngptot, nblocks)  
-       else: 
-             print ("Wrong bool ldim")
+#Workaround - using type int32, otherwise complains about type disagreement at runtime
+        bfield=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype='int32')))
+        if ldims == 2:
+            tlfield=lfield.astype('int32')
+            clsc.expand_mod.expand_l1(tlfield, bfield,  nlon, nproma, ngptot, nblocks)
+        else:
+            print ("Wrong bool ldim")
     elif lfield.dtype == "int32":
-       bfield=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype='int32')))
-       if ldims == 2:
-             clsc.expand_mod.expand_i1(lfield, bfield,  nlon, nproma, ngptot, nblocks)  
-       else: 
-             print ("Wrong int ldim")
+        bfield=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype='int32')))
+        if ldims == 2:
+            clsc.expand_mod.expand_i1(lfield, bfield,  nlon, nproma, ngptot, nblocks)
+        else:
+            print ("Wrong int ldim")
     else:
-       print ("Wrong dtype")
-
-#    bfield=lfield
+        print ("Wrong dtype")
     return bfield
 
 def load_input_fortran_fields(path, nparms, fields):
@@ -190,27 +195,32 @@ def load_input_fortran_fields(path, nparms, fields):
         fields['KLON'] = f['KLON'][0]
         fields['KLEV'] = f['KLEV'][0]
         fields['PTSPHY'] = f['PTSPHY'][0]
-        KLON=fields['KLON']
+        klon=fields['KLON']
 
         for argname in argnames_nlev:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_nlevp:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_withnclv:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_tend:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_nproma:
             print('Loading field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_scalar:
             print('Loading field:',argname)
@@ -279,10 +289,6 @@ def load_input_parameters(path,yrecldp,yrephli,yrmcst,yrethf):
             attrkey = k.lower()
             setattr(yrethf, attrkey, f[k][0])
 
-def field_fortran_to_c(ffield):
-    cfield=np.ascontiguousarray(np.transpose(ffield))
-    return cfield
-
 def convert_fortran_output_to_python (nparms,input_fields):
     """
     convert_fortran_output_to_python converts Fortran-format fields that are to be compared to
@@ -320,7 +326,7 @@ def convert_fortran_output_to_python (nparms,input_fields):
         fields[argname] = input_fields[argname]
 
     for argname in argnames_nlevp:
-        fields[argname] = input_fields[argname] 
+        fields[argname] = input_fields[argname]
 
     for argname in argnames_nproma:
         fields[argname] = input_fields[argname]
@@ -376,26 +382,31 @@ def load_reference_fields (path,nparms):
     with h5py.File(path, 'r') as f:
         fields['KLON'] = f['KLON'][0]
         fields['KLEV'] = f['KLEV'][0]
-        KLON=fields['KLON']
+        klon=fields['KLON']
         for argname in argnames_nlev:
             print('Loading reference field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_nlevp:
             print('Loading reference field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_nproma:
             print('Loading reference field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_tend:
             print('Loading reference field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
         for argname in argnames_tend_cld:
             print('Loading reference field:',argname)
-            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()],nparms,KLON)
+            fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),
+                                                 f[argname.upper()],nparms,klon)
 
     return fields
 
@@ -417,7 +428,8 @@ def cloudsc_validate(fields, ref_fields):
     kfdia = 100
     ngptot = kfdia - kidia + 1
 
-    print("             Variable Dim             MinValue             MaxValue            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%")
+    print("             Variable Dim             MinValue             MaxValue\
+            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%")
     for name in _field_names:
         if len(fields[name].shape) == 1:
             f = fields[name][kidia-1:kfdia]
@@ -439,6 +451,7 @@ def cloudsc_validate(fields, ref_fields):
                   fname=name.upper(), fmin=f.min(), fmax=f.max(),
                   absmax=np.absolute(f - ref).max(),
                   absavg=np.sum(np.absolute(f - ref)) / ngptot,
-                  maxrel=0.0 if zerrsum < zeps else (zerrsum/(1.0+zsum) if zsum < zeps else zerrsum/zsum)
+                  maxrel=0.0 if zerrsum < zeps else (zerrsum/(1.0+zsum)
+                             if    zsum < zeps else zerrsum/zsum)
               )
         )

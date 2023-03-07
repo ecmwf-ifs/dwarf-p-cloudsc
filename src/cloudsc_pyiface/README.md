@@ -8,8 +8,7 @@ source ./cleanvenv/bin/activate
 
 TODOs:
 - should Python be touched in the topmost cmakelists.txt ?
-- remove locals
-- activate expand routines (currently commented out for no input parameters are available) to enable block memory structure
+- find out why expand_r3 does not pass nlev parameter correctly
 - investigate why cloudsc loader is needed on Atos but not on Mac
 - check performance on Atos
 
