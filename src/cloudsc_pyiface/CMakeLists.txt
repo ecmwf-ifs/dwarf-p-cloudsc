@@ -113,7 +113,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
          COMMAND echo  ${CMAKE_Fortran_COMPILER} 
          COMMAND echo "with flags:"
          COMMAND echo  ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE_CAPS}} 
-         COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS 
+         COMMAND ${CMAKE_COMMAND} -P -E env --unset=LD_LIBRARY_FLAGS 
 	          LDFLAGS=-Wl,-rpath,${CMAKE_BINARY_DIR}/lib NPY_DISTUTILS_APPEND_FLAGS=1  
 		  f2py-f90wrap -c 
                  --f90exec=${CMAKE_Fortran_COMPILER}
@@ -128,7 +128,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 		   ${F2PY_COMMON_SOURCES} 
 		   ${F2PY_DWARF_SOURCES} 
 	     	    > f2py_log.txt
-                   2> f2py_log_err.txt || (exit 0)
+                   2> f2py_log_err.txt 
           COMMAND echo "Runnning pip using the following Python executable"
           COMMAND echo ${PYTHON_EXECUTABLE}
           COMMAND echo "Copy output of f90wrap to CLOUDSC Python driver package directory"
