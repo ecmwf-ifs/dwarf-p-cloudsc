@@ -96,6 +96,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
           ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
     endif()
 
+    if (PYTHON_EXECUTABLE)
 # F90wrap execution section
       add_custom_command(TARGET ${DWARF_CLOUDSC_LIB}  POST_BUILD
          COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
@@ -139,12 +140,12 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
           DEPENDS ${DWARF_CLOUDSC_LIB}
           VERBATIM
       )
-
           ecbuild_add_test(
              TARGET dwarf-cloudsc-lib
              COMMAND cloudsc_pydriver.py
-             ARGS 1 100 16
+             ARGS --numomp=1 --ngptot=100 --nproma=16
              WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin/pythonexec
              OMP 1
                           )
+   endif()
 endif()

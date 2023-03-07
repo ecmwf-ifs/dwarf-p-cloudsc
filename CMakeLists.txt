@@ -93,9 +93,9 @@ endif()
 
 ecbuild_find_package( NAME loki )
 
-ecbuild_find_python( VERSION 3.11 REQUIRED)
+ecbuild_find_python( VERSION 3.9)
 
-if ( Python_FOUND )
+if ( PYTHON_FOUND )
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade pip)
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install f90wrap h5py)
 #  execute_process(python3 -m pip install f90wrap h5py)
