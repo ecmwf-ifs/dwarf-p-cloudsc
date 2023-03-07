@@ -94,14 +94,15 @@ def define_fortran_fields(nparms):
     return fields
 
 def field_c_to_fortran(dims,cfield,nparms,KLON):
-    ffieldtmp=np.asfortranarray(np.transpose(np.reshape(
-              np.ascontiguousarray(cfield),dims,order='C')))
+    #ffieldtmp=np.asfortranarray(np.transpose(np.reshape(
+    #          np.ascontiguousarray(cfield),dims,order='C')))
+    ffieldtmp=np.asfortranarray(np.transpose(
+              np.ascontiguousarray(cfield)))
     bfield=field_linear_to_block(dims,ffieldtmp,nparms,KLON)
     return bfield
 
 def field_linear_to_block(dims,lfield,nparms,nlon):
     nproma =nparms['NPROMA']
-    #nlev   =nparms['NLEV']
     nlev   =dims[1] #nparms['NLEV']
     nblocks=nparms['NBLOCKS']
     ngptot =nparms['NGPTOT']
@@ -118,11 +119,11 @@ def field_linear_to_block(dims,lfield,nparms,nlon):
              bfield=b3field
        elif ldims == 4:
              b4field=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype="float64")))
-             print ("This is 4D field")
-             print ("lfield")
-             print (lfield.shape)
-             print ("bfield")
-             print (b4field.shape)
+#            print ("This is 4D field")
+#            print ("lfield")
+#            print (lfield.shape)
+#            print ("bfield")
+#            print (b4field.shape)
              clsc.expand_mod.expand_r3bis(lfield, b4field,  nlon, nproma, ndim,  ngptot, nblocks)  
              bfield=b4field
        else: 
@@ -316,15 +317,12 @@ def convert_fortran_output_to_python (nparms,input_fields):
     ]
 
     for argname in argnames_nlev:
-#        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0])
         fields[argname] = input_fields[argname]
 
     for argname in argnames_nlevp:
-#        fields[argname] = field_fortran_to_c(input_fields[argname][:,:,0]) 
         fields[argname] = input_fields[argname] 
 
     for argname in argnames_nproma:
-#        fields[argname] = field_fortran_to_c(input_fields[argname][:,0])
         fields[argname] = input_fields[argname]
 
     for argname in argnames_tend:
@@ -339,11 +337,6 @@ def convert_fortran_output_to_python (nparms,input_fields):
                                       fields ['tendency_loc_t'],
                                       fields ['tendency_loc_q'],
                                       fields ['tendency_loc_cld'])
-
-#   fields['tendency_loc_a'  ] = field_fortran_to_c(input_fields['tendency_loc_a'  ][:,:,0])
-#   fields['tendency_loc_t'  ] = field_fortran_to_c(input_fields['tendency_loc_t'  ][:,:,0])
-#   fields['tendency_loc_q'  ] = field_fortran_to_c(input_fields['tendency_loc_q'  ][:,:,0])
-#   fields['tendency_loc_cld'] = field_fortran_to_c(input_fields['tendency_loc_cld'][:,:,:,0])
 
     return fields
 
@@ -387,27 +380,22 @@ def load_reference_fields (path,nparms):
         for argname in argnames_nlev:
             print('Loading reference field:',argname)
             fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
-#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_nlevp:
             print('Loading reference field:',argname)
             fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),f[argname.upper()],nparms,KLON)
-#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_nproma:
             print('Loading reference field:',argname)
             fields[argname] = field_c_to_fortran((nblocks,nproma),f[argname.upper()],nparms,KLON)
-#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_tend:
             print('Loading reference field:',argname)
             fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),f[argname.upper()],nparms,KLON)
-#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
         for argname in argnames_tend_cld:
             print('Loading reference field:',argname)
             fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),f[argname.upper()],nparms,KLON)
-#            fields[argname] = np.ascontiguousarray(f[argname.upper()])
 
     return fields
 

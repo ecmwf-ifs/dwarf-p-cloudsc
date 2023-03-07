@@ -273,10 +273,6 @@ contains
     real(kind=jprb), intent(inout) :: field(nproma, nlev, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
-    print *,"nlon, ngptot",nlon,ngptot
-    print *,"nproma,nlev,nblocks",nproma,nlev,nblocks
-    print *,"buffer shape",shape(buffer)
-    print *,"field shape",shape(field)
 
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
@@ -310,10 +306,6 @@ contains
     real(kind=jprb), intent(inout) :: field(nproma, nlev, ndim, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
-    print *,"nlon, ngptot",nlon,ngptot
-    print *,"nproma,nlev,ndim,nblocks",nproma,nlev,ndim,nblocks
-    print *,"buffer shape",shape(buffer)
-    print *,"field shape",shape(field)
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
@@ -342,16 +334,11 @@ contains
   end subroutine expand_r3
 
   subroutine expand_r3bis(buffer, field, nlon, nproma,  ndim, ngptot, nblocks)
-    real(kind=jprb), intent(inout) :: buffer(nlon, 137, ndim)
-    real(kind=jprb), intent(inout) :: field(nproma, 137, ndim, nblocks)
+    integer(kind=jpim),parameter :: nlev=137
+    real(kind=jprb), intent(inout) :: buffer(nlon, nlev, ndim)
+    real(kind=jprb), intent(inout) :: field(nproma, nlev, ndim, nblocks)
     integer(kind=jpim), intent(in) :: nlon, ndim, nproma, ngptot, nblocks
-    integer(kind=jpim) :: nlev
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
-    nlev=137
-    print *,"nlon, ngptot",nlon,ngptot
-    print *,"nproma,nlev,ndim,nblocks",nproma,nlev,ndim,nblocks
-    print *,"buffer shape",shape(buffer)
-    print *,"field shape",shape(field)
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
