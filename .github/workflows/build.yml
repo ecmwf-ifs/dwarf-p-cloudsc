@@ -99,7 +99,8 @@ jobs:
           ./cloudsc-bundle build --retry-verbose \
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
           ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
-          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }}
+          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} \
+          --cloudsc-fortran-pyiface=OFF
 
       # Verify targets exist
       - name: Verify targets

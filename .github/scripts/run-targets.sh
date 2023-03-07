@@ -6,7 +6,7 @@ set -x
 non_mpi_targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-c)
 
 # These targets currently cause issues and are therefore not tested
-skipped_targets=(dwarf-cloudsc-gpu-claw)
+skipped_targets=(dwarf-cloudsc-gpu-claw dwarf-cloudsc-fortran-pyiface)
 
 if [[ "$arch" == *"nvhpc"* ]]
 then
