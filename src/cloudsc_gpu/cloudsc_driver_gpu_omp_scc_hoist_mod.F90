@@ -133,9 +133,11 @@ CONTAINS
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
 
+#ifdef HAVE_OMP_TARGET
 !$omp target enter data map(alloc: ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0,  &
 !$omp &   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT,  &
 !$omp &   ZFOEEW, ZFOEELIQT)
+#endif
 
 
     ! Workaround for PGI / OpenACC oddities:
@@ -143,6 +145,7 @@ CONTAINS
     ! moved to the device the in ``acc data`` clause below
     LOCAL_YRECLDP = YRECLDP
 
+#ifdef HAVE_OMP_TARGET
 !$omp target data &
 !$omp map(to: &
 !$omp   pt,pq,buffer_cml,buffer_tmp,pvfa, &
@@ -156,6 +159,7 @@ CONTAINS
 !$omp   pfsqlf,pfsqif,pfcqnng, &
 !$omp   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
 !$omp   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
+#endif
 
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
@@ -163,7 +167,7 @@ CONTAINS
 
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
 !$omp target teams loop bind(teams)
-#else
+#elif defined(HAVE_OMP_TARGET)
 !$omp target teams distribute
 #endif
     DO JKGLO=1,NGPTOT,NPROMA
@@ -174,7 +178,7 @@ CONTAINS
 !$omp loop bind(parallel)
 #elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
 !$omp loop bind(thread)
-#else
+#elif defined(HAVE_OMP_TARGET)
 !$omp parallel do
 #endif
       DO JL=1,ICEND
@@ -209,20 +213,22 @@ CONTAINS
       ENDDO
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
 !$omp end loop
-#else
+#elif defined(HAVE_OMP_TARGET)
 !$omp end parallel do
 #endif
     ENDDO
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
 !$omp end target teams loop
-#else
+#elif defined(HAVE_OMP_TARGET)
 !$omp end target teams distribute
 #endif
 
 
     CALL TIMER%THREAD_END(TID)
 
+#ifdef HAVE_OMP_TARGET
 !$omp end target data
+#endif
 
     CALL TIMER%END()
 

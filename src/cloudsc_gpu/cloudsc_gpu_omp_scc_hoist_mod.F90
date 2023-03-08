@@ -9,7 +9,9 @@
 
 MODULE CLOUDSC_GPU_OMP_SCC_HOIST_MOD
 
+#ifdef HAVE_OMP_TARGET
 !$omp declare target(cloudsc_scc_hoist)
+#endif
 
 CONTAINS
 
@@ -131,6 +133,9 @@ CONTAINS
 
 
     IMPLICIT NONE
+#ifdef HAVE_OMP_TARGET
+!$omp declare target(cloudsc_scc_hoist)
+#endif
 
     !-------------------------------------------------------------------------------
     !                 Declare input/output arguments
@@ -493,7 +498,7 @@ CONTAINS
 
 #include "fcttre.func.h"
 #include "fccld.func.h"
-!$acc routine seq
+
 
 
     !===============================================================================
@@ -575,13 +580,13 @@ CONTAINS
     ! -----------------------------------------------
     ! INITIALIZATION OF OUTPUT TENDENCIES
     ! -----------------------------------------------
-!$acc loop seq
+
     DO JK=1,KLEV
       TENDENCY_LOC_T(JL, JK) = 0.0_JPRB
       TENDENCY_LOC_Q(JL, JK) = 0.0_JPRB
       TENDENCY_LOC_A(JL, JK) = 0.0_JPRB
     END DO
-!$acc loop seq
+
     DO JM=1,NCLV - 1
       DO JK=1,KLEV
         TENDENCY_LOC_CLD(JL, JK, JM) = 0.0_JPRB
@@ -589,7 +594,7 @@ CONTAINS
     END DO
 
     !-- These were uninitialized : meaningful only when we compare error differences
-!$acc loop seq
+
     DO JK=1,KLEV
       PCOVPTOT(JL, JK) = 0.0_JPRB
       TENDENCY_LOC_CLD(JL, JK, NCLV) = 0.0_JPRB
@@ -604,7 +609,7 @@ CONTAINS
     ZVQX(NCLDQR) = YRECLDP%RVRAIN
     ZVQX(NCLDQS) = YRECLDP%RVSNOW
     LLFALL(:) = .false.
-!$acc loop seq
+
     DO JM=1,NCLV
       IF (ZVQX(JM) > 0.0_JPRB)       LLFALL(JM) = .true.
       ! falling species
@@ -622,7 +627,7 @@ CONTAINS
     ! ----------------------
     ! non CLV initialization
     ! ----------------------
-!$acc loop seq
+
     DO JK=1,KLEV
       ZTP1(JL, JK) = PT(JL, JK) + PTSPHY*TENDENCY_TMP_T(JL, JK)
       ZQX(JL, JK, NCLDQV) = PQ(JL, JK) + PTSPHY*TENDENCY_TMP_Q(JL, JK)
@@ -634,7 +639,7 @@ CONTAINS
     ! -------------------------------------
     ! initialization for CLV family
     ! -------------------------------------
-!$acc loop seq
+
     DO JM=1,NCLV - 1
       DO JK=1,KLEV
         ZQX(JL, JK, JM) = PCLV(JL, JK, JM) + PTSPHY*TENDENCY_TMP_CLD(JL, JK, JM)
@@ -645,14 +650,14 @@ CONTAINS
     !-------------
     ! zero arrays
     !-------------
-!$acc loop seq
+
     DO JM=1,NCLV
       DO JK=1,KLEV + 1
         ZPFPLSX(JL, JK, JM) = 0.0_JPRB          ! precip fluxes
       END DO
     END DO
 
-!$acc loop seq
+
     DO JM=1,NCLV
       DO JK=1,KLEV
         ZQXN2D(JL, JK, JM) = 0.0_JPRB          ! end of timestep values in 2D
@@ -666,7 +671,7 @@ CONTAINS
     ! ----------------------------------------------------
     ! Tidy up very small cloud cover or total cloud water
     ! ----------------------------------------------------
-!$acc loop seq
+
     DO JK=1,KLEV
       IF (ZQX(JL, JK, NCLDQL) + ZQX(JL, JK, NCLDQI) < YRECLDP%RLMIN .or. ZA(JL, JK) < YRECLDP%RAMIN) THEN
 
@@ -696,7 +701,7 @@ CONTAINS
     ! Tidy up small CLV variables
     ! ---------------------------------
     !DIR$ IVDEP
-!$acc loop seq
+
     DO JM=1,NCLV - 1
       !DIR$ IVDEP
       DO JK=1,KLEV
@@ -717,7 +722,7 @@ CONTAINS
     ! ------------------------------
     ! Define saturation values
     ! ------------------------------
-!$acc loop seq
+
     DO JK=1,KLEV
       !----------------------------------------
       ! old *diagnostic* mixed phase saturation
@@ -752,7 +757,7 @@ CONTAINS
 
     END DO
 
-!$acc loop seq
+
     DO JK=1,KLEV
 
 
@@ -788,7 +793,7 @@ CONTAINS
     !---------------------------------
     ZTRPAUS = 0.1_JPRB
     ZPAPHD = 1.0_JPRB / PAPH(JL, KLEV + 1)
-!$acc loop seq
+
     DO JK=1,KLEV - 1
       ZSIG = PAP(JL, JK)*ZPAPHD
       IF (ZSIG > 0.1_JPRB .and. ZSIG < 0.4_JPRB .and. ZTP1(JL, JK) > ZTP1(JL, JK + 1)) THEN
@@ -816,7 +821,7 @@ CONTAINS
     !                       START OF VERTICAL LOOP
     !----------------------------------------------------------------------
 
-!$acc loop seq
+
     DO JK=YRECLDP%NCLDTOP,KLEV
 
       !----------------------------------------------------------------------
@@ -2576,7 +2581,7 @@ CONTAINS
     ! Copy general precip arrays back into PFP arrays for GRIB archiving
     ! Add rain and liquid fluxes, ice and snow fluxes
     !--------------------------------------------------------------------
-!$acc loop seq
+
     DO JK=1,KLEV + 1
       PFPLSL(JL, JK) = ZPFPLSX(JL, JK, NCLDQR) + ZPFPLSX(JL, JK, NCLDQL)
       PFPLSN(JL, JK) = ZPFPLSX(JL, JK, NCLDQS) + ZPFPLSX(JL, JK, NCLDQI)
@@ -2597,7 +2602,7 @@ CONTAINS
     PFSQLTUR(JL, 1) = 0.0_JPRB
     PFSQITUR(JL, 1) = 0.0_JPRB
 
-!$acc loop seq
+
     DO JK=1,KLEV
 
       ZGDPH_R = -ZRG_R*(PAPH(JL, JK + 1) - PAPH(JL, JK))*ZQTMST
@@ -2646,7 +2651,7 @@ CONTAINS
     !-----------------------------------
     ! enthalpy flux due to precipitation
     !-----------------------------------
-!$acc loop seq
+
     DO JK=1,KLEV + 1
       PFHPSL(JL, JK) = -RLVTT*PFPLSL(JL, JK)
       PFHPSN(JL, JK) = -RLSTT*PFPLSN(JL, JK)

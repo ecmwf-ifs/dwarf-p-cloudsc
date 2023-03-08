@@ -158,13 +158,16 @@ REAL(KIND=JPRB) :: RGAMD
 !   & CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(244)//CHAR(127)
 REAL(KIND=JPRB) :: RSNAN
 
+#ifdef HAVE_ACC
 !$acc declare copyin(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+#elif defined(HAVE_OMP_TARGET)
 !$omp declare target(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+#endif
 
 
 !    ------------------------------------------------------------------
 
-TYPE :: TOMCST 
+TYPE :: TOMCST
 ! A1.0 Fundamental constants
 ! * RPI          : number Pi
 ! * RCLUM        : light velocity
@@ -180,7 +183,7 @@ REAL(KIND=JPRB) :: RNAVO
 ! A1.1 Astronomical constants
 ! * RDAY         : duration of the solar day
 ! * RDAYI        : invariant time unit of 86400s
-! * RHOUR        : duration of the solar hour 
+! * RHOUR        : duration of the solar hour
 ! * REA          : astronomical unit (mean distance Earth-sun)
 ! * REPSM        : polar axis tilting angle
 ! * RSIYEA       : duration of the sideral year
@@ -319,7 +322,11 @@ CONTAINS
     CALL LOAD_SCALAR('RTT', RTT)
     CALL LOAD_SCALAR('RV', RV)
     CALL YRCST_COPY_PARAMETERS()
+#ifdef HAVE_ACC
 !$acc update device(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+#elif defined(HAVE_OMP_TARGET)
+!$omp target enter data map(to: rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+#endif
   END SUBROUTINE YOMCST_LOAD_PARAMETERS
 
   SUBROUTINE YRCST_COPY_PARAMETERS()
