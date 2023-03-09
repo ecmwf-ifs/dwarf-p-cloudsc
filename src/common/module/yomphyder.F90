@@ -9,7 +9,10 @@
 
 module yomphyder
 
-USE PARKIND1  ,ONLY : JPIM     ,JPRB
+USE PARKIND1, ONLY : JPIM, JPRB
+#ifdef  USE_FIELD_API
+USE FIELD_MODULE, ONLY: FIELD_3D, FIELD_4D
+#endif
 
 !     ------------------------------------------------------------------
 
@@ -32,6 +35,11 @@ type state_type
   !$loki dimension(klon,klev,5)
   REAL(KIND=JPRB), dimension(:,:,:), pointer :: cld   ! composed cloud array
   !REAL(KIND=JPRB), dimension(:,:), pointer :: qsat    ! spec. humidity at saturation
+
+#ifdef  USE_FIELD_API
+  TYPE(FIELD_3D), POINTER :: F_T, F_A, F_Q
+  TYPE(FIELD_4D), POINTER :: F_CLD
+#endif
 end type state_type
 
 type model_state_type

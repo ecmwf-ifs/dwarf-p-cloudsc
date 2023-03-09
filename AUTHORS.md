@@ -9,13 +9,17 @@
 - M. Hamrud (ECMWF)
 - M. Koehler (ECMWF)
 - M. Lange (ECMWF)
+- L. Lucido (Atos)
 - O. Marsden (ECMWF)
 - G. Mengaldo (ECMWF)
 - G. Mozdzynski (ECMWF)
+- Z. Piotrowski (ECMWF)
 - B. Reuter (ECMWF)
 - D. Salmond (ECMWF)
+- M. Staneker (ECMWF)
 - M. Tiedtke (ECMWF)
 - A. Tompkins (ECMWF)
+- S. Ubbiali (ETH Zuerich)
 - F. Vana (ECMWF)
 
 If you have contributed to this project,

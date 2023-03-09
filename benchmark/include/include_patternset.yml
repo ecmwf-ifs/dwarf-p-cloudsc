@@ -158,45 +158,45 @@ patternset:
 
   - name: timing_pattern
     pattern:
-      - {name: thr_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}  # C-version doesn't print core number?
-      - {name: thr_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}
-      - {name: rnk_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
-      - {name: rnk_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
-      - {name: tot_time,   type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+$jube_pat_nint\s+(?::\s+)?TOTAL(?!\s@)'}
-      - {name: tot_mflops, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+(?::\s+)?TOTAL(?!\s@)'}
-      - {name: tot_nproc,  type: int, _: '$jube_pat_int\s*x\s*(?:$jube_pat_nint\s+){6}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: tot_numomp, type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_int\s+(?:$jube_pat_nint\s+){5}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: tot_ngptot, type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_nint\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){4}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: tot_ngpblks,type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){3}$jube_pat_int\s+(?:$jube_pat_nint\s+){2}:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
-      - {name: tot_nproma, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){4}$jube_pat_int\s+$jube_pat_nint\s+:\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: thr_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){2}@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}  # C-version doesn't print core number?
+      - {name: thr_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+$jube_pat_nint\s+@\s+(?:rank#$jube_pat_nint:)?core#'} #$jube_pat_nint'}
+      - {name: rnk_time,   type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){2}:\s+TOTAL\s@\srank#$jube_pat_nint'}
+      - {name: rnk_mflops, type: int, _: '(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+$jube_pat_nint\s+:\s+TOTAL\s@\srank#$jube_pat_nint'}
+      - {name: tot_time,   type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){2}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_mflops, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){6}:\s+$jube_pat_nint\s+$jube_pat_int\s+$jube_pat_nint\s+(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_nproc,  type: int, _: '$jube_pat_int\s*x\s*(?:$jube_pat_nint\s+){6}:\s+(?:$jube_pat_nint\s+){3}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_numomp, type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_int\s+(?:$jube_pat_nint\s+){5}:\s+(?:$jube_pat_nint\s+){3}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_ngptot, type: int, _: '(?:$jube_pat_nint\s*x\s*)?$jube_pat_nint\s+$jube_pat_int\s+(?:$jube_pat_nint\s+){4}:\s+(?:$jube_pat_nint\s+){3}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_ngpblks,type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){3}$jube_pat_int\s+(?:$jube_pat_nint\s+){2}:\s+(?:$jube_pat_nint\s+){3}(?::\s+)?TOTAL(?!\s@)'}
+      - {name: tot_nproma, type: int, _: '(?:$jube_pat_nint\s*x\s*)?(?:$jube_pat_nint\s+){4}$jube_pat_int\s+$jube_pat_nint\s+:\s+(?:$jube_pat_nint\s+){3}(?::\s+)?TOTAL(?!\s@)'}
 
-      # NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
-      #      8     16384      2048       128        16    0 :        295       866 @ core#22
-      #      8     16384      2048       128        16    1 :        284       899 @ core#4
-      #      8     16384      2048       128        16    2 :        282       905 @ core#16
-      #      8     16384      2048       128        16    3 :        239      1067 @ core#1
-      #      8     16384      2048       128        16    4 :        261       975 @ core#2
-      #      8     16384      2048       128        16    5 :        266       959 @ core#3
-      #      8     16384      2048       128        16    6 :        267       955 @ core#21
-      #      8     16384      2048       128        16    7 :        273       934 @ core#23
-      #      8     16384     16384      1024        16   -1 :        295      6931 : TOTAL
+      # NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s  col/s
+      #      8     16384      2048       128        16    0 :        295       866   1320  @ core#22
+      #      8     16384      2048       128        16    1 :        284       899   1320  @ core#4
+      #      8     16384      2048       128        16    2 :        282       905   1320  @ core#16
+      #      8     16384      2048       128        16    3 :        239      1067   1320  @ core#1
+      #      8     16384      2048       128        16    4 :        261       975   1320  @ core#2
+      #      8     16384      2048       128        16    5 :        266       959   1320  @ core#3
+      #      8     16384      2048       128        16    6 :        267       955   1320  @ core#21
+      #      8     16384      2048       128        16    7 :        273       934   1320  @ core#23
+      #      8     16384     16384      1024        16   -1 :        295      6931   1320  : TOTAL
 
       # NUMPROC=8, NUMOMP=1, NGPTOTG=16384, NPROMA=16, NGPBLKS=128
-      # NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s
-      #      1      2048      2048       128        16    0 :        237      1075 @ rank#0:core#20
-      #      1      2048      2048       128        16   -1 :        237      1075 : TOTAL @ rank#0
-      #      1      2048      2048       128        16    0 :        230      1109 @ rank#1:core#11
-      #      1      2048      2048       128        16   -1 :        230      1109 : TOTAL @ rank#1
-      #      1      2048      2048       128        16    0 :        281       906 @ rank#2:core#6
-      #      1      2048      2048       128        16   -1 :        281       906 : TOTAL @ rank#2
-      #      1      2048      2048       128        16    0 :        254      1002 @ rank#3:core#24
-      #      1      2048      2048       128        16   -1 :        254      1002 : TOTAL @ rank#3
-      #      1      2048      2048       128        16    0 :        271       940 @ rank#4:core#3
-      #      1      2048      2048       128        16   -1 :        271       940 : TOTAL @ rank#4
-      #      1      2048      2048       128        16    0 :        249      1025 @ rank#5:core#25
-      #      1      2048      2048       128        16   -1 :        249      1025 : TOTAL @ rank#5
-      #      1      2048      2048       128        16    0 :        235      1086 @ rank#6:core#1
-      #      1      2048      2048       128        16   -1 :        235      1086 : TOTAL @ rank#6
-      #      1      2048      2048       128        16    0 :        243      1050 @ rank#7:core#15
-      #      1      2048      2048       128        16   -1 :        243      1050 : TOTAL @ rank#7
-      #  8 x 1     16384     16384      1024        16   -1 :        281      8193 : TOTAL
+      # NUMOMP    NGPTOT  #GP-cols     #BLKS    NPROMA tid# : Time(msec)  MFlops/s  col/s
+      #      1      2048      2048       128        16    0 :        237      1075   1320  @ rank#0:core#20
+      #      1      2048      2048       128        16   -1 :        237      1075   1320  : TOTAL @ rank#0
+      #      1      2048      2048       128        16    0 :        230      1109   1320  @ rank#1:core#11
+      #      1      2048      2048       128        16   -1 :        230      1109   1320  : TOTAL @ rank#1
+      #      1      2048      2048       128        16    0 :        281       906   1320  @ rank#2:core#6
+      #      1      2048      2048       128        16   -1 :        281       906   1320  : TOTAL @ rank#2
+      #      1      2048      2048       128        16    0 :        254      1002   1320  @ rank#3:core#24
+      #      1      2048      2048       128        16   -1 :        254      1002   1320  : TOTAL @ rank#3
+      #      1      2048      2048       128        16    0 :        271       940   1320  @ rank#4:core#3
+      #      1      2048      2048       128        16   -1 :        271       940   1320  : TOTAL @ rank#4
+      #      1      2048      2048       128        16    0 :        249      1025   1320  @ rank#5:core#25
+      #      1      2048      2048       128        16   -1 :        249      1025   1320  : TOTAL @ rank#5
+      #      1      2048      2048       128        16    0 :        235      1086   1320  @ rank#6:core#1
+      #      1      2048      2048       128        16   -1 :        235      1086   1320  : TOTAL @ rank#6
+      #      1      2048      2048       128        16    0 :        243      1050   1320  @ rank#7:core#15
+      #      1      2048      2048       128        16   -1 :        243      1050   1320  : TOTAL @ rank#7
+      #  8 x 1     16384     16384      1024        16   -1 :        281      8193   1320  : TOTAL
