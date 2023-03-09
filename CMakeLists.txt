@@ -92,7 +92,7 @@ if( HAVE_SERIALBOX )
 endif()
 
 ecbuild_find_package( NAME loki )
-ecbuild_find_python(VERSION 3.10 REQUIRED NO_LIBS)
+ecbuild_find_python(VERSION 3.8 NO_LIBS)
 
 if ( PYTHON_EXECUTABLE )
   execute_process(COMMAND ${PYTHON_EXECUTABLE} --version)
