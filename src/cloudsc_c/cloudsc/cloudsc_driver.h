@@ -8,6 +8,9 @@
  * nor does it submit to any jurisdiction.
  */
 
+#ifndef CLOUDSC_DRIVER_H
+#define CLOUDSC_DRIVER_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -22,3 +25,5 @@
 #include "cloudsc_validate.h"
 
 void cloudsc_driver(int numthreads, int numcols, int nproma);
+
+#endif
