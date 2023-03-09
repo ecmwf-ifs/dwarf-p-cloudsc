@@ -72,16 +72,16 @@ CONTAINS
     REAL(KIND=JPRB),    INTENT(IN)    :: PMFU(:,:,:)  ! Conv. mass flux up
     REAL(KIND=JPRB),    INTENT(IN)    :: PMFD(:,:,:)  ! Conv. mass flux down
     REAL(KIND=JPRB),    INTENT(IN)    :: PA(:,:,:)    ! Original Cloud fraction (t)
-    REAL(KIND=JPRB),    INTENT(IN)    :: PCLV(:,:,:,:) 
+    REAL(KIND=JPRB),    INTENT(IN)    :: PCLV(:,:,:,:)
     REAL(KIND=JPRB),    INTENT(IN)    :: PSUPSAT(:,:,:)
-    REAL(KIND=JPRB),    INTENT(IN)    :: PLCRIT_AER(:,:,:) 
-    REAL(KIND=JPRB),    INTENT(IN)    :: PICRIT_AER(:,:,:) 
-    REAL(KIND=JPRB),    INTENT(IN)    :: PRE_ICE(:,:,:) 
+    REAL(KIND=JPRB),    INTENT(IN)    :: PLCRIT_AER(:,:,:)
+    REAL(KIND=JPRB),    INTENT(IN)    :: PICRIT_AER(:,:,:)
+    REAL(KIND=JPRB),    INTENT(IN)    :: PRE_ICE(:,:,:)
     REAL(KIND=JPRB),    INTENT(IN)    :: PCCN(:,:,:)     ! liquid cloud condensation nuclei
     REAL(KIND=JPRB),    INTENT(IN)    :: PNICE(:,:,:)    ! ice number concentration (cf. CCN)
 
     REAL(KIND=JPRB),    INTENT(INOUT) :: PCOVPTOT(:,:,:) ! Precip fraction
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PRAINFRAC_TOPRFZ(:,:) 
+    REAL(KIND=JPRB),    INTENT(OUT)   :: PRAINFRAC_TOPRFZ(:,:)
     ! Flux diagnostics for DDH budget
     REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQLF(:,:,:)  ! Flux of liquid
     REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQIF(:,:,:)  ! Flux of ice
@@ -97,6 +97,10 @@ CONTAINS
     REAL(KIND=JPRB),    INTENT(OUT)   :: PFPLSN(:,:,:) ! ice+snow sedim flux
     REAL(KIND=JPRB),    INTENT(OUT)   :: PFHPSL(:,:,:) ! Enthalpy flux for liq
     REAL(KIND=JPRB),    INTENT(OUT)   :: PFHPSN(:,:,:) ! Enthalp flux for ice
+    TYPE(TOMCST),       INTENT(IN)    :: YDOMCST
+    TYPE(TOETHF),       INTENT(IN)    :: YDOETHF
+    TYPE(TECLDP),       INTENT(IN)    :: YDECLDP
+
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND,NGPBLKS
 
@@ -105,10 +109,6 @@ CONTAINS
     INTEGER(KIND=JPIB) :: ENERGY, POWER, POWER_TOTAL, POWER_MAX, POWER_COUNT
     LOGICAL            :: LEC_PMON = .FALSE.
     CHARACTER(LEN=1)   :: CLEC_PMON
-
-    TYPE(TOMCST)    :: YDOMCST
-    TYPE(TOETHF)    :: YDOETHF
-    TYPE(TECLDP)    :: YDECLDP
 
     CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
     IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
@@ -198,7 +198,7 @@ CONTAINS
          & (REAL(POWER_TOTAL, KIND=JPRD) / REAL(POWER_COUNT, KIND=JPRD)), &
          & "count:", POWER_COUNT
       END IF
-    
+
   END SUBROUTINE CLOUDSC_DRIVER
 
 END MODULE CLOUDSC_DRIVER_MOD
