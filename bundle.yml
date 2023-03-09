@@ -135,11 +135,6 @@ options :
             ENABLE_SERIALBOX=ON
             BUILD_serialbox=ON
 
-    - with-f90wrapf2py :
-        help  : Enable f90wrap/f2py execution to build library for Python CLOUDSC driver 
-        cmake : >
-            ENABLE_F90WRAPF2PY=ON
-
     - serialbox-experimental :
         help  : Enable Serialbox experimental filesystem [ON|OFF]
         cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM={{value}}

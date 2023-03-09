@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python3
 """
 Driver that executes Fortran implementation of the CLOUDSC dwarf using f90wrap/f2py
 """

@@ -92,10 +92,10 @@ if( HAVE_SERIALBOX )
 endif()
 
 ecbuild_find_package( NAME loki )
+ecbuild_find_python(VERSION 3.10 REQUIRED NO_LIBS)
 
-ecbuild_find_python( )
-
-if ( PYTHON_FOUND )
+if ( PYTHON_EXECUTABLE )
+  execute_process(COMMAND ${PYTHON_EXECUTABLE} --version)
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade pip)
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install f90wrap h5py)
 endif()
