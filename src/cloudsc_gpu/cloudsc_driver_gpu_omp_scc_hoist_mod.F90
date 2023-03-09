@@ -38,9 +38,12 @@ CONTAINS
      & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG, &
      & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG, &
      & PFSQLTUR, PFSQITUR, &
-     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN &
-     & )
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+     & YDOMCST, YDOETHF, YDECLDP )
     ! Driver routine that invokes the optimized CLAW-based CLOUDSC GPU kernel
+    USE YOECLDP  , ONLY : TECLDP
+    USE YOMCST   , ONLY : TOMCST
+    USE YOETHF   , ONLY : TOETHF
 
     INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG
     INTEGER(KIND=JPIM)                                    :: KFLDX
@@ -96,6 +99,10 @@ CONTAINS
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSL(NPROMA, NLEV+1, NGPBLKS)    ! Enthalpy flux for liq
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSN(NPROMA, NLEV+1, NGPBLKS)    ! ice number concentration (cf. CCN)
 
+    TYPE(TOMCST), INTENT(IN)   :: YDOMCST
+    TYPE(TOETHF), INTENT(IN)   :: YDOETHF
+    TYPE(TECLDP), INTENT(IN)   :: YDECLDP
+
     ! Local declarations of promoted temporaries
     REAL(KIND=JPRB) :: ZFOEALFA(NPROMA, NLEV+1, NGPBLKS)
     REAL(KIND=JPRB) :: ZTP1(NPROMA, NLEV, NGPBLKS)
@@ -121,9 +128,6 @@ CONTAINS
     TYPE(PERFORMANCE_TIMER) :: TIMER
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
-    ! Local copy of cloud parameters for offload
-    TYPE(TECLDP) :: LOCAL_YRECLDP
-
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
     if (irank == 0) then
@@ -140,11 +144,6 @@ CONTAINS
 #endif
 
 
-    ! Workaround for PGI / OpenACC oddities:
-    ! Create a local copy of the parameter struct to ensure they get
-    ! moved to the device the in ``acc data`` clause below
-    LOCAL_YRECLDP = YRECLDP
-
 #ifdef HAVE_OMP_TARGET
 !$omp target data &
 !$omp map(to: &
@@ -152,7 +151,7 @@ CONTAINS
 !$omp   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
 !$omp   pap,paph,plsm,ldcum,ktype,plu,psnde, &
 !$omp   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
-!$omp   pre_ice,pccn,pnice, yrecldp) &
+!$omp   pre_ice,pccn,pnice, ydecldp, ydomcst, ydoethf) &
 !$omp map(tofrom: &
 !$omp   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
 !$omp map(from: &
@@ -205,7 +204,7 @@ CONTAINS
          & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
          & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
          & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-         & LOCAL_YRECLDP, &
+         & YDOMCST, YDOETHF, YDECLDP, &
          & ZFOEALFA(:,:,IBL), ZTP1(:,:,IBL), ZLI(:,:,IBL), ZA(:,:,IBL), ZAORIG(:,:,IBL), &
          & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), ZPFPLSX(:,:,:,IBL), &
          & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
