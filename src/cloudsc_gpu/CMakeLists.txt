@@ -140,7 +140,7 @@ if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
             cloudsc_driver_gpu_omp_scc_hoist_mod.F90
             cloudsc_gpu_omp_scc_hoist_mod.F90
         LIBS
-            cloudsc-common-lib-omp-target
+            cloudsc-common-lib
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
             ${CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS}

@@ -87,6 +87,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         ${CLOUDSC_DEFINITIONS}
         $<${HAVE_CUDA}:USE_FIELD_API>
         $<${HAVE_ACC}:HAVE_ACC>
+        $<$<BOOL:${HAVE_OMP_TARGET}>:HAVE_OMP_TARGET>
     SOURCES
         ${CLOUDSC_COMMON_SOURCES}
         $<${HAVE_MPI}:module/cloudsc_mpif.F90>
@@ -104,32 +105,6 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
 )
-
-ecbuild_add_library( TARGET cloudsc-common-lib-omp-target
-    TYPE STATIC
-    DEFINITIONS
-        ${CLOUDSC_DEFINITIONS}
-        $<${HAVE_CUDA}:USE_FIELD_API>
-        $<$<BOOL:${HAVE_OMP_TARGET}>:HAVE_OMP_TARGET>
-    SOURCES
-        ${CLOUDSC_COMMON_SOURCES}
-        $<${HAVE_MPI}:module/cloudsc_mpif.F90>
-        $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
-    PRIVATE_INCLUDES
-        $<${HAVE_HDF5}:${HDF5_Fortran_INCLUDE_DIRS}>
-    PUBLIC_INCLUDES
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>
-    PUBLIC_LIBS
-        $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
-        $<${HAVE_MPI}:MPI::MPI_Fortran>
-        $<${HAVE_HDF5}:hdf5::hdf5_fortran>
-        $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
-)
-# if( HAVE_OMP_TARGET )
-#     target_compile_options( cloudsc-common-lib-omp-target PUBLIC "${OpenMP_OFFLOAD_Fortran_FLAGS}" )
-# endif()
 
 if( HAVE_CUDA )
     target_link_options( cloudsc-common-lib INTERFACE "-Mcuda" )
