@@ -24,20 +24,24 @@ module_unload() {
 # source /opt/cray/pe/cpe/22.06/restore_lmod_system_defaults.sh
 
 # Load modules
-module_load PDCTEST/22.06
-module_load buildtools/22.06
-module_load cmake/3.23.0
+# module_load PDCTEST/22.06
+# module_load buildtools/22.06
+# module_load cmake/3.23.0
+module_unload rocm
 module_load PrgEnv-cray/8.3.3
 module_load cpe/22.12
 module_load craype-accel-amd-gfx90a
-module_load rocm/5.3.3
+module_load rocm/5.0.2
 module_load cray-python/3.9.13.1
 
 module list
 
 set -x
 
+ulimit -S -s unlimited
+
 export CC=cc CXX=CC FC=ftn
+export PATH=/cfs/klemming/home/b/breuter/Public/cmake/bin:$PATH
 
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null

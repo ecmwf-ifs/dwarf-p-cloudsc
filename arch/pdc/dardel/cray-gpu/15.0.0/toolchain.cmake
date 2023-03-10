@@ -37,9 +37,13 @@ set( OpenACC_Fortran_FLAGS "-hacc -h acc_model=deep_copy" )
 # General Flags (add to default)
 set(ECBUILD_Fortran_FLAGS "-hcontiguous")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl, --as-needed")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl,--as-needed")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl,-hsystem_alloc")
 
-set(ECBUILD_Fortran_FLAGS_BIT " ")#-O3")# -hfp1 -hscalar3 -hvector3 -haggress -DNDEBUG")
+# set(ECBUILD_Fortran_FLAGS_BIT " ")#-O3")# -hfp1 -hscalar3 -hvector3 -haggress -DNDEBUG")
+
+# No tcmalloc:
+set(ECBUILD_Fortran_LINK_FLAGS "${ECBUILD_Fortran_LINK_FLAGS} -hsystem_alloc")
 
 set(HDF5_DIR "/cfs/klemming/home/b/breuter/Public/hdf5/1.12.2/cray/14.0.1" CACHE STRING "")
 set(HDF5_ROOT "/cfs/klemming/home/b/breuter/Public/hdf5/1.12.2/cray/14.0.1" CACHE STRING "")
