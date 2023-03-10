@@ -2,7 +2,7 @@
 .vscode
 ecbundle
 ecbundle/*
-build/*
+build*
 source/*
 serialbox2hdf5/venv
 serialbox2hdf5/serialbox
