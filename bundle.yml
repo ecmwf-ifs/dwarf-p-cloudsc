@@ -62,7 +62,6 @@ options :
     - with-cuda :
         help  : Enable GPU kernel variant based on CUDA-Fortran
         cmake : >
-            ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
 
     - with-mpi :

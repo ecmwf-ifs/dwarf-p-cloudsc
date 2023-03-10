@@ -389,7 +389,8 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     double start = omp_get_wtime();
 
     dim3 blockdim(nproma, 1, 1);
-    dim3 griddim(1, 1, ceil(((double)numcols) / ((double)nproma)));
+    //dim3 griddim(1, 1, ceil(((double)numcols) / ((double)nproma)));
+    dim3 griddim(ceil(((double)numcols) / ((double)nproma)), 1, 1);
     int jkglo = 0;
     int ibl = (jkglo - 1) / nproma + 1;
     int icend = min(nproma, numcols - jkglo + 1);

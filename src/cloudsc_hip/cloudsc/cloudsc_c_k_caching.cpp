@@ -324,7 +324,7 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   //double zqxn2d[5 * klev];
 
   jl = threadIdx.x; 
-  ibl = blockIdx.z; 
+  ibl = blockIdx.x; 
 
   int jk_i;
   int jk_ip1;
