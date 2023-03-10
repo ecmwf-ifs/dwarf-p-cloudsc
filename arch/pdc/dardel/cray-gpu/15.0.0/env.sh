@@ -31,7 +31,7 @@ module_unload rocm
 module_load PrgEnv-cray/8.3.3
 module_load cpe/22.12
 module_load craype-accel-amd-gfx90a
-module_load rocm/5.0.2
+module_load rocm/5.3.3
 module_load cray-python/3.9.13.1
 
 module list

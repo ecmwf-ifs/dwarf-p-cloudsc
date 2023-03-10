@@ -146,7 +146,7 @@ CONTAINS
 
 #ifdef HAVE_OMP_TARGET
 !$omp target data &
-!$omp map(to: &
+!$omp map(to: ptsphy,nproma,nlev,&
 !$omp   pt,pq,buffer_cml,buffer_tmp,pvfa, &
 !$omp   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
 !$omp   pap,paph,plsm,ldcum,ktype,plu,psnde, &
@@ -165,9 +165,9 @@ CONTAINS
     CALL TIMER%THREAD_START(TID)
 
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp target teams loop bind(teams)
+!$omp target teams loop bind(teams) private(ibl,icend)
 #elif defined(HAVE_OMP_TARGET)
-!$omp target teams distribute
+!$omp target teams distribute private(ibl,icend)
 #endif
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
