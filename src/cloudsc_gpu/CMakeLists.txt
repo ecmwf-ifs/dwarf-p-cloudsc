@@ -129,7 +129,7 @@ if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
         endif()
     endif()
 
-    if( NOT (HAVE_OMP_TARGET_TEAMS_DISTRIBUTE OR HAVE_OMP_TARGET_LOOP_CONSTRUCT) )
+    if( NOT HAVE_OMP_TARGET )
         ecbuild_warn( "No support for OpenMP target offload, binary will be CPU-only" )
     endif()
 
