@@ -135,7 +135,7 @@ CONTAINS
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-!$acc parallel loop gang vector_length(NPROMA)
+!$acc parallel loop gang vector_length(NPROMA) private(ibl,icend)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
