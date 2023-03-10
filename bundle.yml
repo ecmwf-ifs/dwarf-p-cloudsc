@@ -20,7 +20,7 @@ projects :
         cmake   : >
             BUILD_serialbox=OFF
             SERIALBOX_BUILD_SHARED=ON
-            SERIALBOX_ENABLE_FORTRAN=ON
+            SERIALBOX_ENABLE_FORTRAN=OFF
             SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
             SERIALBOX_ENABLE_SDB=OFF
             SERIALBOX_EXAMPLES=OFF

@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <omp.h>
-#include "cuda.h"
-#include "cuda_runtime.h"
+//#include "cuda.h"
+//#include "cuda_runtime.h"
 
 #include "yoecldp_c.h"
 #include "load_state.h"

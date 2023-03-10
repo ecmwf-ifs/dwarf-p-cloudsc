@@ -14,10 +14,18 @@ ecbuild_add_option( FEATURE CLOUDSC_SYCL
 
 if( HAVE_CLOUDSC_SYCL )
 
-    set(CMAKE_CXX_COMPILER "/opt/intel/oneapi/compiler/2022.0.2/linux/bin/dpcpp")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/intel/oneapi/compiler/2022.0.2/linux/include -O3 -L/opt/intel/oneapi/compiler/2022.0.2/linux/lib -fopenmp -fsycl-early-optimizations -fsycl)# -fsycl-targets=nvptx64-nvidia-cuda -Xcuda-ptxas --maxrregcount=128 -Xsycl-target-backend --cuda-gpu-arch=sm_80")
+
+        set(CMAKE_C_COMPILER "/pdc/software/22.06/eb/software/hipsycl/0.9.4-cpeGNU-22.06-rocm-5.3.3-llvm/bin/syclcc")
+	set(CMAKE_CXX_COMPILER "/pdc/software/22.06/eb/software/hipsycl/0.9.4-cpeGNU-22.06-rocm-5.3.3-llvm/bin/syclcc")
+	# set(CMAKE_CXX_COMPILER "/pdc/software/22.06/eb/software/hipsycl/0.9.4-cpeGNU-22.06-rocm-5.3.3/bin/syclcc")
+
+        # --hipsycl-clang=/usr/bin/clang
+	# --hipsycl-targets=cuda:sm_80
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hipsycl-platform=cuda --hipsycl-targets=cuda-nvcxx --hipsycl-nvcxx=/home/nams/opt/OpenSYCL/bin/syclcc -fcuda-approx-transcendentals -fcuda-flush-denormals-to-zero --no-cuda-version-check --cuda-path=/usr/local/apps/nvidia/22.1/Linux_x86_64/22.1/cuda")
     
-    
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --hipsycl-platform=amd --hipsycl-clang=/cfs/klemming/root/rocm/opt/rocm-5.3.3/llvm/bin/clang++ -I/cfs/klemming/root/rocm/opt/rocm-5.3.3/llvm/include -L/cfs/klemming/root/rocm/opt/rocm-5.3.3/llvm/lib -I/pdc/software/22.06/eb/software/hipsycl/0.9.4-cpeGNU-22.06-rocm-5.3.3-llvm/include --hipsycl-targets=hip:gfx908")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -I/pdc/software/22.06/eb/software/hipsycl/0.9.4-cpeGNU-22.06-rocm-5.3.3/include -L/pdc/software/22.06/eb/software/hipsycl/0.9.4-cpeGNU-22.06-rocm-5.3.3/lib --hipsycl-targets=hip:gfx90a")
+
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-sycl-lib
         INSTALL_HEADERS LISTED
@@ -36,7 +44,7 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-	    sycl
+	    # sycl
             Serialbox::Serialbox_C
     	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
@@ -85,7 +93,7 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-            sycl
+	    # sycl
             Serialbox::Serialbox_C
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
@@ -133,7 +141,7 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-            sycl
+	    # sycl
             Serialbox::Serialbox_C
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
