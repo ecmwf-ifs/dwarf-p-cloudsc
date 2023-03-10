@@ -69,7 +69,7 @@ if( HAVE_CUDA )
 endif()
 
 
-if( HAVE_ACC )
+if( HAVE_ACC OR HAVE_OMP_TARGET )
     # ========================================================================
     # For OpenACC runs we can ensure global module variables from our utility
     # modules are copied to devices via `!$acc declare copyin(<module_vars>)`
