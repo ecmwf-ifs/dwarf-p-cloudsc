@@ -1,18 +1,25 @@
 This is a driver allowing to execute IFS physics from within a Python script
+
 Steps to run and perform basic test  on ATOS:
-1) Open interactive session on the computing node:
+```
+# Open interactive session on the computing node:
 export OMP_NUM_THREADS=64
 OMP_PLACES="{$(seq -s '},{' 0 $(($OMP_NUM_THREADS-1)) )}" srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS --pty /bin/bash 
-module load python3/new
-module load pi
-python3 -m venv cleanvenv
-source ./cleanvenv/bin/activate
-./cloudsc-bundle create && ./cloudsc-bundle build --build-type=release --arch=./arch/ecmwf/hpc2020/intel/2021.4.0/ && cd build; ctest --verbose
-To test performance, execute:
+
+# Build as usual; the PyIface setup will create a custom venv in the build directory
+./cloudsc-bundle create
+./cloudsc-bundle build --build-type=release --arch=./arch/ecmwf/hpc2020/intel/2021.4.0/
+
+# Go to build and activate the created venv
+cd build
+. venv_pyiface/bin/activate
+
+# To test performance, execute:
 cd bin/pythonexec
 ./cloudsc_pydriver.py --numomp=$OMP_NUM_THREADS --ngptot=163840 --nproma=32 
 Currently, the performance on ATOS is about about 64400 Mflops/s, which is inferior to the reference result of:
 dwarf-cloudsc-fortran-pyiref (about 96700) and the dwarf-cloudsc-fortran(about 103000)
+```
 
 Similar results can be achieved using GNU compilers on ATOS using module pg and --arch=./arch/ecmwf/hpc2020/gnu/11.2.0/
 

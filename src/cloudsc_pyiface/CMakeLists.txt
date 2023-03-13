@@ -17,11 +17,26 @@ ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE_BINARY
 )
 
 if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
-   set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
-   # Define module directory to facilitate f90wrap/f2py execution
-   ecbuild_enable_fortran(MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../module)
-   message (STATUS "Module directory set to:")
-   message (STATUS  ${CMAKE_Fortran_MODULE_DIRECTORY})
+
+    # Utilities to manage Python virtual environments
+    include( python_venv )
+
+    # Set up a custom venv for this variant and install the necessary dependencies
+    set( loki_VENV_PATH ${CMAKE_BINARY_DIR}/venv_pyiface )
+    setup_python_venv( ${loki_VENV_PATH} )
+
+    if( NOT Python3_EXECUTABLE )
+        ecbuild_error("[PyIface] Could not find Python3 exectubale in virtualenv")
+    endif()
+
+    # Install the f90wrap build dependency and via latest pip
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install --upgrade pip)
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install f90wrap)
+
+    # Define module directory to facilitate f90wrap/f2py execution
+    ecbuild_enable_fortran(MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../module)
+    message (STATUS "Module directory set to:")
+    message (STATUS  ${CMAKE_Fortran_MODULE_DIRECTORY})
    
 
    # Set names and lists to abstract the f90wrap/f2py process  
@@ -96,26 +111,26 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
           ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
     endif()
 
-    if (PYTHON_EXECUTABLE)
+    if (Python3_EXECUTABLE)
 # F90wrap execution section
       add_custom_command(TARGET ${DWARF_CLOUDSC_LIB}  POST_BUILD
          COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
          COMMAND echo "Executing f90wrap from location: "
-         COMMAND which f90wrap
-         COMMAND  f90wrap -m${PYTHON_MODN} 
+         COMMAND echo "${Python3_VENV_BIN}/f90wrap"
+         COMMAND ${Python3_VENV_BIN}/f90wrap -m${PYTHON_MODN}
 	                    ${F90WRAP_COMMON_SOURCES} 
 			    ${F90WRAP_DWARF_SOURCES} 
 			    -k ${CMAKE_CURRENT_SOURCE_DIR}/src/cloudscpytools/kind_map 
 	   	 > f90wrap_log.txt 2> f90wrap_log_err.txt 
          COMMAND echo "Executing f2py-f90wrap from location: "
-         COMMAND which f2py-f90wrap
+         COMMAND echo "${Python3_VENV_BIN}/f2py-f90wrap"
          COMMAND echo "F2PY will use Fortran compiler:"
          COMMAND echo  ${CMAKE_Fortran_COMPILER} 
          COMMAND echo "with flags:"
          COMMAND echo  ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE_CAPS}} 
 	 COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS 
-	          LDFLAGS=-Wl,-rpath,${CMAKE_BINARY_DIR}/lib NPY_DISTUTILS_APPEND_FLAGS=1  
-		  f2py-f90wrap -c 
+	         LDFLAGS=-Wl,-rpath,${CMAKE_BINARY_DIR}/lib NPY_DISTUTILS_APPEND_FLAGS=1
+                 ${Python3_VENV_BIN}/f2py-f90wrap -c
                  --f90exec=${CMAKE_Fortran_COMPILER}
                  --f90flags=${CMAKE_Fortran_FLAGS} 
                  --f90flags=${CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE_CAPS}}
@@ -130,23 +145,25 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
 	     	    > f2py_log.txt
                    2> f2py_log_err.txt 
           COMMAND echo "Runnning pip using the following Python executable"
-          COMMAND echo ${PYTHON_EXECUTABLE}
+          COMMAND echo ${Python3_EXECUTABLE}
           COMMAND echo "Copy output of f90wrap to CLOUDSC Python driver package directory"
           COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_MODN}.py ./src/cloudscpytools
           COMMAND echo "Running pip install -U"
-          COMMAND ${PYTHON_EXECUTABLE} -m pip install -U .
+          COMMAND ${Python3_EXECUTABLE} -m pip install -U .
+	  # TODO: Once driver install is done independently, update shebang to link with venv.
           COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/pythonexec
           COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/drivers/cloudsc_pydriver.py  ${CMAKE_BINARY_DIR}/bin/pythonexec/
           COMMAND echo "Completed execution of F90wrap/F2PY interface to cloudsc. "
           DEPENDS ${DWARF_CLOUDSC_LIB}
           VERBATIM
       )
-          ecbuild_add_test(
-             TARGET dwarf-cloudsc-lib
-             COMMAND cloudsc_pydriver.py
-             ARGS --numomp=1 --ngptot=100 --nproma=16
-             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin/pythonexec
-             OMP 1
-                          )
+
+      ecbuild_add_test(
+          TARGET dwarf-cloudsc-lib
+          COMMAND cloudsc_pydriver.py
+          ARGS --numomp=1 --ngptot=100 --nproma=16
+          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+          OMP 1
+      )
    endif()
 endif()

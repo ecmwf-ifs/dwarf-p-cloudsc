@@ -92,13 +92,6 @@ if( HAVE_SERIALBOX )
 endif()
 
 ecbuild_find_package( NAME loki )
-ecbuild_find_python(VERSION 3.8 NO_LIBS)
-
-if ( PYTHON_EXECUTABLE )
-  execute_process(COMMAND ${PYTHON_EXECUTABLE} --version)
-  execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade pip)
-  execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install f90wrap h5py)
-endif()
 
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION
