@@ -14,9 +14,11 @@ ecbuild_add_option( FEATURE CLOUDSC_SYCL
 
 if( HAVE_CLOUDSC_SYCL )
 
+    set(CMAKE_C_COMPILER "/usr/bin/gcc")
     set(CMAKE_CXX_COMPILER "/opt/intel/oneapi/compiler/2022.0.2/linux/bin/dpcpp")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/intel/oneapi/compiler/2022.0.2/linux/include -O3 -L/opt/intel/oneapi/compiler/2022.0.2/linux/lib -fopenmp -fsycl-early-optimizations -fsycl)# -fsycl-targets=nvptx64-nvidia-cuda -Xcuda-ptxas --maxrregcount=128 -Xsycl-target-backend --cuda-gpu-arch=sm_80")
-    
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/intel/oneapi/compiler/2022.0.2/linux/include -O3 -L/opt/intel/oneapi/compiler/2022.0.2/linux/lib -fopenmp -fsycl-early-optimizations -fsycl -fuse-ld=/opt/intel/oneapi/compiler/2022.0.2/linux/bin-llvm/ld.lld -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a") 
+    # -fsycl-targets=nvptx64-nvidia-cuda -Xcuda-ptxas --maxrregcount=128 -Xsycl-target-backend --cuda-gpu-arch=sm_80")
+    # set(CMAKE_CXX_LINK_EXECUTABLE "/opt/intel/oneapi/compiler/2022.0.2/linux/bin-llvm/ld.lld -v") 
     
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-sycl-lib
