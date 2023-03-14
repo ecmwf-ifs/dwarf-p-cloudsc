@@ -6,20 +6,14 @@ cloudsc_data module consist of utilities that:
 - validates reference vs. computed fields;
 - other, purely technical utilities.
 """
-import sys
-import os
 from collections import OrderedDict
-from importlib   import import_module
 import h5py
 import numpy as np
-here = os.getcwd()
-cldir = here + '/../../cloudsc-dwarf/src/cloudsc_pyiface'
-if cldir not in sys.path:
-    sys.path.append(cldir)
-clsc = import_module('cloudsc')
+
 NCLV = 5      # number of microphysics variables
 
-def define_fortran_fields(nproma, nlev, nblocks):
+
+def define_fortran_fields(nproma, nlev, nblocks, clsc):
     """
     define_fortran_fields returns:
     - zero NumPy arrays that will further be used as an output of Fortran kernel computation.
@@ -82,7 +76,7 @@ def define_fortran_fields(nproma, nlev, nblocks):
     return fields
 
 
-def field_c_to_fortran(dims, cfield, **kwargs):
+def field_c_to_fortran(dims, cfield, clsc=None, **kwargs):
     """
     field_c_to_fortran:
     1) transposes C array input to Fortran array
@@ -92,13 +86,16 @@ def field_c_to_fortran(dims, cfield, **kwargs):
     # Transpose the C array (row-major)  into Fortran (column-major) data layout
     ffieldtmp = np.asfortranarray(np.transpose(np.ascontiguousarray(cfield)))
 
-    return field_linear_to_block(dims, ffieldtmp, **kwargs)
+    return field_linear_to_block(dims, ffieldtmp, clsc=clsc, **kwargs)
 
 
-def field_linear_to_block(dims, lfield, **kwargs):
+def field_linear_to_block(dims, lfield, clsc=None, **kwargs):
     """
     Rewrites Fortran linear array into block structure
     """
+
+    if not clsc:
+        raise RuntimeError('[PyIface] Cannot expand field without CLOUDSC Fortran backend')
 
     # Pick array dimension arguments from keyword args
     nproma = kwargs.get('nproma', 32)
@@ -150,11 +147,15 @@ def field_linear_to_block(dims, lfield, **kwargs):
         print ("Wrong dtype")
     return bfield
 
-def load_input_fortran_fields(path, fields, **kwargs):
+def load_input_fortran_fields(path, fields, clsc=None, **kwargs):
     """
     load_input_fortran_fields returns:
     - set of variables needed to initiate computation of the Fortran kernel.
     """
+
+    if not clsc:
+        raise RuntimeError('[PyIface] Cannot load input fields without CLOUDSC Fortran backend')
+    
     nproma = kwargs['nproma']
     nlev = kwargs['nlev']
     nblocks = kwargs['nblocks']
@@ -196,23 +197,23 @@ def load_input_fortran_fields(path, fields, **kwargs):
 
         for argname in argnames_nlev:
             fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_nlevp:
             fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_withnclv:
             fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_tend:
             fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_nproma:
             fields[argname] = field_c_to_fortran((nblocks,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_scalar:
             fields[argname] = f[argname.upper()][0]
@@ -337,10 +338,13 @@ def convert_fortran_output_to_python (input_fields, **kwargs):
 
     return fields
 
-def load_reference_fields (path, **kwargs):
+def load_reference_fields (path, clsc=None, **kwargs):
     """
     load_reference_fields loads reference results of Fortran computation from the .h5 file
     """
+
+    if not clsc:
+        raise RuntimeError('[PyIface] Cannot load reference fields without CLOUDSC Fortran backend')
 
     nproma = kwargs['nproma']
     nlev = kwargs['nlev']
@@ -377,23 +381,23 @@ def load_reference_fields (path, **kwargs):
 
         for argname in argnames_nlev:
             fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_nlevp:
             fields[argname] = field_c_to_fortran((nblocks,nlev+1,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_nproma:
             fields[argname] = field_c_to_fortran((nblocks,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_tend:
             fields[argname] = field_c_to_fortran((nblocks,nlev,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
         for argname in argnames_tend_cld:
             fields[argname] = field_c_to_fortran((nblocks,NCLV,nlev,nproma),
-                                                 f[argname.upper()], **kwargs)
+                                                 f[argname.upper()], clsc=clsc, **kwargs)
 
     return fields
 
