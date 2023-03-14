@@ -15,11 +15,13 @@ cd build
 . venv_pyiface/bin/activate
 
 # To test performance, execute:
-cd bin/pythonexec
-./cloudsc_pydriver.py --numomp=$OMP_NUM_THREADS --ngptot=163840 --nproma=32 
+python ./bin/cloudsc_pydriver.py --numomp=$OMP_NUM_THREADS --ngptot=163840 --nproma=32
+```
+An additional CLI option ``--cloudsc-path=<path-to-python-wrapper>``
+can be used if the build location used to run f90wrap has changed.
+
 Currently, the performance on ATOS is about about 64400 Mflops/s, which is inferior to the reference result of:
 dwarf-cloudsc-fortran-pyiref (about 96700) and the dwarf-cloudsc-fortran(about 103000)
-```
 
 Similar results can be achieved using GNU compilers on ATOS using module pg and --arch=./arch/ecmwf/hpc2020/gnu/11.2.0/
 

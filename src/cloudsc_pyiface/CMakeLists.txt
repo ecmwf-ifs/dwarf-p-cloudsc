@@ -31,7 +31,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 
     # Install the f90wrap build dependency and via latest pip
     execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install --upgrade pip)
-    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install f90wrap)
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR})
 
     # Define module directory to facilitate f90wrap/f2py execution
     ecbuild_enable_fortran(MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../module)
@@ -82,10 +82,14 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
                     -k ${CMAKE_CURRENT_SOURCE_DIR}/src/cloudscpytools/kind_map
                     > f90wrap_log.txt 2> f90wrap_log_err.txt
 	COMMENT "[PyIface] Executing f90wrap to generate Fortran wrappers"
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	VERBATIM
     )
 
     # Two-step F90wrap process: Then compile and generate Python wrappers via F2Py
+    # Note that we execute this in CMAKE_BINARY_DIR to make the resulting
+    # _cloudsc.arch.so library directly available for dynamic loading, as f2py-f90wrap
+    # does not allow specifying a particular output directory or path.
     add_custom_command(TARGET ${DWARF_CLOUDSC_LIB}  POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS
                     LDFLAGS=-Wl,-rpath,${CMAKE_BINARY_DIR}/lib
@@ -102,23 +106,15 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 		    -l${DWARF_CLOUDSC_LIB}
 		    ${F2PY_COMMON_SOURCES} ${F2PY_DWARF_SOURCES}
 	     	    > f2py_log.txt 2> f2py_log_err.txt
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	COMMENT "[PyIface] Executing f2py-f90wrap to compile and generate Python wrappers"
         VERBATIM
     )
 
-    # Finally, bake newly generated Python sources into CLOUDSC Python package
-    # Note, that this involves copying the Python source to the build directory,
-    # effectively rendering things like editable pip installs defunct.
+    # Copy the CLI driver script into the bin directory for execution
     add_custom_command(TARGET ${DWARF_CLOUDSC_LIB} POST_BUILD
-        # Fuse a copy of the base Python package with newly-generated parts
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_MODN}.py ${CMAKE_CURRENT_BINARY_DIR}/src/cloudscpytools
-	# Install the now completed Python package into the venv (again)
-        COMMAND ${Python3_EXECUTABLE} -m pip install -U .
-        # TODO: Once driver install is done independently, update shebang to link with venv.
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/pythonexec
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/drivers/cloudsc_pydriver.py
-	                                 ${CMAKE_BINARY_DIR}/bin/pythonexec/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/drivers/cloudsc_pydriver.py ${CMAKE_BINARY_DIR}/bin
 	COMMENT "[PyIface] Installing Python package and driver via 'pip install'"
     )
 

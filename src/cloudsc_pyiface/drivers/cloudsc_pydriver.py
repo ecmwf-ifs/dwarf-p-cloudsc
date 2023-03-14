@@ -56,7 +56,7 @@ def main(numomp: int, ngptot: int, nproma: int, cloudsc_path) -> None:
     )
 
     # Get reference solution fields from file
-    rootpath = Path(__file__).resolve().parents[3]
+    rootpath = Path(__file__).resolve().parents[2]
     ref_path = rootpath/'config-files/reference.h5'
     ref_fields = cloudsc_data.load_reference_fields(path=ref_path, clsc=clsc, **npars)
 
