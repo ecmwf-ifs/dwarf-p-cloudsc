@@ -23,10 +23,10 @@ classifiers = [
    " Topic :: Scientific/Engineering :: Atmospheric Science "
 ]
 dependencies = [
+    "numpy",
     "f90wrap",
     "click",
     "h5py",
-    "sorcery",
 ]
 
 [project.urls]
