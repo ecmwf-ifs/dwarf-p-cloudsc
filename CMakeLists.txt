@@ -92,6 +92,7 @@ if( HAVE_SERIALBOX )
 endif()
 
 ecbuild_find_package( NAME loki )
+ecbuild_find_package( NAME atlas )
 
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION

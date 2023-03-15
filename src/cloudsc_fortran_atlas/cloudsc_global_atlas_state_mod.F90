@@ -1,0 +1,313 @@
+! (C) Copyright 1988- ECMWF.
+!
+! This software is licensed under the terms of the Apache Licence Version 2.0
+! which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+!
+! In applying this licence, ECMWF does not waive the privileges and immunities
+! granted to it by virtue of its status as an intergovernmental organisation
+! nor does it submit to any jurisdiction.
+
+MODULE CLOUDSC_GLOBAL_ATLAS_STATE_MOD
+  ! Driver module to manage the setup and teardown of the dwarf memory state
+  USE PARKIND1,  ONLY : JPIM, JPRB
+  USE YOMPHYDER, ONLY : STATE_TYPE
+  USE YOECLDP,   ONLY : NCLV, YRECLDP, YRECLDP_LOAD_PARAMETERS
+  USE YOMCST,    ONLY : YOMCST_LOAD_PARAMETERS
+  USE YOETHF,    ONLY : YOETHF_LOAD_PARAMETERS
+  USE YOEPHLI  , ONLY : YREPHLI, YREPHLI_LOAD_PARAMETERS
+
+  USE FILE_IO_MOD, ONLY: INPUT_INITIALIZE, INPUT_FINALIZE, LOAD_SCALAR, LOAD_ARRAY
+  USE EXPAND_ATLAS_MOD, ONLY: LOADVAR_ATLAS, LOADSTATE_ATLAS
+  USE VALIDATE_ATLAS_MOD, ONLY: VALIDATEVAR_ATLAS, VALIDATESTATE_ATLAS
+  USE CLOUDSC_MPI_MOD, ONLY: IRANK
+
+  USE ATLAS_MODULE
+  USE, INTRINSIC :: ISO_C_BINDING
+  USE ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS_MODULE
+
+  IMPLICIT NONE
+
+  TYPE(ATLAS_STRUCTUREDGRID) :: GRID
+  TYPE(ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS) :: FSPACE
+  TYPE(ATLAS_FIELDSET) :: FSET
+
+  TYPE VAR3D_PTR
+      REAL(C_DOUBLE), POINTER :: PTR(:,:,:)
+  END TYPE
+
+  CHARACTER(LEN=10), PARAMETER, DIMENSION(30) :: IN_VAR_NAMES = (/ &
+      "PLCRIT_AER", "PICRIT_AER", "PRE_ICE   ", "PCCN      ", "PNICE     ", "PT        ", "PQ        ", &
+      "PVFA      ", "PVFL      ", "PVFI      ", "PDYNA     ", "PDYNL     ", "PDYNI     ", "PHRSW     ", &
+      "PHRLW     ", "PVERVEL   ", "PAP       ", "PLU       ", "PLUDE     ", "PSNDE     ", "PMFU      ", &
+      "PMFD      ", "PA        ", "PSUPSAT   ", &
+      "PLSM      ", "LDCUM     ", "KTYPE     ", "PAPH      ", "PEXTRA    ", "PCLV      " /)
+  CHARACTER(LEN=16), PARAMETER, DIMENSION(16) :: OUT_VAR_NAMES = (/ &
+      "PFSQLF          ", "PFSQIF          ", "PFCQLNG         ", "PFCQNNG         ", "PFSQRF          ", &
+      "PFSQSF          ", "PFCQRNG         ", "PFCQSNG         ", "PFSQLTUR        ", "PFSQITUR        ", &
+      "PFPLSL          ", "PFPLSN          ", "PFHPSL          ", "PFHPSN          ", "PCOVPTOT        ", &
+      "PRAINFRAC_TOPRFZ" /) 
+
+  TYPE CLOUDSC_GLOBAL_ATLAS_STATE
+    ! Memory state containing raw fields annd tendencies for CLOUDSC dwarf
+    !
+    ! Note that the global state has an additional outermost block
+    ! dimension allocated for each field variable.
+    INTEGER(KIND=JPIM)                   :: NPROMA, KLEV    ! Grid points and vertical levels per block
+    INTEGER(KIND=JPIM)                   :: NGPTOT, NBLOCKS ! Total number of grid points and blocks
+    INTEGER(KIND=JPIM)                   :: KFLDX 
+    LOGICAL                              :: LDSLPHY 
+    LOGICAL                              :: LDMAINCALL      ! T if main call to cloudsc
+    REAL(KIND=JPRB)                      :: PTSPHY          ! Physics timestep
+
+    TYPE(VAR3D_PTR), DIMENSION(24) :: IN_VARS_3D_REAL64
+    TYPE(VAR3D_PTR), DIMENSION(15) :: OUT_VARS_3D_REAL64
+
+    ! Input field variables and tendencies
+    REAL(C_DOUBLE), POINTER :: PLCRIT_AER(:,:,:)
+    REAL(C_DOUBLE), POINTER :: PICRIT_AER(:,:,:) 
+    REAL(C_DOUBLE), POINTER :: PRE_ICE(:,:,:) 
+    REAL(C_DOUBLE), POINTER :: PCCN(:,:,:)     ! liquid cloud condensation nuclei
+    REAL(C_DOUBLE), POINTER :: PNICE(:,:,:)    ! ice number concentration (cf. CCN)
+    REAL(C_DOUBLE), POINTER :: PT(:,:,:)       ! T at start of callpar
+    REAL(C_DOUBLE), POINTER :: PQ(:,:,:)       ! Q at start of callpar
+    REAL(C_DOUBLE), POINTER :: PVFA(:,:,:)     ! CC from VDF scheme
+    REAL(C_DOUBLE), POINTER :: PVFL(:,:,:)     ! Liq from VDF scheme
+    REAL(C_DOUBLE), POINTER :: PVFI(:,:,:)     ! Ice from VDF scheme
+    REAL(C_DOUBLE), POINTER :: PDYNA(:,:,:)    ! CC from Dynamics
+    REAL(C_DOUBLE), POINTER :: PDYNL(:,:,:)    ! Liq from Dynamics
+    REAL(C_DOUBLE), POINTER :: PDYNI(:,:,:)    ! Liq from Dynamics
+    REAL(C_DOUBLE), POINTER :: PHRSW(:,:,:)    ! Short-wave heating rate
+    REAL(C_DOUBLE), POINTER :: PHRLW(:,:,:)    ! Long-wave heating rate
+    REAL(C_DOUBLE), POINTER :: PVERVEL(:,:,:)  ! Vertical velocity
+    REAL(C_DOUBLE), POINTER :: PAP(:,:,:)      ! Pressure on full levels
+    REAL(C_DOUBLE), POINTER :: PLU(:,:,:)      ! Conv. condensate
+    REAL(C_DOUBLE), POINTER :: PLUDE(:,:,:)    ! Conv. detrained water 
+    REAL(C_DOUBLE), POINTER :: PSNDE(:,:,:)    ! Conv. detrained snow
+    REAL(C_DOUBLE), POINTER :: PMFU(:,:,:)     ! Conv. mass flux up
+    REAL(C_DOUBLE), POINTER :: PMFD(:,:,:)     ! Conv. mass flux down
+    REAL(C_DOUBLE), POINTER :: PA(:,:,:)       ! Original Cloud fraction (t)
+    REAL(C_DOUBLE), POINTER :: PSUPSAT(:,:,:)
+
+    REAL(C_DOUBLE), POINTER :: PLSM(:,:)       ! Land fraction (0-1) 
+    LOGICAL,        POINTER :: LDCUM(:,:)      ! Convection active
+    INTEGER(c_int), POINTER :: KTYPE(:,:)      ! Convection type 0,1,2
+    REAL(C_DOUBLE), POINTER :: PAPH(:,:,:)     ! Pressure on half levels
+    REAL(C_DOUBLE), POINTER :: PEXTRA(:,:,:,:) ! extra fields
+    REAL(C_DOUBLE), POINTER :: PCLV(:,:,:,:) 
+
+    TYPE(STATE_TYPE), ALLOCATABLE :: TENDENCY_CML(:) ! cumulative tendency used for final output
+    TYPE(STATE_TYPE), ALLOCATABLE :: TENDENCY_TMP(:) ! cumulative tendency used as input
+    TYPE(STATE_TYPE), ALLOCATABLE :: TENDENCY_LOC(:) ! local tendency from cloud scheme
+
+    ! Output fields used for validation
+    REAL(C_DOUBLE), POINTER :: PFSQLF(:,:,:)   ! Flux of liquid
+    REAL(C_DOUBLE), POINTER :: PFSQIF(:,:,:)   ! Flux of ice
+    REAL(C_DOUBLE), POINTER :: PFCQLNG(:,:,:)  ! -ve corr for liq
+    REAL(C_DOUBLE), POINTER :: PFCQNNG(:,:,:)  ! -ve corr for ice
+    REAL(C_DOUBLE), POINTER :: PFSQRF(:,:,:)   ! Flux diagnostics
+    REAL(C_DOUBLE), POINTER :: PFSQSF(:,:,:)   ! for DDH, generic
+    REAL(C_DOUBLE), POINTER :: PFCQRNG(:,:,:)  ! rain
+    REAL(C_DOUBLE), POINTER :: PFCQSNG(:,:,:)  ! snow
+    REAL(C_DOUBLE), POINTER :: PFSQLTUR(:,:,:) ! liquid flux due to VDF
+    REAL(C_DOUBLE), POINTER :: PFSQITUR(:,:,:) ! ice flux due to VDF
+    REAL(C_DOUBLE), POINTER :: PFPLSL(:,:,:)   ! liq+rain sedim flux
+    REAL(C_DOUBLE), POINTER :: PFPLSN(:,:,:)   ! ice+snow sedim flux
+    REAL(C_DOUBLE), POINTER :: PFHPSL(:,:,:)   ! Enthalpy flux for liq
+    REAL(C_DOUBLE), POINTER :: PFHPSN(:,:,:)   ! Enthalpy flux for ice
+    REAL(C_DOUBLE), POINTER :: PCOVPTOT(:,:,:) ! Precip fraction
+    REAL(C_DOUBLE), POINTER :: PRAINFRAC_TOPRFZ(:,:) 
+
+    ! Underlying data buffers for AOSOA allcoated STATE_TYPE arrays
+    REAL(C_DOUBLE), POINTER :: B_CML(:,:,:,:)
+    REAL(C_DOUBLE), POINTER :: B_TMP(:,:,:,:)
+    REAL(C_DOUBLE), POINTER :: B_LOC(:,:,:,:)
+  CONTAINS
+    PROCEDURE :: LOAD => CLOUDSC_GLOBAL_ATLAS_STATE_LOAD
+    PROCEDURE :: VALIDATE => CLOUDSC_GLOBAL_ATLAS_STATE_VALIDATE
+  END TYPE CLOUDSC_GLOBAL_ATLAS_STATE
+
+CONTAINS
+
+  SUBROUTINE CLOUDSC_GLOBAL_ATLAS_STATE_LOAD(SELF, NPROMA, NGPTOT, NGPTOTG)
+    ! Load reference input data via serialbox
+    CLASS(CLOUDSC_GLOBAL_ATLAS_STATE) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NGPTOT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NGPTOTG
+
+    INTEGER(KIND=JPIM) :: KLON, IVAR, B
+    TYPE(ATLAS_FIELD) :: FIELD
+
+    CALL INPUT_INITIALIZE(NAME='input')
+
+    CALL LOAD_SCALAR('KLON', KLON)
+    CALL LOAD_SCALAR('KLEV', SELF%KLEV)
+    CALL LOAD_SCALAR('KFLDX', SELF%KFLDX)
+
+    GRID = ATLAS_REGULARLONLATGRID(NGPTOT, 1)
+    FSPACE = ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS(GRID, LEVELS=SELF%KLEV, NPROMA=NPROMA, HALO=0)
+    SELF%NBLOCKS = FSPACE%NBLKS()
+    FSET = ATLAS_FIELDSET();
+
+    DO IVAR = 1, SIZE(IN_VAR_NAMES) - 6 ! last six variables are special
+        CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME=TRIM(IN_VAR_NAMES(IVAR)), KIND=ATLAS_REAL(JPRB)))
+    ENDDO
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="PLSM",   KIND=ATLAS_REAL(JPRB),    LEVELS=0))
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="LDCUM",  KIND=ATLAS_LOGICAL(),     LEVELS=0))
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="KTYPE",  KIND=ATLAS_INTEGER(JPIM), LEVELS=0))
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="PAPH",   KIND=ATLAS_REAL(JPRB),    LEVELS=SELF%KLEV+1))
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="PEXTRA", KIND=ATLAS_REAL(JPRB),    VARIABLES=MAX(1,SELF%KFLDX)))
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="PCLV",   KIND=ATLAS_REAL(JPRB),    VARIABLES=MAX(1,NCLV)))
+
+    DO IVAR = 1, SIZE(SELF%IN_VARS_3D_REAL64)
+        FIELD = FSET%FIELD(TRIM(IN_VAR_NAMES(IVAR)))
+        CALL FIELD%DATA(SELF%IN_VARS_3D_REAL64(IVAR)%PTR)
+    ENDDO
+    SELF%PLCRIT_AER => SELF%IN_VARS_3D_REAL64(1)%PTR
+    SELF%PICRIT_AER => SELF%IN_VARS_3D_REAL64(2)%PTR
+    SELF%PRE_ICE    => SELF%IN_VARS_3D_REAL64(3)%PTR
+    SELF%PCCN       => SELF%IN_VARS_3D_REAL64(4)%PTR
+    SELF%PNICE      => SELF%IN_VARS_3D_REAL64(5)%PTR
+    SELF%PT         => SELF%IN_VARS_3D_REAL64(6)%PTR
+    SELF%PQ         => SELF%IN_VARS_3D_REAL64(7)%PTR
+    SELF%PVFA       => SELF%IN_VARS_3D_REAL64(8)%PTR
+    SELF%PVFL       => SELF%IN_VARS_3D_REAL64(9)%PTR
+    SELF%PVFI       => SELF%IN_VARS_3D_REAL64(10)%PTR
+    SELF%PDYNA      => SELF%IN_VARS_3D_REAL64(11)%PTR
+    SELF%PDYNL      => SELF%IN_VARS_3D_REAL64(12)%PTR
+    SELF%PDYNI      => SELF%IN_VARS_3D_REAL64(13)%PTR
+    SELF%PHRSW      => SELF%IN_VARS_3D_REAL64(14)%PTR
+    SELF%PHRLW      => SELF%IN_VARS_3D_REAL64(15)%PTR
+    SELF%PVERVEL    => SELF%IN_VARS_3D_REAL64(16)%PTR
+    SELF%PAP        => SELF%IN_VARS_3D_REAL64(17)%PTR
+    SELF%PLU        => SELF%IN_VARS_3D_REAL64(18)%PTR
+    SELF%PLUDE      => SELF%IN_VARS_3D_REAL64(19)%PTR
+    SELF%PSNDE      => SELF%IN_VARS_3D_REAL64(20)%PTR
+    SELF%PMFU       => SELF%IN_VARS_3D_REAL64(21)%PTR
+    SELF%PMFD       => SELF%IN_VARS_3D_REAL64(22)%PTR
+    SELF%PA         => SELF%IN_VARS_3D_REAL64(23)%PTR
+    SELF%PSUPSAT    => SELF%IN_VARS_3D_REAL64(24)%PTR
+
+    FIELD = FSET%FIELD("PLSM")
+    CALL FIELD%DATA(SELF%PLSM)
+    FIELD = FSET%FIELD("LDCUM")
+    CALL FIELD%DATA(SELF%LDCUM)
+    FIELD = FSET%FIELD("KTYPE")
+    CALL FIELD%DATA(SELF%KTYPE)
+    FIELD = FSET%FIELD("PAPH")
+    CALL FIELD%DATA(SELF%PAPH)
+    FIELD = FSET%FIELD("PEXTRA")
+    CALL FIELD%DATA(SELF%PEXTRA)
+    FIELD = FSET%FIELD("PCLV")
+    CALL FIELD%DATA(SELF%PCLV)
+
+    DO IVAR = 1, SIZE(IN_VAR_NAMES)
+        CALL LOADVAR_ATLAS(FSET, TRIM(IN_VAR_NAMES(IVAR)), KLON, NGPTOTG)
+    ENDDO
+
+    FIELD = FSPACE%CREATE_FIELD(NAME='TENDENCY_CML', KIND=ATLAS_REAL(JPRB), VARIABLES=3+NCLV)
+    CALL FIELD%DATA(SELF%B_CML)
+    CALL FSET%ADD(FIELD)
+    FIELD = FSPACE%CREATE_FIELD(NAME='TENDENCY_TMP', KIND=ATLAS_REAL(JPRB), VARIABLES=3+NCLV)
+    CALL FIELD%DATA(SELF%B_TMP)
+    CALL FSET%ADD(FIELD)
+    FIELD = FSPACE%CREATE_FIELD(NAME='TENDENCY_LOC', KIND=ATLAS_REAL(JPRB), VARIABLES=3+NCLV)
+    CALL FIELD%DATA(SELF%B_LOC)
+    CALL FSET%ADD(FIELD)
+
+    ! The STATE_TYPE arrays are tricky, as the AOSOA layout needs to be expictly
+    ! unrolled at every step, and we rely on dirty hackery to do this.
+    CALL LOADSTATE_ATLAS(FSET, 'TENDENCY_CML', SELF%TENDENCY_CML, KLON, NGPTOTG)
+    CALL LOADSTATE_ATLAS(FSET, 'TENDENCY_TMP', SELF%TENDENCY_TMP, KLON, NGPTOTG)
+    ALLOCATE(SELF%TENDENCY_LOC(SELF%NBLOCKS))
+    !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
+    DO B=1, SELF%NBLOCKS
+       SELF%TENDENCY_LOC(B)%T   => SELF%B_LOC(:,:,1,B)
+       SELF%TENDENCY_LOC(B)%A   => SELF%B_LOC(:,:,2,B)
+       SELF%TENDENCY_LOC(B)%Q   => SELF%B_LOC(:,:,3,B)
+       SELF%TENDENCY_LOC(B)%CLD => SELF%B_LOC(:,:,4:,B)
+    END DO
+    !$OMP END PARALLEL DO
+
+    ! Output fields are simply allocated and zero'd
+    DO IVAR = 1, SIZE(OUT_VAR_NAMES) - 2
+        CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME=TRIM(OUT_VAR_NAMES(IVAR)), KIND=ATLAS_REAL(JPRB), LEVELS=SELF%KLEV+1))
+    ENDDO
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="PCOVPTOT", KIND=ATLAS_REAL(JPRB)))
+    CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME="PRAINFRAC_TOPRFZ", KIND=ATLAS_REAL(JPRB), LEVELS=0))
+
+    DO IVAR = 1, SIZE(OUT_VAR_NAMES) - 1
+        FIELD = FSET%FIELD(TRIM(OUT_VAR_NAMES(IVAR)))
+        CALL FIELD%DATA(SELF%OUT_VARS_3D_REAL64(IVAR)%PTR)
+        !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
+        DO B=1, SELF%NBLOCKS
+           SELF%OUT_VARS_3D_REAL64(IVAR)%PTR(:,:,B) = 0.0_JPRB
+        END DO
+        !$omp end parallel do
+    ENDDO
+
+    SELF%PFSQLF   => SELF%OUT_VARS_3D_REAL64(1)%PTR
+    SELF%PFSQIF   => SELF%OUT_VARS_3D_REAL64(2)%PTR
+    SELF%PFCQLNG  => SELF%OUT_VARS_3D_REAL64(3)%PTR
+    SELF%PFCQNNG  => SELF%OUT_VARS_3D_REAL64(4)%PTR
+    SELF%PFSQRF   => SELF%OUT_VARS_3D_REAL64(5)%PTR
+    SELF%PFSQSF   => SELF%OUT_VARS_3D_REAL64(6)%PTR
+    SELF%PFCQRNG  => SELF%OUT_VARS_3D_REAL64(7)%PTR
+    SELF%PFCQSNG  => SELF%OUT_VARS_3D_REAL64(8)%PTR
+    SELF%PFSQLTUR => SELF%OUT_VARS_3D_REAL64(9)%PTR
+    SELF%PFSQITUR => SELF%OUT_VARS_3D_REAL64(10)%PTR
+    SELF%PFPLSL   => SELF%OUT_VARS_3D_REAL64(11)%PTR
+    SELF%PFPLSN   => SELF%OUT_VARS_3D_REAL64(12)%PTR
+    SELF%PFHPSL   => SELF%OUT_VARS_3D_REAL64(13)%PTR
+    SELF%PFHPSN   => SELF%OUT_VARS_3D_REAL64(14)%PTR
+    SELF%PCOVPTOT => SELF%OUT_VARS_3D_REAL64(15)%PTR
+
+    FIELD = FSET%FIELD("PRAINFRAC_TOPRFZ")
+    CALL FIELD%DATA(SELF%PRAINFRAC_TOPRFZ)
+    !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
+    DO B=1, SELF%NBLOCKS
+       SELF%PRAINFRAC_TOPRFZ(:,B) = 0.0_JPRB
+    END DO
+    !$OMP END PARALLEL DO
+
+    ! Initialize global parameters from the input file
+    CALL LOAD_SCALAR('PTSPHY', SELF%PTSPHY)
+    CALL LOAD_SCALAR('LDSLPHY', SELF%LDSLPHY)
+    CALL LOAD_SCALAR('LDMAINCALL', SELF%LDMAINCALL)
+    CALL YOMCST_LOAD_PARAMETERS()
+    CALL YOETHF_LOAD_PARAMETERS()
+    CALL YRECLDP_LOAD_PARAMETERS()
+    CALL YREPHLI_LOAD_PARAMETERS()
+
+    CALL INPUT_FINALIZE()
+
+  END SUBROUTINE CLOUDSC_GLOBAL_ATLAS_STATE_LOAD
+
+  SUBROUTINE CLOUDSC_GLOBAL_ATLAS_STATE_VALIDATE(SELF, NGPTOT, NGPTOTG)
+    ! Validate the correctness of output against reference data
+    CLASS(CLOUDSC_GLOBAL_ATLAS_STATE) :: SELF
+    INTEGER(KIND=JPIM), INTENT(IN) :: NGPTOT
+    INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NGPTOTG
+
+    INTEGER(KIND=JPIM) :: KLON, IVAR
+
+    CALL INPUT_INITIALIZE(NAME='reference')
+    CALL LOAD_SCALAR('KLON', KLON)
+    CALL INPUT_FINALIZE()
+
+    ! Write variable validation header
+    IF (IRANK == 0) THEN
+      print '(1X,A20,1X,A3,5(1X,A20))', &
+           & 'Variable','Dim', 'MinValue','MaxValue','AbsMaxErr','AvgAbsErr/GP','MaxRelErr-%'
+    END IF
+
+
+    ! Actual variable validation
+    CALL VALIDATEVAR_ATLAS(FSET, 'PLUDE', KLON, NGPTOTG)
+    DO IVAR = 1, SIZE(OUT_VAR_NAMES)
+        CALL VALIDATEVAR_ATLAS(FSET, OUT_VAR_NAMES(IVAR), KLON, NGPTOTG)
+    ENDDO
+    CALL VALIDATESTATE_ATLAS(FSET, 'TENDENCY_LOC', KLON, NGPTOTG)
+
+  END SUBROUTINE CLOUDSC_GLOBAL_ATLAS_STATE_VALIDATE
+
+END MODULE CLOUDSC_GLOBAL_ATLAS_STATE_MOD

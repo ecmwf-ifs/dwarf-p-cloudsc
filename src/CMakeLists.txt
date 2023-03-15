@@ -9,6 +9,7 @@
 add_subdirectory(prototype1)
 add_subdirectory(common)
 add_subdirectory(cloudsc_fortran)
+add_subdirectory(cloudsc_fortran_atlas)
 add_subdirectory(cloudsc_c)
 add_subdirectory(cloudsc_cuda)
 add_subdirectory(cloudsc_gpu)
