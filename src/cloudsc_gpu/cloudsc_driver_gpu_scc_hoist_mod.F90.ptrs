@@ -1,0 +1,339 @@
+! (C) Copyright 1988- ECMWF.
+!
+! This software is licensed under the terms of the Apache Licence Version 2.0
+! which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+!
+! In applying this licence, ECMWF does not waive the privileges and immunities
+! granted to it by virtue of its status as an intergovernmental organisation
+! nor does it submit to any jurisdiction.
+
+MODULE CLOUDSC_DRIVER_GPU_SCC_HOIST_MOD
+
+  USE PARKIND1, ONLY: JPIM, JPRB
+  USE YOMPHYDER, ONLY: STATE_TYPE
+  USE YOECLDP, ONLY : NCLV, YRECLDP, TECLDP
+  USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
+  USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
+
+  USE CLOUDSC_GPU_SCC_HOIST_MOD, ONLY: CLOUDSC_SCC_HOIST
+
+  IMPLICIT NONE
+
+CONTAINS
+
+  SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_HOIST( &
+     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG, KFLDX, PTSPHY, &
+     & PT, PQ, &
+     & BUFFER_CML, BUFFER_TMP, BUFFER_LOC, &
+     & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
+     & PHRSW,    PHRLW, &
+     & PVERVEL,  PAP,      PAPH, &
+     & PLSM,     LDCUM,    KTYPE, &
+     & PLU,      PLUDE,    PSNDE,    PMFU,     PMFD, &
+     & PA, &
+     & PCLV,     PSUPSAT,&
+     & PLCRIT_AER,PICRIT_AER, PRE_ICE, &
+     & PCCN,     PNICE,&
+     & PCOVPTOT, PRAINFRAC_TOPRFZ, &
+     & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG, &
+     & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG, &
+     & PFSQLTUR, PFSQITUR, &
+     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN, &
+     & YDOMCST, YDOETHF, YDECLDP )
+    ! Driver routine that invokes the optimized CLAW-based CLOUDSC GPU kernel
+    USE YOECLDP  , ONLY : TECLDP
+    USE YOMCST   , ONLY : TOMCST
+    USE YOETHF   , ONLY : TOETHF
+
+    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG
+    INTEGER(KIND=JPIM)                                    :: KFLDX
+    REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PT(NPROMA, NLEV, NGPBLKS) ! T at start of callpar
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PQ(NPROMA, NLEV, NGPBLKS) ! Q at start of callpar
+    REAL(KIND=JPRB), INTENT(INOUT) , TARGET :: BUFFER_CML(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
+    REAL(KIND=JPRB), INTENT(INOUT) , TARGET :: BUFFER_TMP(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_TMP
+    REAL(KIND=JPRB), INTENT(INOUT) , TARGET :: BUFFER_LOC(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_LOC
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PVFA(NPROMA, NLEV, NGPBLKS)     ! CC from VDF scheme
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PVFL(NPROMA, NLEV, NGPBLKS)     ! Liq from VDF scheme
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PVFI(NPROMA, NLEV, NGPBLKS)     ! Ice from VDF scheme
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PDYNA(NPROMA, NLEV, NGPBLKS)    ! CC from Dynamics
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PDYNL(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PDYNI(NPROMA, NLEV, NGPBLKS)    ! Liq from Dynamics
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PHRSW(NPROMA, NLEV, NGPBLKS)    ! Short-wave heating rate
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PHRLW(NPROMA, NLEV, NGPBLKS)    ! Long-wave heating rate
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PVERVEL(NPROMA, NLEV, NGPBLKS)  !Vertical velocity
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PAP(NPROMA, NLEV, NGPBLKS)      ! Pressure on full levels
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PAPH(NPROMA, NLEV+1, NGPBLKS) ! Pressure on half levels
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PLSM(NPROMA, NGPBLKS)    ! Land fraction (0-1)
+    LOGICAL, INTENT(IN)            , TARGET :: LDCUM(NPROMA, NGPBLKS)    ! Convection active
+    INTEGER(KIND=JPIM), INTENT(IN) , TARGET :: KTYPE(NPROMA, NGPBLKS)    ! Convection type 0,1,2
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PLU(NPROMA, NLEV, NGPBLKS)      ! Conv. condensate
+    REAL(KIND=JPRB), INTENT(INOUT) , TARGET :: PLUDE(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained water
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PSNDE(NPROMA, NLEV, NGPBLKS)    ! Conv. detrained snow
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PMFU(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux up
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PMFD(NPROMA, NLEV, NGPBLKS)     ! Conv. mass flux down
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PA(NPROMA, NLEV, NGPBLKS)       ! Original Cloud fraction (t)
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PCLV(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PSUPSAT(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PLCRIT_AER(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PICRIT_AER(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PRE_ICE(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PCCN(NPROMA, NLEV, NGPBLKS)     ! liquid cloud condensation nuclei
+    REAL(KIND=JPRB), INTENT(IN)    , TARGET :: PNICE(NPROMA, NLEV, NGPBLKS)    ! ice number concentration (cf. CCN)
+
+    REAL(KIND=JPRB), INTENT(INOUT) , TARGET :: PCOVPTOT(NPROMA, NLEV, NGPBLKS)    ! Precip fraction
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PRAINFRAC_TOPRFZ(NPROMA, NGPBLKS)
+    ! Flux diagnostics for DDH budget
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFSQLF(NPROMA, NLEV+1, NGPBLKS)    ! Flux of liquid
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFSQIF(NPROMA, NLEV+1, NGPBLKS)    ! Flux of ice
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFCQLNG(NPROMA, NLEV+1, NGPBLKS)   ! -ve corr for liq
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFCQNNG(NPROMA, NLEV+1, NGPBLKS)   ! -ve corr for ice
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFSQRF(NPROMA, NLEV+1, NGPBLKS)    ! Flux diagnostics
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFSQSF(NPROMA, NLEV+1, NGPBLKS)    !    for DDH, generic
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFCQRNG(NPROMA, NLEV+1, NGPBLKS)   ! rain
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFCQSNG(NPROMA, NLEV+1, NGPBLKS)   ! snow
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFSQLTUR(NPROMA, NLEV+1, NGPBLKS)  ! liquid flux due to VDF
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFSQITUR(NPROMA, NLEV+1, NGPBLKS)  ! ice flux due to VDF
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFPLSL(NPROMA, NLEV+1, NGPBLKS)    ! liq+rain sedim flux
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFPLSN(NPROMA, NLEV+1, NGPBLKS)    ! ice+snow sedim flux
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFHPSL(NPROMA, NLEV+1, NGPBLKS)    ! Enthalpy flux for liq
+    REAL(KIND=JPRB), INTENT(OUT) , TARGET :: PFHPSN(NPROMA, NLEV+1, NGPBLKS)    ! ice number concentration (cf. CCN)
+
+    TYPE(TOMCST), INTENT(IN)   :: YDOMCST
+    TYPE(TOETHF), INTENT(IN)   :: YDOETHF
+    TYPE(TECLDP), INTENT(IN)   :: YDECLDP
+
+    ! Local declarations of promoted temporaries
+    REAL(KIND=JPRB), TARGET :: ZFOEALFA(NPROMA, NLEV+1, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZTP1(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZLI(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZA(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZAORIG(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZLIQFRAC(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZICEFRAC(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZQX(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZQX0(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZPFPLSX(NPROMA, NLEV+1, NCLV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZLNEG(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZQXN2D(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZQSMIX(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZQSLIQ(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZQSICE(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZFOEEWMT(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZFOEEW(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB), TARGET :: ZFOEELIQT(NPROMA, NLEV, NGPBLKS)
+    INTEGER(KIND=JPIM) :: JL
+
+    INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND
+    TYPE(PERFORMANCE_TIMER) :: TIMER
+    INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
+
+    REAL(KIND=JPRB), POINTER :: IP_PT(:,:), IP_PQ(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_BUFFER_TMP_1(:,:), IP_BUFFER_TMP_3(:,:), IP_BUFFER_TMP_2(:,:), IP_BUFFER_TMP_4_8(:,:,:)
+    REAL(KIND=JPRB), POINTER :: IP_BUFFER_LOC_1(:,:), IP_BUFFER_LOC_3(:,:), IP_BUFFER_LOC_2(:,:), IP_BUFFER_LOC_4_8(:,:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PVFA(:,:), IP_PVFL(:,:), IP_PVFI(:,:), IP_PDYNA(:,:), IP_PDYNL(:,:), IP_PDYNI(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PHRSW(:,:),    IP_PHRLW(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PVERVEL(:,:),  IP_PAP(:,:),      IP_PAPH(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PLSM(:)
+    LOGICAL, POINTER ::       IP_LDCUM(:)
+    INTEGER(KIND=JPIM), POINTER ::     IP_KTYPE(:)
+    REAL(KIND=JPRB), POINTER :: IP_PLU(:,:),      IP_PLUDE(:,:),    IP_PSNDE(:,:),    IP_PMFU(:,:),     IP_PMFD(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PA(:,:),       IP_PCLV(:,:,:),   IP_PSUPSAT(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PLCRIT_AER(:,:),IP_PICRIT_AER(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PRE_ICE(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PCCN(:,:),     IP_PNICE(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PCOVPTOT(:,:), IP_PRAINFRAC_TOPRFZ(:)
+    REAL(KIND=JPRB), POINTER :: IP_PFSQLF(:,:),   IP_PFSQIF (:,:),  IP_PFCQNNG(:,:),  IP_PFCQLNG(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PFSQRF(:,:),   IP_PFSQSF (:,:),  IP_PFCQRNG(:,:),  IP_PFCQSNG(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PFSQLTUR(:,:), IP_PFSQITUR (:,:)
+    REAL(KIND=JPRB), POINTER :: IP_PFPLSL(:,:),   IP_PFPLSN(:,:),   IP_PFHPSL(:,:),   IP_PFHPSN(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_ZFOEALFA(:,:), IP_ZTP1(:,:), IP_ZLI(:,:), IP_ZA(:,:), IP_ZAORIG(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_ZLIQFRAC(:,:), IP_ZICEFRAC(:,:), IP_ZQX(:,:,:), IP_ZQX0(:,:,:), IP_ZPFPLSX(:,:,:)
+    REAL(KIND=JPRB), POINTER :: IP_ZLNEG(:,:,:), IP_ZQXN2D(:,:,:), IP_ZQSMIX(:,:), IP_ZQSLIQ(:,:), IP_ZQSICE(:,:)
+    REAL(KIND=JPRB), POINTER :: IP_ZFOEEWMT(:,:), IP_ZFOEEW(:,:), IP_ZFOEELIQT(:,:)
+
+    NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
+1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
+    if (irank == 0) then
+      write(0,1003) NUMPROC,NUMOMP,NGPTOTG,NPROMA,NGPBLKS
+    end if
+
+    ! Global timer for the parallel region
+    CALL TIMER%START(NUMOMP)
+
+!$acc enter data create(ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0,  &
+!$acc &   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT,  &
+!$acc &   ZFOEEW, ZFOEELIQT)
+
+!!$acc enter data create(&
+!!$acc & ip_pt, ip_pq, &
+!!$acc & ip_buffer_tmp_1, ip_buffer_tmp_3, ip_buffer_tmp_2, ip_buffer_tmp_4_8, &
+!!$acc & ip_buffer_loc_1, ip_buffer_loc_3, ip_buffer_loc_2, ip_buffer_loc_4_8, &
+!!$acc & ip_pvfa, ip_pvfl, ip_pvfi, ip_pdyna, ip_pdynl, ip_pdyni, &
+!!$acc & ip_phrsw,    ip_phrlw, &
+!!$acc & ip_pvervel,  ip_pap,      ip_paph, &
+!!$acc & ip_plsm, &
+!!$acc & ip_ldcum, &
+!!$acc & ip_ktype, &
+!!$acc & ip_plu,      ip_plude,    ip_psnde,    ip_pmfu,     ip_pmfd, &
+!!$acc & ip_pa,       ip_pclv,   ip_psupsat, &
+!!$acc & ip_plcrit_aer,ip_picrit_aer, &
+!!$acc & ip_pre_ice, &
+!!$acc & ip_pccn,     ip_pnice, &
+!!$acc & ip_pcovptot, ip_prainfrac_toprfz, &
+!!$acc & ip_pfsqlf,   ip_pfsqif ,  ip_pfcqnng,  ip_pfcqlng, &
+!!$acc & ip_pfsqrf,   ip_pfsqsf ,  ip_pfcqrng,  ip_pfcqsng, &
+!!$acc & ip_pfsqltur, ip_pfsqitur , &
+!!$acc & ip_pfplsl,   ip_pfplsn,   ip_pfhpsl,   ip_pfhpsn, &
+!!$acc & ip_zfoealfa, ip_ztp1, ip_zli, ip_za, ip_zaorig, &
+!!$acc & ip_zliqfrac, ip_zicefrac, ip_zqx, ip_zqx0, ip_zpfplsx, &
+!!$acc & ip_zlneg, ip_zqxn2d, ip_zqsmix, ip_zqsliq, ip_zqsice, &
+!!$acc & ip_zfoeewmt(:,:), ip_zfoeew(:,:), ip_zfoeeliqt(:,:))
+
+!$acc data &
+!$acc copyin( &
+!$acc   pt,pq,buffer_cml,buffer_tmp,pvfa, &
+!$acc   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
+!$acc   pap,paph,plsm,ldcum,ktype,plu,psnde, &
+!$acc   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
+!$acc   pre_ice,pccn,pnice, ydecldp, ydomcst, ydoethf) &
+!$acc copy( &
+!$acc   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
+!$acc copyout( &
+!$acc   pfsqlf,pfsqif,pfcqnng, &
+!$acc   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
+!$acc   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
+
+    ! Local timer for each thread
+    TID = GET_THREAD_NUM()
+    CALL TIMER%THREAD_START(TID)
+
+!$acc parallel loop gang vector_length(NPROMA) private(ibl, icend, &
+!$acc & ip_pt, ip_pq, &
+!$acc & ip_buffer_tmp_1, ip_buffer_tmp_3, ip_buffer_tmp_2, ip_buffer_tmp_4_8, &
+!$acc & ip_buffer_loc_1, ip_buffer_loc_3, ip_buffer_loc_2, ip_buffer_loc_4_8, &
+!$acc & ip_pvfa, ip_pvfl, ip_pvfi, ip_pdyna, ip_pdynl, ip_pdyni, &
+!$acc & ip_phrsw,    ip_phrlw, &
+!$acc & ip_pvervel,  ip_pap,      ip_paph, &
+!$acc & ip_plsm, &
+!$acc & ip_ldcum, &
+!$acc & ip_ktype, &
+!$acc & ip_plu,      ip_plude,    ip_psnde,    ip_pmfu,     ip_pmfd, &
+!$acc & ip_pa,       ip_pclv,   ip_psupsat, &
+!$acc & ip_plcrit_aer,ip_picrit_aer, &
+!$acc & ip_pre_ice, &
+!$acc & ip_pccn,     ip_pnice, &
+!$acc & ip_pcovptot, ip_prainfrac_toprfz, &
+!$acc & ip_pfsqlf,   ip_pfsqif ,  ip_pfcqnng,  ip_pfcqlng, &
+!$acc & ip_pfsqrf,   ip_pfsqsf ,  ip_pfcqrng,  ip_pfcqsng, &
+!$acc & ip_pfsqltur, ip_pfsqitur , &
+!$acc & ip_pfplsl,   ip_pfplsn,   ip_pfhpsl,   ip_pfhpsn, &
+!$acc & ip_zfoealfa, ip_ztp1, ip_zli, ip_za, ip_zaorig, &
+!$acc & ip_zliqfrac, ip_zicefrac, ip_zqx, ip_zqx0, ip_zpfplsx, &
+!$acc & ip_zlneg, ip_zqxn2d, ip_zqsmix, ip_zqsliq, ip_zqsice, &
+!$acc & ip_zfoeewmt, ip_zfoeew, ip_zfoeeliqt)
+    DO JKGLO=1,NGPTOT,NPROMA
+      IBL=(JKGLO-1)/NPROMA+1
+      ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
+
+      IP_PT => PT(:,:,IBL);IP_PQ => PQ(:,:,IBL)
+      IP_BUFFER_TMP_1 => BUFFER_TMP(:,:,1,IBL);IP_BUFFER_TMP_3 => BUFFER_TMP(:,:,3,IBL);IP_BUFFER_TMP_2 => BUFFER_TMP(:,:,2,IBL);IP_BUFFER_TMP_4_8 => BUFFER_TMP(:,:,4:8,IBL)
+      IP_BUFFER_LOC_1 => BUFFER_LOC(:,:,1,IBL);IP_BUFFER_LOC_3 => BUFFER_LOC(:,:,3,IBL);IP_BUFFER_LOC_2 => BUFFER_LOC(:,:,2,IBL);IP_BUFFER_LOC_4_8 => BUFFER_LOC(:,:,4:8,IBL)
+      IP_PVFA => PVFA(:,:,IBL);IP_PVFL => PVFL(:,:,IBL);IP_PVFI => PVFI(:,:,IBL);IP_PDYNA => PDYNA(:,:,IBL);IP_PDYNL => PDYNL(:,:,IBL);IP_PDYNI => PDYNI(:,:,IBL)
+      IP_PHRSW => PHRSW(:,:,IBL);   IP_PHRLW => PHRLW(:,:,IBL)
+      IP_PVERVEL => PVERVEL(:,:,IBL); IP_PAP => PAP(:,:,IBL);     IP_PAPH => PAPH(:,:,IBL)
+      IP_PLSM => PLSM(:,IBL);      IP_LDCUM => LDCUM(:,IBL);     IP_KTYPE => KTYPE(:,IBL)
+      IP_PLU => PLU(:,:,IBL);     IP_PLUDE => PLUDE(:,:,IBL);   IP_PSNDE => PSNDE(:,:,IBL);   IP_PMFU => PMFU(:,:,IBL);    IP_PMFD => PMFD(:,:,IBL)
+      IP_PA => PA(:,:,IBL);      IP_PCLV => PCLV(:,:,:,IBL);  IP_PSUPSAT => PSUPSAT(:,:,IBL)
+      IP_PLCRIT_AER => PLCRIT_AER(:,:,IBL);IP_PICRIT_AER => PICRIT_AER(:,:,IBL)
+      IP_PRE_ICE => PRE_ICE(:,:,IBL)
+      IP_PCCN => PCCN(:,:,IBL);    IP_PNICE => PNICE(:,:,IBL)
+      IP_PCOVPTOT => PCOVPTOT(:,:,IBL);IP_PRAINFRAC_TOPRFZ => PRAINFRAC_TOPRFZ(:,IBL)
+      IP_PFSQLF => PFSQLF(:,:,IBL);  IP_PFSQIF => PFSQIF (:,:,IBL); IP_PFCQNNG => PFCQNNG(:,:,IBL); IP_PFCQLNG => PFCQLNG(:,:,IBL)
+      IP_PFSQRF => PFSQRF(:,:,IBL);  IP_PFSQSF => PFSQSF (:,:,IBL); IP_PFCQRNG => PFCQRNG(:,:,IBL); IP_PFCQSNG => PFCQSNG(:,:,IBL)
+      IP_PFSQLTUR => PFSQLTUR(:,:,IBL);IP_PFSQITUR => PFSQITUR (:,:,IBL)
+      IP_PFPLSL => PFPLSL(:,:,IBL);  IP_PFPLSN => PFPLSN(:,:,IBL);  IP_PFHPSL => PFHPSL(:,:,IBL);  IP_PFHPSN => PFHPSN(:,:,IBL)
+      IP_ZFOEALFA => ZFOEALFA(:,:,IBL);IP_ZTP1 => ZTP1(:,:,IBL);IP_ZLI => ZLI(:,:,IBL);IP_ZA => ZA(:,:,IBL);IP_ZAORIG => ZAORIG(:,:,IBL)
+      IP_ZLIQFRAC => ZLIQFRAC(:,:,IBL);IP_ZICEFRAC => ZICEFRAC(:,:,IBL);IP_ZQX => ZQX(:,:,:,IBL);IP_ZQX0 => ZQX0(:,:,:,IBL);IP_ZPFPLSX => ZPFPLSX(:,:,:,IBL)
+      IP_ZLNEG => ZLNEG(:,:,:,IBL);IP_ZQXN2D => ZQXN2D(:,:,:,IBL);IP_ZQSMIX => ZQSMIX(:,:,IBL);IP_ZQSLIQ => ZQSLIQ(:,:,IBL);IP_ZQSICE => ZQSICE(:,:,IBL)
+      IP_ZFOEEWMT => ZFOEEWMT(:,:,IBL);IP_ZFOEEW => ZFOEEW(:,:,IBL);IP_ZFOEELIQT => ZFOEELIQT(:,:,IBL)
+
+!$acc loop vector
+      DO JL=1,ICEND
+        ! CALL CLOUDSC_SCC_HOIST &
+        !  & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+        !  & PT(:,:,IBL), PQ(:,:,IBL), &
+        !  & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
+        !  & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
+        !  & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
+        !  & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
+        !  & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
+        !  & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
+        !  & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
+        !                         !---prognostic fields
+        !  & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
+        !                         !-- arrays for aerosol-cloud interactions
+        !  & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
+        !  & PRE_ICE(:,:,IBL),&
+        !  & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
+        !                         !---diagnostic output
+        !  & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
+        !                         !---resulting fluxes
+        !  & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
+        !  & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
+        !  & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
+        !  & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+        !  & YDOMCST, YDOETHF, YDECLDP, &
+        !  & ZFOEALFA(:,:,IBL), ZTP1(:,:,IBL), ZLI(:,:,IBL), ZA(:,:,IBL), ZAORIG(:,:,IBL), &
+        !  & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), ZPFPLSX(:,:,:,IBL), &
+        !  & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
+        !  & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), JL=JL)
+
+        CALL CLOUDSC_SCC_HOIST &
+         & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+         & IP_PT, IP_PQ, &
+         & IP_BUFFER_TMP_1, IP_BUFFER_TMP_3, IP_BUFFER_TMP_2, IP_BUFFER_TMP_4_8, &
+         & IP_BUFFER_LOC_1, IP_BUFFER_LOC_3, IP_BUFFER_LOC_2, IP_BUFFER_LOC_4_8, &
+         & IP_PVFA, IP_PVFL, IP_PVFI, IP_PDYNA, IP_PDYNL, IP_PDYNI, &
+         & IP_PHRSW,    IP_PHRLW,&
+         & IP_PVERVEL,  IP_PAP,      IP_PAPH,&
+         & IP_PLSM,       IP_LDCUM,      IP_KTYPE, &
+         & IP_PLU,      IP_PLUDE,    IP_PSNDE,    IP_PMFU,     IP_PMFD,&
+                                !---prognostic IP_fields
+         & IP_PA,       IP_PCLV,   IP_PSUPSAT,&
+                                !-- IP_arrays IP_for IP_aerosol-cloud IP_interactions
+         & IP_PLCRIT_AER,PICRIT_AER,&
+         & IP_PRE_ICE,&
+         & IP_PCCN,     IP_PNICE,&
+                                !---diagnostic IP_output
+         & IP_PCOVPTOT, IP_PRAINFRAC_TOPRFZ,&
+                                !---resulting IP_fluxes
+         & IP_PFSQLF,   IP_PFSQIF ,  IP_PFCQNNG,  IP_PFCQLNG,&
+         & IP_PFSQRF,   IP_PFSQSF ,  IP_PFCQRNG,  IP_PFCQSNG,&
+         & IP_PFSQLTUR, IP_PFSQITUR , &
+         & IP_PFPLSL,   IP_PFPLSN,   IP_PFHPSL,   IP_PFHPSN,&
+         & YDOMCST, YDOETHF, YDECLDP, &
+         & IP_ZFOEALFA, IP_ZTP1, IP_ZLI, IP_ZA, IP_ZAORIG, &
+         & IP_ZLIQFRAC, IP_ZICEFRAC, IP_ZQX, IP_ZQX0, IP_ZPFPLSX, &
+         & IP_ZLNEG, IP_ZQXN2D, IP_ZQSMIX, IP_ZQSLIQ, IP_ZQSICE, &
+         & IP_ZFOEEWMT, IP_ZFOEEW, IP_ZFOEELIQT, JL=JL)
+      ENDDO
+    ENDDO
+!$acc end parallel loop
+
+    CALL TIMER%THREAD_END(TID)
+
+!$acc end data
+
+    CALL TIMER%END()
+
+    ! On GPUs, adding block-level column totals is cumbersome and
+    ! error prone, and of little value due to the large number of
+    ! processing "thread teams". Instead we register the total here.
+    CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
+
+    CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
+
+  END SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_HOIST
+
+END MODULE CLOUDSC_DRIVER_GPU_SCC_HOIST_MOD
