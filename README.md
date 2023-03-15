@@ -123,22 +123,22 @@ has proven difficult with certain compiler toolchains.
 ### GPU versions of CLOUDSC
 
 The GPU-enabled versions of the dwarf are by default disabled. To
-enable them use the `--with-gpu` flag. For example to build on the in-house
-volta machine:
+enable them use the `--with-gpu` flag. For example to build on the ECMWF's ATOS
+A100 nodes:
 
 ```sh
 ./cloudsc-bundle create  # Checks out dependency packages
-./cloudsc-bundle build --clean --with-gpu --arch=./arch/ecmwf/volta/nvhpc/20.9
+./cloudsc-bundle build --clean --with-gpu --arch=./arch/ecmwf/hpc2020/nvhpc/22.1
 ```
 
 ### MPI-enabled versions of CLOUDSC
 
 Optionally, dwarf-cloudsc-fortran and the GPU versions can be built with
-MPI support by providing the `--with-mpi` flag. For example on volta:
+MPI support by providing the `--with-mpi` flag. For example on ATOS:
 
 ```sh
 ./cloudsc-bundle create
-./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=./arch/ecmwf/volta/nvhpc/20.9
+./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=./arch/ecmwf/hpc2020/nvhpc/22.1
 ```
 
 Running with MPI parallelization distributes the columns of the working set
