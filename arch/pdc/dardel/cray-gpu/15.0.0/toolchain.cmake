@@ -11,7 +11,7 @@
 ####################################################################
 
 set( ECBUILD_FIND_MPI OFF CACHE STRING "" )
-set( ENABLE_USE_STMT_FUNC ON CACHE STRING "" )
+set( ENABLE_USE_STMT_FUNC OFF CACHE STRING "" )
 
 ####################################################################
 # OpenMP FLAGS
@@ -39,6 +39,7 @@ set(ECBUILD_Fortran_FLAGS "-hcontiguous")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl,--as-needed")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl,-hsystem_alloc")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hlist=aimds")
 if(ENABLE_OMP)
     set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -fopenmp")
 endif()

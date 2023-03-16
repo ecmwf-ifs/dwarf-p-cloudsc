@@ -123,6 +123,10 @@ CONTAINS
     USE YOEPHLI  , ONLY : TEPHLI
     USE YOMCST   , ONLY : TOMCST
     USE YOETHF   , ONLY : TOETHF
+#ifndef CLOUDSC_STMT_FUNC
+USE FCTTRE_MOD, ONLY: FOEDELTA, FOEALFA, FOEEWM, FOEEICE, FOEELIQ, FOELDCP, FOELDCPM, FOEDEM
+USE FCCLD_MOD, ONLY : FOKOOP
+#endif
 
 
 
@@ -491,8 +495,10 @@ CONTAINS
     REAL(KIND=JPRB) :: PSUM_SOLQA
 
 
+#ifdef CLOUDSC_STMT_FUNC
 #include "fcttre.ycst.h"
 #include "fccld.ydthf.h"
+#endif
 !$acc routine seq
 
 
