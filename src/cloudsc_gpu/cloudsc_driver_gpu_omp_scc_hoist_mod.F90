@@ -138,26 +138,34 @@ CONTAINS
     CALL TIMER%START(NUMOMP)
 
 #ifdef HAVE_OMP_TARGET
-!$omp target enter data map(alloc: ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0,  &
-!$omp &   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT,  &
-!$omp &   ZFOEEW, ZFOEELIQT)
+!$omp target enter data map(alloc: ZFOEALFA(1:NPROMA,1:NLEV+1,1:NGPBLKS), ZTP1(1:NPROMA,1:NLEV,1:NGPBLKS), ZLI(1:NPROMA,1:NLEV,1:NGPBLKS), ZA(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp &   ZAORIG(1:NPROMA,1:NLEV,1:NGPBLKS), ZLIQFRAC(1:NPROMA,1:NLEV,1:NGPBLKS), ZICEFRAC(1:NPROMA,1:NLEV,1:NGPBLKS), ZQX(1:NPROMA,1:NLEV,1:NCLV,1:NGPBLKS), ZQX0(1:NPROMA,1:NLEV,1:NCLV,1:NGPBLKS),  &
+!$omp &   ZPFPLSX(1:NPROMA,1:NLEV+1,1:NCLV,1:NGPBLKS), ZLNEG(1:NPROMA,1:NLEV,1:NCLV,1:NGPBLKS), ZQXN2D(1:NPROMA,1:NLEV,1:NCLV,1:NGPBLKS), ZQSMIX(1:NPROMA,1:NLEV,1:NGPBLKS), ZQSLIQ(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp &   ZQSICE(1:NPROMA,1:NLEV,1:NGPBLKS), ZFOEEWMT(1:NPROMA,1:NLEV,1:NGPBLKS),  &
+!$omp &   ZFOEEW(1:NPROMA,1:NLEV,1:NGPBLKS), ZFOEELIQT(1:NPROMA,1:NLEV,1:NGPBLKS))
 #endif
 
 
 #ifdef HAVE_OMP_TARGET
 !$omp target data &
 !$omp map(to: ptsphy,nproma,nlev,&
-!$omp   pt,pq,buffer_cml,buffer_tmp,pvfa, &
-!$omp   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
-!$omp   pap,paph,plsm,ldcum,ktype,plu,psnde, &
-!$omp   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
-!$omp   pre_ice,pccn,pnice, ydecldp, ydomcst, ydoethf) &
+!$omp   pt(1:NPROMA,1:NLEV,1:NGPBLKS),pq(1:NPROMA,1:NLEV,1:NGPBLKS),&
+!$omp   buffer_cml(1:NPROMA,1:NLEV,1:3+NCLV,1:NGPBLKS),buffer_tmp(1:NPROMA,1:NLEV,1:3+NCLV,1:NGPBLKS),pvfa(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp   pvfl(1:NPROMA,1:NLEV,1:NGPBLKS),pvfi(1:NPROMA,1:NLEV,1:NGPBLKS),pdyna(1:NPROMA,1:NLEV,1:NGPBLKS),pdynl(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp   pdyni(1:NPROMA,1:NLEV,1:NGPBLKS),phrsw(1:NPROMA,1:NLEV,1:NGPBLKS),phrlw(1:NPROMA,1:NLEV,1:NGPBLKS),pvervel(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp   pap(1:NPROMA,1:NLEV,1:NGPBLKS),paph(1:NPROMA,1:NLEV+1,1:NGPBLKS),plsm(1:NPROMA,1:NGPBLKS),ldcum(1:NPROMA,1:NGPBLKS),ktype(1:NPROMA,1:NGPBLKS), &
+!$omp   plu(1:NPROMA,1:NLEV,1:NGPBLKS),psnde(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp   pmfu(1:NPROMA,1:NLEV,1:NGPBLKS),pmfd(1:NPROMA,1:NLEV,1:NGPBLKS),pa(1:NPROMA,1:NLEV,1:NGPBLKS),pclv(1:NPROMA,1:NLEV,1:NCLV,1:NGPBLKS),psupsat(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp   plcrit_aer(1:NPROMA,1:NLEV,1:NGPBLKS),picrit_aer(1:NPROMA,1:NLEV,1:NGPBLKS), &
+!$omp   pre_ice(1:NPROMA,1:NLEV,1:NGPBLKS),pccn(1:NPROMA,1:NLEV,1:NGPBLKS),pnice(1:NPROMA,1:NLEV,1:NGPBLKS), ydecldp, ydomcst, ydoethf) &
 !$omp map(tofrom: &
-!$omp   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
+!$omp   buffer_loc(1:NPROMA,1:NLEV,1:3+NCLV,1:NGPBLKS),plude(1:NPROMA,1:NLEV,1:NGPBLKS),pcovptot(1:NPROMA,1:NLEV,1:NGPBLKS)) &
 !$omp map(from: &
-!$omp   pfsqlf,pfsqif,pfcqnng, &
-!$omp   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
-!$omp   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
+!$omp   pfsqlf(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfsqif(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfcqnng(1:NPROMA,1:NLEV+1,1:NGPBLKS), &
+!$omp   pfcqlng(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfsqrf(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfsqsf(1:NPROMA,1:NLEV+1,1:NGPBLKS), &
+!$omp   pfcqrng(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfcqsng(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfsqltur(1:NPROMA,1:NLEV+1,1:NGPBLKS), &
+!$omp   pfsqitur(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfplsl(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfplsn(1:NPROMA,1:NLEV+1,1:NGPBLKS), &
+!$omp   pfhpsl(1:NPROMA,1:NLEV+1,1:NGPBLKS),pfhpsn(1:NPROMA,1:NLEV+1,1:NGPBLKS),prainfrac_toprfz(1:NPROMA,1:NGPBLKS))
 #endif
 
     ! Local timer for each thread
