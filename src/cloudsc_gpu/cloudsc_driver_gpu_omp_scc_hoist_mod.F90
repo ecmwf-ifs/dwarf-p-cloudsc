@@ -172,22 +172,15 @@ CONTAINS
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp target teams loop bind(teams) private(ibl,icend)
-#elif defined(HAVE_OMP_TARGET)
-!$omp target teams distribute private(ibl,icend)
-#endif
+!!$omp target teams loop bind(teams) thread_limit(64) private(ibl,icend,jkglo)
+!$omp target teams distribute private(ibl,icend,jkglo) thread_limit(64)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
-!$omp loop bind(parallel)
-#elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
-!$omp loop bind(thread)
-#elif defined(HAVE_OMP_TARGET)
-!$omp parallel do
-#endif
+!!$omp loop bind(thread)
+!!$omp parallel do simd private(JL) safelen(64)
+!$omp parallel do private(JL)
       DO JL=1,ICEND
         CALL CLOUDSC_SCC_HOIST &
          & (1, ICEND, NPROMA, NLEV, PTSPHY,&
@@ -218,17 +211,11 @@ CONTAINS
          & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
          & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), JL=JL)
       ENDDO
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp end loop
-#elif defined(HAVE_OMP_TARGET)
+!!$omp end loop
 !$omp end parallel do
-#endif
     ENDDO
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp end target teams loop
-#elif defined(HAVE_OMP_TARGET)
+!!$omp end target teams loop
 !$omp end target teams distribute
-#endif
 
 
     CALL TIMER%THREAD_END(TID)
