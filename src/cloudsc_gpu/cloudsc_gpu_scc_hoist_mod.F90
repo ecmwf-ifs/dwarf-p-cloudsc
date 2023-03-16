@@ -501,6 +501,7 @@ USE FCCLD_MOD, ONLY : FOKOOP
 #endif
 !$acc routine seq
 
+!$loki region-to-call name(section0)
 
     !===============================================================================
     !IF (LHOOK) CALL DR_HOOK('CLOUDSC',0,ZHOOK_HANDLE)
@@ -813,6 +814,12 @@ USE FCCLD_MOD, ONLY : FOKOOP
     ZCOVPTOT = 0.0_JPRB
     ZCLDTOPDIST = 0.0_JPRB
 
+!$loki end region-to-call name(section0)
+
+! Foobar
+
+!#$loki region-to-call name(section30)
+
     !######################################################################
     !           3.       *** PHYSICS ***
     !######################################################################
@@ -839,7 +846,6 @@ USE FCCLD_MOD, ONLY : FOKOOP
       !---------------------------------
       ! Set KLON arrays to zero
       !---------------------------------
-
       ZLICLD = 0.0_JPRB
       ZRAINAUT = 0.0_JPRB        ! currently needed for diags
       ZRAINACC = 0.0_JPRB        ! currently needed for diags
@@ -1092,6 +1098,38 @@ USE FCCLD_MOD, ONLY : FOKOOP
       END IF
       ! JK<KLEV
 
+
+! Foobar
+
+!$loki loop-fission
+
+!#$loki end region-to-call name(section30)
+
+!$loki loop-fission
+
+! Foobar
+
+!$loki region-to-call name(section3p4)
+!$loki region-hoist target group(section3p4)
+!$loki end region-to-call name(section3p4)
+
+! Foobar
+
+!$loki loop-fission
+
+! Foobar
+
+!$loki region-to-call name(section3p7)
+!$loki region-hoist target group(section3p7)
+!$loki end region-to-call name(section3p7)
+
+! Foobar
+
+!$loki loop-fission
+
+! Foobar
+
+!$loki region-to-call name(section3p3)
       !---------------------------------------------------------------------
       !  3.3  SUBSIDENCE COMPENSATING CONVECTIVE UPDRAUGHTS
       !---------------------------------------------------------------------
@@ -1209,6 +1247,7 @@ USE FCCLD_MOD, ONLY : FOKOOP
         ZSOLQA(NCLDQI, NCLDQV) = ZSOLQA(NCLDQI, NCLDQV) - ZICEFRAC(JL, JK)*ZLEROS
 
       END IF
+!$loki region-hoist group(section3p4)
 
       !----------------------------------------------------------------------
       ! 3.4  CONDENSATION/EVAPORATION DUE TO DQSAT/DT
@@ -1431,6 +1470,12 @@ USE FCCLD_MOD, ONLY : FOKOOP
         END IF
       END IF
 
+!$loki end region-hoist group(section3p4)
+
+! Foobar
+
+!$loki region-hoist group(section3p7)
+
       !----------------------------------------------------------------------
       ! 3.7 Growth of ice by vapour deposition
       !----------------------------------------------------------------------
@@ -1618,6 +1663,8 @@ USE FCCLD_MOD, ONLY : FOKOOP
 
       END IF
       ! on IDEPICE
+
+!$loki end region-hoist group(section3p7)
 
       !######################################################################
       !              4  *** PRECIPITATION PROCESSES ***
@@ -2522,6 +2569,19 @@ USE FCCLD_MOD, ONLY : FOKOOP
         ZCOVPTOT = 0.0_JPRB
       END IF
 
+!$loki region-hoist target group(pcovptot)
+
+! Foobar
+
+!$loki end region-to-call name(section3p3)
+
+! Foobar
+
+!$loki loop-fission
+
+! Foobar
+
+!$loki region-to-call name(section6)
       !######################################################################
       !              6  *** UPDATE TENDANCIES ***
       !######################################################################
@@ -2563,16 +2623,21 @@ USE FCCLD_MOD, ONLY : FOKOOP
       !-----------------------
       TENDENCY_LOC_a(JL, JK) = TENDENCY_LOC_A(JL, JK) + ZDA*ZQTMST
 
+!$loki region-hoist group(pcovptot)
       !--------------------------------------------------
       ! Copy precipitation fraction into output variable
       !-------------------------------------------------
       PCOVPTOT(JL, JK) = ZCOVPTOT
-
+!$loki end region-hoist
     END DO
     ! on vertical level JK
     !----------------------------------------------------------------------
     !                       END OF VERTICAL LOOP
     !----------------------------------------------------------------------
+
+!$loki end region-to-call name(section6)
+
+!$loki region-to-call name(section8)
 
     !######################################################################
     !              8  *** FLUX/DIAGNOSTICS COMPUTATIONS ***
@@ -2657,6 +2722,8 @@ USE FCCLD_MOD, ONLY : FOKOOP
       PFHPSL(JL, JK) = -YDCST%RLVTT*PFPLSL(JL, JK)
       PFHPSN(JL, JK) = -YDCST%RLSTT*PFPLSN(JL, JK)
     END DO
+
+!$loki end region-to-call name(section8)
 
     !===============================================================================
     !IF (LHOOK) CALL DR_HOOK('CLOUDSC',1,ZHOOK_HANDLE)
