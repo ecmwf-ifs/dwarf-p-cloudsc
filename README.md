@@ -54,6 +54,9 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   The block array arguments are fully dimensioned though, and
   multi-dimensional temporaries have been declared explicitly at the
   driver level.
+- **dwarf-cloudsc-gpu-scc-k-caching**: GPU-enabled and further 
+  optimized version of CLOUDSC that also uses the SCC loop layout in
+  combination with loop fusion and temporary local array demotion.
 - **dwarf-cloudsc-gpu-scc-cuf**: GPU-enabled and optimized version of
   CLOUDSC that uses the SCC loop layout in combination with CUDA-Fortran
   (CUF) to explicitly allocate temporary arrays in device memory and
@@ -69,12 +72,12 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
 - **CUDA C prototypes**: To enable these variants, a suitable 
   CUDA installation is required and the `--with-cuda` flag needs
   to be pased at the build stage.
- - **dwarf-cloudsc-cuda**: GPU-enabled, CUDA C version of CLOUDSC.
- - **dwarf-cloudsc-cuda-hoist**: GPU-enabled, optimized CUDA C version 
-   of CLOUDSC including host side hoisted temporary local variables.
- - **dwarf-cloudsc-cuda-k-caching**: GPU-enabled, further optimized CUDA
-   C version of CLOUDSC including loop fusion and temporary local 
-   array demotion.  
+  - **dwarf-cloudsc-cuda**: GPU-enabled, CUDA C version of CLOUDSC.
+  - **dwarf-cloudsc-cuda-hoist**: GPU-enabled, optimized CUDA C version 
+    of CLOUDSC including host side hoisted temporary local variables.
+  - **dwarf-cloudsc-cuda-k-caching**: GPU-enabled, further optimized CUDA
+    C version of CLOUDSC including loop fusion and temporary local 
+    array demotion.  
 - **dwarf-cloudsc-gpu-scc-field**: GPU-enabled and optimized version of
   CLOUDSC that uses the SCC loop layout, and a dedicated Fortran FIELD
   API to manage device offload and copyback. The intent is to demonstrate

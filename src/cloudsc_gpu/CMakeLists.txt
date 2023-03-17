@@ -38,6 +38,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING
+    DESCRIPTION "Build (further) optimized GPU version of CLOUDSC using SCC layout with OpenACC" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenMP offload" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
@@ -116,6 +121,26 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     )
 endif()
 
+if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-k-caching
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_k_caching_mod.F90
+            cloudsc_gpu_scc_k_caching_mod.F90
+        LIBS
+            cloudsc-common-lib
+	DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-k-caching-serial
+        COMMAND bin/dwarf-cloudsc-gpu-scc-k-caching
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+endif()
 
 if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
     list( APPEND CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS CLOUDSC_GPU_OMP_SCC_HOIST )
