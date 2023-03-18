@@ -103,7 +103,7 @@ def field_linear_to_block(dims, lfield, clsc=None, **kwargs):
     ngptot = kwargs.get('ngptot', 100)
     nlon = kwargs.get('nlon', 100)
     ndim = kwargs.get('ndim', 1)
-    nlev = dims[1] #nparms['NLEV']
+    nlev = dims[-2] #nparms['NLEV']
     ldims = len(dims)
 
     if lfield.dtype == "float64":
@@ -118,14 +118,8 @@ def field_linear_to_block(dims, lfield, clsc=None, **kwargs):
             bfield=b3field
         elif ldims == 4:
             b4field=np.asfortranarray(np.transpose(np.zeros(shape=dims, dtype="float64")))
-#Note that we are using expand_r3bis here.
-#Original expand_r3 does not pass nlev from python to Fortran
-#            print ("This is 4D field")
-#            print ("lfield")
-#            print (lfield.shape)
-#            print ("bfield")
-#            print (b4field.shape)
-            clsc.expand_mod.expand_r3bis(lfield, b4field, nlon, nproma, ndim, ngptot, nblocks)
+            clsc.expand_mod.expand_r3(lfield, b4field, nlon=nlon, nproma=nproma, nlev=nlev,
+                                      ndim=ndim, ngptot=ngptot, nblocks=nblocks)
             bfield=b4field
         else:
             print ("Wrong float ldim")
