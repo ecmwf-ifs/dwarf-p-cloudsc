@@ -79,7 +79,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     add_custom_command( TARGET ${DWARF_CLOUDSC_LIB} POST_BUILD
         COMMAND ${Python3_VENV_BIN}/f90wrap -m${PYTHON_MODN}
                     ${F90WRAP_COMMON_SOURCES} ${F90WRAP_DWARF_SOURCES}
-                    -k ${CMAKE_CURRENT_SOURCE_DIR}/src/cloudscpytools/kind_map
+                    -k ${CMAKE_CURRENT_SOURCE_DIR}/kind_map
                     > f90wrap_log.txt 2> f90wrap_log_err.txt
 	COMMENT "[PyIface] Executing f90wrap to generate Fortran wrappers"
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -114,13 +114,13 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     # Copy the CLI driver script into the bin directory for execution
     add_custom_command(TARGET ${DWARF_CLOUDSC_LIB} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/drivers/cloudsc_pydriver.py ${CMAKE_BINARY_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/drivers/cloudsc_pyiface.py ${CMAKE_BINARY_DIR}/bin
 	COMMENT "[PyIface] Installing Python package and driver via 'pip install'"
     )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-lib
-        COMMAND cloudsc_pydriver.py
+        COMMAND cloudsc_pyiface.py
         ARGS --numomp=1 --ngptot=100 --nproma=16
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         OMP 1

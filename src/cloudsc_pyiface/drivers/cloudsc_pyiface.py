@@ -5,8 +5,8 @@ Driver that executes Fortran implementation of the CLOUDSC dwarf using f90wrap/f
 from pathlib import Path
 import click
 
-from cloudscpytools import cloudsc_data
-from cloudscpytools.dynload import load_module
+from pyiface import cloudsc_data
+from pyiface.dynload import load_module
 
 
 @click.command()

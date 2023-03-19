@@ -15,7 +15,7 @@ cd build
 . venv_pyiface/bin/activate
 
 # To test performance, execute:
-python ./bin/cloudsc_pydriver.py --numomp=$OMP_NUM_THREADS --ngptot=163840 --nproma=32
+python ./bin/cloudsc_pyiface.py --numomp=$OMP_NUM_THREADS --ngptot=163840 --nproma=32
 ```
 An additional CLI option ``--cloudsc-path=<path-to-python-wrapper>``
 can be used if the build location used to run f90wrap has changed.
