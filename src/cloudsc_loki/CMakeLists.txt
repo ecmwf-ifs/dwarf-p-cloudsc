@@ -136,6 +136,70 @@ if( HAVE_CLOUDSC_LOKI )
         CONDITION HAVE_OMP AND HAVE_MPI
     )
 
+    ############################################################
+    ##  Idempotence mode with pool-allocator for temporaries: ##
+    ##   * Internal "do-nothing" mode for Loki debug          ##
+    ############################################################
+
+    cloudsc_xmod( loki-idem-stack )
+
+    loki_transform_convert(
+        MODE idem-stack FRONTEND ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS ${COMMON_MODULE}/yomphyder.F90
+        INCLUDES ${COMMON_INCLUDE}
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-stack
+        OUTPUT loki-idem-stack/cloudsc.idem_stack.F90 loki-idem-stack/cloudsc_driver_loki_mod.idem_stack.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem-stack
+        SOURCES
+            dwarf_cloudsc.F90
+            stack_mod.F90
+            loki-idem-stack/cloudsc_driver_loki_mod.idem_stack.F90
+            loki-idem-stack/cloudsc.idem_stack.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-idem-stack-serial
+        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        ARGS 1 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-idem-stack-omp
+        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        ARGS 4 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 4
+        CONDITION HAVE_OMP
+    )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-idem-stack-mpi
+        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        ARGS 1 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        MPI 2
+        OMP 1
+        CONDITION HAVE_MPI
+    )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-idem-stack-mpi-omp
+        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        ARGS 4 100 16
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        MPI 2
+        OMP 4
+        CONDITION HAVE_OMP AND HAVE_MPI
+    )
+
 
     ####################################################
     ##  SCA mode (Single Column Abstraction):         ##
@@ -372,6 +436,51 @@ if( HAVE_CLOUDSC_LOKI )
         OMP 1
         ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
     )
+
+    ######################################################
+    ##  "Single Column Coalesced" (SCC) mode with stack ##
+    ##   * Removes horizontal vector loops              ##
+    ##   * Invokes compute kernel as `!$acc vector`     ##
+    ##   * Allocates temporaries using pool allocator   ##
+    ######################################################
+
+    cloudsc_xmod( loki-scc-stack )
+
+    loki_transform_convert(
+        MODE scc-stack FRONTEND ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS ${COMMON_MODULE}/yomphyder.F90 ${COMMON_MODULE}/yoecldp.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
+        DATA_OFFLOAD REMOVE_OPENMP
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
+        OUTPUT
+            loki-scc-stack/cloudsc.scc_stack.F90
+            loki-scc-stack/cloudsc_driver_loki_mod.scc_stack.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-stack
+        SOURCES
+            dwarf_cloudsc.F90
+            stack_mod.F90
+            loki-scc-stack/cloudsc_driver_loki_mod.scc_stack.F90
+            loki-scc-stack/cloudsc.scc_stack.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-scc-stack-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc-stack
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
 
     ####################################################
     ##  SCC-hoist mode                                ##
