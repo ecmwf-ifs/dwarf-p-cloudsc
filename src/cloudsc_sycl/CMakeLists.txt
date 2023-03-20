@@ -161,6 +161,9 @@ if( HAVE_CLOUDSC_SYCL )
     #       #           /usr/local/apps/intel/2021.4.0/compiler/latest/linux/include
     #)
 
+            # Create symlink for the input data
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
 
 else()
 	ecbuild_info( "Serialbox not found, disabling SYCL version" )
