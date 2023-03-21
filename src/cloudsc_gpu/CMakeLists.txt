@@ -229,6 +229,7 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
     )
 
     # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
