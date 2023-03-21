@@ -91,6 +91,13 @@ if( HAVE_SERIALBOX )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
 
+# Add field_api library to manage data fields
+ecbuild_add_option( FEATURE FIELD_API
+    DESCRIPTION "Use field_api to manage GPU data offload and copyback"
+    REQUIRED_PACKAGES "field_api"
+    CONDITION HAVE_CUDA
+    DEFAULT ON )
+
 ecbuild_find_package( NAME loki )
 
 # Add option for single-precision builds

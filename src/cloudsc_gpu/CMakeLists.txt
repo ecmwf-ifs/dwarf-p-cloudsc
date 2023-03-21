@@ -44,8 +44,8 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
 )
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT OFF
-    CONDITION HAVE_CUDA AND ( Serialbox_FOUND OR HDF5_FOUND )
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT ON
+    CONDITION HAVE_FIELD_API AND ( Serialbox_FOUND OR HDF5_FOUND )
 )
 
 
@@ -172,10 +172,6 @@ if( HAVE_CLOUDSC_GPU_SCC_CUF )
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    # Small hack around the fact that CMake does not understand
-    # CUDA-Fortran natively yet. So we simply force linking here.
-    target_link_options(dwarf-cloudsc-gpu-scc-cuf PUBLIC "-Mcuda")
-
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-cuf-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-cuf
@@ -203,10 +199,6 @@ if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
             cloudsc-common-lib
 	    DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF_K_CACHING
     )
-
-    # Small hack around the fact that CMake does not understand
-    # CUDA-Fortran natively yet. So we simply force linking here.
-    target_link_options(dwarf-cloudsc-gpu-scc-cuf-k-caching PUBLIC "-Mcuda")
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-cuf-k-caching-serial
@@ -237,6 +229,7 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
     )
 
     # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
