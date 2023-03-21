@@ -82,7 +82,9 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   data transfers, as provided by the shipped prototype implmentation, and 
   investigate the effect of different data storage allocation layouts. 
   To enable this variant, a suitable CUDA installation is required and the
-  `--with-cuda` flag needs to be passed at the build stage.
+  `--with-cuda` flag needs to be passed at the build stage. This variant lets the CUDA runtime 
+  manage temporary arrays and needs a large `NV_ACC_CUDA_HEAPSIZE` 
+  (eg. `NV_ACC_CUDA_HEAPSIZE=8GB` for 160K columns.)
 
 ## Download and Installation
 
