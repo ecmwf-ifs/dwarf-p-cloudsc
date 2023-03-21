@@ -44,7 +44,7 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
 )
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT OFF
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT ON
     CONDITION HAVE_FIELD_API AND ( Serialbox_FOUND OR HDF5_FOUND )
 )
 

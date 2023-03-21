@@ -76,8 +76,6 @@ options :
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
-            ENABLE_CLOUDSC_GPU_SCC_FIELD=ON
-            ENABLE_FIELD_API=ON
             BUILD_field_api=ON
 
     - with-mpi :
@@ -106,10 +104,6 @@ options :
     - loki-frontend :
         help  : Frontend parser to use for Loki transformations
         cmake : LOKI_FRONTEND={{value}}
-
-    - field_api-testing :
-        help  : Enable field_api testing
-        cmake : ENABLE_FIELD_API_TESTS=ON
 
     - cloudsc-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]

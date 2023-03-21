@@ -96,7 +96,7 @@ ecbuild_add_option( FEATURE FIELD_API
     DESCRIPTION "Use field_api to manage GPU data offload and copyback"
     REQUIRED_PACKAGES "field_api"
     CONDITION HAVE_CUDA
-    DEFAULT OFF )
+    DEFAULT ON )
 
 ecbuild_find_package( NAME loki )
 
