@@ -26,7 +26,11 @@ from pyiface.dynload import load_module
     "--cloudsc-path", type=click.Path(exists=True), default=None,
     help="Path to the Python-wrapped and compiled CLOUDSC module",
 )
-def main(numomp: int, ngptot: int, nproma: int, cloudsc_path) -> None:
+@click.option(
+    "--input-path", type=click.Path(exists=True), default=None,
+    help="Path to input and reference files; by default './'",
+)
+def main(numomp: int, ngptot: int, nproma: int, cloudsc_path, input_path) -> None:
     """
     Python driver to execute IFS physics kernel (CLOUDSC).
 
@@ -35,6 +39,9 @@ def main(numomp: int, ngptot: int, nproma: int, cloudsc_path) -> None:
     - invokes Fortran kernel computation,
     - validates against reference results read from another .h5 file.
     """
+
+    # Set default input/reference path
+    input_path = input_path if input_path else Path.cwd().resolve()
 
     # Dynamically load the Python-wrapped Fortran CLOUDSC module
     clsc = load_module(module='cloudsc', modpath=cloudsc_path)
@@ -56,18 +63,17 @@ def main(numomp: int, ngptot: int, nproma: int, cloudsc_path) -> None:
     )
 
     # Get reference solution fields from file
-    rootpath = Path(__file__).resolve().parents[2]
-    ref_path = rootpath/'config-files/reference.h5'
-    ref_fields = cloudsc_data.load_reference_fields(path=ref_path, clsc=clsc, **npars)
+    ref_fields = cloudsc_data.load_reference_fields(
+        path=input_path/'reference.h5', clsc=clsc, **npars
+    )
 
     # Get input data fields from file
-    input_path = rootpath/'config-files/input.h5'
     cloudsc_data.load_input_parameters(
-        input_path, clsfields['ydecldp'], clsfields['ydephli'],
+        input_path/'input.h5', clsfields['ydecldp'], clsfields['ydephli'],
         clsfields['ydomcst'], clsfields['ydoethf']
     )
     input_fort_fields = cloudsc_data.load_input_fortran_fields(
-        path=input_path, fields=clsfields, clsc=clsc, **npars
+        path=input_path/'input.h5', fields=clsfields, clsc=clsc, **npars
     )
 
     # Execute kernel via Python-wrapped, compiled Fortran driver
