@@ -26,18 +26,18 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     setup_python_venv( ${loki_VENV_PATH} )
 
     if( NOT Python3_EXECUTABLE )
-        ecbuild_error("[PyIface] Could not find Python3 exectubale in virtualenv")
+        ecbuild_error("[PyIface] Could not find Python3 executable in virtualenv")
     endif()
 
     # Install the f90wrap build dependency and via latest pip
     execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install --upgrade pip)
-    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR})
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install -e ${CMAKE_CURRENT_SOURCE_DIR})
 
     # Define module directory to facilitate f90wrap/f2py execution
     ecbuild_enable_fortran(MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../module)
     message (STATUS "Module directory set to:")
     message (STATUS  ${CMAKE_Fortran_MODULE_DIRECTORY})
-   
+
 
     # Set names and lists to abstract the f90wrap/f2py process
     set( DWARF_CLOUDSC_LIB  dwarf-cloudsc-lib)
@@ -120,8 +120,9 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-lib
-        COMMAND cloudsc_pyiface.py
-        ARGS --numomp=1 --ngptot=100 --nproma=16
+	# Ensure we use the created venv for PyIface
+        COMMAND ${CMAKE_BINARY_DIR}/venv_pyiface/bin/python
+        ARGS cloudsc_pyiface.py --numomp=1 --ngptot=100 --nproma=16 --cloudsc-path=${CMAKE_BINARY_DIR}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         OMP 1
     )
