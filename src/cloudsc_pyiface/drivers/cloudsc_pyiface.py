@@ -23,11 +23,11 @@ from pyiface.dynload import load_module
     help="Block sizes (NPROMA) used for the benchmark. Default: 100",
 )
 @click.option(
-    "--cloudsc-path", type=click.Path(exists=True), default=None,
+    "--cloudsc-path", type=click.Path(exists=True), default=Path.cwd(),
     help="Path to the Python-wrapped and compiled CLOUDSC module",
 )
 @click.option(
-    "--input-path", type=click.Path(exists=True), default=None,
+    "--input-path", type=click.Path(exists=True), default=Path.cwd(),
     help="Path to input and reference files; by default './'",
 )
 def main(numomp: int, ngptot: int, nproma: int, cloudsc_path, input_path) -> None:
@@ -40,11 +40,11 @@ def main(numomp: int, ngptot: int, nproma: int, cloudsc_path, input_path) -> Non
     - validates against reference results read from another .h5 file.
     """
 
-    # Set default input/reference path
-    input_path = input_path if input_path else Path.cwd().resolve()
+    cloudsc_path = Path(cloudsc_path)
+    input_path = Path(input_path)
 
     # Dynamically load the Python-wrapped Fortran CLOUDSC module
-    clsc = load_module(module='cloudsc', modpath=cloudsc_path)
+    clsc = load_module(module='cloudsc', modpath=Path(cloudsc_path))
 
     # Defining common parameters
     nlev = 137

@@ -122,7 +122,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
         TARGET dwarf-cloudsc-lib
 	# Ensure we use the created venv for PyIface
         COMMAND ${CMAKE_BINARY_DIR}/venv_pyiface/bin/python
-        ARGS cloudsc_pyiface.py --numomp=1 --ngptot=100 --nproma=16 --cloudsc-path=${CMAKE_BINARY_DIR}
+        ARGS cloudsc_pyiface.py --numomp=1 --ngptot=100 --nproma=16 --cloudsc-path=${CMAKE_BINARY_DIR} --input-path=${CMAKE_BINARY_DIR} 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         OMP 1
     )
