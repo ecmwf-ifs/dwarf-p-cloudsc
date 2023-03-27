@@ -6,7 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "pyiface"
 version = "0.1.0"
 authors = [
-    {name = "Zbigniew Piotrowski", email = "zbigniew.piotrowski@ecmwf.int"}
+    {name = "Zbigniew Piotrowski", email = "zbigniew.piotrowski@ecmwf.int"},
+    {name = "Michael Lange", email = "michael.lange@ecmwf.int"}
 ]
 description = "Python driver that enables execution of the Fortran CLOUDSC dwarf from Python"
 readme = "README.md"
