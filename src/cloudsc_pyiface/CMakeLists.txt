@@ -8,7 +8,7 @@
 
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE
-    DESCRIPTION "Build the Python interface to the (slightly customized) cloudsc-fortran" DEFAULT ON
+    DESCRIPTION "Build the Python interface to the (slightly customized) cloudsc-fortran" DEFAULT OFF
     CONDITION HDF5_FOUND
 )
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE_BINARY
