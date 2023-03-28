@@ -12,8 +12,8 @@ ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE
     CONDITION HDF5_FOUND
 )
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_PYIFACE_BINARY
-	DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran" DEFAULT OFF
-    CONDITION HAVE_CLOUDSC_FORTRAN_PYIFACE 
+    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran" DEFAULT OFF
+    CONDITION HAVE_CLOUDSC_FORTRAN_PYIFACE
 )
 
 if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
@@ -22,8 +22,8 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     include( python_venv )
 
     # Set up a custom venv for this variant and install the necessary dependencies
-    set( loki_VENV_PATH ${CMAKE_BINARY_DIR}/venv_pyiface )
-    setup_python_venv( ${loki_VENV_PATH} )
+    set( pyiface_VENV_PATH ${CMAKE_BINARY_DIR}/venv_pyiface )
+    setup_python_venv( ${pyiface_VENV_PATH} )
 
     if( NOT Python3_EXECUTABLE )
         ecbuild_error("[PyIface] Could not find Python3 executable in virtualenv")
@@ -71,7 +71,7 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
             ./fortransrc/cloudsc_driver_mod.F90
             ./fortransrc/cloudsc.F90
         PUBLIC_LIBS
-             ${DWARF_COMMON_LIB} 
+             ${DWARF_COMMON_LIB}
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
 
@@ -81,9 +81,9 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
                     ${F90WRAP_COMMON_SOURCES} ${F90WRAP_DWARF_SOURCES}
                     -k ${CMAKE_CURRENT_SOURCE_DIR}/kind_map
                     > f90wrap_log.txt 2> f90wrap_log_err.txt
-	COMMENT "[PyIface] Executing f90wrap to generate Fortran wrappers"
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-	VERBATIM
+        COMMENT "[PyIface] Executing f90wrap to generate Fortran wrappers"
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        VERBATIM
     )
 
     # Two-step F90wrap process: Then compile and generate Python wrappers via F2Py
@@ -91,39 +91,38 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     # _cloudsc.arch.so library directly available for dynamic loading, as f2py-f90wrap
     # does not allow specifying a particular output directory or path.
     add_custom_command(TARGET ${DWARF_CLOUDSC_LIB}  POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS
+        COMMAND ${CMAKE_COMMAND} -E env --unset=LD_LIBRARY_FLAGS
                     LDFLAGS=-Wl,-rpath,${CMAKE_BINARY_DIR}/lib
-		    NPY_DISTUTILS_APPEND_FLAGS=1
+                    NPY_DISTUTILS_APPEND_FLAGS=1
                     ${Python3_VENV_BIN}/f2py-f90wrap -c
                     --f90exec=${CMAKE_Fortran_COMPILER}
                     --f90flags=${CMAKE_Fortran_FLAGS}
                     --f90flags=${CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE_CAPS}}
                     -m _${PYTHON_MODN}
-	            -I${CMAKE_Fortran_MODULE_DIRECTORY}
+                    -I${CMAKE_Fortran_MODULE_DIRECTORY}
                     -I${COMMON_MOD_BIN_LOCATION}
                     -L${CMAKE_BINARY_DIR}/lib
                     -l${DWARF_COMMON_LIB}
-		    -l${DWARF_CLOUDSC_LIB}
-		    ${F2PY_COMMON_SOURCES} ${F2PY_DWARF_SOURCES}
-	     	    > f2py_log.txt 2> f2py_log_err.txt
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-	COMMENT "[PyIface] Executing f2py-f90wrap to compile and generate Python wrappers"
+                    -l${DWARF_CLOUDSC_LIB}
+                    ${F2PY_COMMON_SOURCES} ${F2PY_DWARF_SOURCES}
+                    > f2py_log.txt 2> f2py_log_err.txt
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "[PyIface] Executing f2py-f90wrap to compile and generate Python wrappers"
         VERBATIM
     )
 
     # Copy the CLI driver script into the bin directory for execution
     add_custom_command(TARGET ${DWARF_CLOUDSC_LIB} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/drivers/cloudsc_pyiface.py ${CMAKE_BINARY_DIR}/bin
-	COMMENT "[PyIface] Installing Python package and driver via 'pip install'"
+        COMMAND ${CMAKE_COMMAND} -E create_symlink ${Python3_VENV_BIN}/cloudsc_pyiface.py ${CMAKE_BINARY_DIR}/bin/cloudsc_pyiface.py
+        COMMENT "[PyIface] Installing Python package and driver via 'pip install'"
     )
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-lib
-	# Ensure we use the created venv for PyIface
-        COMMAND ${CMAKE_BINARY_DIR}/venv_pyiface/bin/python
-        ARGS cloudsc_pyiface.py --numomp=1 --ngptot=100 --nproma=16 --cloudsc-path=${CMAKE_BINARY_DIR} --input-path=${CMAKE_BINARY_DIR} 
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        TARGET dwarf-cloudsc-pyiface
+        COMMAND bin/cloudsc_pyiface.py
+        ARGS --numomp=1 --ngptot=100 --nproma=16 --cloudsc-path=${CMAKE_BINARY_DIR} --input-path=${CMAKE_BINARY_DIR}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         OMP 1
     )
 
@@ -131,21 +130,21 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
     if( HAVE_CLOUDSC_FORTRAN_PYIFACE_BINARY )
         # Define the (optional) binary build target for this variant
         ecbuild_add_executable( TARGET dwarf-cloudsc-fortran-pyiref
-             SOURCES
-                 ./fortransrc/dwarf_cloudsc.F90
-             LIBS
-                 ${DWARF_COMMON_LIB}
-                 ${DWARF_CLOUDSC_LIB}
-             DEFINITIONS ${CLOUDSC_DEFINITIONS}
+            SOURCES
+                ./fortransrc/dwarf_cloudsc.F90
+            LIBS
+                ${DWARF_COMMON_LIB}
+                ${DWARF_CLOUDSC_LIB}
+            DEFINITIONS ${CLOUDSC_DEFINITIONS}
          )
 
-         ecbuild_add_test(
-             TARGET dwarf-cloudsc-fortran-pyiref
-             COMMAND bin/dwarf-cloudsc-fortran-pyiref
-             ARGS 1 100 16
-             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-             OMP 1
-         )
+        ecbuild_add_test(
+            TARGET dwarf-cloudsc-fortran-pyiref
+            COMMAND bin/dwarf-cloudsc-fortran-pyiref
+            ARGS 1 100 16
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            OMP 1
+        )
     endif()
 
     if( HAVE_HDF5 )
