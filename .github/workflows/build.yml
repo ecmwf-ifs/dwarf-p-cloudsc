@@ -17,7 +17,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }}
+    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }} ${{ matrix.pyiface_flag }}
 
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
