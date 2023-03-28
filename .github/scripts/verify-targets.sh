@@ -51,6 +51,11 @@ then
   fi
 fi
 
+if [[ "$pyiface_flag" == "--cloudsc-fortran-pyiface=ON" ]]
+then
+  targets+=(cloudsc_pyiface.py)
+fi
+
 #
 # Verify each target exists
 #

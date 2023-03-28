@@ -44,6 +44,8 @@ jobs:
 
         claw_flag: ['']  # Flag to enable CLAW-generated variants
 
+        pyiface_flag: ['--cloudsc-fortran-pyiface=ON']  # Flag to enable Python-interface variant
+
         include:
           # Add nvhpc build configurations with serialbox and HDF5
           - arch: github/ubuntu/nvhpc/21.9
@@ -53,6 +55,7 @@ jobs:
             gpu_flag: '--with-gpu'
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
+            pyiface_flag: ''
           - arch: github/ubuntu/nvhpc/21.9
             io_library_flag: '--with-serialbox'
             mpi_flag: ''
@@ -60,6 +63,7 @@ jobs:
             gpu_flag: '--with-gpu'
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
+            pyiface_flag: ''
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -105,7 +109,7 @@ jobs:
           ./cloudsc-bundle build --retry-verbose \
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
           ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
-          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} --cloudsc-fortran-pyiface=OFF
+          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} ${{ matrix.pyiface_flag }}
 
       # Verify targets exist
       - name: Verify targets
@@ -116,6 +120,7 @@ jobs:
           cuda_flag: ${{ matrix.cuda_flag }}
           loki_flag: ${{ matrix.loki_flag }}
           claw_flag: ${{ matrix.claw_flag }}
+          pyiface_flag: ${{ matrix.pyiface_flag }}
         run: .github/scripts/verify-targets.sh
 
       # Run double-precision targets

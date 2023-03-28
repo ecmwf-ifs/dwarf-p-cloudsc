@@ -6,7 +6,7 @@ set -x
 non_mpi_targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-c)
 
 # These targets currently cause issues and are therefore not tested
-skipped_targets=(dwarf-cloudsc-gpu-claw dwarf-cloudsc-fortran-pyiface)
+skipped_targets=(dwarf-cloudsc-gpu-claw)
 
 if [[ "$arch" == *"nvhpc"* ]]
 then
@@ -20,8 +20,12 @@ then
   skipped_targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
   skipped_targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   skipped_targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
+
   # Skip C target if built with nvhpc, segfaults for unknown reasons
   skipped_targets+=(dwarf-cloudsc-c dwarf-cloudsc-loki-c)
+
+  # Skip Pyiface target because of f2py incompatibility with nvhpc
+  skipped_targets+=(cloudsc-pyiface.py)
 fi
 
 exit_code=0
