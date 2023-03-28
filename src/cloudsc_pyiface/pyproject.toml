@@ -3,15 +3,16 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cloudscpytools"
+name = "pyiface"
 version = "0.1.0"
 authors = [
-    {name = "Zbigniew Piotrowski", email = "zbigniew.piotrowski@ecmwf.int"}
+    {name = "Zbigniew Piotrowski", email = "zbigniew.piotrowski@ecmwf.int"},
+    {name = "Michael Lange", email = "michael.lange@ecmwf.int"}
 ]
 description = "Python driver that enables execution of the Fortran CLOUDSC dwarf from Python"
 readme = "README.md"
-requires-python = ">=3.10"
-license = { file = "../../LICENSE"}
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
 classifiers = [
    " Development Status :: 3 - Alpha ",
    " Intended Audience:: Science / Research ",
@@ -23,10 +24,10 @@ classifiers = [
    " Topic :: Scientific/Engineering :: Atmospheric Science "
 ]
 dependencies = [
+    "numpy",
     "f90wrap",
     "click",
     "h5py",
-    "sorcery",
 ]
 
 [project.urls]

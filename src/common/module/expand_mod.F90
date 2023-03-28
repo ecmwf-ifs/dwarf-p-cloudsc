@@ -332,37 +332,4 @@ contains
     end do
 !$omp end parallel do
   end subroutine expand_r3
-
-  subroutine expand_r3bis(buffer, field, nlon, nproma,  ndim, ngptot, nblocks)
-    integer(kind=jpim),parameter :: nlev=137
-    real(kind=jprb), intent(inout) :: buffer(nlon, nlev, ndim)
-    real(kind=jprb), intent(inout) :: field(nproma, nlev, ndim, nblocks)
-    integer(kind=jpim), intent(in) :: nlon, ndim, nproma, ngptot, nblocks
-    integer :: b, gidx, bsize, fidx, fend, bidx, bend
-!$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
-    do b=1, nblocks
-       gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
-       bsize = min(nproma, ngptot - gidx + 1)  ! Size of the field block
-
-       ! First read, might not be aligned
-       bidx = mod(gidx-1,nlon)+1
-       bend = min(nlon,bidx+bsize-1)
-       fidx = 1
-       fend = bend - bidx + 1
-       field(fidx:fend,:,:,b) = buffer(bidx:bend,:,:)
-
-       ! Fill block by looping over buffer
-       do while (fend < bsize)
-         fidx = fend + 1
-         bidx = 1
-         bend = min(bsize - fidx+1, nlon)
-         fend = fidx + bend - 1
-         field(fidx:fend,:,:,b) = buffer(bidx:bend,:,:)
-       end do
-
-       ! Zero out the remainder of last block
-       field(bsize+1:nproma,:,:,b) = 0.0_JPRB
-    end do
-!$omp end parallel do
-  end subroutine expand_r3bis
 end module expand_mod
