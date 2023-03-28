@@ -23,9 +23,6 @@ then
 
   # Skip C target if built with nvhpc, segfaults for unknown reasons
   skipped_targets+=(dwarf-cloudsc-c dwarf-cloudsc-loki-c)
-
-  # Skip Pyiface target because of f2py incompatibility with nvhpc
-  skipped_targets+=(cloudsc-pyiface.py)
 fi
 
 exit_code=0
@@ -48,6 +45,9 @@ do
     # Two ranks with one thread each, safe NPROMA
     # NB: Use oversubscribe to run, even if we end up on a single core agent
     mpirun --oversubscribe -np 2 bin/$target 1 100 64
+  elif [[ "$target" == "cloudsc_pyiface.py" ]]
+  then
+    bin/$target --numomp 1 --ngptot 100 --nproma 64
   else
     # Single thread, safe NPROMA
     bin/$target 1 100 64

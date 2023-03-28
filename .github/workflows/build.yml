@@ -44,7 +44,7 @@ jobs:
 
         claw_flag: ['']  # Flag to enable CLAW-generated variants
 
-        pyiface_flag: ['--cloudsc-fortran-pyiface=ON']  # Flag to enable Python-interface variant
+        pyiface_flag: ['']  # Flag to enable Python-interface variant
 
         include:
           # Add nvhpc build configurations with serialbox and HDF5
@@ -64,6 +64,15 @@ jobs:
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
             pyiface_flag: ''
+          # Add pyiface build configuration for HDF5 only
+          - arch: github/ubuntu/gnu/9.4.0
+            io_library_flag: ''
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: ''
+            cuda_flag: ''
+            loki_flag: ''
+            pyiface_flag: '--cloudsc-fortran-pyiface=ON'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
