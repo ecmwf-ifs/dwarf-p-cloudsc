@@ -17,7 +17,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }}
+    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }} ${{ matrix.pyiface_flag }}
 
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
@@ -44,6 +44,8 @@ jobs:
 
         claw_flag: ['']  # Flag to enable CLAW-generated variants
 
+        pyiface_flag: ['']  # Flag to enable Python-interface variant
+
         include:
           # Add nvhpc build configurations with serialbox and HDF5
           - arch: github/ubuntu/nvhpc/21.9
@@ -53,6 +55,7 @@ jobs:
             gpu_flag: '--with-gpu'
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
+            pyiface_flag: ''
           - arch: github/ubuntu/nvhpc/21.9
             io_library_flag: '--with-serialbox'
             mpi_flag: ''
@@ -60,6 +63,16 @@ jobs:
             gpu_flag: '--with-gpu'
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
+            pyiface_flag: ''
+          # Add pyiface build configuration for HDF5 only
+          - arch: github/ubuntu/gnu/9.4.0
+            io_library_flag: ''
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: ''
+            cuda_flag: ''
+            loki_flag: ''
+            pyiface_flag: '--cloudsc-fortran-pyiface=ON'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -105,7 +118,7 @@ jobs:
           ./cloudsc-bundle build --retry-verbose \
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
           ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
-          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} --cloudsc-fortran-pyiface=OFF
+          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} ${{ matrix.pyiface_flag }}
 
       # Verify targets exist
       - name: Verify targets
@@ -116,6 +129,7 @@ jobs:
           cuda_flag: ${{ matrix.cuda_flag }}
           loki_flag: ${{ matrix.loki_flag }}
           claw_flag: ${{ matrix.claw_flag }}
+          pyiface_flag: ${{ matrix.pyiface_flag }}
         run: .github/scripts/verify-targets.sh
 
       # Run double-precision targets

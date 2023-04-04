@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools >= 64", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -30,9 +30,12 @@ dependencies = [
     "h5py",
 ]
 
+[project.scripts]
+"cloudsc_pyiface.py" = "drivers.cloudsc_pyiface:main"
+
 [project.urls]
 repository = "https://github.com/ecmwf-ifs/dwarf-p-cloudsc"
 
 [tool.setuptools.packages.find]
-where = ["src"]  
-exclude = ["drivers"]
+where = ["src", "."]
+include = ["pyiface*", "drivers*"]
