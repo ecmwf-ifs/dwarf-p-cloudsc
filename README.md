@@ -350,7 +350,7 @@ The following partly or fully Python-based CLOUDSC are available:
 - **cloudsc-pyiface**: Fortran-based CLOUDSC variant driven by the Python script.
   Activate with: 
 ```sh
-./cloudsc-bundle build build --clean --cloudsc-fortran-pyiface CLOUDSC_FORTRAN_PYIFACE
+./cloudsc-bundle build build --clean --cloudsc-fortran-pyiface=ON
 ```
 These variants are disabled by default. Refer to README.md in corresponding subdirectories
 for further information.
