@@ -54,6 +54,9 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   The block array arguments are fully dimensioned though, and
   multi-dimensional temporaries have been declared explicitly at the
   driver level.
+- **dwarf-cloudsc-gpu-scc-k-caching**: GPU-enabled and further 
+  optimized version of CLOUDSC that also uses the SCC loop layout in
+  combination with loop fusion and temporary local array demotion.
 - **dwarf-cloudsc-gpu-scc-cuf**: GPU-enabled and optimized version of
   CLOUDSC that uses the SCC loop layout in combination with CUDA-Fortran
   (CUF) to explicitly allocate temporary arrays in device memory and
@@ -69,20 +72,22 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
 - **CUDA C prototypes**: To enable these variants, a suitable 
   CUDA installation is required and the `--with-cuda` flag needs
   to be pased at the build stage.
- - **dwarf-cloudsc-cuda**: GPU-enabled, CUDA C version of CLOUDSC.
- - **dwarf-cloudsc-cuda-hoist**: GPU-enabled, optimized CUDA C version 
-   of CLOUDSC including host side hoisted temporary local variables.
- - **dwarf-cloudsc-cuda-k-caching**: GPU-enabled, further optimized CUDA
-   C version of CLOUDSC including loop fusion and temporary local 
-   array demotion.  
+  - **dwarf-cloudsc-cuda**: GPU-enabled, CUDA C version of CLOUDSC.
+  - **dwarf-cloudsc-cuda-hoist**: GPU-enabled, optimized CUDA C version 
+    of CLOUDSC including host side hoisted temporary local variables.
+  - **dwarf-cloudsc-cuda-k-caching**: GPU-enabled, further optimized CUDA
+    C version of CLOUDSC including loop fusion and temporary local 
+    array demotion.  
 - **dwarf-cloudsc-gpu-scc-field**: GPU-enabled and optimized version of
-  CLOUDSC that uses the SCC loop layout, and a dedicated Fortran FIELD
-  API to manage device offload and copyback. The intent is to demonstrate
-  the explicit use of pinned host memory to speed-up data transfers, as
-  provided by the shipped prototype implmentation, and investigate the
-  effect of different data storage allocation layouts. To enable this
-  variant, a suitable CUDA installation is required and the
-  `--with-cuda` flag needs to be passed at the build stage.
+  CLOUDSC that uses the SCC loop layout, and uses [FIELD API](https://git.ecmwf.int/projects/RDX/repos/field_api/browse) (a Fortran library purpose-built for IFS data-structures that facilitates the
+  creation and management of field objects in scientific code) to perform device offload 
+  and copyback. The intent is to demonstrate the explicit use of pinned host memory to speed-up 
+  data transfers, as provided by the shipped prototype implmentation, and 
+  investigate the effect of different data storage allocation layouts. 
+  To enable this variant, a suitable CUDA installation is required and the
+  `--with-cuda` flag needs to be passed at the build stage. This variant lets the CUDA runtime 
+  manage temporary arrays and needs a large `NV_ACC_CUDA_HEAPSIZE` 
+  (eg. `NV_ACC_CUDA_HEAPSIZE=8GB` for 160K columns.)
 - **cloudsc-pyiface.py**: a combination of the cloudsc/cloudsc-driver routines
   of cloudsc-fortran with the uppermost `dwarf` program replaced with a
   corresponding Python script capable of HDF5 data load and 
@@ -91,7 +96,6 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   minor modifications (i.e. derived types/global paramters handling).
   Turned off by default, activate at the build stage with 
   '--cloudsc-fortran-pyiface CLOUDSC_FORTRAN_PYIFACE'
-  
 
 ## Download and Installation
 
@@ -132,22 +136,22 @@ has proven difficult with certain compiler toolchains.
 ### GPU versions of CLOUDSC
 
 The GPU-enabled versions of the dwarf are by default disabled. To
-enable them use the `--with-gpu` flag. For example to build on the in-house
-volta machine:
+enable them use the `--with-gpu` flag. For example to build on the ECMWF's ATOS
+A100 nodes:
 
 ```sh
 ./cloudsc-bundle create  # Checks out dependency packages
-./cloudsc-bundle build --clean --with-gpu --arch=./arch/ecmwf/volta/nvhpc/20.9
+./cloudsc-bundle build --clean --with-gpu --arch=./arch/ecmwf/hpc2020/nvhpc/22.1
 ```
 
 ### MPI-enabled versions of CLOUDSC
 
 Optionally, dwarf-cloudsc-fortran and the GPU versions can be built with
-MPI support by providing the `--with-mpi` flag. For example on volta:
+MPI support by providing the `--with-mpi` flag. For example on ATOS:
 
 ```sh
 ./cloudsc-bundle create
-./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=./arch/ecmwf/volta/nvhpc/20.9
+./cloudsc-bundle build --clean --with-mpi --with-gpu --arch=./arch/ecmwf/hpc2020/nvhpc/22.1
 ```
 
 Running with MPI parallelization distributes the columns of the working set

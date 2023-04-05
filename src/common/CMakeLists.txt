@@ -40,12 +40,6 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/fcttre_mod.cuf.F90
     module/yoethf.cuf.F90
     module/yomcst.cuf.F90
-    module/field_module.F90
-)
-
-list(APPEND CLOUDSC_FIELD_SOURCES
-    module/field_module.F90
-    module/cloudsc_field_state_mod.F90
 )
 
 if( HAVE_CUDA )
@@ -63,9 +57,6 @@ if( HAVE_CUDA )
 
     # Add CUDA-specific flags to the library if enabled
     list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
-
-    # If CUDA is enabled, we can also compile the FIELD API utilities
-    list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_FIELD_SOURCES} )
 endif()
 
 
@@ -85,11 +76,12 @@ ecbuild_add_library( TARGET cloudsc-common-lib
     TYPE ${LIBRARY_TYPE}
     DEFINITIONS
         ${CLOUDSC_DEFINITIONS}
-	$<${HAVE_CUDA}:USE_FIELD_API>
+	    $<${HAVE_FIELD_API}:USE_FIELD_API>
     SOURCES
         ${CLOUDSC_COMMON_SOURCES}
         $<${HAVE_MPI}:module/cloudsc_mpif.F90>
         $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
+        $<${HAVE_FIELD_API}:module/cloudsc_field_state_mod.F90>
     PRIVATE_INCLUDES
         $<${HAVE_HDF5}:${HDF5_Fortran_INCLUDE_DIRS}>
     PUBLIC_INCLUDES
@@ -102,6 +94,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_MPI}:MPI::MPI_Fortran>
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
+        $<${HAVE_FIELD_API}:field_api>
 )
 
 if( HAVE_CUDA )

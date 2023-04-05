@@ -9,8 +9,8 @@ cmake : >
 projects :
 
     - ecbuild :
-        git     : https://github.com/ecmwf/ecbuild
-        version : 3.6.4
+        git     : https://github.com/ecmwf/ecbuild 
+        version : 3.7.0
         bundle  : false
 
     - serialbox :
@@ -36,11 +36,22 @@ projects :
             LOKI_ENABLE_TESTS=OFF
             LOKI_ENABLE_NO_INSTALL=ON
 
+    - field_api :
+        git     : ${BITBUCKET}/rdx/field_api
+        version : master
+        optional: true
+        require : ecbuild
+        cmake   : >
+            BUILD_field_api=OFF
+            ENABLE_FIELD_API_TESTS=OFF
+            ENABLE_FIELD_API_FIAT_BUILD=OFF
+            FIELD_API_UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
         dir     : $PWD
         version : develop
-        require : ecbuild serialbox loki
+        require : ecbuild serialbox loki field_api
 
 options :
 
@@ -57,6 +68,7 @@ options :
         cmake : >
             ENABLE_CLOUDSC_GPU_SCC=ON
             ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
+            ENABLE_CLOUDSC_GPU_SCC_K_CACHING=ON
             ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=ON
 
     - with-cuda :
@@ -65,7 +77,7 @@ options :
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
-            ENABLE_CLOUDSC_GPU_SCC_FIELD=ON
+            BUILD_field_api=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
