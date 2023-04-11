@@ -8,13 +8,13 @@ Steps to run and perform basic test  on ATOS:
 ```
 # Work in an interactive session on the computing node:
 ```
-cd build && .env.sh
+cd build && . env.sh
 export OMP_NUM_THREADS=64
 OMP_PLACES=cores srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS --pty /bin/bash 
 ```
 To test performance, execute:
 ```
-cd build && .env.sh
+cd build && . env.sh
 export OMP_NUM_THREADS=64
 ./bin/cloudsc_pyiface.py --numomp=$OMP_NUM_THREADS --ngptot=163840 --nproma=32
 ```
@@ -35,10 +35,10 @@ to Fortran code alter the computational performance.
 #Current performance
 Currently, the performance on a single socket with AMD Rome 7742 is about about 64400 Mflops/s, 
 which is inferior to the reference result of:
-dwarf-cloudsc-fortran-pyiref (about 96700), and the 
-dwarf-cloudsc-fortran(about 103000)
+dwarf-cloudsc-fortran-pyiref (about 100500), and the 
+dwarf-cloudsc-fortran(about 104000)
 
-Similar results can be achieved using GNU compilers on ATOS using module pg and --arch=./arch/ecmwf/hpc2020/gnu/11.2.0/
+Similar results can be achieved using GNU compilers on ATOS using --arch=./arch/ecmwf/hpc2020/gnu/11.2.0/
 
 #TODOs
 
