@@ -95,7 +95,8 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   Fortran subprogram, mimicking cloudsc-fortran and equipped with only 
   minor modifications (i.e. derived types/global paramters handling).
   Turned off by default, activate at the build stage with 
-  '--cloudsc-fortran-pyiface CLOUDSC_FORTRAN_PYIFACE'
+  '--cloudsc-fortran-pyiface=ON'
+  
 
 ## Download and Installation
 
@@ -354,7 +355,7 @@ The following partly or fully Python-based CLOUDSC are available:
 - **cloudsc-pyiface**: Fortran-based CLOUDSC variant driven by the Python script.
   Activate with: 
 ```sh
-./cloudsc-bundle build build --clean --cloudsc-fortran-pyiface=ON
+./cloudsc-bundle build --clean --cloudsc-fortran-pyiface=ON
 ```
 These variants are disabled by default. Refer to README.md in corresponding subdirectories
 for further information.

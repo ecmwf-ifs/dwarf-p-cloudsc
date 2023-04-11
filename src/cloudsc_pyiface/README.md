@@ -4,17 +4,18 @@ Steps to run and perform basic test  on ATOS:
 # Build as usual; the PyIface setup will create a custom venv in the build directory
 ```
 ./cloudsc-bundle create
-./cloudsc-bundle build --build-type=release  --cloudsc-fortran-pyiface=on --arch=./arch/ecmwf/hpc2020/intel/2021.4.0/
+./cloudsc-bundle build --build-type=release  --cloudsc-fortran-pyiface=ON --arch=./arch/ecmwf/hpc2020/intel/2021.4.0/
 ```
 # Work in an interactive session on the computing node:
 ```
-module load pi
+cd build && .env.sh
 export OMP_NUM_THREADS=64
 OMP_PLACES=cores srun -q np --ntasks=1 --hint=nomultithread --cpus-per-task=$OMP_NUM_THREADS --pty /bin/bash 
 ```
 To test performance, execute:
 ```
-cd build
+cd build && .env.sh
+export OMP_NUM_THREADS=64
 ./bin/cloudsc_pyiface.py --numomp=$OMP_NUM_THREADS --ngptot=163840 --nproma=32
 ```
 #or, alternatively, submit the non-interactive test job using:
