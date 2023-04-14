@@ -166,6 +166,12 @@ if( HAVE_CLOUDSC_LOKI )
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
 
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+        target_compile_options( dwarf-cloudsc-loki-idem-stack PRIVATE "-fcray-pointer" )
+    elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
+        target_compile_options( dwarf-cloudsc-loki-idem-stack PRIVATE "-Mcray=pointer" )
+    endif()
+
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-stack-serial
         COMMAND bin/dwarf-cloudsc-loki-idem-stack
@@ -472,6 +478,12 @@ if( HAVE_CLOUDSC_LOKI )
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
+
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+        target_compile_options( dwarf-cloudsc-loki-scc-stack PRIVATE "-fcray-pointer" )
+    elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
+        target_compile_options( dwarf-cloudsc-loki-scc-stack PRIVATE "-Mcray=pointer" )
+    endif()
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-stack-serial
