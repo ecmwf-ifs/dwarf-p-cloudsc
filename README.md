@@ -95,7 +95,7 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   Fortran subprogram, mimicking cloudsc-fortran and equipped with only 
   minor modifications (i.e. derived types/global paramters handling).
   Turned off by default, activate at the build stage with 
-  '--cloudsc-fortran-pyiface=ON'
+  `--cloudsc-fortran-pyiface=ON`.
   
 
 ## Download and Installation
