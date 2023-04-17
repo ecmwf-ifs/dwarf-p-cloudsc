@@ -78,7 +78,7 @@ def main(numomp: int, ngptot: int, nproma: int, cloudsc_path, input_path) -> Non
 
     # Execute kernel via Python-wrapped, compiled Fortran driver
     clsc.cloudsc_driver_mod.cloudsc_driver(
-        numomp, nproma, nlev, ngptot, ngptotg, nclv,
+        numomp, nproma, nlev, ngptot, ngptotg,
         input_fort_fields['kfldx'],
         input_fort_fields['PTSPHY'],
         input_fort_fields['pt'],
