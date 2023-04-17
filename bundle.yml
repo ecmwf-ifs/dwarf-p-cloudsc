@@ -114,6 +114,14 @@ options :
         help  : Build the new Fortran version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_FORTRAN={{value}}
 
+    - cloudsc-fortran-pyiface :
+        help  : Build the Python driver interfaced with the new Fortran version of CLOUDSC [ON|OFF]
+        cmake : ENABLE_CLOUDSC_FORTRAN_PYIFACE={{value}}
+
+    - cloudsc-fortran-pyiface-binary :
+        help  : Build the Fortran binary for the PYIFACE version [ON|OFF]
+        cmake : ENABLE_CLOUDSC_FORTRAN_PYIFACE_BINARY={{value}}
+
     - cloudsc-c :
         help  : Build the C version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_C={{value}}

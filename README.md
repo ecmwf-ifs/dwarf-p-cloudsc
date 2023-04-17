@@ -88,6 +88,15 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   `--with-cuda` flag needs to be passed at the build stage. This variant lets the CUDA runtime 
   manage temporary arrays and needs a large `NV_ACC_CUDA_HEAPSIZE` 
   (eg. `NV_ACC_CUDA_HEAPSIZE=8GB` for 160K columns.)
+- **cloudsc-pyiface.py**: a combination of the cloudsc/cloudsc-driver routines
+  of cloudsc-fortran with the uppermost `dwarf` program replaced with a
+  corresponding Python script capable of HDF5 data load and 
+  verification of computation results. The computation is realized by the
+  Fortran subprogram, mimicking cloudsc-fortran and equipped with only 
+  minor modifications (i.e. derived types/global paramters handling).
+  Turned off by default, activate at the build stage with 
+  `--cloudsc-fortran-pyiface=ON`.
+  
 
 ## Download and Installation
 
@@ -339,6 +348,18 @@ The following Loki modes are included in the dwarf, each with a bespoke demonstr
 To enable the deprecated and, on GPU, defunct CLAW variants, the build-flag
 `--with-claw` needs to be specified explicitly.
 
+## Python-driven CLOUDSC variants
+The following partly or fully Python-based CLOUDSC are available:
+- **cloudsc-python**: GT4PY based Python-only implementation. Refer to `src/cloudsc_python`
+  for information on how to bootstrap/execute this variant
+- **cloudsc-pyiface**: Fortran-based CLOUDSC variant driven by the Python script.
+  Activate with: 
+```sh
+./cloudsc-bundle build --clean --cloudsc-fortran-pyiface=ON
+```
+These variants are disabled by default. Refer to README.md in corresponding subdirectories
+for further information.
+  
 ### A note on frontends
 
 Loki currently supports three frontends to parse the Fortran source code:

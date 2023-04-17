@@ -21,6 +21,7 @@ then
   skipped_targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
   skipped_targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   skipped_targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
+
   # Skip C target if built with nvhpc, segfaults for unknown reasons
   skipped_targets+=(dwarf-cloudsc-c dwarf-cloudsc-loki-c)
 fi
@@ -45,6 +46,9 @@ do
     # Two ranks with one thread each, safe NPROMA
     # NB: Use oversubscribe to run, even if we end up on a single core agent
     mpirun --oversubscribe -np 2 bin/$target 1 100 64
+  elif [[ "$target" == "cloudsc_pyiface.py" ]]
+  then
+    bin/$target --numomp 1 --ngptot 100 --nproma 64
   else
     # Single thread, safe NPROMA
     bin/$target 1 100 64

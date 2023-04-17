@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools >= 64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyiface"
+version = "0.1.0"
+authors = [
+    {name = "Zbigniew Piotrowski", email = "zbigniew.piotrowski@ecmwf.int"},
+    {name = "Michael Lange", email = "michael.lange@ecmwf.int"}
+]
+description = "Python driver that enables execution of the Fortran CLOUDSC dwarf from Python"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+classifiers = [
+   " Development Status :: 3 - Alpha ",
+   " Intended Audience:: Science / Research ",
+   " License :: OSI Approved:: Apache License, Version 2.0 ",
+   " Natural Language :: English ",
+   " Operating System :: POSIX ",
+   " Programming Language :: Python :: 3.8 ",
+   " Programming Language :: Python :: 3.9 ",
+   " Programming Language :: Python :: 3.10 ",
+   " Programming Language :: Python :: 3.11 ",
+   " Topic :: Scientific/Engineering :: Atmospheric Science "
+]
+dependencies = [
+    "numpy",
+    "f90wrap",
+    "click",
+    "h5py",
+]
+
+[project.scripts]
+"cloudsc_pyiface.py" = "drivers.cloudsc_pyiface:main"
+
+[project.urls]
+repository = "https://github.com/ecmwf-ifs/dwarf-p-cloudsc"
+
+[tool.setuptools.packages.find]
+where = ["src", "."]
+include = ["pyiface*", "drivers*"]
