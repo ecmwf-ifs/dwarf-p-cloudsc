@@ -9,7 +9,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from gt4py import gtscript
+from gt4py.cartesian import gtscript
 
 from cloudsc4py.framework.stencil import function_collection
 

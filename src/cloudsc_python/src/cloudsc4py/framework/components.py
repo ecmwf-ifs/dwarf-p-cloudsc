@@ -26,7 +26,7 @@ from cloudsc4py.framework.storage import get_data_shape_from_name, get_dtype_fro
 if TYPE_CHECKING:
     from typing import Any, Dict
 
-    from gt4py import StencilObject
+    from gt4py.cartesian import StencilObject
     from gt4py.storage import Storage
     from sympl._core.typingx import PropertyDict
 

@@ -11,7 +11,7 @@
 
 import os
 
-import gt4py.config as gt_config
+import gt4py.cartesian.config as gt_config
 
 import cloudsc4py.physics
 

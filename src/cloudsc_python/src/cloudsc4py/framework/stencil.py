@@ -12,12 +12,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from gt4py import gtscript
+from gt4py.cartesian import gtscript
 
 if TYPE_CHECKING:
     from typing import Any, Dict
 
-    from gt4py import StencilObject
+    from gt4py.cartesian import StencilObject
 
     from cloudsc4py.framework.config import GT4PyConfig
 
