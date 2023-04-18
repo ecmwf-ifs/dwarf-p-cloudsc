@@ -1,7 +1,41 @@
 [build-system]
-requires = ['setuptools>=42', 'wheel']
+requires = ['setuptools>=64', 'wheel']
+build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
+[project]
+name = "cloudsc4py"
+version = "0.1.0"
+authors = [
+    {name = "Stefano Ubbiali", email = "subbiali@phys.ethz.ch"},
+    {name = "Michael Lange", email = "michael.lange@ecmwf.int"}
+]
+description = "GT4Py-based implementation of the CLOUDSC dwarf"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+classifiers = [
+   " Development Status :: 3 - Alpha ",
+   " Intended Audience:: Science / Research ",
+   " License :: OSI Approved:: Apache License, Version 2.0 ",
+   " Natural Language :: English ",
+   " Operating System :: POSIX ",
+   " Programming Language :: Python :: 3.8 ",
+   " Programming Language :: Python :: 3.9 ",
+   " Programming Language :: Python :: 3.10 ",
+   " Topic :: Scientific/Engineering :: Atmospheric Science "
+]
+
+dependencies = [
+    "numpy",
+    "click",
+    "gt4py[dace]>=1.0.0",
+    "h5py",
+    "pandas",
+    "pydantic",
+    "sympl @ git+https://github.com/stubbiali/sympl.git@oop#egg=sympl",
+    "xarray",
+]
+
 
 [tool.black]
 line-length = 100
