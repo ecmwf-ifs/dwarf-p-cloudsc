@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from cloudsc4py.utils.typingx import StorageDict
 
 
-class Cloudsc(ImplicitTendencyComponent):
+class CloudscSplit(ImplicitTendencyComponent):
     def __init__(
         self,
         computational_grid: ComputationalGrid,
