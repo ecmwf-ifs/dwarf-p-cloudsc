@@ -12,10 +12,13 @@
 import click
 import csv
 import datetime
+import numpy as np
 import os
 from typing import Optional, Type
+import subprocess
 
 from cloudsc4py.framework.grid import ComputationalGrid
+from cloudsc4py.framework.config import DataTypes, GT4PyConfig, PythonConfig, IOConfig, FortranConfig
 from cloudsc4py.physics.cloudsc import Cloudsc
 from cloudsc4py.physics.cloudsc_split import CloudscSplit
 from cloudsc4py.initialization.reference import get_reference_tendencies, get_reference_diagnostics
@@ -24,11 +27,72 @@ from cloudsc4py.utils.iox import HDF5Reader
 from cloudsc4py.utils.timing import timing
 from cloudsc4py.utils.validation import validate
 
-from config import PythonConfig, IOConfig, default_python_config, default_io_config
-from utils import print_performance, to_csv
+
+# Default configurations for the various run modes
+
+default_io_config = IOConfig(output_file=None, host_name=None)
+
+config_files_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../config-files"))
+default_python_config = PythonConfig(
+    num_cols=1,
+    enable_validation=True,
+    input_file=os.path.join(config_files_dir, "input.h5"),
+    reference_file=os.path.join(config_files_dir, "reference.h5"),
+    num_runs=15,
+    data_types=DataTypes(bool=bool, float=np.float64, int=int),
+    gt4py_config=GT4PyConfig(backend="numpy", rebuild=False, validate_args=True, verbose=True),
+    sympl_enable_checks=True,
+)
 
 
-def core(config: PythonConfig, io_config: IOConfig, cloudsc_cls: Type) -> None:
+default_fortran_config = FortranConfig(
+    build_dir=".", variant="fortran", nproma=32, num_cols=1, num_runs=1, num_threads=1
+)
+
+
+# Some utility function for performance benchmarking
+
+def to_csv(
+    output_file: str,
+    host_name: str,
+    variant: str,
+    num_cols: int,
+    num_runs: int,
+    runtime_mean: float,
+    runtime_stddev: float,
+) -> None:
+    """Write mean and standard deviation of measured runtimes to a CSV file."""
+    if not os.path.exists(output_file):
+        with open(output_file, "w") as csv_file:
+            writer = csv.writer(csv_file, delimiter=",")
+            writer.writerow(("date", "host", "variant", "num_cols", "num_runs", "mean", "stddev"))
+    with open(output_file, "a") as csv_file:
+        writer = csv.writer(csv_file, delimiter=",")
+        writer.writerow(
+            (
+                datetime.date.today().strftime("%Y%m%d"),
+                host_name,
+                variant,
+                num_cols,
+                num_runs,
+                runtime_mean,
+                runtime_stddev,
+            )
+        )
+
+
+def print_performance(runtimes):
+    """Print means and standard deviation of measure runtimes to screen."""
+    n = len(runtimes)
+    mean = sum(runtimes) / n
+    stddev = (sum((runtime - mean) ** 2 for runtime in runtimes) / (n - 1 if n > 1 else n)) ** 0.5
+    print(f"Performance: Average runtime over {n} runs: {mean:.3f} \u00B1 {stddev:.3f} ms.")
+    return mean, stddev
+
+
+# The core benchmark implementations in GT4Py and for external Fortran runners
+
+def core_cloudsc(config: PythonConfig, io_config: IOConfig, cloudsc_cls: Type) -> None:
     hdf5_reader = HDF5Reader(config.input_file, config.data_types)
 
     nx = config.num_cols or hdf5_reader.get_nlon()
@@ -101,6 +165,63 @@ def core(config: PythonConfig, io_config: IOConfig, cloudsc_cls: Type) -> None:
             )
 
 
+def core_fortran(config: FortranConfig, io_config: IOConfig) -> None:
+    executable = os.path.join(
+        os.path.dirname(__file__), config.build_dir, f"bin/dwarf-cloudsc-{config.variant}"
+    )
+    if not os.path.exists(executable):
+        raise RuntimeError(f"The executable `{executable}` does not exist.")
+
+    # warm-up cache
+    _ = subprocess.run(
+        [
+            executable,
+            str(config.num_threads),
+            str(config.num_cols),
+            str(min(config.num_cols, config.nproma)),
+        ],
+        capture_output=True,
+    )
+
+    # run and profile
+    runtimes = []
+    for _ in range(config.num_runs):
+        out = subprocess.run(
+            [
+                executable,
+                str(config.num_threads),
+                str(config.num_cols),
+                str(min(config.num_cols, config.nproma)),
+            ],
+            capture_output=True,
+        )
+        if "gpu" in config.variant:
+            x = out.stderr.decode("utf-8").split("\n")[2]
+            y = x.split(" ")
+            z = [c for c in y if c != ""]
+            runtimes.append(float(z[-4]))
+        else:
+            x = out.stderr.decode("utf-8").split("\n")[-2]
+            y = x.split(" ")
+            z = [c for c in y if c != ""]
+            runtimes.append(float(z[-4]))
+
+    runtime_mean, runtime_stddev = print_performance(runtimes)
+
+    if io_config.output_csv_file is not None:
+        to_csv(
+            io_config.output_csv_file,
+            io_config.host_name,
+            config.variant,
+            config.num_cols,
+            config.num_runs,
+            runtime_mean,
+            runtime_stddev,
+        )
+
+
+# Click group to present various CLI modes under a single runner script
+
 @click.group()
 def main():
     """
@@ -164,7 +285,7 @@ def single(
         .with_num_runs(num_runs)
     )
     io_config = default_io_config.with_output_csv_file(output_csv_file).with_host_name(host_alias)
-    core(config, io_config, cloudsc_cls=Cloudsc)
+    core_cloudsc(config, io_config, cloudsc_cls=Cloudsc)
 
     if output_csv_file_stencils is not None:
         call_time = None
@@ -245,7 +366,7 @@ def split(
         .with_num_runs(num_runs)
     )
     io_config = default_io_config.with_output_csv_file(output_csv_file).with_host_name(host_alias)
-    core(config, io_config, cloudsc_cls=CloudscSplit)
+    core_cloudsc(config, io_config, cloudsc_cls=CloudscSplit)
 
     if output_csv_file_stencils is not None:
         cloudsc_tendencies_call_time = None
@@ -283,6 +404,64 @@ def split(
                     cloudsc_fluxes_call_time,
                 )
             )
+
+
+@main.command()
+@click.option(
+    "--build-dir", type=str, default="fortran",
+    help="Path to the build directory of the FORTRAN dwarf.",
+)
+@click.option(
+    "--variant", type=str, default="fortran", help="Code variant."
+    "\n\nOptions: fortran, gpu-scc, gpu-scc-hoist, gpu-omp-scc-hoist."
+    "\n\nDefault: fortran.",
+)
+@click.option(
+    "--nproma", type=int, default=32,
+    help="Block size.\n\nRecommended values: 32 on CPUs, 128 on GPUs.\n\nDefault: 32.",
+)
+@click.option(
+    "--num-cols", type=int, default=1,
+    help="Number of domain columns.\n\nDefault: 1."
+)
+@click.option(
+    "--num-runs", type=int, default=1,
+    help="Number of executions.\n\nDefault: 1.",
+)
+@click.option(
+    "--num-threads", type=int, default=1, help="Number of threads."
+    "\n\nRecommended values: 24 on Piz Daint's CPUs, 128 on MLux's CPUs, 1 on GPUs."
+    "\n\nDefault: 1.",
+)
+@click.option(
+    "--host-alias", type=str, default=None,
+    help="Name of the host machine (optional)."
+)
+@click.option(
+    "--output-csv-file", type=str, default=None,
+    help="Path to the CSV file where writing performance counters (optional).",
+)
+def fortran(
+    build_dir: str,
+    variant: str,
+    nproma: int,
+    num_cols: int,
+    num_runs: int,
+    num_threads: int,
+    host_alias: Optional[str],
+    output_csv_file: Optional[str],
+) -> None:
+    """Driver for the FORTRAN implementation of CLOUDSC."""
+    config = (
+        default_fortran_config.with_build_dir(build_dir)
+        .with_variant(variant)
+        .with_nproma(nproma)
+        .with_num_cols(num_cols)
+        .with_num_runs(num_runs)
+        .with_num_threads(num_threads)
+    )
+    io_config = default_io_config.with_output_csv_file(output_csv_file).with_host_name(host_alias)
+    core_fortran(config, io_config)
 
 
 if __name__ == "__main__":
