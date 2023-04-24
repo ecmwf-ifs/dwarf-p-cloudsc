@@ -57,7 +57,7 @@ def core(config: PythonConfig, io_config: IOConfig, cloudsc_cls: Type) -> None:
     for i in range(config.num_runs):
         with timing(f"run_{i}") as timer:
             cloudsc(state, dt, out_tendencies=tends, out_diagnostics=diags)
-        runtimes.append(timer.get_time(f"run_{i}") * 1000)
+        runtimes.append(timer.get_time(f"run_{i}"))
 
     runtime_mean, runtime_stddev = print_performance(runtimes)
 
