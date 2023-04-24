@@ -62,6 +62,8 @@ def compile_stencil(
     definition = stencil_info["definition"]
 
     dtypes = gt4py_config.dtypes.dict()
+    dtypes[float] = gt4py_config.dtypes.float
+    dtypes[int] = gt4py_config.dtypes.int
     externals = externals or {}
 
     kwargs = gt4py_config.backend_opts.copy()

@@ -130,6 +130,12 @@ def core(config: PythonConfig, io_config: IOConfig, cloudsc_cls: Type) -> None:
     default=1,
     help="Number of executions.\n\nDefault: 1.",
 )
+@click.option(
+    "--precision",
+    type=str,
+    default="double",
+    help="Select either `double` (default) or `single` precision.",
+)
 @click.option("--host-alias", type=str, default=None, help="Name of the host machine (optional).")
 @click.option(
     "--output-csv-file",
@@ -149,6 +155,7 @@ def main(
     enable_validation: bool,
     num_cols: Optional[int],
     num_runs: Optional[int],
+    precision: str,
     host_alias: Optional[str],
     output_csv_file: Optional[str],
     output_csv_file_stencils: Optional[str],
@@ -164,6 +171,7 @@ def main(
         .with_validation(enable_validation)
         .with_num_cols(num_cols)
         .with_num_runs(num_runs)
+        .with_precision(precision)
     )
     io_config = default_io_config.with_output_csv_file(output_csv_file).with_host_name(host_alias)
     core(config, io_config, cloudsc_cls=Cloudsc)

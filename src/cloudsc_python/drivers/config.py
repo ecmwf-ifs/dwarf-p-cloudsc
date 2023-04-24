@@ -14,7 +14,7 @@ import numpy as np
 from os.path import dirname, join, normpath, splitext
 from pydantic import BaseModel, validator
 import socket
-from typing import Optional
+from typing import Literal, Optional
 
 from cloudsc4py.framework.config import DataTypes, GT4PyConfig
 
@@ -107,6 +107,11 @@ class PythonConfig(BaseModel):
             args["num_runs"] = num_runs
         return PythonConfig(**args)
 
+    def with_precision(self, precision: Literal["double", "single"]) -> PythonConfig:
+        args = self.dict()
+        args["data_types"] = self.data_types.with_precision(precision)
+        return PythonConfig(**args)
+
     def with_validation(self, enabled: bool) -> PythonConfig:
         args = self.dict()
         args["enable_validation"] = enabled
@@ -120,7 +125,7 @@ default_python_config = PythonConfig(
     input_file=join(config_files_dir, "input.h5"),
     reference_file=join(config_files_dir, "reference.h5"),
     num_runs=15,
-    data_types=DataTypes(bool=bool, float=np.float64, int=int),
+    data_types=DataTypes(bool=bool, float=np.float64, int=np.int64),
     gt4py_config=GT4PyConfig(backend="numpy", rebuild=False, validate_args=True, verbose=True),
     sympl_enable_checks=True,
 )
