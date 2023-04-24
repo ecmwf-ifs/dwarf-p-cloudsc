@@ -11,7 +11,7 @@
 
 from __future__ import annotations
 
-from gt4py.gtscript import Field, IJ, K
+from gt4py.cartesian.gtscript import Field, IJ, K
 
 from cloudsc4py.framework.stencil import stencil_collection
 from cloudsc4py.physics._stencils.cuadjtq import f_cuadjtq
