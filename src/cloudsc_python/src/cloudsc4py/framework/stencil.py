@@ -12,12 +12,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from gt4py import gtscript
+from gt4py.cartesian import gtscript
 
 if TYPE_CHECKING:
     from typing import Any, Dict
 
-    from gt4py import StencilObject
+    from gt4py.cartesian import StencilObject
 
     from cloudsc4py.framework.config import GT4PyConfig
 
@@ -62,6 +62,8 @@ def compile_stencil(
     definition = stencil_info["definition"]
 
     dtypes = gt4py_config.dtypes.dict()
+    dtypes[float] = gt4py_config.dtypes.float
+    dtypes[int] = gt4py_config.dtypes.int
     externals = externals or {}
 
     kwargs = gt4py_config.backend_opts.copy()

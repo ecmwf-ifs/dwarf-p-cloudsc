@@ -228,7 +228,7 @@ class HDF5Reader:
         return self.f["KLON"][0]
 
     def get_timestep(self) -> timedelta:
-        return timedelta(seconds=self._get_parameter_f("PTSPHY"))
+        return timedelta(seconds=float(self._get_parameter_f("PTSPHY")))
 
     @ported_method(from_file="common/module/yoecldp.F90", from_line=86, to_line=91)
     def get_yoecldp_parameters(self) -> YoecldpParameters:

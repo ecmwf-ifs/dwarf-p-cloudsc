@@ -10,6 +10,7 @@
 # nor does it submit to any jurisdiction.
 
 from __future__ import annotations
+import numpy as np
 from pydantic import BaseModel, validator
 from typing import Any, Dict, Optional, Union, Type
 
@@ -20,6 +21,14 @@ class DataTypes(BaseModel):
     bool: Type
     float: Type
     int: Type
+
+    def with_precision(self, precision: Literal["double", "single"]) -> DataTypes:
+        if precision == "double":
+            return DataTypes(bool=bool, float=np.float64, int=np.int64)
+        elif precision == "single":
+            return DataTypes(bool=bool, float=np.float32, int=np.int32)
+        else:
+            raise ValueError("Either `double` or `single` precision supported.")
 
 
 class GT4PyConfig(BaseModel):

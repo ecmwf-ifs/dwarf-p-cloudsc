@@ -31,9 +31,6 @@ function install()
   # install cloudsc4py
   pip install -e .
 
-  # install gt sources
-  python -m gt4py.gt_src_manager install
-
   # setup gt4py cache
   mkdir -p gt_cache
   echo -e "\nexport GT_CACHE_ROOT=$PWD/gt_cache" >> "$VENV"/bin/activate
