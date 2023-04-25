@@ -10,6 +10,7 @@
 # nor does it submit to any jurisdiction.
 
 from __future__ import annotations
+from pathlib import Path
 from pydantic import BaseModel, validator
 from typing import Any, Dict, Optional, Union, Type
 import socket
@@ -107,8 +108,8 @@ class PythonConfig(BaseModel):
 
     # validation
     enable_validation: bool
-    input_file: str
-    reference_file: str
+    input_file: Union[Path, str]
+    reference_file: Union[Path, str]
 
     # run
     num_runs: int
@@ -151,6 +152,16 @@ class PythonConfig(BaseModel):
     def with_validation(self, enabled: bool) -> PythonConfig:
         args = self.dict()
         args["enable_validation"] = enabled
+        return PythonConfig(**args)
+
+    def with_input_file(self, path: Path) -> PythonConfig:
+        args = self.dict()
+        args["input_file"] = path
+        return PythonConfig(**args)
+
+    def with_reference_file(self, path: Path) -> PythonConfig:
+        args = self.dict()
+        args["reference_file"] = path
         return PythonConfig(**args)
 
 

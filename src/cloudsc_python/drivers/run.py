@@ -16,6 +16,7 @@ import numpy as np
 import os
 from typing import Optional, Type
 import subprocess
+from pathlib import Path
 
 from cloudsc4py.framework.grid import ComputationalGrid
 from cloudsc4py.framework.config import DataTypes, GT4PyConfig, PythonConfig, IOConfig, FortranConfig
@@ -32,12 +33,12 @@ from cloudsc4py.utils.validation import validate
 
 default_io_config = IOConfig(output_file=None, host_name=None)
 
-config_files_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../config-files"))
+config_files_dir = Path(__file__).parent/'../../../config-files'
 default_python_config = PythonConfig(
     num_cols=1,
     enable_validation=True,
-    input_file=os.path.join(config_files_dir, "input.h5"),
-    reference_file=os.path.join(config_files_dir, "reference.h5"),
+    input_file=config_files_dir/'input.h5',
+    reference_file=config_files_dir/'reference.h5',
     num_runs=15,
     data_types=DataTypes(bool=bool, float=np.float64, int=int),
     gt4py_config=GT4PyConfig(backend="numpy", rebuild=False, validate_args=True, verbose=True),
@@ -253,6 +254,14 @@ def main():
     help="Number of executions.\n\nDefault: 1.",
 )
 @click.option(
+    "--input-file", type=click.Path(), default=default_python_config.input_file,
+    help="Path to file containing input field data.",
+)
+@click.option(
+    "--reference-file", type=click.Path(), default=default_python_config.reference_file,
+    help="Path to file containing reference field data.",
+)
+@click.option(
     "--host-alias", type=str, default=None,
     help="Name of the host machine (optional)."
 )
@@ -270,6 +279,8 @@ def single(
     enable_validation: bool,
     num_cols: Optional[int],
     num_runs: Optional[int],
+    input_file: Path,
+    reference_file: Path,
     host_alias: Optional[str],
     output_csv_file: Optional[str],
     output_csv_file_stencils: Optional[str],
@@ -283,6 +294,8 @@ def single(
         .with_validation(enable_validation)
         .with_num_cols(num_cols)
         .with_num_runs(num_runs)
+        .with_input_file(input_file)
+        .with_reference_file(reference_file)
     )
     io_config = default_io_config.with_output_csv_file(output_csv_file).with_host_name(host_alias)
     core_cloudsc(config, io_config, cloudsc_cls=Cloudsc)
@@ -334,6 +347,14 @@ def single(
     help="Number of executions.\n\nDefault: 1.",
 )
 @click.option(
+    "--input-file", type=click.Path(), default=default_python_config.input_file,
+    help="Path to file containing input field data.",
+)
+@click.option(
+    "--reference-file", type=click.Path(), default=default_python_config.reference_file,
+    help="Path to file containing reference field data.",
+)
+@click.option(
     "--host-alias", type=str, default=None,
     help="Name of the host machine (optional)."
 )
@@ -351,6 +372,8 @@ def split(
     enable_validation: bool,
     num_cols: Optional[int],
     num_runs: Optional[int],
+    input_file: Path,
+    reference_file: Path,
     host_alias: Optional[str],
     output_csv_file: Optional[str],
     output_csv_file_stencils: Optional[str],
