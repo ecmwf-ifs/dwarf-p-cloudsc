@@ -1,28 +1,47 @@
 [build-system]
-requires = ['setuptools>=42', 'wheel']
+requires = ["setuptools >= 64"]
+build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
+[project]
+name = "cloudsc4py"
+version = "0.1.0"
+authors = [
+    {name = "Stefano Ubbiali", email = "subbiali@phys.ethz.ch"},
+    {name = "Michael Lange", email = "michael.lange@ecmwf.int"}
+]
+description = "Collection of Python variants of the CLOUDSC dwarf"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+classifiers = [
+   " Development Status :: 3 - Alpha ",
+   " Intended Audience:: Science / Research ",
+   " License :: OSI Approved:: Apache License, Version 2.0 ",
+   " Natural Language :: English ",
+   " Operating System :: POSIX ",
+   " Programming Language :: Python :: 3.8 ",
+   " Programming Language :: Python :: 3.9 ",
+   " Programming Language :: Python :: 3.10 ",
+   " Programming Language :: Python :: 3.11 ",
+   " Topic :: Scientific/Engineering :: Atmospheric Science "
+]
+dependencies = [
+    "click",
+    "gt4py[dace] >= 1.0.1",
+    "h5py",
+    "numpy",
+    "pandas",
+    "pydantic",
+    "sympl @ git+https://github.com/stubbiali/sympl.git@oop#egg=sympl",
+    "xarray",
+]
 
-[tool.black]
-line-length = 100
-target-version = ['py37', 'py38', 'py39']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
+[project.scripts]
+"cloudsc_f2py.py" = "drivers.cloudsc_f2py:main"
 
-  # The following are specific to Black, you probably don't want those.
-  | blib2to3
-  | tests/data
-  | profiling
-)/
-'''
+[project.urls]
+repository = "https://github.com/ecmwf-ifs/dwarf-p-cloudsc"
+
+[tool.setuptools.packages.find]
+where = ["src", "."]
+include = ["cloudsc4py", "cloudscf2py", "drivers*"]

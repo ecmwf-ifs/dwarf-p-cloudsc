@@ -118,7 +118,7 @@ def run_cloudsc_kernel(nthreads, ngptot, nproma, input_path, reference_path):
     '--generate/--no-generate', default=False,
     help='(Re)generate kernel via Loki-Fortran-Python transform'
 )
-def dwarf_cloudsc(nthreads, ngptot, nproma, generate):
+def main(nthreads, ngptot, nproma, generate):
     """
     Run a Python version of CLOUDSC and validate against reference data
     """
