@@ -141,7 +141,7 @@ CONTAINS
           !OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(B, BSIZE) &
           !& REDUCTION(MIN:ZMINVAL, MAX:ZMAX_VAL_ERR, +:ZSUM_ERR_ABS)
           DO B=1, NBLOCKS
-            BSIZE = MIN(NLON, NGPTOT - (B-1)*NLON)  ! Field block size
+            BSIZE = FSPACE%BLOCK_SIZE(B)
             ZMINVAL(1) = MIN(ZMINVAL(1),MINVAL(FIELD_R3(:,:,4:,B)))
             ZMAX_VAL_ERR(1) = MAX(ZMAX_VAL_ERR(1),MAXVAL(FIELD_R3(:,:,4:,B)))
             DO JM=1, NDIM

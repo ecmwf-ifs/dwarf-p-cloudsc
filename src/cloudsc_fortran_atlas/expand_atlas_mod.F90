@@ -98,15 +98,13 @@ contains
     endif
   end subroutine loadvar_atlas
 
-  subroutine loadstate_atlas(fset, name, state, nlon, ngptotg)
+  subroutine loadstate_atlas(fset, name, nlon, ngptotg)
     ! Load into the local memory buffer and expand to global field
     type(atlas_fieldset), intent(inout) :: fset
     character(len=*) :: name
-    type(state_type), allocatable, intent(inout) :: state(:)
     integer(kind=jpim), intent(in) :: nlon
     integer(kind=jpim), intent(in), optional :: ngptotg
 
-    integer :: b
     integer(kind=jpim) :: start, end, size, nlev, nproma, ngptot, nblocks, ndim
     type(atlas_field) :: field
     type(atlas_functionspace_blockstructuredcolumns) :: fspace
@@ -124,7 +122,6 @@ contains
 
     call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
     allocate(buffer(size, nlev, 3+ndim))
-    if (.not. allocated(state))  allocate(state(nblocks))
     call field%data(field_r3)
 
     call load_array(name//'_T', start, end, size, nlon, nlev, buffer(:,:,1))
@@ -137,15 +134,6 @@ contains
     call expand(buffer(:,:,3), field_r3(:,:,3,:), size, nproma, nlev, ngptot, nblocks)
     call expand(buffer(:,:,4:), field_r3(:,:,4:,:), size, nproma, nlev, ndim, ngptot, nblocks)
     deallocate(buffer)
-
-!$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
-    do b=1, nblocks
-       state(b)%t => field_r3(:,:,1,b)
-       state(b)%a => field_r3(:,:,2,b)
-       state(b)%q => field_r3(:,:,3,b)
-       state(b)%cld => field_r3(:,:,4:3+ndim,b)
-    end do
-!$OMP end parallel do
   end subroutine loadstate_atlas
 
 end module expand_atlas_mod

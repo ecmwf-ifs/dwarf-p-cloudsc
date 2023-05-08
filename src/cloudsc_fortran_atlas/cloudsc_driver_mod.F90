@@ -14,84 +14,79 @@ MODULE CLOUDSC_DRIVER_MOD
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE EC_PMON_MOD, ONLY: EC_PMON
+  USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW
+  
+  USE ATLAS_MODULE
+  USE, INTRINSIC :: ISO_C_BINDING
+  USE ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS_MODULE
 
   IMPLICIT NONE
 
 CONTAINS
 
-  SUBROUTINE CLOUDSC_DRIVER( &
-     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, KFLDX, PTSPHY, &
-     & PT, PQ, TENDENCY_CML, TENDENCY_TMP, TENDENCY_LOC, &
-     & PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI, &
-     & PHRSW,    PHRLW, &
-     & PVERVEL,  PAP,      PAPH, &
-     & PLSM,     LDCUM,    KTYPE, &
-     & PLU,      PLUDE,    PSNDE,    PMFU,     PMFD, &
-     & PA,       PCLV,     PSUPSAT,&
-     & PLCRIT_AER,PICRIT_AER, PRE_ICE, &
-     & PCCN,     PNICE,&
-     & PCOVPTOT, PRAINFRAC_TOPRFZ, &
-     & PFSQLF,   PFSQIF ,  PFCQNNG,  PFCQLNG, &
-     & PFSQRF,   PFSQSF ,  PFCQRNG,  PFCQSNG, &
-     & PFSQLTUR, PFSQITUR, &
-     & PFPLSL,   PFPLSN,   PFHPSL,   PFHPSN &
-     & )
+  SUBROUTINE CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOT, NGPTOTG, KFLDX, PTSPHY)
+  
     ! Driver routine that performans the parallel NPROMA-blocking and
     ! invokes the CLOUDSC kernel
 
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG
-    INTEGER(KIND=JPIM), INTENT(IN)    :: KFLDX
-    REAL(KIND=JPRB),    INTENT(IN)    :: PTSPHY       ! Physics timestep
-    REAL(KIND=JPRB),    INTENT(IN)    :: PT(:,:,:)    ! T at start of callpar
-    REAL(KIND=JPRB),    INTENT(IN)    :: PQ(:,:,:)    ! Q at start of callpar
-    TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_CML(:) ! cumulative tendency used for final output
-    TYPE(STATE_TYPE),   INTENT(IN)    :: TENDENCY_TMP(:) ! cumulative tendency used as input
-    TYPE(STATE_TYPE),   INTENT(OUT)   :: TENDENCY_LOC(:) ! local tendency from cloud scheme
-    REAL(KIND=JPRB),    INTENT(IN)    :: PVFA(:,:,:)  ! CC from VDF scheme
-    REAL(KIND=JPRB),    INTENT(IN)    :: PVFL(:,:,:)  ! Liq from VDF scheme
-    REAL(KIND=JPRB),    INTENT(IN)    :: PVFI(:,:,:)  ! Ice from VDF scheme
-    REAL(KIND=JPRB),    INTENT(IN)    :: PDYNA(:,:,:) ! CC from Dynamics
-    REAL(KIND=JPRB),    INTENT(IN)    :: PDYNL(:,:,:) ! Liq from Dynamics
-    REAL(KIND=JPRB),    INTENT(IN)    :: PDYNI(:,:,:) ! Liq from Dynamics
-    REAL(KIND=JPRB),    INTENT(IN)    :: PHRSW(:,:,:) ! Short-wave heating rate
-    REAL(KIND=JPRB),    INTENT(IN)    :: PHRLW(:,:,:) ! Long-wave heating rate
-    REAL(KIND=JPRB),    INTENT(IN)    :: PVERVEL(:,:,:) !Vertical velocity
-    REAL(KIND=JPRB),    INTENT(IN)    :: PAP(:,:,:)   ! Pressure on full levels
-    REAL(KIND=JPRB),    INTENT(IN)    :: PAPH(:,:,:)  ! Pressure on half levels
-    REAL(KIND=JPRB),    INTENT(IN)    :: PLSM(:,:)    ! Land fraction (0-1)
-    LOGICAL        ,    INTENT(IN)    :: LDCUM(:,:)   ! Convection active
-    INTEGER(KIND=JPIM), INTENT(IN)    :: KTYPE(:,:)   ! Convection type 0,1,2
-    REAL(KIND=JPRB),    INTENT(IN)    :: PLU(:,:,:)   ! Conv. condensate
-    REAL(KIND=JPRB),    INTENT(INOUT) :: PLUDE(:,:,:) ! Conv. detrained water
-    REAL(KIND=JPRB),    INTENT(IN)    :: PSNDE(:,:,:) ! Conv. detrained snow
-    REAL(KIND=JPRB),    INTENT(IN)    :: PMFU(:,:,:)  ! Conv. mass flux up
-    REAL(KIND=JPRB),    INTENT(IN)    :: PMFD(:,:,:)  ! Conv. mass flux down
-    REAL(KIND=JPRB),    INTENT(IN)    :: PA(:,:,:)    ! Original Cloud fraction (t)
-    REAL(KIND=JPRB),    INTENT(IN)    :: PCLV(:,:,:,:) 
-    REAL(KIND=JPRB),    INTENT(IN)    :: PSUPSAT(:,:,:)
-    REAL(KIND=JPRB),    INTENT(IN)    :: PLCRIT_AER(:,:,:) 
-    REAL(KIND=JPRB),    INTENT(IN)    :: PICRIT_AER(:,:,:) 
-    REAL(KIND=JPRB),    INTENT(IN)    :: PRE_ICE(:,:,:) 
-    REAL(KIND=JPRB),    INTENT(IN)    :: PCCN(:,:,:)     ! liquid cloud condensation nuclei
-    REAL(KIND=JPRB),    INTENT(IN)    :: PNICE(:,:,:)    ! ice number concentration (cf. CCN)
+    TYPE(ATLAS_FIELDSET), INTENT(INOUT) :: FSET
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NGPTOT, NGPTOTG, KFLDX
+    REAL(KIND=JPRB), INTENT(IN)   :: PTSPHY       ! Physics timestep
 
-    REAL(KIND=JPRB),    INTENT(INOUT) :: PCOVPTOT(:,:,:) ! Precip fraction
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PRAINFRAC_TOPRFZ(:,:) 
+    TYPE(CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW) :: FBLOCK
+    TYPE(ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS) :: FSPACE
+    TYPE(ATLAS_FIELD) :: FIELD
+    INTEGER(KIND=JPIM)    :: NPROMA, NLEV
+    REAL(KIND=JPRB), POINTER   :: PT(:,:)    ! T at start of callpar
+    REAL(KIND=JPRB), POINTER   :: PQ(:,:)    ! Q at start of callpar
+    TYPE(STATE_TYPE), POINTER   :: TENDENCY_CML(:) ! cumulative tendency used for final output
+    TYPE(STATE_TYPE), POINTER   :: TENDENCY_TMP(:) ! cumulative tendency used as input
+    TYPE(STATE_TYPE), POINTER   :: TENDENCY_LOC(:) ! local tendency from cloud scheme
+    REAL(KIND=JPRB), POINTER:: PVFA(:,:)  ! CC from VDF scheme
+    REAL(KIND=JPRB), POINTER:: PVFL(:,:)  ! Liq from VDF scheme
+    REAL(KIND=JPRB), POINTER:: PVFI(:,:)  ! Ice from VDF scheme
+    REAL(KIND=JPRB), POINTER:: PDYNA(:,:) ! CC from Dynamics
+    REAL(KIND=JPRB), POINTER:: PDYNL(:,:) ! Liq from Dynamics
+    REAL(KIND=JPRB), POINTER:: PDYNI(:,:) ! Liq from Dynamics
+    REAL(KIND=JPRB), POINTER:: PHRSW(:,:) ! Short-wave heating rate
+    REAL(KIND=JPRB), POINTER:: PHRLW(:,:) ! Long-wave heating rate
+    REAL(KIND=JPRB), POINTER:: PVERVEL(:,:) !Vertical velocity
+    REAL(KIND=JPRB), POINTER:: PAP(:,:)   ! Pressure on full levels
+    REAL(KIND=JPRB), POINTER:: PAPH(:,:)  ! Pressure on half levels
+    REAL(KIND=JPRB), POINTER:: PLSM(:)    ! Land fraction (0-1)
+    LOGICAL, POINTER           :: LDCUM(:)   ! Convection active
+    INTEGER(KIND=JPIM), POINTER  :: KTYPE(:)   ! Convection type 0,1,2
+    REAL(KIND=JPRB), POINTER:: PLU(:,:)   ! Conv. condensate
+    REAL(KIND=JPRB), POINTER:: PLUDE(:,:) ! Conv. detrained water
+    REAL(KIND=JPRB), POINTER:: PSNDE(:,:) ! Conv. detrained snow
+    REAL(KIND=JPRB), POINTER:: PMFU(:,:)  ! Conv. mass flux up
+    REAL(KIND=JPRB), POINTER:: PMFD(:,:)  ! Conv. mass flux down
+    REAL(KIND=JPRB), POINTER:: PA(:,:)    ! Original Cloud fraction (t)
+    REAL(KIND=JPRB), POINTER:: PCLV(:,:,:) 
+    REAL(KIND=JPRB), POINTER:: PSUPSAT(:,:)
+    REAL(KIND=JPRB), POINTER:: PLCRIT_AER(:,:) 
+    REAL(KIND=JPRB), POINTER:: PICRIT_AER(:,:) 
+    REAL(KIND=JPRB), POINTER:: PRE_ICE(:,:) 
+    REAL(KIND=JPRB), POINTER:: PCCN(:,:)     ! liquid cloud condensation nuclei
+    REAL(KIND=JPRB), POINTER:: PNICE(:,:)    ! ice number concentration (cf. CCN)
+
+    REAL(KIND=JPRB), POINTER:: PCOVPTOT(:,:) ! Precip fraction
+    REAL(KIND=JPRB), POINTER:: PRAINFRAC_TOPRFZ(:) 
     ! Flux diagnostics for DDH budget
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQLF(:,:,:)  ! Flux of liquid
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQIF(:,:,:)  ! Flux of ice
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFCQLNG(:,:,:) ! -ve corr for liq
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFCQNNG(:,:,:) ! -ve corr for ice
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQRF(:,:,:)  ! Flux diagnostics
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQSF(:,:,:)  !    for DDH, generic
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFCQRNG(:,:,:) ! rain
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFCQSNG(:,:,:) ! snow
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQLTUR(:,:,:) ! liquid flux due to VDF
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFSQITUR(:,:,:) ! ice flux due to VDF
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFPLSL(:,:,:) ! liq+rain sedim flux
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFPLSN(:,:,:) ! ice+snow sedim flux
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFHPSL(:,:,:) ! Enthalpy flux for liq
-    REAL(KIND=JPRB),    INTENT(OUT)   :: PFHPSN(:,:,:) ! Enthalp flux for ice
+    REAL(KIND=JPRB), POINTER   :: PFSQLF(:,:)  ! Flux of liquid
+    REAL(KIND=JPRB), POINTER   :: PFSQIF(:,:)  ! Flux of ice
+    REAL(KIND=JPRB), POINTER   :: PFCQLNG(:,:) ! -ve corr for liq
+    REAL(KIND=JPRB), POINTER   :: PFCQNNG(:,:) ! -ve corr for ice
+    REAL(KIND=JPRB), POINTER   :: PFSQRF(:,:)  ! Flux diagnostics
+    REAL(KIND=JPRB), POINTER   :: PFSQSF(:,:)  !    for DDH, generic
+    REAL(KIND=JPRB), POINTER   :: PFCQRNG(:,:) ! rain
+    REAL(KIND=JPRB), POINTER   :: PFCQSNG(:,:) ! snow
+    REAL(KIND=JPRB), POINTER   :: PFSQLTUR(:,:) ! liquid flux due to VDF
+    REAL(KIND=JPRB), POINTER   :: PFSQITUR(:,:) ! ice flux due to VDF
+    REAL(KIND=JPRB), POINTER   :: PFPLSL(:,:) ! liq+rain sedim flux
+    REAL(KIND=JPRB), POINTER   :: PFPLSN(:,:) ! ice+snow sedim flux
+    REAL(KIND=JPRB), POINTER   :: PFHPSL(:,:) ! Enthalpy flux for liq
+    REAL(KIND=JPRB), POINTER   :: PFHPSN(:,:) ! Enthalp flux for ice
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND,NGPBLKS
 
@@ -107,6 +102,12 @@ CONTAINS
     POWER_MAX = 0_JPIB
     POWER_TOTAL = 0_JPIB
     POWER_COUNT = 0_JPIB
+
+    FIELD = FSET%FIELD("PEXTRA")
+    FSPACE = FIELD%FUNCTIONSPACE()
+    NPROMA = FSPACE%BLOCK_SIZE(1)
+    NLEV = FSPACE%LEVELS()
+    print *, "NPROMA, NUMOMP ", NPROMA, NUMOMP
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -129,46 +130,49 @@ CONTAINS
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
+         ! get block views
+         call FBLOCK%GET_BLOCK(FSET, IBL)
+
          !-- These were uninitialized : meaningful only when we compare error differences
-         PCOVPTOT(:,:,IBL) = 0.0_JPRB
-         TENDENCY_LOC(IBL)%cld(:,:,NCLV) = 0.0_JPRB
+         FBLOCK%PCOVPTOT(:,:) = 0.0_JPRB
+         FBLOCK%TENDENCY_LOC%cld(:,:,NCLV) = 0.0_JPRB
 
-        !--- a future plan to replace the call to CLOUDSC ------ 
-        !
-        ! type( block_state_t )
-        !   real(c_double), pointer :: PT(:,:)
-        !   type(state_type) :: tendency_LOC
-        !   type(state_type) :: tendency_TMP
-        !   type(state_type) :: tendency_CML
-        ! end type
-
-        ! call extract_block( FSET, IBL, config, block_state )
-        !     call FSET%FIELD("PT")%BLOCK_DATA(IBL,PT,CONFIG)
-        !     call FSET%FIELD("PQ")%BLOCK_DATA(IBL,PQ,CONFIG)
-        ! call cloudsc_atlas ( FSET, IBL, config )
+         !--- a future plan to replace the call to CLOUDSC ------ 
+         !
+         ! type( block_state_t )
+         !   real(c_double), pointer :: PT(:,:)
+         !   type(state_type) :: tendency_LOC
+         !   type(state_type) :: tendency_TMP
+         !   type(state_type) :: tendency_CML
+         ! end type
+         ! call extract_block( FSET, IBL, config, block_state )
+         !     call FSET%FIELD("PT")%BLOCK_DATA(IBL,PT,CONFIG)
+         !     call FSET%FIELD("PQ")%BLOCK_DATA(IBL,PQ,CONFIG)
+         ! call cloudsc_atlas ( FSET, IBL, config )
 
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
               & PTSPHY,&
-              & PT(:,:,IBL), PQ(:,:,IBL), TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
-              & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
-              & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
-              & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
-              & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
-              & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
+              & FBLOCK%PT, FBLOCK%PQ, FBLOCK%TENDENCY_CML, FBLOCK%TENDENCY_TMP, FBLOCK%TENDENCY_LOC, &
+              & FBLOCK%PVFA, FBLOCK%PVFL, FBLOCK%PVFI, FBLOCK%PDYNA, FBLOCK%PDYNL, FBLOCK%PDYNI, &
+              & FBLOCK%PHRSW, FBLOCK%PHRLW,&
+              & FBLOCK%PVERVEL, FBLOCK%PAP, FBLOCK%PAPH,&
+              & FBLOCK%PLSM, FBLOCK%LDCUM, FBLOCK%KTYPE, &
+              & FBLOCK%PLU, FBLOCK%PLUDE, &
+              & FBLOCK%PSNDE, FBLOCK%PMFU, FBLOCK%PMFD,&
               !---prognostic fields
-              & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
+              & FBLOCK%PA, FBLOCK%PCLV, FBLOCK%PSUPSAT,&
               !-- arrays for aerosol-cloud interactions
-              & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
-              & PRE_ICE(:,:,IBL),&
-              & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
+              & FBLOCK%PLCRIT_AER, FBLOCK%PICRIT_AER,&
+              & FBLOCK%PRE_ICE,&
+              & FBLOCK%PCCN, FBLOCK%PNICE,&
               !---diagnostic output
-              & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
+              & FBLOCK%PCOVPTOT, FBLOCK%PRAINFRAC_TOPRFZ,&
               !---resulting fluxes
-              & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
-              & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
-              & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
-              & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+              & FBLOCK%PFSQLF,   FBLOCK%PFSQIF,  FBLOCK%PFCQNNG,  FBLOCK%PFCQLNG,&
+              & FBLOCK%PFSQRF,   FBLOCK%PFSQSF,  FBLOCK%PFCQRNG,  FBLOCK%PFCQSNG,&
+              & FBLOCK%PFSQLTUR, FBLOCK%PFSQITUR, &
+              & FBLOCK%PFPLSL,   FBLOCK%PFPLSN,  FBLOCK%PFHPSL,   FBLOCK%PFHPSN,&
               & KFLDX)
 
           !--- end of a future plan to replace the call to CLOUDSC ------ 
