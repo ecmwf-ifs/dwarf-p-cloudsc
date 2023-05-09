@@ -76,7 +76,7 @@ def cloudsc_validate(fields, ref_fields, kidia, kfdia):
         )
 
 
-def run_cloudsc_kernel(nthreads, ngptot, nproma, input_path, reference_path):
+def run_cloudsc_kernel(ngptot, nproma, input_path, reference_path):
     from cloudscf2py import (
         load_input_fields, load_input_parameters, load_reference_fields,
         cloudsc_py
@@ -103,10 +103,6 @@ def run_cloudsc_kernel(nthreads, ngptot, nproma, input_path, reference_path):
 
 @click.command()
 @click.option(
-    '--nthreads', default=1,
-    help='Number of OpenMP threads to use'
-)
-@click.option(
     '--ngptot', default=100,
     help='Total number of columns to use for benchamrking'
 )
@@ -118,7 +114,7 @@ def run_cloudsc_kernel(nthreads, ngptot, nproma, input_path, reference_path):
     '--generate/--no-generate', default=False,
     help='(Re)generate kernel via Loki-Fortran-Python transform'
 )
-def main(nthreads, ngptot, nproma, generate):
+def main(ngptot, nproma, generate):
     """
     Run a Python version of CLOUDSC and validate against reference data
     """
@@ -136,7 +132,7 @@ def main(nthreads, ngptot, nproma, generate):
         )
 
     run_cloudsc_kernel(
-        nthreads, ngptot, nproma, input_path=input_path, reference_path=reference_path
+        ngptot, nproma, input_path=input_path, reference_path=reference_path
     )
         
 
