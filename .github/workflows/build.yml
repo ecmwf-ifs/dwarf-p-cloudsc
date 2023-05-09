@@ -17,7 +17,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }} ${{ matrix.pyiface_flag }} ${{ matrix.python_flag }}
+    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }} ${{ matrix.pyiface_flag }} ${{ matrix.python_f2py_flag }}
 
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
@@ -124,7 +124,7 @@ jobs:
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
           ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
           ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} \
-          ${{ matrix.pyiface_flag }} ${{ matrix.python_flag }}
+          ${{ matrix.pyiface_flag }} ${{ matrix.python_f2py_flag }}
 
       # Verify targets exist
       - name: Verify targets
@@ -136,7 +136,7 @@ jobs:
           loki_flag: ${{ matrix.loki_flag }}
           claw_flag: ${{ matrix.claw_flag }}
           pyiface_flag: ${{ matrix.pyiface_flag }}
-          python_flag: ${{ matrix.python_flag }}
+          python_flag: ${{ matrix.python_f2py_flag }}
         run: .github/scripts/verify-targets.sh
 
       # Run double-precision targets

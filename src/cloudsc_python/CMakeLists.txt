@@ -21,16 +21,16 @@ if( HAVE_CLOUDSC_PYTHON_F2PY )
     set( cloudsc_VENV_PATH ${CMAKE_BINARY_DIR}/venv_cloudsc )
     setup_python_venv( ${cloudsc_VENV_PATH} )
 
-    # Update to latest pip versionxs
-    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install --upgrade pip)
-
     if( NOT Python3_EXECUTABLE )
         ecbuild_error("[PyIface] Could not find Python3 executable in virtualenv")
     endif()
 
+    # Update to latest pip versionxs
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install --upgrade pip)
+
     # Install the "cloudscf2py" Python package and runner in editable mode
     add_custom_command( OUTPUT ${Python3_VENV_BIN}/cloudsc_f2py.py
-        COMMAND COMMAND ${Python3_EXECUTABLE} -m pip install -e ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND ${Python3_EXECUTABLE} -m pip install -e ${CMAKE_CURRENT_SOURCE_DIR}
 	COMMENT "[CLOUDSC-Python] Installing cloudscf2py into virtualenv [${cloudsc_VENV_PATH}]"
     )
 
