@@ -14,7 +14,7 @@ MODULE CLOUDSC_DRIVER_MOD
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE EC_PMON_MOD, ONLY: EC_PMON
-  USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW
+  USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW, CLOUDSC_GLOBAL_ATLAS_STATE_FIELDS
   
   USE ATLAS_MODULE
   USE, INTRINSIC :: ISO_C_BINDING
@@ -33,60 +33,11 @@ CONTAINS
     INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NGPTOT, NGPTOTG, KFLDX
     REAL(KIND=JPRB), INTENT(IN)   :: PTSPHY       ! Physics timestep
 
+    TYPE(CLOUDSC_GLOBAL_ATLAS_STATE_FIELDS) :: SFIELDS
     TYPE(CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW) :: FBLOCK
     TYPE(ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS) :: FSPACE
     TYPE(ATLAS_FIELD) :: FIELD
     INTEGER(KIND=JPIM)    :: NPROMA, NLEV
-    REAL(KIND=JPRB), POINTER   :: PT(:,:)    ! T at start of callpar
-    REAL(KIND=JPRB), POINTER   :: PQ(:,:)    ! Q at start of callpar
-    TYPE(STATE_TYPE), POINTER   :: TENDENCY_CML(:) ! cumulative tendency used for final output
-    TYPE(STATE_TYPE), POINTER   :: TENDENCY_TMP(:) ! cumulative tendency used as input
-    TYPE(STATE_TYPE), POINTER   :: TENDENCY_LOC(:) ! local tendency from cloud scheme
-    REAL(KIND=JPRB), POINTER:: PVFA(:,:)  ! CC from VDF scheme
-    REAL(KIND=JPRB), POINTER:: PVFL(:,:)  ! Liq from VDF scheme
-    REAL(KIND=JPRB), POINTER:: PVFI(:,:)  ! Ice from VDF scheme
-    REAL(KIND=JPRB), POINTER:: PDYNA(:,:) ! CC from Dynamics
-    REAL(KIND=JPRB), POINTER:: PDYNL(:,:) ! Liq from Dynamics
-    REAL(KIND=JPRB), POINTER:: PDYNI(:,:) ! Liq from Dynamics
-    REAL(KIND=JPRB), POINTER:: PHRSW(:,:) ! Short-wave heating rate
-    REAL(KIND=JPRB), POINTER:: PHRLW(:,:) ! Long-wave heating rate
-    REAL(KIND=JPRB), POINTER:: PVERVEL(:,:) !Vertical velocity
-    REAL(KIND=JPRB), POINTER:: PAP(:,:)   ! Pressure on full levels
-    REAL(KIND=JPRB), POINTER:: PAPH(:,:)  ! Pressure on half levels
-    REAL(KIND=JPRB), POINTER:: PLSM(:)    ! Land fraction (0-1)
-    LOGICAL, POINTER           :: LDCUM(:)   ! Convection active
-    INTEGER(KIND=JPIM), POINTER  :: KTYPE(:)   ! Convection type 0,1,2
-    REAL(KIND=JPRB), POINTER:: PLU(:,:)   ! Conv. condensate
-    REAL(KIND=JPRB), POINTER:: PLUDE(:,:) ! Conv. detrained water
-    REAL(KIND=JPRB), POINTER:: PSNDE(:,:) ! Conv. detrained snow
-    REAL(KIND=JPRB), POINTER:: PMFU(:,:)  ! Conv. mass flux up
-    REAL(KIND=JPRB), POINTER:: PMFD(:,:)  ! Conv. mass flux down
-    REAL(KIND=JPRB), POINTER:: PA(:,:)    ! Original Cloud fraction (t)
-    REAL(KIND=JPRB), POINTER:: PCLV(:,:,:) 
-    REAL(KIND=JPRB), POINTER:: PSUPSAT(:,:)
-    REAL(KIND=JPRB), POINTER:: PLCRIT_AER(:,:) 
-    REAL(KIND=JPRB), POINTER:: PICRIT_AER(:,:) 
-    REAL(KIND=JPRB), POINTER:: PRE_ICE(:,:) 
-    REAL(KIND=JPRB), POINTER:: PCCN(:,:)     ! liquid cloud condensation nuclei
-    REAL(KIND=JPRB), POINTER:: PNICE(:,:)    ! ice number concentration (cf. CCN)
-
-    REAL(KIND=JPRB), POINTER:: PCOVPTOT(:,:) ! Precip fraction
-    REAL(KIND=JPRB), POINTER:: PRAINFRAC_TOPRFZ(:) 
-    ! Flux diagnostics for DDH budget
-    REAL(KIND=JPRB), POINTER   :: PFSQLF(:,:)  ! Flux of liquid
-    REAL(KIND=JPRB), POINTER   :: PFSQIF(:,:)  ! Flux of ice
-    REAL(KIND=JPRB), POINTER   :: PFCQLNG(:,:) ! -ve corr for liq
-    REAL(KIND=JPRB), POINTER   :: PFCQNNG(:,:) ! -ve corr for ice
-    REAL(KIND=JPRB), POINTER   :: PFSQRF(:,:)  ! Flux diagnostics
-    REAL(KIND=JPRB), POINTER   :: PFSQSF(:,:)  !    for DDH, generic
-    REAL(KIND=JPRB), POINTER   :: PFCQRNG(:,:) ! rain
-    REAL(KIND=JPRB), POINTER   :: PFCQSNG(:,:) ! snow
-    REAL(KIND=JPRB), POINTER   :: PFSQLTUR(:,:) ! liquid flux due to VDF
-    REAL(KIND=JPRB), POINTER   :: PFSQITUR(:,:) ! ice flux due to VDF
-    REAL(KIND=JPRB), POINTER   :: PFPLSL(:,:) ! liq+rain sedim flux
-    REAL(KIND=JPRB), POINTER   :: PFPLSN(:,:) ! ice+snow sedim flux
-    REAL(KIND=JPRB), POINTER   :: PFHPSL(:,:) ! Enthalpy flux for liq
-    REAL(KIND=JPRB), POINTER   :: PFHPSN(:,:) ! Enthalp flux for ice
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND,NGPBLKS
 
@@ -107,18 +58,20 @@ CONTAINS
     FSPACE = FIELD%FUNCTIONSPACE()
     NPROMA = FSPACE%BLOCK_SIZE(1)
     NLEV = FSPACE%LEVELS()
-    print *, "NPROMA, NUMOMP ", NPROMA, NUMOMP
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
-1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
+1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGTOT=', i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
     if (irank == 0) then
-      write(0,1003) NUMPROC,NUMOMP,NGPTOTG,NPROMA,NGPBLKS
+      write(0,1003) NUMPROC,NUMOMP,NGPTOT, NGPTOTG,NPROMA,NGPBLKS
     end if
 
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
 
-    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID,energy,power) &
+
+    CALL SFIELDS%SETUP(FSET)
+
+    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID,energy,power,FBLOCK) &
     !$omp& num_threads(NUMOMP)
 
     ! Local timer for each thread
@@ -131,7 +84,8 @@ CONTAINS
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
          ! get block views
-         call FBLOCK%GET_BLOCK(FSET, IBL)
+         call FBLOCK%GET_BLOCK(SFIELDS, IBL)
+         CONTINUE
 
          !-- These were uninitialized : meaningful only when we compare error differences
          FBLOCK%PCOVPTOT(:,:) = 0.0_JPRB
