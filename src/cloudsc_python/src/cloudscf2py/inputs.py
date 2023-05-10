@@ -9,6 +9,7 @@
 # nor does it submit to any jurisdiction.
 
 
+import math
 import h5py
 import numpy as np
 
@@ -19,7 +20,20 @@ from collections import OrderedDict
 NCLV = 5      # number of microphysics variables
 
 
-def load_input_fields(path, transpose=False):
+def expand_field(f, klon, ngptot):
+    """
+    Expands a given field in the horizontal and replicates column data.
+
+    Note, that this does not yet support IFS-style memory blocking (NPROMA).
+    """
+    rank = len(f.shape)
+    m = math.ceil(ngptot/klon)
+
+    f_new = np.empty_like(f, shape=f.shape[:-1] +(ngptot,))
+    f_new[...] = np.tile(f, (1,)*(rank-1) + (m,))[...,:ngptot]
+    return f_new
+
+def load_input_fields(path, transpose=False, ngptot=100):
     """
     """
     fields = OrderedDict()
@@ -43,28 +57,29 @@ def load_input_fields(path, transpose=False):
 
         for argname in argnames:
             fields[argname] = np.ascontiguousarray(f[argname])
+            fields[argname] = expand_field(fields[argname], klon, ngptot=ngptot)
 
-        fields['TENDENCY_LOC_A'] = np.ndarray(order="C", shape=(klev, klon))
-        fields['TENDENCY_LOC_T'] = np.ndarray(order="C", shape=(klev, klon))
-        fields['TENDENCY_LOC_Q'] = np.ndarray(order="C", shape=(klev, klon))
-        fields['TENDENCY_LOC_CLD'] = np.ndarray(order="C", shape=(NCLV, klev, klon))
-        fields['PCOVPTOT'] = np.ndarray(order="C", shape=(klev, klon))
-        fields['PRAINFRAC_TOPRFZ'] = np.ndarray(order="C", shape=(klon,))
+        fields['TENDENCY_LOC_A'] = np.ndarray(order="C", shape=(klev, ngptot))
+        fields['TENDENCY_LOC_T'] = np.ndarray(order="C", shape=(klev, ngptot))
+        fields['TENDENCY_LOC_Q'] = np.ndarray(order="C", shape=(klev, ngptot))
+        fields['TENDENCY_LOC_CLD'] = np.ndarray(order="C", shape=(NCLV, klev, ngptot))
+        fields['PCOVPTOT'] = np.ndarray(order="C", shape=(klev, ngptot))
+        fields['PRAINFRAC_TOPRFZ'] = np.ndarray(order="C", shape=(ngptot,))
 
-        fields['PFSQLF'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFSQIF'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFCQNNG'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFCQLNG'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFSQRF'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFSQSF'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFCQRNG'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFCQSNG'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFSQLTUR'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFSQITUR'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFPLSL'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFPLSN'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFHPSL'] = np.ndarray(order="C", shape=(klev+1, klon))
-        fields['PFHPSN'] = np.ndarray(order="C", shape=(klev+1, klon)) 
+        fields['PFSQLF'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFSQIF'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFCQNNG'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFCQLNG'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFSQRF'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFSQSF'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFCQRNG'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFCQSNG'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFSQLTUR'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFSQITUR'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFPLSL'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFPLSN'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFHPSL'] = np.ndarray(order="C", shape=(klev+1, ngptot))
+        fields['PFHPSN'] = np.ndarray(order="C", shape=(klev+1, ngptot))
 
     return fields
 
@@ -143,7 +158,7 @@ def load_input_parameters(path):
     return yrecldp, yrmcst, yrethf, yrephli, yrecld
 
 
-def load_reference_fields(path):
+def load_reference_fields(path, ngptot=100):
     """
     """
     fields = OrderedDict()
@@ -157,7 +172,11 @@ def load_reference_fields(path):
     ]
 
     with h5py.File(path, 'r') as f:
+        fields['KLON'] = f['KLON'][0]
+        klon = fields['KLON']
+
         for argname in argnames:
             fields[argname.lower()] = np.ascontiguousarray(f[argname])
+            fields[argname.lower()] = expand_field(fields[argname.lower()], klon, ngptot=ngptot)
 
     return fields

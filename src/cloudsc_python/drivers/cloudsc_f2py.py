@@ -82,14 +82,14 @@ def run_cloudsc_kernel(ngptot, nproma, input_path, reference_path):
         cloudsc_py
     )
 
-    fields = load_input_fields(path=input_path)
+    fields = load_input_fields(path=input_path, ngptot=ngptot)
 
     yrecldp, yrmcst, yrethf, yrephli, yrecld = load_input_parameters(path=input_path)
 
-    cloudsc_args = {
+    cloudsc_args = {k.lower(): v for k, v in fields.items()}
 
-    }
-    cloudsc_args.update( (k.lower(), v) for k, v in fields.items() )
+    # We process only one block for now, all in one go
+    cloudsc_args['klon'] = ngptot
 
     cloudsc_py(
         kidia=1, kfdia=ngptot, **cloudsc_args,
@@ -97,7 +97,7 @@ def run_cloudsc_kernel(ngptot, nproma, input_path, reference_path):
     )
 
     # Validate the output fields against reference data
-    reference = load_reference_fields(path=reference_path)
+    reference = load_reference_fields(path=reference_path, ngptot=ngptot)
     cloudsc_validate(cloudsc_args, reference, kidia=1, kfdia=ngptot)
 
 
