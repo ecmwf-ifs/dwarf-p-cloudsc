@@ -107,6 +107,9 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
     )
 
+    # target_compile_options(dwarf-cloudsc-gpu-scc-hoist PUBLIC "-stdpar -Minfo=accel")
+    # target_link_options(dwarf-cloudsc-gpu-scc-hoist PUBLIC "-stdpar -Minfo=accel")
+
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-hoist-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-hoist
@@ -156,9 +159,10 @@ endif()
 
 if( HAVE_CLOUDSC_GPU_SCC_CUF )
     # Compile CUDA fortran files with -MCuda.
-    cloudsc_add_compile_options(
-        SOURCES cloudsc_gpu_scc_cuf_mod.F90  cloudsc_driver_gpu_scc_cuf_mod.F90
-        FLAGS   "-Mcuda=maxregcount:128")
+    #cloudsc_add_compile_options(
+    #    SOURCES cloudsc_gpu_scc_cuf_mod.F90  cloudsc_driver_gpu_scc_cuf_mod.F90
+    #	)
+    #	#FLAGS   "-Mcuda=maxregcount:128")
 
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-cuf
@@ -174,7 +178,7 @@ if( HAVE_CLOUDSC_GPU_SCC_CUF )
 
     # Small hack around the fact that CMake does not understand
     # CUDA-Fortran natively yet. So we simply force linking here.
-    target_link_options(dwarf-cloudsc-gpu-scc-cuf PUBLIC "-Mcuda")
+    #target_link_options(dwarf-cloudsc-gpu-scc-cuf PUBLIC "-Mcuda")
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-cuf-serial
@@ -188,9 +192,9 @@ endif()
 if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
     # NEW CUF with k-caching!!!!
     # Compile CUDA fortran files with -MCuda.
-    cloudsc_add_compile_options(
-        SOURCES cloudsc_gpu_scc_cuf_k_caching_mod.F90  cloudsc_driver_gpu_scc_cuf_k_caching_mod.F90
-        FLAGS   "-Mcuda=maxregcount:128")
+    #cloudsc_add_compile_options(
+    #    SOURCES cloudsc_gpu_scc_cuf_k_caching_mod.F90  cloudsc_driver_gpu_scc_cuf_k_caching_mod.F90
+    #    FLAGS   "-Mcuda=maxregcount:128")
 
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-cuf-k-caching
@@ -206,7 +210,7 @@ if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
 
     # Small hack around the fact that CMake does not understand
     # CUDA-Fortran natively yet. So we simply force linking here.
-    target_link_options(dwarf-cloudsc-gpu-scc-cuf-k-caching PUBLIC "-Mcuda")
+    # target_link_options(dwarf-cloudsc-gpu-scc-cuf-k-caching PUBLIC "-Mcuda")
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-cuf-k-caching-serial
@@ -219,31 +223,31 @@ if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
 endif()
 
 
-if( HAVE_CLOUDSC_GPU_SCC_FIELD )
-    ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc-field
-        SOURCES
-            dwarf_cloudsc_gpu.F90
-            cloudsc_driver_gpu_scc_field_mod.F90
-            cloudsc_gpu_scc_mod.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_FIELD
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-scc-field
-        COMMAND bin/dwarf-cloudsc-gpu-scc-field
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-
-    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
-    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
-        target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
-    endif()
-endif()
+#if( HAVE_CLOUDSC_GPU_SCC_FIELD )
+#    ecbuild_add_executable(
+#        TARGET dwarf-cloudsc-gpu-scc-field
+#        SOURCES
+#            dwarf_cloudsc_gpu.F90
+#            cloudsc_driver_gpu_scc_field_mod.F90
+#            cloudsc_gpu_scc_mod.F90
+#        LIBS
+#            cloudsc-common-lib
+#        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_FIELD
+#    )
+#
+#    ecbuild_add_test(
+#        TARGET dwarf-cloudsc-gpu-scc-field
+#        COMMAND bin/dwarf-cloudsc-gpu-scc-field
+#        ARGS 1 1000 128
+#        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+#        OMP 1
+#    )
+#
+#    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
+#    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+#        target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
+#    endif()
+#endif()
 
 
 # Create symlink for the input data

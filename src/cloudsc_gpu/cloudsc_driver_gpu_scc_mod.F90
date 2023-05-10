@@ -117,25 +117,25 @@ CONTAINS
     ! moved to the device the in ``acc data`` clause below
     LOCAL_YRECLDP = YRECLDP
 
-!$acc data &
-!$acc copyin( &
-!$acc   pt,pq,buffer_cml,buffer_tmp,pvfa, &
-!$acc   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
-!$acc   pap,paph,plsm,ldcum,ktype,plu,psnde, &
-!$acc   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
-!$acc   pre_ice,pccn,pnice, yrecldp) &
-!$acc copy( &
-!$acc   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
-!$acc copyout( &
-!$acc   pfsqlf,pfsqif,pfcqnng, &
-!$acc   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
-!$acc   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
+!acc data &
+!acc copyin( &
+!acc   pt,pq,buffer_cml,buffer_tmp,pvfa, &
+!acc   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
+!acc   pap,paph,plsm,ldcum,ktype,plu,psnde, &
+!acc   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
+!acc   pre_ice,pccn,pnice, yrecldp) &
+!acc copy( &
+!acc   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
+!acc copyout( &
+!acc   pfsqlf,pfsqif,pfcqnng, &
+!acc   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
+!acc   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
 
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-!$acc parallel loop gang vector_length(NPROMA)
+!acc parallel loop gang vector_length(NPROMA)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -166,11 +166,11 @@ CONTAINS
         & YRECLDP=LOCAL_YRECLDP)
 
     ENDDO
-!$acc end parallel loop
+!acc end parallel loop
 
     CALL TIMER%THREAD_END(TID)
 
-!$acc end data
+!acc end data
 
     CALL TIMER%END()
 

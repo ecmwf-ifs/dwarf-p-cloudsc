@@ -11,7 +11,8 @@ MODULE CLOUDSC_GPU_SCC_CUF_MOD
   USE NLEV_MOD, ONLY : NLEV
   
 CONTAINS
-ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTSPHY, PT, PQ,  & !! 8
+!ATTRIBUTES(GLOBAL)  
+SUBROUTINE CLOUDSC_SCC_CUF (NGPTOT, NPROMA, KIDIA, KFDIA, KLON, KGPBLKS, PTSPHY, PT, PQ,  & !! 8
   & TENDENCY_TMP, TENDENCY_LOC, PVFA, PVFL, PVFI, PDYNA, PDYNL, PDYNI,  & !! 16
   & PHRSW, PHRLW, PVERVEL, PAP, PAPH, PLSM, LDCUM, KTYPE, PLU, PLUDE, PSNDE, PMFU, PMFD, PA, PCLV, PSUPSAT, PLCRIT_AER,  & !! 33
   & PICRIT_AER, PRE_ICE, PCCN, PNICE, PCOVPTOT, PRAINFRAC_TOPRFZ, PFSQLF, PFSQIF, PFCQNNG, PFCQLNG, PFSQRF, PFSQSF, PFCQRNG,  & !! 46
@@ -121,19 +122,25 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     USE PARKIND1, ONLY: JPIM, JPRB
     USE YOMPHYDER, ONLY: state_type
 
-    USE YOMCST_CUF, ONLY: RG=>RG_D, RD=>RD_D, RCPD=>RCPD_D, RETV=>RETV_D, &
-     & RLVTT=>RLVTT_D, RLSTT=>RLSTT_D, RLMLT=>RLMLT_D, RTT=>RTT_D, RV=>RV_D
-    USE YOETHF_CUF,  &
-     & R2ES=>R2ES_D, R3LES=>R3LES_D, R3IES=>R3IES_D, R4LES=>R4LES_D,  &
-     & R4IES=>R4IES_D, R5LES=>R5LES_D, R5IES=>R5IES_D,  &
-     & R5ALVCP=>R5ALVCP_D, R5ALSCP=>R5ALSCP_D, RALVDCP=>RALVDCP_D,  &
-     & RALSDCP=>RALSDCP_D, RALFDCP=>RALFDCP_D, RTWAT=>RTWAT_D, RTICE=>RTICE_D, RTICECU=>RTICECU_D,  &
-     & RTWAT_RTICE_R=>RTWAT_RTICE_R_D, RTWAT_RTICECU_R=>RTWAT_RTICECU_R_D, RKOOP1=>RKOOP1_D, RKOOP2=>RKOOP2
+    USE YOMCST   , ONLY : RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
+    USE YOETHF   , ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
+     & R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
+     & RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
+
+    !USE YOMCST_CUF, ONLY: RG=>RG_D, RD=>RD_D, RCPD=>RCPD_D, RETV=>RETV_D, &
+    ! & RLVTT=>RLVTT_D, RLSTT=>RLSTT_D, RLMLT=>RLMLT_D, RTT=>RTT_D, RV=>RV_D
+    !USE YOETHF_CUF,  &
+    ! & R2ES=>R2ES_D, R3LES=>R3LES_D, R3IES=>R3IES_D, R4LES=>R4LES_D,  &
+    ! & R4IES=>R4IES_D, R5LES=>R5LES_D, R5IES=>R5IES_D,  &
+    ! & R5ALVCP=>R5ALVCP_D, R5ALSCP=>R5ALSCP_D, RALVDCP=>RALVDCP_D,  &
+    ! & RALSDCP=>RALSDCP_D, RALFDCP=>RALFDCP_D, RTWAT=>RTWAT_D, RTICE=>RTICE_D, RTICECU=>RTICECU_D,  &
+    ! & RTWAT_RTICE_R=>RTWAT_RTICE_R_D, RTWAT_RTICECU_R=>RTWAT_RTICECU_R_D, RKOOP1=>RKOOP1_D, RKOOP2=>RKOOP2
+    
     USE YOECLDP, ONLY : NCLV, NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, TECLDP
     ! USE YOECLDP_CUF
     
-    USE FCTTRE_CUF_MOD, ONLY: FOEDELTA, FOEALFA, FOEEWM, FOEEICE, FOEELIQ, FOELDCP, FOELDCPM, FOEDEM
-    USE FCCLD_CUF_MOD, ONLY : FOKOOP
+    USE FCTTRE_MOD, ONLY: FOEDELTA, FOEALFA, FOEEWM, FOEEICE, FOEELIQ, FOELDCP, FOELDCPM, FOEDEM
+    USE FCCLD_MOD, ONLY : FOKOOP
     
     
     
@@ -153,7 +160,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     INTEGER(KIND=JPIM), INTENT(IN), VALUE :: KLON    ! Number of grid points
     INTEGER(KIND=JPIM), INTENT(IN), VALUE :: KGPBLKS ! Number of levels
     INTEGER(KIND=JPIM), INTENT(IN), VALUE :: KIDIA
-    INTEGER(KIND=JPIM), INTENT(IN), VALUE :: KFDIA
+    INTEGER(KIND=JPIM), INTENT(IN), VALUE :: KFDIA, NGPTOT, NPROMA
     REAL(KIND=JPRB), INTENT(IN), VALUE :: PTSPHY    ! Physics timestep
 
     REAL(KIND=JPRB), INTENT(IN) :: PLCRIT_AER(KLON, NLEV,KGPBLKS)
@@ -223,7 +230,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     !  condensation and evaporation terms
     ! autoconversion terms
     REAL(KIND=JPRB) :: ZFOKOOP
-    REAL(KIND=JPRB), device :: ZFOEALFA(NLEV + 1)
+    REAL(KIND=JPRB) :: ZFOEALFA(NLEV + 1)
     REAL(KIND=JPRB) :: ZICENUCLEI
     ! number concentration of ice nuclei
     
@@ -245,11 +252,11 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     REAL(KIND=JPRB) :: ZDPEVAP
     REAL(KIND=JPRB) :: ZDTFORC
     REAL(KIND=JPRB) :: ZDTDIAB
-    REAL(KIND=JPRB), device:: ZTP1(NLEV)
+    REAL(KIND=JPRB) :: ZTP1(NLEV)
     REAL(KIND=JPRB) :: ZLDEFR
     REAL(KIND=JPRB) :: ZLDIFDT
     REAL(KIND=JPRB) :: ZDTGDPF
-    REAL(KIND=JPRB), device :: ZLCUST(NCLV)
+    REAL(KIND=JPRB) :: ZLCUST(NCLV)
     REAL(KIND=JPRB) :: ZACUST
     REAL(KIND=JPRB) :: ZMF
     
@@ -268,8 +275,8 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     
     !---for flux calculation
     REAL(KIND=JPRB) :: ZDA
-    REAL(KIND=JPRB), device :: ZLI(NLEV), ZA(NLEV)
-    REAL(KIND=JPRB), device :: ZAORIG(NLEV)
+    REAL(KIND=JPRB) :: ZLI(NLEV), ZA(NLEV)
+    REAL(KIND=JPRB) :: ZAORIG(NLEV)
     ! start of scheme value for CC
     
     LOGICAL :: LLFLAG
@@ -323,11 +330,11 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     !----------------------------
     ! Arrays for new microphysics
     !----------------------------
-    INTEGER(KIND=JPIM), device :: IPHASE(NCLV)
+    INTEGER(KIND=JPIM) :: IPHASE(NCLV)
     ! marker for water phase of each species
     ! 0=vapour, 1=liquid, 2=ice
     
-    INTEGER(KIND=JPIM), device :: IMELT(NCLV)
+    INTEGER(KIND=JPIM) :: IMELT(NCLV)
     ! marks melting linkage for ice categories
     ! ice->liquid, snow->rain
     
@@ -336,21 +343,21 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     ! LLFALL=0, cloud cover must > 0 for zqx > 0
     ! LLFALL=1, no cloud needed, zqx can evaporate
     
-    LOGICAL, device :: LLINDEX1(NCLV)    ! index variable
-    LOGICAL, device :: LLINDEX3(NCLV, NCLV)    ! index variable
+    LOGICAL :: LLINDEX1(NCLV)    ! index variable
+    LOGICAL :: LLINDEX3(NCLV, NCLV)    ! index variable
     REAL(KIND=JPRB) :: ZMAX
     REAL(KIND=JPRB) :: ZRAT
-    INTEGER(KIND=JPIM), device :: IORDER(NCLV)
+    INTEGER(KIND=JPIM) :: IORDER(NCLV)
     ! array for sorting explicit terms
     
-    REAL(KIND=JPRB), device :: ZLIQFRAC(NLEV)    ! cloud liquid water fraction: ql/(ql+qi)
-    REAL(KIND=JPRB), device :: ZICEFRAC(NLEV)    ! cloud ice water fraction: qi/(ql+qi)
-    REAL(KIND=JPRB), device:: ZQX(NLEV, NCLV)    ! water variables
-    REAL(KIND=JPRB), device:: ZQX0(NLEV, NCLV)    ! water variables at start of scheme
-    REAL(KIND=JPRB), device :: ZQXN(NCLV)    ! new values for zqx at time+1
-    REAL(KIND=JPRB), device :: ZQXFG(NCLV)    ! first guess values including precip
-    REAL(KIND=JPRB), device :: ZQXNM1(NCLV)    ! new values for zqx at time+1 at level above
-    REAL(KIND=JPRB), device :: ZFLUXQ(NCLV)
+    REAL(KIND=JPRB) :: ZLIQFRAC(NLEV)    ! cloud liquid water fraction: ql/(ql+qi)
+    REAL(KIND=JPRB) :: ZICEFRAC(NLEV)    ! cloud ice water fraction: qi/(ql+qi)
+    REAL(KIND=JPRB) :: ZQX(NLEV, NCLV)    ! water variables
+    REAL(KIND=JPRB) :: ZQX0(NLEV, NCLV)    ! water variables at start of scheme
+    REAL(KIND=JPRB) :: ZQXN(NCLV)    ! new values for zqx at time+1
+    REAL(KIND=JPRB) :: ZQXFG(NCLV)    ! first guess values including precip
+    REAL(KIND=JPRB) :: ZQXNM1(NCLV)    ! new values for zqx at time+1 at level above
+    REAL(KIND=JPRB) :: ZFLUXQ(NCLV)
     ! fluxes convergence of species (needed?)
     ! Keep the following for possible future total water variance scheme?
     !REAL(KIND=JPRB) :: ZTL(KLON,NLEV)       ! liquid water temperature
@@ -359,29 +366,29 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     !REAL(KIND=JPRB) :: ZQTMIN(KLON,NLEV)
     !REAL(KIND=JPRB) :: ZQTMAX(KLON,NLEV)
     
-    REAL(KIND=JPRB), device :: ZPFPLSX(NLEV + 1, NCLV)    ! generalized precipitation flux
-    REAL(KIND=JPRB), device :: ZLNEG(NLEV, NCLV)    ! for negative correction diagnostics
+    REAL(KIND=JPRB) :: ZPFPLSX(NLEV + 1, NCLV)    ! generalized precipitation flux
+    REAL(KIND=JPRB) :: ZLNEG(NLEV, NCLV)    ! for negative correction diagnostics
     REAL(KIND=JPRB) :: ZMELTMAX
     REAL(KIND=JPRB) :: ZFRZMAX
     REAL(KIND=JPRB) :: ZICETOT
     
-    REAL(KIND=JPRB), device :: ZQXN2D(NLEV, NCLV)
+    REAL(KIND=JPRB) :: ZQXN2D(NLEV, NCLV)
     ! water variables store
     
-    REAL(KIND=JPRB), device :: ZQSMIX(NLEV)
+    REAL(KIND=JPRB) :: ZQSMIX(NLEV)
     ! diagnostic mixed phase saturation
     !REAL(KIND=JPRB) :: ZQSBIN(KLON,NLEV) ! binary switched ice/liq saturation
-    REAL(KIND=JPRB), device :: ZQSLIQ(NLEV)    ! liquid water saturation
-    REAL(KIND=JPRB), device :: ZQSICE(NLEV)
+    REAL(KIND=JPRB) :: ZQSLIQ(NLEV)    ! liquid water saturation
+    REAL(KIND=JPRB) :: ZQSICE(NLEV)
     ! ice water saturation
     
     !REAL(KIND=JPRB) :: ZRHM(KLON,NLEV) ! diagnostic mixed phase RH
     !REAL(KIND=JPRB) :: ZRHL(KLON,NLEV) ! RH wrt liq
     !REAL(KIND=JPRB) :: ZRHI(KLON,NLEV) ! RH wrt ice
     
-    REAL(KIND=JPRB), device :: ZFOEEWMT(NLEV)
-    REAL(KIND=JPRB), device :: ZFOEEW(NLEV)
-    REAL(KIND=JPRB), device :: ZFOEELIQT(NLEV)
+    REAL(KIND=JPRB) :: ZFOEEWMT(NLEV)
+    REAL(KIND=JPRB) :: ZFOEEW(NLEV)
+    REAL(KIND=JPRB) :: ZFOEELIQT(NLEV)
     !REAL(KIND=JPRB) :: ZFOEEICET(KLON,NLEV)
     
     REAL(KIND=JPRB) :: ZDQSLIQDT, ZDQSICEDT, ZDQSMIXDT
@@ -410,24 +417,24 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
     ! i.e. A positive value is a sink!????? weird...
     !-------------------------------------------------------
     
-    REAL(KIND=JPRB), device :: ZSOLQA(NCLV, NCLV)    ! explicit sources and sinks
-    REAL(KIND=JPRB), device :: ZSOLQB(NCLV, NCLV)
+    REAL(KIND=JPRB) :: ZSOLQA(NCLV, NCLV)    ! explicit sources and sinks
+    REAL(KIND=JPRB) :: ZSOLQB(NCLV, NCLV)
     ! implicit sources and sinks
     ! e.g. microphysical pathways between ice variables.
-    REAL(KIND=JPRB), device :: ZQLHS(NCLV, NCLV)    ! n x n matrix storing the LHS of implicit solver
-    REAL(KIND=JPRB), device :: ZVQX(NCLV)    ! fall speeds of three categories
-    REAL(KIND=JPRB), device :: ZEXPLICIT, ZRATIO(NCLV), ZSINKSUM(NCLV)
+    REAL(KIND=JPRB) :: ZQLHS(NCLV, NCLV)    ! n x n matrix storing the LHS of implicit solver
+    REAL(KIND=JPRB) :: ZVQX(NCLV)    ! fall speeds of three categories
+    REAL(KIND=JPRB) :: ZEXPLICIT, ZRATIO(NCLV), ZSINKSUM(NCLV)
     
     ! for sedimentation source/sink terms
-    REAL(KIND=JPRB), device :: ZFALLSINK(NCLV)
-    REAL(KIND=JPRB), device :: ZFALLSRCE(NCLV)
+    REAL(KIND=JPRB) :: ZFALLSINK(NCLV)
+    REAL(KIND=JPRB) :: ZFALLSRCE(NCLV)
     
     ! for convection detrainment source and subsidence source/sink terms
-    REAL(KIND=JPRB), device :: ZCONVSRCE(NCLV)
-    REAL(KIND=JPRB), device :: ZCONVSINK(NCLV)
+    REAL(KIND=JPRB) :: ZCONVSRCE(NCLV)
+    REAL(KIND=JPRB) :: ZCONVSINK(NCLV)
     
     ! for supersaturation source term from previous timestep
-    REAL(KIND=JPRB), device :: ZPSUPSATSRCE(NCLV)
+    REAL(KIND=JPRB) :: ZPSUPSATSRCE(NCLV)
     
     ! Numerical fit to wet bulb temperature
     REAL(KIND=JPRB), PARAMETER :: ZTW1 = 1329.31_JPRB
@@ -500,9 +507,14 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
 #include "fccld.func.h"
 #endif
     
-      JL=THREADIDX%X
-      JBLK=BLOCKIDX%Z
+      ! JL=THREADIDX%X
+      ! JBLK=BLOCKIDX%Z
+     
+      !DO JL=1,NPROMA
+      !DO JBLK=1,CEILING(REAL(NGPTOT) / REAL(NPROMA)) 
       
+      ! DO CONCURRENT( JL=1:NPROMA, JBLK=1:CEILING(REAL(NGPTOT) / REAL(NPROMA))) local(ZFOEALFA, ZTP1, ZLCUST, ZLI, ZA, ZAORIG, IPHASE, IMELT, LLFALL, LLINDEX1, LLINDEX3, IORDER, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0, ZQXN, ZQXFG, ZQXNM1, ZFLUXQ, ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT, ZFOEEW, ZFOEELIQT, ZSOLQA, ZSOLQB, ZQLHS, ZVQX, ZRATIO, ZSINKSUM, ZFALLSINK, ZFALLSRCE, ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE) 
+      DO CONCURRENT( JBLK=1:CEILING(REAL(NGPTOT) / REAL(NPROMA)),  JL=1:NPROMA ) local(ZFOEALFA, ZTP1, ZLCUST, ZLI, ZA, ZAORIG, IPHASE, IMELT, LLFALL, LLINDEX1, LLINDEX3, IORDER, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0, ZQXN, ZQXFG, ZQXNM1, ZFLUXQ, ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT, ZFOEEW, ZFOEELIQT, ZSOLQA, ZSOLQB, ZQLHS, ZVQX, ZRATIO, ZSINKSUM, ZFALLSINK, ZFALLSRCE, ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE) 
       
       !===============================================================================
       !IF (LHOOK) CALL DR_HOOK('CLOUDSC',0,ZHOOK_HANDLE)
@@ -584,13 +596,13 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       ! -----------------------------------------------
       ! INITIALIZATION OF OUTPUT TENDENCIES
       ! -----------------------------------------------
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV
         TENDENCY_LOC(JL, JK, 1, JBLK) = 0.0_JPRB
         TENDENCY_LOC(JL, JK, 2, JBLK) = 0.0_JPRB
         TENDENCY_LOC(JL, JK, 3, JBLK) = 0.0_JPRB
       END DO
-!! !$acc loop seq
+!$acc loop seq
       DO JM=1,NCLV - 1
         DO JK=1,NLEV
           TENDENCY_LOC(JL, JK, 3+JM, JBLK) = 0.0_JPRB
@@ -598,7 +610,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       END DO
       
       !-- These were uninitialized : meaningful only when we compare error differences
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV
         PCOVPTOT(JL, JK, JBLK) = 0.0_JPRB
         TENDENCY_LOC(JL, JK, 3+NCLV, JBLK) = 0.0_JPRB
@@ -616,7 +628,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
 !!      ZVQX(NCLDQS) = YRECLDP%RVSNOW
       ZVQX(NCLDQS) = YRECLDP%RVSNOW
       LLFALL(:) = .false.
-!! !$acc loop seq
+!$acc loop seq
       DO JM=1,NCLV
         IF (ZVQX(JM) > 0.0_JPRB)         LLFALL(JM) = .true.
         ! falling species
@@ -634,7 +646,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       ! ----------------------
       ! non CLV initialization
       ! ----------------------
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV
         ZTP1(JK) = PT(JL, JK, JBLK) + PTSPHY*TENDENCY_TMP(JL, JK, 1, JBLK)
         ZQX(JK, NCLDQV) = PQ(JL, JK, JBLK) + PTSPHY*TENDENCY_TMP(JL, JK, 3, JBLK)
@@ -646,7 +658,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       ! -------------------------------------
       ! initialization for CLV family
       ! -------------------------------------
-!! !$acc loop seq
+!$acc loop seq
       DO JM=1,NCLV - 1
         DO JK=1,NLEV
           ZQX(JK, JM) = PCLV(JL, JK, JM, JBLK) + PTSPHY*TENDENCY_TMP(JL, JK, 3+JM, JBLK)
@@ -657,14 +669,14 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       !-------------
       ! zero arrays
       !-------------
-!! !$acc loop seq
+!$acc loop seq
       DO JM=1,NCLV
         DO JK=1,NLEV + 1
           ZPFPLSX(JK,JM) = 0.0_JPRB            ! precip fluxes
         END DO
       END DO
       
-!! !$acc loop seq
+!$acc loop seq
       DO JM=1,NCLV
         DO JK=1,NLEV
           ZQXN2D(JK, JM) = 0.0_JPRB            ! end of timestep values in 2D
@@ -678,7 +690,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       ! ----------------------------------------------------
       ! Tidy up very small cloud cover or total cloud water
       ! ----------------------------------------------------
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV
 !!        IF (ZQX(JK, NCLDQL) + ZQX(JK, NCLDQI) < YRECLDP%RLMIN .or. ZA(JK) < YRECLDP%RAMIN) THEN
         IF (ZQX(JK, NCLDQL) + ZQX(JK, NCLDQI) < YRECLDP%RLMIN .or. ZA(JK) < YRECLDP%RAMIN) THEN
@@ -709,7 +721,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       ! Tidy up small CLV variables
       ! ---------------------------------
       !DIR$ IVDEP
-!! !$acc loop seq
+!$acc loop seq
       DO JM=1,NCLV - 1
         !DIR$ IVDEP
         DO JK=1,NLEV
@@ -731,13 +743,13 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       ! ------------------------------
       ! Define saturation values
       ! ------------------------------
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV
         !----------------------------------------
         ! old *diagnostic* mixed phase saturation
         !----------------------------------------
-        ZFOEALFA(JK) = FOEALFA(ZTP1(JK))
-        ZFOEEWMT(JK) = MIN(FOEEWM(ZTP1(JK)) / PAP(JL, JK, JBLK), 0.5_JPRB)
+        ZFOEALFA(JK) = (MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,ZTP1(JK)))-RTICE)*RTWAT_RTICE_R)**2))
+        ZFOEEWMT(JK) = MIN(((R2ES*((MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2))*EXP((R3LES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4LES)) + (1.0_JPRB - (MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2)))*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES))))) / PAP(JL, JK, JBLK), 0.5_JPRB)
         ZQSMIX(JK) = ZFOEEWMT(JK)
         ZQSMIX(JK) = ZQSMIX(JK) / (1.0_JPRB - RETV*ZQSMIX(JK))
         
@@ -745,28 +757,28 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
         ! ice saturation T<273K
         ! liquid water saturation for T>273K
         !---------------------------------------------
-        ZALFA = FOEDELTA(ZTP1(JK))
-        ZFOEEW(JK) = MIN((ZALFA*FOEELIQ(ZTP1(JK)) + (1.0_JPRB - ZALFA)*FOEEICE(ZTP1(JK))) / PAP(JL, JK, JBLK), 0.5_JPRB)
+        ZALFA = ((MAX(0.0_JPRB, SIGN(1.0, ZTP1(JK) - RTT))))
+        ZFOEEW(JK) = MIN((ZALFA*((R2ES*EXP((R3LES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4LES)))) + (1.0_JPRB - ZALFA)*((R2ES*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES))))) / PAP(JL, JK, JBLK), 0.5_JPRB)
         ZFOEEW(JK) = MIN(0.5_JPRB, ZFOEEW(JK))
         ZQSICE(JK) = ZFOEEW(JK) / (1.0_JPRB - RETV*ZFOEEW(JK))
         
         !----------------------------------
         ! liquid water saturation
         !----------------------------------
-        ZFOEELIQT(JK) = MIN(FOEELIQ(ZTP1(JK)) / PAP(JL, JK, JBLK), 0.5_JPRB)
+        ZFOEELIQT(JK) = MIN(((R2ES*EXP((R3LES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4LES)))) / PAP(JL, JK, JBLK), 0.5_JPRB)
         ZQSLIQ(JK) = ZFOEELIQT(JK)
         ZQSLIQ(JK) = ZQSLIQ(JK) / (1.0_JPRB - RETV*ZQSLIQ(JK))
         
         !   !----------------------------------
         !   ! ice water saturation
         !   !----------------------------------
-        !   ZFOEEICET(JL,JK, JBLK)=MIN(FOEEICE(ZTP1(JK))/PAP(JL,JK, JBLK),0.5_JPRB)
+        !   ZFOEEICET(JL,JK, JBLK)=MIN(((R2ES*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES))))/PAP(JL,JK, JBLK),0.5_JPRB)
         !   ZQSICE(JL,JK, JBLK)=ZFOEEICET(JL,JK, JBLK)
         !   ZQSICE(JL,JK, JBLK)=ZQSICE(JL,JK, JBLK)/(1.0_JPRB-RETV*ZQSICE(JL,JK, JBLK))
         
       END DO
       
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV
         
         
@@ -803,7 +815,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       !---------------------------------
       ZTRPAUS = 0.1_JPRB
       ZPAPHD = 1.0_JPRB / PAPH(JL, NLEV + 1, JBLK)
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV - 1
         ZSIG = PAP(JL, JK, JBLK)*ZPAPHD
         IF (ZSIG > 0.1_JPRB .and. ZSIG < 0.4_JPRB .and. ZTP1(JK) > ZTP1(JK + 1)) THEN
@@ -831,7 +843,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       !                       START OF VERTICAL LOOP
       !----------------------------------------------------------------------
       
-!! !$acc loop seq
+!$acc loop seq
 !!      DO JK=YRECLDP%NCLDTOP,NLEV
       DO JK=YRECLDP%NCLDTOP,NLEV
         
@@ -933,7 +945,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
         ZFAC = ZALFAW*ZFACW + (1.0_JPRB - ZALFAW)*ZFACI
         ZCOR = 1.0_JPRB / (1.0_JPRB - RETV*ZFOEEWMT(JK))
         ZDQSMIXDT = ZFAC*ZCOR*ZQSMIX(JK)
-        ZCORQSMIX = 1.0_JPRB + FOELDCPM(ZTP1(JK))*ZDQSMIXDT
+        ZCORQSMIX = 1.0_JPRB + (((MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,ZTP1(JK)))-RTICE)*RTWAT_RTICE_R)**2)))*RALVDCP+(1.0_JPRB-((MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,ZTP1(JK)))-RTICE)*RTWAT_RTICE_R)**2))))*RALSDCP)*ZDQSMIXDT
         
         ! evaporation/sublimation limits
         ZEVAPLIMMIX = MAX((ZQSMIX(JK) - ZQX(JK, NCLDQV)) / ZCORQSMIX, 0.0_JPRB)
@@ -985,7 +997,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
         ! 3.1.1 Supersaturation limit (from Koop)
         !-----------------------------------
         ! Needs to be set for all temperatures
-        ZFOKOOP = FOKOOP(ZTP1(JK))
+        ZFOKOOP = ((MIN(RKOOP1 - RKOOP2*ZTP1(JK), (R2ES*EXP((R3LES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4LES)))*1.0_JPRB/(R2ES*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES))))))
         
 !!        IF (ZTP1(JK) >= RTT .or. YRECLDP%NSSOPT == 0) THEN
         IF (ZTP1(JK) >= RTT .or. YRECLDP%NSSOPT == 0) THEN
@@ -1270,19 +1282,19 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
         
         ! Formerly a call to CUADJTQ(..., ICALL=5)
         ZQP = 1.0_JPRB / PAP(JL, JK, JBLK)
-        ZQSAT = FOEEWM(ZTP1(JK))*ZQP
+        ZQSAT = ((R2ES*((MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2))*EXP((R3LES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4LES)) + (1.0_JPRB - (MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2)))*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES)))))*ZQP
         ZQSAT = MIN(0.5_JPRB, ZQSAT)
         ZCOR = 1.0_JPRB / (1.0_JPRB - RETV*ZQSAT)
         ZQSAT = ZQSAT*ZCOR
-        ZCOND = (ZQSMIX(JK) - ZQSAT) / (1.0_JPRB + ZQSAT*ZCOR*FOEDEM(ZTP1(JK)))
-        ZTP1(JK) = ZTP1(JK) + FOELDCPM(ZTP1(JK))*ZCOND
+        ZCOND = (ZQSMIX(JK) - ZQSAT) / (1.0_JPRB + ZQSAT*ZCOR*((((MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2))*R5ALVCP)*(1.0_JPRB/(ZTP1(JK) - R4LES)**2) + ((1.0_JPRB - (MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2)))*R5ALSCP)*(1.0_JPRB/(ZTP1(JK) - R4IES)**2))))
+        ZTP1(JK) = ZTP1(JK) + (((MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,ZTP1(JK)))-RTICE)*RTWAT_RTICE_R)**2)))*RALVDCP+(1.0_JPRB-((MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,ZTP1(JK)))-RTICE)*RTWAT_RTICE_R)**2))))*RALSDCP)*ZCOND
         ZQSMIX(JK) = ZQSMIX(JK) - ZCOND
-        ZQSAT = FOEEWM(ZTP1(JK))*ZQP
+        ZQSAT = ((R2ES*((MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2))*EXP((R3LES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4LES)) + (1.0_JPRB - (MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2)))*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES)))))*ZQP
         ZQSAT = MIN(0.5_JPRB, ZQSAT)
         ZCOR = 1.0_JPRB / (1.0_JPRB - RETV*ZQSAT)
         ZQSAT = ZQSAT*ZCOR
-        ZCOND1 = (ZQSMIX(JK) - ZQSAT) / (1.0_JPRB + ZQSAT*ZCOR*FOEDEM(ZTP1(JK)))
-        ZTP1(JK) = ZTP1(JK) + FOELDCPM(ZTP1(JK))*ZCOND1
+        ZCOND1 = (ZQSMIX(JK) - ZQSAT) / (1.0_JPRB + ZQSAT*ZCOR*((((MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2))*R5ALVCP)*(1.0_JPRB/(ZTP1(JK) - R4LES)**2) + ((1.0_JPRB - (MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2)))*R5ALSCP)*(1.0_JPRB/(ZTP1(JK) - R4IES)**2))))
+        ZTP1(JK) = ZTP1(JK) + (((MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,ZTP1(JK)))-RTICE)*RTWAT_RTICE_R)**2)))*RALVDCP+(1.0_JPRB-((MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,ZTP1(JK)))-RTICE)*RTWAT_RTICE_R)**2))))*RALSDCP)*ZCOND1
         ZQSMIX(JK) = ZQSMIX(JK) - ZCOND1
         
         ZDQS = ZQSMIX(JK) - ZQOLD
@@ -1330,7 +1342,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
           !old limiter (significantly improves upper tropospheric humidity rms)
           IF (ZA(JK) > 0.99_JPRB) THEN
             ZCOR = 1.0_JPRB / (1.0_JPRB - RETV*ZQSMIX(JK))
-            ZCDMAX = (ZQX(JK, NCLDQV) - ZQSMIX(JK)) / (1.0_JPRB + ZCOR*ZQSMIX(JK)*FOEDEM(ZTP1(JK)))
+            ZCDMAX = (ZQX(JK, NCLDQV) - ZQSMIX(JK)) / (1.0_JPRB + ZCOR*ZQSMIX(JK)*((((MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2))*R5ALVCP)*(1.0_JPRB/(ZTP1(JK) - R4LES)**2) + ((1.0_JPRB - (MIN(1.0_JPRB, ((MAX(RTICE, MIN(RTWAT, ZTP1(JK))) - RTICE)*RTWAT_RTICE_R)**2)))*R5ALSCP)*(1.0_JPRB/(ZTP1(JK) - R4IES)**2))))
           ELSE
             ZCDMAX = (ZQX(JK, NCLDQV) - ZA(JK)*ZQSMIX(JK)) / ZA(JK)
           END IF
@@ -1511,7 +1523,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
           IF (ZTP1(JK) < RTT .and. ZQXFG(NCLDQL) > YRECLDP%RLMIN) THEN
             ! T<273K
             
-            ZVPICE = (FOEEICE(ZTP1(JK))*RV) / RD
+            ZVPICE = (((R2ES*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES))))*RV) / RD
             ZVPLIQ = ZVPICE*ZFOKOOP
             ZICENUCLEI = 1000.0_JPRB*EXP((12.96_JPRB*(ZVPLIQ - ZVPICE)) / ZVPLIQ - 0.639_JPRB)
             
@@ -1603,7 +1615,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
           IF (ZTP1(JK) < RTT .and. ZQXFG(NCLDQL) > YRECLDP%RLMIN) THEN
             ! T<273K
             
-            ZVPICE = (FOEEICE(ZTP1(JK))*RV) / RD
+            ZVPICE = (((R2ES*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES))))*RV) / RD
             ZVPLIQ = ZVPICE*ZFOKOOP
             ZICENUCLEI = 1000.0_JPRB*EXP((12.96_JPRB*(ZVPLIQ - ZVPICE)) / ZVPLIQ - 0.639_JPRB)
             
@@ -2219,7 +2231,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
             ZFALLCORR = (YRECLDP%RDENSREF / ZRHO)**0.4
             
             ! Saturation vapour pressure with respect to liquid phase
-            ZESATLIQ = (RV / RD)*FOEELIQ(ZTP1(JK))
+            ZESATLIQ = (RV / RD)*((R2ES*EXP((R3LES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4LES))))
             
             ! Slope of particle size distribution
 !!            ZLAMBDA = (YRECLDP%RCL_FAC1 / ((ZRHO*ZPRECLR)))**YRECLDP%RCL_FAC2              ! ZPRECLR=kg/kg
@@ -2361,7 +2373,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
             
             ! Calculate local precipitation (kg/kg)
             ZPRECLR = ZQX(JK, NCLDQS) / ZCOVPTOT
-            ZVPICE = (FOEEICE(ZTP1(JK))*RV) / RD
+            ZVPICE = (((R2ES*EXP((R3IES*(ZTP1(JK) - RTT))/(ZTP1(JK) - R4IES))))*RV) / RD
             
             ! Particle size distribution
             ! ZTCG increases Ni with colder temperatures - essentially a
@@ -2695,7 +2707,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       ! Copy general precip arrays back into PFP arrays for GRIB archiving
       ! Add rain and liquid fluxes, ice and snow fluxes
       !--------------------------------------------------------------------
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV + 1
         PFPLSL(JL, JK, JBLK) = ZPFPLSX(JK, NCLDQR) + ZPFPLSX(JK, NCLDQL)
         PFPLSN(JL, JK, JBLK) = ZPFPLSX(JK, NCLDQS) + ZPFPLSX(JK, NCLDQI)
@@ -2716,7 +2728,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       PFSQLTUR(JL, 1, JBLK) = 0.0_JPRB
       PFSQITUR(JL, 1, JBLK) = 0.0_JPRB
       
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV
         
         ZGDPH_R = -ZRG_R*(PAPH(JL, JK + 1, JBLK) - PAPH(JL, JK, JBLK))*ZQTMST
@@ -2765,7 +2777,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
       !-----------------------------------
       ! enthalpy flux due to precipitation
       !-----------------------------------
-!! !$acc loop seq
+!$acc loop seq
       DO JK=1,NLEV + 1
         PFHPSL(JL, JK, JBLK) = -RLVTT*PFPLSL(JL, JK, JBLK)
         PFHPSN(JL, JK, JBLK) = -RLSTT*PFPLSN(JL, JK, JBLK)
@@ -2777,6 +2789,9 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
 
  #ifdef false
 #endif
+        END DO
+        !END DO
 
   END SUBROUTINE CLOUDSC_SCC_CUF
 END MODULE CLOUDSC_GPU_SCC_CUF_MOD
+
