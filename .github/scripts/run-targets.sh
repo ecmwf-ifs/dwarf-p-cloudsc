@@ -51,7 +51,7 @@ do
     bin/$target --numomp 1 --ngptot 100 --nproma 64
   elif [[ "$target" == "cloudsc_f2py.py" ]]
   then
-    bin/$target --nthreads 1 --ngptot 100 --nproma 64
+    bin/$target --ngptot 100 --nproma 128
   else
     # Single thread, safe NPROMA
     bin/$target 1 100 64

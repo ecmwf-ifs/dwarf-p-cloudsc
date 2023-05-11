@@ -56,7 +56,7 @@ then
   targets+=(cloudsc_pyiface.py)
 fi
 
-if [[ "$python_flag" == "--cloudsc-python-f2py=ON" ]]
+if [[ "$python_f2py_flag" == "--cloudsc-python-f2py=ON" ]]
 then
   targets+=(cloudsc_f2py.py)
 fi
