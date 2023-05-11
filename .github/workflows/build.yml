@@ -46,7 +46,7 @@ jobs:
 
         pyiface_flag: ['']  # Flag to enable Python-interface variant
 
-        python_flag: ['']  # Flag to enable Python variants
+        python_f2py_flag: ['']  # Flag to enable Python variants
 
         include:
           # Add nvhpc build configurations with serialbox and HDF5
@@ -58,7 +58,7 @@ jobs:
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
             pyiface_flag: ''
-            python_flag: ''
+            python_f2py_flag: ''
           - arch: github/ubuntu/nvhpc/21.9
             io_library_flag: '--with-serialbox'
             mpi_flag: ''
@@ -67,7 +67,7 @@ jobs:
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
             pyiface_flag: ''
-            python_flag: ''
+            python_f2py_flag: ''
           # Add pyiface build configuration for HDF5 only
           - arch: github/ubuntu/gnu/9.4.0
             io_library_flag: ''
@@ -77,7 +77,7 @@ jobs:
             cuda_flag: ''
             loki_flag: ''
             pyiface_flag: '--cloudsc-fortran-pyiface=ON'
-            python_flag: '--cloudsc-python-f2py=ON'
+            python_f2py_flag: '--cloudsc-python-f2py=ON'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -136,7 +136,7 @@ jobs:
           loki_flag: ${{ matrix.loki_flag }}
           claw_flag: ${{ matrix.claw_flag }}
           pyiface_flag: ${{ matrix.pyiface_flag }}
-          python_flag: ${{ matrix.python_f2py_flag }}
+          python_f2py_flag: ${{ matrix.python_f2py_flag }}
         run: .github/scripts/verify-targets.sh
 
       # Run double-precision targets
