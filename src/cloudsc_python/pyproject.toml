@@ -3,10 +3,9 @@ requires = ["setuptools >= 64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cloudsc4py"
+name = "cloudscpython"
 version = "0.1.0"
 authors = [
-    {name = "Stefano Ubbiali", email = "subbiali@phys.ethz.ch"},
     {name = "Michael Lange", email = "michael.lange@ecmwf.int"}
 ]
 description = "Collection of Python variants of the CLOUDSC dwarf"
@@ -27,13 +26,8 @@ classifiers = [
 ]
 dependencies = [
     "click",
-    "gt4py[dace] >= 1.0.1",
     "h5py",
     "numpy",
-    "pandas",
-    "pydantic",
-    "sympl @ git+https://github.com/stubbiali/sympl.git@oop#egg=sympl",
-    "xarray",
 ]
 
 [project.scripts]
@@ -44,4 +38,4 @@ repository = "https://github.com/ecmwf-ifs/dwarf-p-cloudsc"
 
 [tool.setuptools.packages.find]
 where = ["src", "."]
-include = ["cloudsc4py", "cloudscf2py", "drivers*"]
+include = ["cloudscf2py", "drivers*"]
