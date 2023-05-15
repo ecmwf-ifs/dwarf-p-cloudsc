@@ -14,7 +14,7 @@ MODULE CLOUDSC_DRIVER_MOD
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE EC_PMON_MOD, ONLY: EC_PMON
-  USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW, CLOUDSC_GLOBAL_ATLAS_STATE_FIELDS
+  USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW
   
   USE ATLAS_MODULE
   USE, INTRINSIC :: ISO_C_BINDING
@@ -33,7 +33,6 @@ CONTAINS
     INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NGPTOT, NGPTOTG, KFLDX
     REAL(KIND=JPRB), INTENT(IN)   :: PTSPHY       ! Physics timestep
 
-    TYPE(CLOUDSC_GLOBAL_ATLAS_STATE_FIELDS) :: SFIELDS
     TYPE(CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW) :: FBLOCK
     TYPE(ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS) :: FSPACE
     TYPE(ATLAS_FIELD) :: FIELD
@@ -68,9 +67,6 @@ CONTAINS
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
 
-
-    CALL SFIELDS%SETUP(FSET)
-
     !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID,energy,power,FBLOCK) &
     !$omp& num_threads(NUMOMP)
 
@@ -84,25 +80,11 @@ CONTAINS
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
          ! get block views
-         call FBLOCK%GET_BLOCK(SFIELDS, IBL)
-         CONTINUE
+         call FBLOCK%GET_BLOCK(FSET, IBL)
 
          !-- These were uninitialized : meaningful only when we compare error differences
          FBLOCK%PCOVPTOT(:,:) = 0.0_JPRB
          FBLOCK%TENDENCY_LOC%cld(:,:,NCLV) = 0.0_JPRB
-
-         !--- a future plan to replace the call to CLOUDSC ------ 
-         !
-         ! type( block_state_t )
-         !   real(c_double), pointer :: PT(:,:)
-         !   type(state_type) :: tendency_LOC
-         !   type(state_type) :: tendency_TMP
-         !   type(state_type) :: tendency_CML
-         ! end type
-         ! call extract_block( FSET, IBL, config, block_state )
-         !     call FSET%FIELD("PT")%BLOCK_DATA(IBL,PT,CONFIG)
-         !     call FSET%FIELD("PQ")%BLOCK_DATA(IBL,PQ,CONFIG)
-         ! call cloudsc_atlas ( FSET, IBL, config )
 
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
