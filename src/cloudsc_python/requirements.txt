@@ -1,8 +1,0 @@
-click
-gt4py[dace]>=1.0.1
-h5py
-numpy
-pandas
-pydantic
-sympl@git+https://github.com/stubbiali/sympl.git@oop#egg=sympl
-xarray
