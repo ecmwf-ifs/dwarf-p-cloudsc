@@ -60,29 +60,6 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   move parameter structures to constant memory. To enable this variant,
   a suitable CUDA installation is required and the `--with-cuda` flag
   needs to be passed at the build stage.
-- **dwarf-cloudsc-gpu-scc-cuf-k-caching**: GPU-enabled and further
-  optimized version of CLOUDSC that uses the SCC loop layout in
-  combination with loop fusion and temporary local array demotion, implemented
-  using CUDA-Fortran (CUF). To enable this variant,
-  a suitable CUDA installation is required and the `--with-cuda` flag
-  needs to be passed at the build stage.
-- **CUDA C prototypes**: To enable these variants, a suitable 
-  CUDA installation is required and the `--with-cuda` flag needs
-  to be pased at the build stage.
- - **dwarf-cloudsc-cuda**: GPU-enabled, CUDA C version of CLOUDSC.
- - **dwarf-cloudsc-cuda-hoist**: GPU-enabled, optimized CUDA C version 
-   of CLOUDSC including host side hoisted temporary local variables.
- - **dwarf-cloudsc-cuda-k-caching**: GPU-enabled, further optimized CUDA
-   C version of CLOUDSC including loop fusion and temporary local 
-   array demotion.  
-- **dwarf-cloudsc-gpu-scc-field**: GPU-enabled and optimized version of
-  CLOUDSC that uses the SCC loop layout, and a dedicated Fortran FIELD
-  API to manage device offload and copyback. The intent is to demonstrate
-  the explicit use of pinned host memory to speed-up data transfers, as
-  provided by the shipped prototype implmentation, and investigate the
-  effect of different data storage allocation layouts. To enable this
-  variant, a suitable CUDA installation is required and the
-  `--with-cuda` flag needs to be passed at the build stage.
 
 ## Download and Installation
 
@@ -231,6 +208,17 @@ cd build
 ./bin/dwarf-cloudsc-fortran 4 16384 32   # The cleaned-up Fortran
 ./bin/dwarf-cloudsc-c 4 16384 32   # The standalone C version
 ```
+### Building on NEC SX-AURORA TSUBAS
+To build on NEC SX-AURORA TSUBAS system, run the following commands
+
+```sh
+./cloudsc-bundle create
+HDF5_ROOT=HDF5-installation-PATH ./cloudsc-bundle build  --arch arch/ecmwf/aurora/nec/4.0.0/  [--single-precision] [--with-mpi] --hdf5 ON --cloudsc-fortran ON --cloudsc-prototype1 OFF --verbose --log DEBUG  
+```
+
+Currently available `NEC ompiler/version` selections are:
+
+* `nec/4.0.0 (nfort, ncc, nc++)`
 
 ### Running on ECMWF's Atos BullSequana XH2000
 
@@ -271,27 +259,6 @@ srun bash -c "CUDA_VISIBLE_DEVICES=\$SLURM_LOCALID bin/dwarf-cloudsc-gpu-scc-hoi
 ```
 
 In principle, the same should work for multi-node execution (`-N 2`, `-N 4` etc.) once interconnect issues are resolved.
-
-### GPU runs: Timing device kernels and data transfers
-
-For GPU-enabled runs two internal timer results are reported:
-
-* The isolated compute time of the main compute kernel on device (where `#BLKS == 1`)
-* The overall time of the execution loop including data offload and copyback
-
-It is important to note that due to the nature of the kernel, data
-transfer overheads will dominate timings, and that most supported GPU
-variants aim to optimise compute kernel timings only. However, a
-dedicated variant `dwarf-cloudsc-gpu-scc-field` has been added to
-explore host-side memory pinning, which improves data transfer times
-and alternative data layout strategies. By default, this will allocate
-each array variable individually in pinned memory. A runtime flag
-`CLOUDSC_PACKED_STORAGE=ON` can be used to enable "packed" storage,
-where multiple arrays are stored in a single base allocation, eg.
-
-```sh
-NV_ACC_CUDA_HEAPSIZE=8G CLOUDSC_PACKED_STORAGE=ON ./bin/dwarf-cloudsc-gpu-scc-field 1 80000 128
-```
 
 ## Loki transformations for CLOUDSC
 
