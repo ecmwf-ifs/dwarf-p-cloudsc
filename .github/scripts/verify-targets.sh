@@ -17,7 +17,8 @@ fi
 
 if [[ "$gpu_flag" == "--with-gpu" ]]
 then
-  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-omp-scc-hoist)
+  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching) 
+  targets+=(dwarf-cloudsc-gpu-omp-scc-hoist)
   if [[ "$claw_flag" == "--with-claw" ]]
   then
     targets+=(dwarf-cloudsc-gpu-claw)
@@ -25,7 +26,6 @@ then
   if [[ "$cuda_flag" == "--with-cuda" ]]
   then
     targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
-    targets+=(dwarf-cloudsc-gpu-scc-field)
   fi
   if [[ "$cuda_flag" == "--with-cuda" && "$io_library_flag" == "--with-serialbox" ]]
   then
@@ -37,6 +37,7 @@ if [[ "$loki_flag" == "--with-loki" ]]
 then
   targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
+  targets+=(dwarf-cloudsc-loki-idem-stack dwarf-cloudsc-loki-scc-stack)
   if [[ "$prec_flag" != "--single-precision" ]]
   then
     targets+=(dwarf-cloudsc-loki-c)
@@ -49,6 +50,16 @@ then
   then
     targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   fi
+fi
+
+if [[ "$pyiface_flag" == "--cloudsc-fortran-pyiface=ON" ]]
+then
+  targets+=(cloudsc_pyiface.py)
+fi
+
+if [[ "$python_f2py_flag" == "--cloudsc-python-f2py=ON" ]]
+then
+  targets+=(cloudsc_f2py.py)
 fi
 
 #
