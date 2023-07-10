@@ -27,8 +27,8 @@ MODULE CLOUDSC_FIELD_STATE_MOD
   TYPE CLOUDSC_FIELD_STATE
     INTEGER(KIND=JPIM)                   :: NPROMA, KLEV    ! Grid points and vertical levels per block
     INTEGER(KIND=JPIM)                   :: NGPTOT, NBLOCKS ! Total number of grid points and blocks
-    INTEGER(KIND=JPIM)                   :: KFLDX 
-    LOGICAL(KIND=JPLM)                   :: LDSLPHY 
+    INTEGER(KIND=JPIM)                   :: KFLDX
+    LOGICAL(KIND=JPLM)                   :: LDSLPHY
     LOGICAL(KIND=JPLM)                   :: LDMAINCALL      ! T if main call to cloudsc
     REAL(KIND=JPRB)                      :: PTSPHY          ! Physics timestep
 
@@ -273,7 +273,7 @@ CONTAINS
     DO B=1, NBLOCKS
        FIELD(:,B) = 0.0_JPRB
     END DO
-!$omp end parallel do 
+!$omp end parallel do
   END SUBROUTINE FIELD_INIT_R1
 
   SUBROUTINE FIELD_INIT_R2(FIELD, NPROMA, NLEV, NBLOCKS)
@@ -287,7 +287,7 @@ CONTAINS
     DO B=1, NBLOCKS
        FIELD(:,:,B) = 0.0_JPRB
     END DO
-!$omp end parallel do 
+!$omp end parallel do
   END SUBROUTINE FIELD_INIT_R2
 
   SUBROUTINE FIELD_INIT_R3(FIELD, NPROMA, NLEV, NDIM, NBLOCKS)
@@ -301,7 +301,7 @@ CONTAINS
     DO B=1, NBLOCKS
        FIELD(:,:,:,B) = 0.0_JPRB
     END DO
-!$omp end parallel do 
+!$omp end parallel do
   END SUBROUTINE FIELD_INIT_R3
 
   SUBROUTINE FIELD_INIT_STATE(STATE, BUFFER, NPROMA, NLEV, NDIM, NBLOCKS)
@@ -325,7 +325,7 @@ CONTAINS
        STATE(B)%Q => BUFFER(:,:,3,B)
        STATE(B)%CLD => BUFFER(:,:,4:NFIELDS,B)
     END DO
-!$omp end parallel do 
+!$omp end parallel do
   END SUBROUTINE FIELD_INIT_STATE
 
   SUBROUTINE CLOUDSC_FIELD_STATE_LOAD(SELF, NPROMA, NGPTOT, NGPTOTG, USE_PACKED)

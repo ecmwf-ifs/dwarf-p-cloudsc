@@ -571,13 +571,13 @@ if( HAVE_CUDA )
         OUTPUT
             loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
             loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
-	DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+	    DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     set_source_files_properties(
         loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
         loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
-        PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128"
+        PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-parametrise
@@ -590,8 +590,7 @@ if( HAVE_CUDA )
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    # target_compile_definitions(dwarf-cloudsc-loki-scc-cuf-parametrise PUBLIC USE_CUDA_DRIVER=1)
-    target_link_options(dwarf-cloudsc-loki-scc-cuf-parametrise PUBLIC "-Mcuda")
+    target_link_options(dwarf-cloudsc-loki-scc-cuf-parametrise PUBLIC "-cuda")
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-cuf-parametrise-serial
@@ -626,8 +625,8 @@ if( HAVE_CUDA )
 
     set_source_files_properties(
         loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
-	loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
-	PROPERTIES COMPILE_FLAGS "-Mcuda=maxregcount:128"
+	    loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
+	    PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-hoist
@@ -640,8 +639,7 @@ if( HAVE_CUDA )
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    # target_compile_definitions(dwarf-cloudsc-loki-scc-cuf-hoist PUBLIC USE_CUDA_DRIVER=1)
-    target_link_options(dwarf-cloudsc-loki-scc-cuf-hoist PUBLIC "-Mcuda")
+    target_link_options(dwarf-cloudsc-loki-scc-cuf-hoist PUBLIC "-cuda")
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-cuf-hoist-serial
