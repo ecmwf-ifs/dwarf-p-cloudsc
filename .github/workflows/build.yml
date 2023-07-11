@@ -116,6 +116,24 @@ jobs:
         if: contains( matrix.mpi_flag, 'with-mpi' )
         run: sudo apt-get install libopenmpi-dev
 
+      # Free up disk space for nvhpc
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        if: contains( matrix.arch, 'nvhpc' )
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       # Install Compiler
       - name: Install nvhpc
         if: contains( matrix.arch, 'nvhpc' )
