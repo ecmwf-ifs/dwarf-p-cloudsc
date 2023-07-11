@@ -2,7 +2,8 @@
 set -euo pipefail
 set -x
 
-nvhpc_version=21.9
+# Set nvhpc version to default value if unset
+: "${nvhpc_version:=21.9}"
 
 # Use Atlas' nvhpc installation script
 wget https://raw.githubusercontent.com/ecmwf/atlas/develop/tools/install-nvhpc.sh

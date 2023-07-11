@@ -51,6 +51,7 @@ jobs:
         include:
           # Add nvhpc build configurations with serialbox and HDF5
           - arch: github/ubuntu/nvhpc/21.9
+            nvhpc_version: 21.9
             io_library_flag: ''
             mpi_flag: ''
             prec_flag: ''
@@ -60,6 +61,27 @@ jobs:
             pyiface_flag: ''
             python_f2py_flag: ''
           - arch: github/ubuntu/nvhpc/21.9
+            nvhpc_version: 21.9
+            io_library_flag: '--with-serialbox'
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: '--with-gpu'
+            cuda_flag: '--with-cuda'
+            loki_flag: '--with-loki'
+            pyiface_flag: ''
+            python_f2py_flag: ''
+          - arch: github/ubuntu/nvhpc/23.5
+            nvhpc_version: 23.5
+            io_library_flag: ''
+            mpi_flag: ''
+            prec_flag: ''
+            gpu_flag: '--with-gpu'
+            cuda_flag: '--with-cuda'
+            loki_flag: '--with-loki'
+            pyiface_flag: ''
+            python_f2py_flag: ''
+          - arch: github/ubuntu/nvhpc/23.5
+            nvhpc_version: 23.5
             io_library_flag: '--with-serialbox'
             mpi_flag: ''
             prec_flag: ''
@@ -97,6 +119,8 @@ jobs:
       # Install Compiler
       - name: Install nvhpc
         if: contains( matrix.arch, 'nvhpc' )
+        env:
+          nvhpc_version: ${{ matrix.nvhpc_version }}
         run: .github/scripts/bootstrap-nvhpc.sh
 
       # Install HDF5
