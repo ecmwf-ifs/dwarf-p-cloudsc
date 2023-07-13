@@ -180,10 +180,10 @@ endif()
 
 
 if( HAVE_CLOUDSC_GPU_SCC_CUF )
-    # Compile CUDA fortran files with -MCuda.
+    # Compile CUDA fortran files with -cuda.
     cloudsc_add_compile_options(
         SOURCES cloudsc_gpu_scc_cuf_mod.F90  cloudsc_driver_gpu_scc_cuf_mod.F90
-        FLAGS   "-Mcuda=maxregcount:128")
+        FLAGS   "-cuda -gpu=maxregcount:128")
 
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-cuf
@@ -208,10 +208,10 @@ endif()
 
 if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
     # NEW CUF with k-caching!!!!
-    # Compile CUDA fortran files with -MCuda.
+    # Compile CUDA fortran files with -cuda.
     cloudsc_add_compile_options(
         SOURCES cloudsc_gpu_scc_cuf_k_caching_mod.F90  cloudsc_driver_gpu_scc_cuf_k_caching_mod.F90
-        FLAGS   "-Mcuda=maxregcount:128")
+        FLAGS   "-cuda -gpu=maxregcount:128")
 
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-cuf-k-caching
