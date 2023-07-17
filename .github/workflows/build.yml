@@ -190,4 +190,6 @@ jobs:
           mpi_flag: ${{ matrix.mpi_flag }}
           arch: ${{ matrix.arch }}
         if: ${{ matrix.prec_flag == '' }}
-        run: .github/scripts/run-targets.sh
+        run: |
+          source arch/${{ matrix.arch }}/env.sh
+          .github/scripts/run-targets.sh
