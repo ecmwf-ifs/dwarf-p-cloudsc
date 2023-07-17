@@ -31,3 +31,6 @@ export PATH=${HDF5_DIR}/bin:${PATH}
 export CC=nvc
 export CXX=nvc++
 export FC=nvfortran
+
+# Increase stack size to maximum
+ulimit -S -s unlimited

@@ -33,3 +33,6 @@ export CXX=pgc++
 export FC=pgf90
 
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"
+
+# Increase stack size to maximum
+ulimit -S -s unlimited
