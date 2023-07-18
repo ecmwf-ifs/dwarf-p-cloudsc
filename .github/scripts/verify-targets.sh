@@ -17,7 +17,7 @@ fi
 
 if [[ "$gpu_flag" == "--with-gpu" ]]
 then
-  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching) 
+  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching)
   targets+=(dwarf-cloudsc-gpu-omp-scc-hoist)
   if [[ "$claw_flag" == "--with-claw" ]]
   then
@@ -50,6 +50,11 @@ then
   then
     targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   fi
+fi
+
+if [[ "$atlas_flag" == "--with-atlas" ]]
+then
+  targets+=(dwarf-cloudsc-fortran-atlas)
 fi
 
 if [[ "$pyiface_flag" == "--cloudsc-fortran-pyiface=ON" ]]

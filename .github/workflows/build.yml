@@ -42,6 +42,8 @@ jobs:
 
         loki_flag: ['', '--with-loki']  # Loki source-to-source translation enabled
 
+        atlas_flag: ['--with-atlas']  # Variant using Atlas-managed fields
+
         claw_flag: ['']  # Flag to enable CLAW-generated variants
 
         pyiface_flag: ['']  # Flag to enable Python-interface variant
@@ -57,6 +59,7 @@ jobs:
             gpu_flag: '--with-gpu'
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
+            atlas_flag: '--with-atlas'
             pyiface_flag: ''
             python_f2py_flag: ''
           - arch: github/ubuntu/nvhpc/21.9
@@ -66,6 +69,7 @@ jobs:
             gpu_flag: '--with-gpu'
             cuda_flag: '--with-cuda'
             loki_flag: '--with-loki'
+            atlas_flag: '--with-atlas'
             pyiface_flag: ''
             python_f2py_flag: ''
           # Add pyiface build configuration for HDF5 only
@@ -76,6 +80,7 @@ jobs:
             gpu_flag: ''
             cuda_flag: ''
             loki_flag: ''
+            atlas_flag: ''
             pyiface_flag: '--cloudsc-fortran-pyiface=ON'
             python_f2py_flag: '--cloudsc-python-f2py=ON'
 
@@ -124,7 +129,7 @@ jobs:
           --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
           ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
           ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} \
-          ${{ matrix.pyiface_flag }} ${{ matrix.python_f2py_flag }}
+          ${{ matrix.atlas_flag }} ${{ matrix.pyiface_flag }} ${{ matrix.python_f2py_flag }}
 
       # Verify targets exist
       - name: Verify targets
@@ -134,6 +139,7 @@ jobs:
           gpu_flag: ${{ matrix.gpu_flag }}
           cuda_flag: ${{ matrix.cuda_flag }}
           loki_flag: ${{ matrix.loki_flag }}
+          atlas_flag: ${{ matrix.atlas_flag }}
           claw_flag: ${{ matrix.claw_flag }}
           pyiface_flag: ${{ matrix.pyiface_flag }}
           python_f2py_flag: ${{ matrix.python_f2py_flag }}
