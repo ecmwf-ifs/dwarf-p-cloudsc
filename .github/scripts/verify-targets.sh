@@ -55,6 +55,9 @@ fi
 if [[ "$atlas_flag" == "--with-atlas" ]]
 then
   targets+=(dwarf-cloudsc-fortran-atlas)
+  # Atlas builds a number of binaries that end up in bin, too:
+  targets+=(atlas atlas-atest-mgrids atlas-gaussian-latitudes atlas-grids)
+  targets+=(atlas-io-list atlas-meshgen fckit)
 fi
 
 if [[ "$pyiface_flag" == "--cloudsc-fortran-pyiface=ON" ]]
