@@ -44,7 +44,7 @@ endif()
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-atlas-serial
-        COMMAND bin/dwarf-cloudsc-atlas-fortran
+        COMMAND bin/dwarf-cloudsc-fortran-atlas
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
