@@ -27,7 +27,6 @@ if( HAVE_CLOUDSC_FORTRAN_ATLAS )
             atlas_f
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
-endif()
 
     # Create symlink for the input data
     if( HAVE_SERIALBOX )
@@ -75,3 +74,5 @@ endif()
         OMP 4
         CONDITION HAVE_OMP AND HAVE_MPI
     )
+
+endif()
