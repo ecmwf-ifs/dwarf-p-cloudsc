@@ -11,7 +11,7 @@ skipped_targets=(dwarf-cloudsc-gpu-claw)
 if [[ "$arch" == *"nvhpc"* ]]
 then
   # Skip GPU targets if built with nvhpc (don't have GPU in test runner)
-  skipped_targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching) 
+  skipped_targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching)
   skipped_targets+=(dwarf-cloudsc-gpu-omp-scc-hoist dwarf-cloudsc-gpu-scc-field)
 
   # Skip GPU targets from Loki if built with nvhpc (don't have GPU in test runner)
@@ -41,11 +41,21 @@ do
     continue
   fi
 
+  if [[ "$target" == "dwarf-cloudsc-loki-idem-stack" ]]
+  then
+    # The CPU-variant of the stack causes segfaults with NVHPC for NPROMA>32
+    # in __c_mset16_avx, possibly because this enables some vectorized
+    # code path with longer vector lengths that cause out-of-bounds reads/writes.
+    nproma=16
+  else
+    nproma=64
+  fi
+
   if [[ "$mpi_flag" == "--with-mpi" && ! " ${non_mpi_targets[*]} " =~ " $target " ]]
   then
     # Two ranks with one thread each, safe NPROMA
     # NB: Use oversubscribe to run, even if we end up on a single core agent
-    mpirun --oversubscribe -np 2 bin/$target 1 100 64
+    mpirun --oversubscribe -np 2 bin/$target 1 100 $nproma
   elif [[ "$target" == "cloudsc_pyiface.py" ]]
   then
     bin/$target --numomp 1 --ngptot 100 --nproma 64
@@ -54,7 +64,7 @@ do
     bin/$target --ngptot 100 --nproma 128
   else
     # Single thread, safe NPROMA
-    bin/$target 1 100 64
+    bin/$target 1 100 $nproma
   fi
   exit_code=$((exit_code + $?))
 done
