@@ -48,6 +48,8 @@ jobs:
 
         python_f2py_flag: ['']  # Flag to enable Python variants
 
+        ctest_exclude_pattern: ['-scc-hoist-']  # Regex to disable CTest tests
+
         include:
           # Add nvhpc build configurations with serialbox and HDF5
           - arch: github/ubuntu/nvhpc/21.9
@@ -60,6 +62,7 @@ jobs:
             loki_flag: '--with-loki'
             pyiface_flag: ''
             python_f2py_flag: ''
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: github/ubuntu/nvhpc/21.9
             nvhpc_version: 21.9
             io_library_flag: '--with-serialbox'
@@ -70,6 +73,7 @@ jobs:
             loki_flag: '--with-loki'
             pyiface_flag: ''
             python_f2py_flag: ''
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: github/ubuntu/nvhpc/23.5
             nvhpc_version: 23.5
             io_library_flag: ''
@@ -80,6 +84,7 @@ jobs:
             loki_flag: '--with-loki'
             pyiface_flag: ''
             python_f2py_flag: ''
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: github/ubuntu/nvhpc/23.5
             nvhpc_version: 23.5
             io_library_flag: '--with-serialbox'
@@ -90,6 +95,7 @@ jobs:
             loki_flag: '--with-loki'
             pyiface_flag: ''
             python_f2py_flag: ''
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           # Add pyiface build configuration for HDF5 only
           - arch: github/ubuntu/gnu/9.4.0
             io_library_flag: ''
@@ -183,13 +189,18 @@ jobs:
           python_f2py_flag: ${{ matrix.python_f2py_flag }}
         run: .github/scripts/verify-targets.sh
 
-      # Run double-precision targets
-      # (Mind the exclusions inside the script!)
-      - name: Run targets
-        env:
-          mpi_flag: ${{ matrix.mpi_flag }}
-          arch: ${{ matrix.arch }}
+      # Run ctest
+      - name: Run CTest
         if: ${{ matrix.prec_flag == '' }}
+        working-directory: ./build
         run: |
-          source arch/${{ matrix.arch }}/env.sh
-          .github/scripts/run-targets.sh
+          source env.sh
+          ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
+
+      # Upload test output
+      - name: Archive CTest output
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.prec_flag == '' }}
+        with:
+          name: ctest-log
+          path: build/ctest.log
