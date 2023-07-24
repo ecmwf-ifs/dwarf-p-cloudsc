@@ -15,25 +15,25 @@ then
   targets+=(dwarf-cloudsc-c)
 fi
 
-if [[ "$gpu_flag" == "--with-gpu" ]]
+if [[ "$build_flags" == *"--with-gpu"* ]]
 then
-  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching) 
+  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching)
   targets+=(dwarf-cloudsc-gpu-omp-scc-hoist)
-  if [[ "$claw_flag" == "--with-claw" ]]
+  if [[ "$build_flags" == *"--with-claw"* ]]
   then
     targets+=(dwarf-cloudsc-gpu-claw)
   fi
-  if [[ "$cuda_flag" == "--with-cuda" ]]
+  if [[ "$build_flags" == *"--with-cuda"* ]]
   then
     targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
-  fi
-  if [[ "$cuda_flag" == "--with-cuda" && "$io_library_flag" == "--with-serialbox" ]]
-  then
-      targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
+    if [[ "$io_library_flag" == "--with-serialbox" ]]
+    then
+        targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
+    fi
   fi
 fi
 
-if [[ "$loki_flag" == "--with-loki" ]]
+if [[ "$build_flags" == *"--with-loki"* ]]
 then
   targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
@@ -42,22 +42,22 @@ then
   then
     targets+=(dwarf-cloudsc-loki-c)
   fi
-  if [[ "$claw_flag" == "--with-claw" ]]
+  if [[ "$build_flags" == *"--with-claw"* ]]
   then
     targets+=(dwarf-cloudsc-loki-claw-cpu dwarf-cloudsc-loki-claw-gpu)
   fi
-  if [[ "$cuda_flag" == "--with-cuda" ]]
+  if [[ "$build_flags" == *"--with-cuda"* ]]
   then
     targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   fi
 fi
 
-if [[ "$pyiface_flag" == "--cloudsc-fortran-pyiface=ON" ]]
+if [[ "$build_flags" == *"--cloudsc-fortran-pyiface=ON"* ]]
 then
   targets+=(cloudsc_pyiface.py)
 fi
 
-if [[ "$python_f2py_flag" == "--cloudsc-python-f2py=ON" ]]
+if [[ "$build_flags" == *"--cloudsc-python-f2py=ON"* ]]
 then
   targets+=(cloudsc_f2py.py)
 fi
