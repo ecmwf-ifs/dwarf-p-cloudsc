@@ -710,7 +710,7 @@ endif()
             ARGS 4 100 16
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             OMP 4
-            CONDITION HAVE_MPI
+            CONDITION HAVE_OMP
         )
 
     endif()

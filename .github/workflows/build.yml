@@ -17,7 +17,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.mpi_flag }} ${{ matrix.prec_flag }} ${{ matrix.gpu_flag }} ${{ matrix.loki_flag }} ${{ matrix.claw_flag }} ${{ matrix.pyiface_flag }} ${{ matrix.python_f2py_flag }}
+    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.prec_flag }} ${{ matrix.build_flags }}
 
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
@@ -27,57 +27,54 @@ jobs:
 
       matrix:
 
-        arch:
-          - github/ubuntu/gnu/9.4.0
+        arch: ['gnu/9.4.0']  # Default arch on Github is GNU 9.4.0 for now
 
         io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
 
-        mpi_flag: ['', '--with-mpi']  # Enable MPI-parallel build
-
         prec_flag: ['', '--single-precision']  # Switch single/double precision
 
-        gpu_flag: ['', '--with-gpu']  # GPU-variants enabled
+        build_flags:
+          - ''  # Plain build without any options
+          - '--with-gpu --with-loki' # Enable Loki and GPU variants
+          - '--with-gpu --with-loki --with-mpi' # Enable Loki and GPU variants with MPI
 
-        cuda_flag: ['']  # Enable CUDA variants
+        pyiface_flag: ['']  # Enable the pyiface variant
 
-        loki_flag: ['', '--with-loki']  # Loki source-to-source translation enabled
+        python_f2py_flag: ['']  # Enable the f2py variant
 
-        claw_flag: ['']  # Flag to enable CLAW-generated variants
+        claw_flag: ['']
 
-        pyiface_flag: ['']  # Flag to enable Python-interface variant
-
-        python_f2py_flag: ['']  # Flag to enable Python variants
+        ctest_exclude_pattern: ['-scc-hoist-']  # Regex to disable CTest tests
 
         include:
+          # Add pyiface build configuration for double precision, non-MPI, HDF5 only
+          - arch: gnu/9.4.0
+            io_library_flag: ''
+            prec_flag: ''
+            build_flags: '--cloudsc-fortran-pyiface=ON --cloudsc-python-f2py=ON'
+
           # Add nvhpc build configurations with serialbox and HDF5
-          - arch: github/ubuntu/nvhpc/21.9
+          - arch: nvhpc/21.9
+            nvhpc_version: 21.9
             io_library_flag: ''
-            mpi_flag: ''
-            prec_flag: ''
-            gpu_flag: '--with-gpu'
-            cuda_flag: '--with-cuda'
-            loki_flag: '--with-loki'
-            pyiface_flag: ''
-            python_f2py_flag: ''
-          - arch: github/ubuntu/nvhpc/21.9
+            build_flags: '--with-gpu --with-loki --with-cuda'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - arch: nvhpc/21.9
+            nvhpc_version: 21.9
             io_library_flag: '--with-serialbox'
-            mpi_flag: ''
-            prec_flag: ''
-            gpu_flag: '--with-gpu'
-            cuda_flag: '--with-cuda'
-            loki_flag: '--with-loki'
-            pyiface_flag: ''
-            python_f2py_flag: ''
-          # Add pyiface build configuration for HDF5 only
-          - arch: github/ubuntu/gnu/9.4.0
+            build_flags: '--with-gpu --with-loki --with-cuda'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+
+          - arch: nvhpc/23.5
+            nvhpc_version: 23.5
             io_library_flag: ''
-            mpi_flag: ''
-            prec_flag: ''
-            gpu_flag: ''
-            cuda_flag: ''
-            loki_flag: ''
-            pyiface_flag: '--cloudsc-fortran-pyiface=ON'
-            python_f2py_flag: '--cloudsc-python-f2py=ON'
+            build_flags: '--with-gpu --with-loki --with-cuda'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - arch: nvhpc/23.5
+            nvhpc_version: 23.5
+            io_library_flag: '--with-serialbox'
+            build_flags: '--with-gpu --with-loki --with-cuda'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -91,12 +88,32 @@ jobs:
 
       # Install MPI
       - name: Install MPI via Apt
-        if: contains( matrix.mpi_flag, 'with-mpi' )
+        if: contains( matrix.build_flags, 'with-mpi' )
         run: sudo apt-get install libopenmpi-dev
+
+      # Free up disk space for nvhpc
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        if: contains( matrix.arch, 'nvhpc' )
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
 
       # Install Compiler
       - name: Install nvhpc
         if: contains( matrix.arch, 'nvhpc' )
+        env:
+          nvhpc_version: ${{ matrix.nvhpc_version }}
         run: .github/scripts/bootstrap-nvhpc.sh
 
       # Install HDF5
@@ -106,7 +123,9 @@ jobs:
 
       - name: Install HDF5 from source
         if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
-        run: source arch/${{ matrix.arch }}/env.sh && .github/scripts/install-hdf5.sh
+        run: |
+          source arch/github/ubuntu/${{ matrix.arch }}/env.sh
+          FC=pgf90 .github/scripts/install-hdf5.sh
 
       # Install Boost
       - name: Install Boost libraries
@@ -121,29 +140,29 @@ jobs:
       - name: Bundle build
         run: |
           ./cloudsc-bundle build --retry-verbose \
-          --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
-          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
-          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} \
-          ${{ matrix.pyiface_flag }} ${{ matrix.python_f2py_flag }}
+          --arch=arch/github/ubuntu/${{ matrix.arch }} \
+          ${{ matrix.prec_flag }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
 
       # Verify targets exist
       - name: Verify targets
         env:
           io_library_flag: ${{ matrix.io_library_flag }}
           prec_flag: ${{ matrix.prec_flag }}
-          gpu_flag: ${{ matrix.gpu_flag }}
-          cuda_flag: ${{ matrix.cuda_flag }}
-          loki_flag: ${{ matrix.loki_flag }}
-          claw_flag: ${{ matrix.claw_flag }}
-          pyiface_flag: ${{ matrix.pyiface_flag }}
-          python_f2py_flag: ${{ matrix.python_f2py_flag }}
+          build_flags: ${{ matrix.build_flags }}
         run: .github/scripts/verify-targets.sh
 
-      # Run double-precision targets
-      # (Mind the exclusions inside the script!)
-      - name: Run targets
-        env:
-          mpi_flag: ${{ matrix.mpi_flag }}
-          arch: ${{ matrix.arch }}
+      # Run ctest
+      - name: Run CTest
         if: ${{ matrix.prec_flag == '' }}
-        run: .github/scripts/run-targets.sh
+        working-directory: ./build
+        run: |
+          source env.sh
+          ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
+
+      # Upload test output
+      - name: Archive CTest output
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.prec_flag == '' }}
+        with:
+          name: ctest-log
+          path: build/ctest.log
