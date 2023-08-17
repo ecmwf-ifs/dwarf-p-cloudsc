@@ -78,10 +78,6 @@ FSET = ATLAS_FIELDSET()
 ! TODO: Create a global memory state from serialized input data
 CALL GLOBAL_ATLAS_STATE%LOAD(FSET, NPROMA, NGPTOT, NGPTOTG)
 
-!FIELD = FSET%FIELD("PAP")
-!call field%data(tmp3d)
-!print *, MINVAL(tmp3d), MAXVAL(tmp3d)
-
 ! Call the driver to perform the parallel loop over our kernel
 CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOT, NGPTOTG, GLOBAL_ATLAS_STATE%KFLDX, GLOBAL_ATLAS_STATE%PTSPHY)
 
