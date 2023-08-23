@@ -51,7 +51,7 @@ contains
 
     fspace = field%functionspace()
     nlev = field%levels()
-    nproma = fspace%block_size(1)
+    nproma = fspace%nproma()
     ngptot = fspace%size()
     nblocks = fspace%nblks()
 
@@ -115,8 +115,8 @@ contains
     field = fset%field(name)
     fspace = field%functionspace()
     nlev = field%levels()
-    nproma = fspace%block_size(1)
     ngptot = fspace%size()
+    nproma = fspace%nproma()
     nblocks = fspace%nblks()
     ndim = field%shape(3) - 3
 
