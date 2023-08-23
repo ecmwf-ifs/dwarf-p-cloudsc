@@ -26,7 +26,6 @@ INTEGER(KIND=JPIM) :: IARGS, LENARG, JARG, I
 INTEGER(KIND=JPIM) :: NUMOMP   = 1     ! Number of OpenMP threads for this run
 INTEGER(KIND=JPIM) :: NGPTOTG  = 16384 ! Number of grid points (as read from command line)
 INTEGER(KIND=JPIM) :: NPROMA   = 32    ! NPROMA blocking factor (currently active)
-INTEGER(KIND=JPIM) :: NGPTOT           ! Local number of grid points
 
 REAL(c_double), pointer :: tmp3d(:,:,:)
 type(atlas_fieldset) :: fset
@@ -55,17 +54,11 @@ end if
 CALL CLOUDSC_MPI_INIT(NUMOMP)
 CALL ATLAS_LIBRARY%INITIALISE()
 
-! Get total number of grid points (NGPTOT) with which to run the benchmark
+! Get total number of grid points (NGPTOTG) with which to run the benchmark
 IF (IARGS >= 2) THEN
   CALL GET_COMMAND_ARGUMENT(2, CLARG, LENARG)
   READ(CLARG(1:LENARG),*) NGPTOTG
 END IF
-
-! Determine local number of grid points
-NGPTOT = (NGPTOTG - 1) / NUMPROC + 1
-if (IRANK == NUMPROC - 1) then
-  NGPTOT = NGPTOTG - (NUMPROC - 1) * NGPTOT
-end if
 
 ! Get the block size (NPROMA) for which to run the benchmark  
 IF (IARGS >= 3) THEN
@@ -76,13 +69,13 @@ ENDIF
 FSET = ATLAS_FIELDSET()
 
 ! TODO: Create a global memory state from serialized input data
-CALL GLOBAL_ATLAS_STATE%LOAD(FSET, NPROMA, NGPTOT, NGPTOTG)
+CALL GLOBAL_ATLAS_STATE%LOAD(FSET, NPROMA, NGPTOTG)
 
 ! Call the driver to perform the parallel loop over our kernel
-CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOT, NGPTOTG, GLOBAL_ATLAS_STATE%KFLDX, GLOBAL_ATLAS_STATE%PTSPHY)
+CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, GLOBAL_ATLAS_STATE%KFLDX, GLOBAL_ATLAS_STATE%PTSPHY)
 
 ! Validate the output against serialized reference data
-CALL GLOBAL_ATLAS_STATE%VALIDATE(FSET, NGPTOT, NGPTOTG)
+CALL GLOBAL_ATLAS_STATE%VALIDATE(FSET, NGPTOTG)
 
 ! Tear down MPI environment
 CALL ATLAS_LIBRARY%FINALISE()
