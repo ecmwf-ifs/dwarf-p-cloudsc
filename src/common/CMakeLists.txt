@@ -44,7 +44,7 @@ list(APPEND CLOUDSC_CUDA_SOURCES
 
 if( HAVE_CUDA )
     # ========================================================================
-    # Compile CUDA fortran files with -MCuda.
+    # Compile CUDA fortran files with -cuda.
     #
     # This is necessary since CMake's CUDA languages does not natively
     # understand CUDA-Fortran (.cuf) yet. So we simply emulate .cuf with
@@ -52,7 +52,7 @@ if( HAVE_CUDA )
     # ========================================================================
     cloudsc_add_compile_options(
         SOURCES ${CLOUDSC_CUDA_SOURCES}
-        FLAGS "-Mcuda=maxregcount:128"
+        FLAGS "-cuda -gpu=maxregcount:128"
     )
 
     # Add CUDA-specific flags to the library if enabled
@@ -98,5 +98,5 @@ ecbuild_add_library( TARGET cloudsc-common-lib
 )
 
 if( HAVE_CUDA )
-    target_link_options( cloudsc-common-lib INTERFACE "-Mcuda" )
+    target_link_options( cloudsc-common-lib PUBLIC "-cuda" )
 endif()

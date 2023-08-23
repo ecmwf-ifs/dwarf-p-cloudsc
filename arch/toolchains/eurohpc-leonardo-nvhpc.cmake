@@ -31,21 +31,11 @@ set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 # OpenAcc FLAGS
 ####################################################################
 
-# Importantly, enable `gvmode` to remove the limit of 32 vector threads
-# per thread block
 # NB: We have to add `-mp` again to avoid undefined symbols during linking
 # (smells like an Nvidia bug)
-set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath,gvmode" CACHE STRING "" )
+set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath" CACHE STRING "" )
 # Enable this to get more detailed compiler output
 # set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
-
-####################################################################
-# CUDA FLAGS
-####################################################################
-
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES 80)
-endif()
 
 ####################################################################
 # COMMON FLAGS

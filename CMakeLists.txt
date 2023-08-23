@@ -9,9 +9,6 @@
 # define minimum version of cmake required
 cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
 
-# Disable warnings about setting `ENABLE_ACC` variable for ecbuild_add_option
-cmake_policy( SET CMP0077 NEW )
-
 find_package( ecbuild REQUIRED )
 
 # define the project
@@ -31,7 +28,7 @@ endif()
 include( cloudsc_compile_options )
 
 ### OpenACC
-if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
+if( ${CMAKE_VERSION} VERSION_LESS "3.25" AND (NOT DEFINED ENABLE_ACC OR ENABLE_ACC ) )
     # Incredibly inconvenient: FindOpenACC does _not_ set OpenACC_FOUND, only
     # the language-specific components OpenACC_Fortran_FOUND and OpenACC_C_FOUND.
     # This means, even internally CMake considers OpenACC as not found.
@@ -40,6 +37,7 @@ if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
     # the result, and then, trigger a second find_package via ecbuild_add_option.
     # This then conveniently takes the previously set OpenACC_FOUND into account
     # and rectifies CMake's internal bookkeeping in the process.
+    # This has been fixed in CMake 3.25
     find_package( OpenACC )
     if( OpenACC_Fortran_FOUND AND OpenACC_C_FOUND )
         set( OpenACC_FOUND ON )

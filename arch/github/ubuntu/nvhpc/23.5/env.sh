@@ -10,7 +10,7 @@
 
 ### Variables
 export NVHPC_INSTALL_DIR=${GITHUB_WORKSPACE}/nvhpc-install
-export NVHPC_VERSION=21.9
+export NVHPC_VERSION=23.5
 export NVHPC_DIR=${NVHPC_INSTALL_DIR}/Linux_x86_64/${NVHPC_VERSION}
 
 ### Compilers
@@ -28,11 +28,9 @@ export LD_LIBRARY_PATH=${HDF5_DIR}/lib:${LD_LIBRARY_PATH}
 export PATH=${HDF5_DIR}/bin:${PATH}
 
 ### Compiler variables
-export CC=pgcc
-export CXX=pgc++
-export FC=pgf90
-
-export ECBUILD_TOOLCHAIN="./toolchain.cmake"
+export CC=nvc
+export CXX=nvc++
+export FC=nvfortran
 
 # Increase stack size to maximum
 ulimit -S -s unlimited
