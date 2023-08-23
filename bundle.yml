@@ -42,7 +42,7 @@ projects :
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : 1.24.3
+        version : develop
         optional: true
         require : ecbuild
         cmake   : >
@@ -51,7 +51,7 @@ projects :
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
-        version : 0.9.0
+        version : develop
         optional: true
         require : ecbuild eckit
         cmake   : >
@@ -59,7 +59,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : master
+        version : feature/MultiField
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
