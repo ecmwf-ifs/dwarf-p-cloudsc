@@ -35,18 +35,12 @@ jobs:
 
         build_flags:
           - ''  # Plain build without any options
-          - '--with-gpu --with-loki' # Enable Loki and GPU variants
-          - '--with-gpu --with-loki --with-mpi' # Enable Loki and GPU variants with MPI
+          - '--with-gpu --with-loki --with-atlas' # Enable Loki, Atlas, and GPU variants
+          - '--with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, Atlas, and GPU variants with MPI
 
         pyiface_flag: ['']  # Enable the pyiface variant
 
-        atlas_flag: ['--with-atlas']  # Variant using Atlas-managed fields
-        
-        claw_flag: ['']  # Flag to enable CLAW-generated variants
-        
         python_f2py_flag: ['']  # Enable the f2py variant
-
-        claw_flag: ['']
 
         ctest_exclude_pattern: ['-scc-hoist-']  # Regex to disable CTest tests
 
@@ -55,33 +49,30 @@ jobs:
           - arch: gnu/9.4.0
             io_library_flag: ''
             prec_flag: ''
-            gpu_flag: '--with-gpu'
-            cuda_flag: '--with-cuda'
-            loki_flag: '--with-loki'
-            atlas_flag: '--with-atlas'
-            pyiface_flag: ''
-            python_f2py_flag: ''
-          - arch: github/ubuntu/nvhpc/21.9
-            io_library_flag: '--with-serialbox'
-            mpi_flag: ''
-            prec_flag: ''
-            gpu_flag: '--with-gpu'
-            cuda_flag: '--with-cuda'
-            loki_flag: '--with-loki'
-            atlas_flag: '--with-atlas'
-            pyiface_flag: ''
-            python_f2py_flag: ''
-          # Add pyiface build configuration for HDF5 only
-          - arch: github/ubuntu/gnu/9.4.0
+            build_flags: '--cloudsc-fortran-pyiface=ON --cloudsc-python-f2py=ON'
+
+          # Add nvhpc build configurations with serialbox and HDF5
+          - arch: nvhpc/21.9
+            nvhpc_version: 21.9
             io_library_flag: ''
-            mpi_flag: ''
-            prec_flag: ''
-            gpu_flag: ''
-            cuda_flag: ''
-            loki_flag: ''
-            atlas_flag: ''
-            pyiface_flag: '--cloudsc-fortran-pyiface=ON'
-            python_f2py_flag: '--cloudsc-python-f2py=ON'
+            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - arch: nvhpc/21.9
+            nvhpc_version: 21.9
+            io_library_flag: '--with-serialbox'
+            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+
+          - arch: nvhpc/23.5
+            nvhpc_version: 23.5
+            io_library_flag: ''
+            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - arch: nvhpc/23.5
+            nvhpc_version: 23.5
+            io_library_flag: '--with-serialbox'
+            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -147,23 +138,15 @@ jobs:
       - name: Bundle build
         run: |
           ./cloudsc-bundle build --retry-verbose \
-          --arch=arch/${{ matrix.arch }} ${{ matrix.prec_flag }} \
-          ${{ matrix.mpi_flag }} ${{ matrix.io_library_flag }} ${{ matrix.gpu_flag }} \
-          ${{ matrix.claw_flag}} ${{ matrix.loki_flag }} ${{ matrix.cuda_flag }} \
-          ${{ matrix.atlas_flag }} ${{ matrix.pyiface_flag }} ${{ matrix.python_f2py_flag }}
+          --arch=arch/github/ubuntu/${{ matrix.arch }} \
+          ${{ matrix.prec_flag }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
 
       # Verify targets exist
       - name: Verify targets
         env:
           io_library_flag: ${{ matrix.io_library_flag }}
           prec_flag: ${{ matrix.prec_flag }}
-          gpu_flag: ${{ matrix.gpu_flag }}
-          cuda_flag: ${{ matrix.cuda_flag }}
-          loki_flag: ${{ matrix.loki_flag }}
-          atlas_flag: ${{ matrix.atlas_flag }}
-          claw_flag: ${{ matrix.claw_flag }}
-          pyiface_flag: ${{ matrix.pyiface_flag }}
-          python_f2py_flag: ${{ matrix.python_f2py_flag }}
+          build_flags: ${{ matrix.build_flags }}
         run: .github/scripts/verify-targets.sh
 
       # Run ctest
