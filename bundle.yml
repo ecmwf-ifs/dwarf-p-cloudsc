@@ -5,6 +5,7 @@ name    : cloudsc-bundle
 version : 1.0.0-develop
 cmake : >
         CMAKE_LINK_DEPENDS_NO_SHARED=ON
+        BUILD_serialbox=OFF
         BUILD_field_api=OFF
         BUILD_eckit=OFF
         BUILD_fckit=OFF
@@ -22,7 +23,6 @@ projects :
         version : v2.5.4/patched
         optional: true
         cmake   : >
-            BUILD_serialbox=OFF
             SERIALBOX_BUILD_SHARED=ON
             SERIALBOX_ENABLE_FORTRAN=ON
             SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM=OFF
@@ -102,7 +102,8 @@ options :
     - with-cuda :
         help  : Enable GPU kernel variant based on CUDA-Fortran
         cmake : >
-            ENABLE_CUDA=ON
+            ENABLE_FIELD_API_CUDA=ON
+            ENABLE_CLOUDSC_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
             BUILD_field_api=ON
