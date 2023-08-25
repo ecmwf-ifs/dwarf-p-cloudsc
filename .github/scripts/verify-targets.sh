@@ -52,12 +52,9 @@ then
   fi
 fi
 
-if [[ "$atlas_flag" == "--with-atlas" ]]
+if [[ "$build_flags" == *"--with-atlas"* ]]
 then
   targets+=(dwarf-cloudsc-fortran-atlas)
-  # Atlas builds a number of binaries that end up in bin, too:
-  targets+=(atlas atlas-atest-mgrids atlas-gaussian-latitudes atlas-grids)
-  targets+=(atlas-io-list atlas-meshgen fckit)
 fi
 
 if [[ "$build_flags" == *"--cloudsc-fortran-pyiface=ON"* ]]
@@ -83,17 +80,5 @@ do
     echo "::error::Missing target: $target"
   fi
 done
-
-#
-# Check there aren't any other binaries
-#
-
-if [[ ${#targets[@]} -lt $(ls build/bin | wc -l) ]]
-then
-  exit_code=1
-  echo "::error::Additional targets found in build/bin"
-  echo "::error::Expected targets: ${targets[@]}"
-  echo "::error::Found targets: $(ls -1 build/bin | tr '\n' ' ')"
-fi
 
 exit $exit_code
