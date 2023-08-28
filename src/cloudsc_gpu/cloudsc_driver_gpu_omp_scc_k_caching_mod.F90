@@ -7,7 +7,7 @@
 ! granted to it by virtue of its status as an intergovernmental organisation
 ! nor does it submit to any jurisdiction.
 
-MODULE CLOUDSC_DRIVER_GPU_OMP_SCC_HOIST_MOD
+MODULE CLOUDSC_DRIVER_GPU_OMP_SCC_K_CACHING_MOD
 
   USE PARKIND1, ONLY: JPIM, JPRB
   USE YOMPHYDER, ONLY: STATE_TYPE
@@ -15,13 +15,13 @@ MODULE CLOUDSC_DRIVER_GPU_OMP_SCC_HOIST_MOD
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
-  USE CLOUDSC_GPU_OMP_SCC_HOIST_MOD, ONLY: CLOUDSC_SCC_HOIST
+  USE CLOUDSC_GPU_OMP_SCC_K_CACHING_MOD, ONLY: CLOUDSC_SCC_K_CACHING
 
   IMPLICIT NONE
 
 CONTAINS
 
-  SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_HOIST( &
+  SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_K_CACHING( &
      & NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG, KFLDX, PTSPHY, &
      & PT, PQ, &
      & BUFFER_CML, BUFFER_TMP, BUFFER_LOC, &
@@ -42,9 +42,10 @@ CONTAINS
      & )
     ! Driver routine that invokes the optimized CLAW-based CLOUDSC GPU kernel
 
-    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG
-    INTEGER(KIND=JPIM)                                    :: KFLDX
-    REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
+    INTEGER(KIND=JPIM)             :: JL
+    INTEGER(KIND=JPIM)             :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG
+    INTEGER(KIND=JPIM)             :: KFLDX
+    REAL(KIND=JPRB)                :: PTSPHY       ! Physics timestep
     REAL(KIND=JPRB), INTENT(IN)    :: PT(NPROMA, NLEV, NGPBLKS) ! T at start of callpar
     REAL(KIND=JPRB), INTENT(IN)    :: PQ(NPROMA, NLEV, NGPBLKS) ! Q at start of callpar
     REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER_CML(NPROMA,NLEV,3+NCLV,NGPBLKS) ! Storage buffer for TENDENCY_CML
@@ -96,33 +97,14 @@ CONTAINS
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSL(NPROMA, NLEV+1, NGPBLKS)    ! Enthalpy flux for liq
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSN(NPROMA, NLEV+1, NGPBLKS)    ! ice number concentration (cf. CCN)
 
-    ! Local declarations of promoted temporaries
-    REAL(KIND=JPRB) :: ZFOEALFA(NPROMA, NLEV+1, NGPBLKS)
-    REAL(KIND=JPRB) :: ZTP1(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZLI(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZA(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZAORIG(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZLIQFRAC(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZICEFRAC(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQX(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQX0(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZPFPLSX(NPROMA, NLEV+1, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZLNEG(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQXN2D(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQSMIX(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQSLIQ(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQSICE(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZFOEEWMT(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZFOEEW(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZFOEELIQT(NPROMA, NLEV, NGPBLKS)
-    INTEGER(KIND=JPIM) :: JL
-
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND
     TYPE(PERFORMANCE_TIMER) :: TIMER
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
     ! Local copy of cloud parameters for offload
     TYPE(TECLDP) :: LOCAL_YRECLDP
+
+    print *, "executing OMP K-CACHING variant ..."
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -133,15 +115,24 @@ CONTAINS
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
 
-!$omp target enter data map(alloc: ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0,  &
-!$omp &   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT,  &
-!$omp &   ZFOEEW, ZFOEELIQT)
-
-
     ! Workaround for PGI / OpenACC oddities:
     ! Create a local copy of the parameter struct to ensure they get
     ! moved to the device the in ``acc data`` clause below
     LOCAL_YRECLDP = YRECLDP
+
+! $acc data &
+! $acc copyin( &
+! $acc   pt,pq,buffer_cml,buffer_tmp,pvfa, &
+! $acc   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
+! $acc   pap,paph,plsm,ldcum,ktype,plu,psnde, &
+! $acc   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
+! $acc   pre_ice,pccn,pnice, yrecldp) &
+! $acc copy( &
+! $acc   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
+! $acc copyout( &
+! $acc   pfsqlf,pfsqif,pfcqnng, &
+! $acc   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
+! $acc   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
 
 !$omp target data &
 !$omp map(to: &
@@ -161,69 +152,50 @@ CONTAINS
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-! !$omp target teams loop bind(teams)
-! #else
-! !$omp target teams distribute
-! #endif
+! $acc parallel loop gang vector_length(NPROMA)
+! $omp target teams distribute parallel do simd
+! $omp target teams distribute
 !$omp target teams distribute parallel do simd
-    DO JKGLO=1,NGPTOT,NPROMA
+  DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
-! !$omp loop bind(parallel)
-! #elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
-! !$omp loop bind(thread)
-! #else
-! !$omp parallel do
-! #endif
+      ! $acc loop vector
+      ! $omp parallel do simd
       DO JL=1,ICEND
-        CALL CLOUDSC_SCC_HOIST &
-         & (1, ICEND, NPROMA, NLEV, PTSPHY,&
-         & PT(:,:,IBL), PQ(:,:,IBL), &
-         & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
-         & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
-         & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
-         & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
-         & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
-         & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
-         & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
-                                !---prognostic fields
-         & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
-                                !-- arrays for aerosol-cloud interactions
-         & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
-         & PRE_ICE(:,:,IBL),&
-         & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
-                                !---diagnostic output
-         & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
-                                !---resulting fluxes
-         & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
-         & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
-         & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
-         & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-         & LOCAL_YRECLDP, &
-         & ZFOEALFA(:,:,IBL), ZTP1(:,:,IBL), ZLI(:,:,IBL), ZA(:,:,IBL), ZAORIG(:,:,IBL), &
-         & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), ZPFPLSX(:,:,:,IBL), &
-         & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
-         & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), JL=JL)
+       CALL CLOUDSC_SCC_K_CACHING &
+        & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+        & PT(:,:,IBL), PQ(:,:,IBL), &
+        & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
+        & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
+        & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
+        & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
+        & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
+        & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
+        & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
+        !---prognostic fields
+        & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
+        !-- arrays for aerosol-cloud interactions
+        & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
+        & PRE_ICE(:,:,IBL),&
+        & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
+        !---diagnostic output
+        & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
+        !---resulting fluxes
+        & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
+        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
+        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
+        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+        & YRECLDP=LOCAL_YRECLDP, JL=JL)
       ENDDO
-! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-! !$omp end loop
-! #else
-! !$omp end parallel do
-! #endif
     ENDDO
 !$omp end target teams distribute parallel do simd
-! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-! !$omp end target teams loop
-! #else
-! !$omp end target teams distribute
-! #endif
-
+! $omp end target teams distribute 
+! $acc end parallel loop
 
     CALL TIMER%THREAD_END(TID)
 
+! $acc end data
 !$omp end target data
 
     CALL TIMER%END()
@@ -235,6 +207,6 @@ CONTAINS
 
     CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
 
-  END SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_HOIST
+  END SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_K_CACHING
 
-END MODULE CLOUDSC_DRIVER_GPU_OMP_SCC_HOIST_MOD
+END MODULE CLOUDSC_DRIVER_GPU_OMP_SCC_K_CACHING_MOD
