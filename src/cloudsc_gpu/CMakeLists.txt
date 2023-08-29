@@ -58,6 +58,16 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_K_CACHING
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_DR_LOOP
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenMP offload" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_K_CACHING_DR_LOOP
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenMP offload" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT ON
     CONDITION HAVE_FIELD_API AND ( Serialbox_FOUND OR HDF5_FOUND )
@@ -218,6 +228,45 @@ if (HAVE_CLOUDSC_GPU_OMP_SCC_K_CACHING)
 
 endif()
 
+if (HAVE_CLOUDSC_GPU_OMP_SCC_DR_LOOP)
+
+    cloudsc_add_compile_options(
+        SOURCES cloudsc_gpu_omp_scc_dr_loop_mod.F90
+	# FLAGS    "-Wx,'–maxrregcount=64'")
+	FLAGS    "-Wx –maxrregcount=64")
+
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-omp-scc-dr-loop
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_dr_loop_mod.F90
+            cloudsc_gpu_omp_scc_dr_loop_mod.F90
+        LIBS
+            cloudsc-common-lib
+	    DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_OMP_SCC_DR_LOOP
+    )
+
+endif()
+
+if (HAVE_CLOUDSC_GPU_OMP_SCC_K_CACHING_DR_LOOP)
+
+    cloudsc_add_compile_options(
+        SOURCES cloudsc_gpu_omp_scc_k_caching_dr_loop_mod.F90
+	# FLAGS "-Wx,'–maxrregcount=64'")
+	FLAGS    "-Wx –maxrregcount=64")
+
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-omp-scc-k-caching-dr-loop
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_k_caching_dr_loop_mod.F90
+            cloudsc_gpu_omp_scc_k_caching_dr_loop_mod.F90
+        LIBS
+            cloudsc-common-lib
+	    DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_OMP_SCC_K_CACHING_DR_LOOP
+    )
+
+endif()
 
 if( HAVE_CLOUDSC_GPU_SCC_CUF )
     # Compile CUDA fortran files with -cuda.
