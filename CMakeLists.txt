@@ -83,7 +83,7 @@ endif()
 ecbuild_add_option( FEATURE SERIALBOX
     DESCRIPTION "Use Serialbox to read input and reference data"
     REQUIRED_PACKAGES "Serialbox"
-    CONDITION NOT HAVE_HDF5
+    CONDITION NOT HAVE_HDF5 OR HAVE_SERIALBOX
     DEFAULT OFF )
 if( HAVE_SERIALBOX )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
