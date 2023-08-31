@@ -1,0 +1,119 @@
+module cloudsc_c_k_caching_hip_mod 
+
+  use iso_fortran_env
+  use iso_c_binding
+
+  implicit none
+
+  public :: cloudsc_c_hip
+
+  interface 
+
+    subroutine cloudsc_c_hip_launch(numcols, nproma, kidia, kfdia, klon, ptsphy, pt, &
+          & pq, tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld, tendency_loc_t, &
+          & tendency_loc_q, tendency_loc_a, tendency_loc_cld, pvfa, pvfl, pvfi, pdyna, &
+          & pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, & 
+          & pmfu, pmfd, pa, pclv, psupsat, plcrit_aer, picrit_aer, pre_ice, pccn, pnice, &
+          & pcovptot, prainfrac_toprfz, pfsqlf, pfsqif, pfcqnng, pfcqlng, pfsqrf, pfsqsf, &
+          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn, & ! yrecldp, &
+          & ngpblks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
+          & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, & 
+          & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2) bind(c, name='cloudsc_c_hip_launch')
+    
+        implicit none
+
+        type(c_ptr), value :: ptsphy, pt, &
+          & pq, tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld, tendency_loc_t, &
+          & tendency_loc_q, tendency_loc_a, tendency_loc_cld, pvfa, pvfl, pvfi, pdyna, &
+          & pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, &
+          & pmfu, pmfd, pa, pclv, psupsat, plcrit_aer, picrit_aer, pre_ice, pccn, pnice, &
+          & pcovptot, prainfrac_toprfz, pfsqlf, pfsqif, pfcqnng, pfcqlng, pfsqrf, pfsqsf, &
+          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn
+        integer(c_int), value :: numcols, nproma, kidia, kfdia, klon, ngpblks
+        real(c_double), value :: rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
+          & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+          & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2
+   end subroutine cloudsc_c_hip_launch
+  
+  end interface
+
+  contains
+
+    subroutine cloudsc_c_hip(numcols, nproma, kidia, kfdia, klon, ptsphy, pt, &
+          & pq, tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld, tendency_loc_t, &
+          & tendency_loc_q, tendency_loc_a, tendency_loc_cld, pvfa, pvfl, pvfi, pdyna, &
+          & pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, &
+          & pmfu, pmfd, pa, pclv, psupsat, plcrit_aer, picrit_aer, pre_ice, pccn, pnice, &
+          & pcovptot, prainfrac_toprfz, pfsqlf, pfsqif, pfcqnng, pfcqlng, pfsqrf, pfsqsf, &
+          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn, & ! yrecldp, &
+          & ngpblks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
+          & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+          & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+
+        REAL(KIND=JPRB), INTENT(IN) :: PLCRIT_AER(:, :, :)
+        REAL(KIND=JPRB), INTENT(IN) :: PICRIT_AER(:, :, :)
+        REAL(KIND=JPRB), INTENT(IN) :: PRE_ICE(:, :, :)
+        REAL(KIND=JPRB), INTENT(IN) :: PCCN(:, :, :)    ! liquid cloud condensation nuclei
+        REAL(KIND=JPRB), INTENT(IN) :: PNICE(:, :, :)    ! ice number concentration (cf. CCN)
+
+        INTEGER(KIND=JPIM), VALUE, INTENT(IN) :: KLON    ! Number of grid points
+        INTEGER(KIND=JPIM), VALUE, INTENT(IN) :: KLEV    ! Number of levels
+        INTEGER(KIND=JPIM), VALUE, INTENT(IN) :: KIDIA
+        INTEGER(KIND=JPIM), VALUE, INTENT(IN) :: KFDIA
+        REAL(KIND=JPRB), VALUE, INTENT(IN) :: PTSPHY    ! Physics timestep
+        REAL(KIND=JPRB), INTENT(IN) :: PT(:, :, :)    ! T at start of callpar
+        REAL(KIND=JPRB), INTENT(IN) :: PQ(:, :, :)    ! Q at start of callpar
+        REAL(KIND=JPRB), INTENT(IN) :: TENDENCY_TMP(:, :, :, :) ! TODO: tendencies split up?!
+        REAL(KIND=JPRB), INTENT(INOUT) :: TENDENCY_LOC(:, :, :, :) ! TODO: tendencies split up?!
+        REAL(KIND=JPRB), INTENT(IN) :: PVFA(:, :, :)    ! CC from VDF scheme
+        REAL(KIND=JPRB), INTENT(IN) :: PVFL(:, :, :)    ! Liq from VDF scheme
+        REAL(KIND=JPRB), INTENT(IN) :: PVFI(:, :, :)    ! Ice from VDF scheme
+        REAL(KIND=JPRB), INTENT(IN) :: PDYNA(:, :, :)    ! CC from Dynamics
+        REAL(KIND=JPRB), INTENT(IN) :: PDYNL(:, :, :)    ! Liq from Dynamics
+        REAL(KIND=JPRB), INTENT(IN) :: PDYNI(:, :, :)    ! Liq from Dynamics
+        REAL(KIND=JPRB), INTENT(IN) :: PHRSW(:, :, :)    ! Short-wave heating rate
+        REAL(KIND=JPRB), INTENT(IN) :: PHRLW(:, :, :)    ! Long-wave heating rate
+        REAL(KIND=JPRB), INTENT(IN) :: PVERVEL(:, :, :)    !Vertical velocity
+        REAL(KIND=JPRB), INTENT(IN) :: PAP(:, :, :)    ! Pressure on full levels
+        REAL(KIND=JPRB), INTENT(IN) :: PAPH(:, :, :)    ! Pressure on half levels
+        REAL(KIND=JPRB), INTENT(IN) :: PLSM(:, :)    ! Land fraction (0-1)
+        LOGICAL, INTENT(IN) :: LDCUM(:, :)    ! Convection active
+        INTEGER(KIND=JPIM), INTENT(IN) :: KTYPE(:, :)    ! Convection type 0,1,2
+        REAL(KIND=JPRB), INTENT(IN) :: PLU(:, :, :)    ! Conv. condensate
+        REAL(KIND=JPRB), INTENT(INOUT) :: PLUDE(:, :, :)    ! Conv. detrained water
+        REAL(KIND=JPRB), INTENT(IN) :: PSNDE(:, :, :)    ! Conv. detrained snow
+        REAL(KIND=JPRB), INTENT(IN) :: PMFU(:, :, :)    ! Conv. mass flux up
+        REAL(KIND=JPRB), INTENT(IN) :: PMFD(:, :, :)    ! Conv. mass flux down
+        REAL(KIND=JPRB), INTENT(IN) :: PA(:, :, :)    ! Original Cloud fraction (t)
+
+        REAL(KIND=JPRB), INTENT(IN) :: PCLV(:, :, NCLV, :)
+
+        ! Supersat clipped at previous time level in SLTEND
+        REAL(KIND=JPRB), INTENT(IN) :: PSUPSAT(:, :, :)
+        REAL(KIND=JPRB), INTENT(OUT) :: PCOVPTOT(:, :, :)    ! Precip fraction
+        REAL(KIND=JPRB), INTENT(OUT) :: PRAINFRAC_TOPRFZ(:, :)
+        ! Flux diagnostics for DDH budget
+        REAL(KIND=JPRB), INTENT(OUT) :: PFSQLF(:, :, :)    ! Flux of liquid
+        REAL(KIND=JPRB), INTENT(OUT) :: PFSQIF(:, :, :)    ! Flux of ice
+        REAL(KIND=JPRB), INTENT(OUT) :: PFCQLNG(:, :, :)    ! -ve corr for liq
+        REAL(KIND=JPRB), INTENT(OUT) :: PFCQNNG(:, :, :)    ! -ve corr for ice
+        REAL(KIND=JPRB), INTENT(OUT) :: PFSQRF(:, :, :)    ! Flux diagnostics
+        REAL(KIND=JPRB), INTENT(OUT) :: PFSQSF(:, :, :)    !    for DDH, generic
+        REAL(KIND=JPRB), INTENT(OUT) :: PFCQRNG(:, :, :)    ! rain
+        REAL(KIND=JPRB), INTENT(OUT) :: PFCQSNG(:, :, :)    ! snow
+        REAL(KIND=JPRB), INTENT(OUT) :: PFSQLTUR(:, :, :)    ! liquid flux due to VDF
+        REAL(KIND=JPRB), INTENT(OUT) :: PFSQITUR(:, :, :)    ! ice flux due to VDF
+        REAL(KIND=JPRB), INTENT(OUT) :: PFPLSL(:, :, :)    ! liq+rain sedim flux
+        REAL(KIND=JPRB), INTENT(OUT) :: PFPLSN(:, :, :)    ! ice+snow sedim flux
+        REAL(KIND=JPRB), INTENT(OUT) :: PFHPSL(:, :, :)    ! Enthalpy flux for liq
+        REAL(KIND=JPRB), INTENT(OUT) :: PFHPSN(:, :, :)    ! Enthalp flux for ice
+
+        ! TYPE(TECLDP), INTENT(INOUT) :: YRECLDP
+ 
+          ! omp target data use_device_addr(<all arrays ...>)
+          ! CALL cloudsc_c_hip_launch(..., c_loc(<arr>), ...)
+          ! OMP 
+
+    end subroutine cloudsc_c_hip 
+
+end module cloudsc_c_k_caching_hip_mod
