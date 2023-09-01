@@ -13,12 +13,19 @@ MODULE CLOUDSC_DRIVER_MOD
   USE YOECLDP, ONLY: NCLV, YRECLDP, TECLDP
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY: PERFORMANCE_TIMER, GET_THREAD_NUM
-  
+
+  !!!
+  USE YOMCST, ONLY: RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
+  USE YOETHF, ONLY: R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE,  &
+    & RTICECU, RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
+  USE YOECLDP, ONLY: TECLDP, NCLDQV, NCLDQL, NCLDQR, NCLDQI, NCLDQS, NCLV
+  !!!
+
   !USE YOMCST_CUF, ONLY: YOMCST_UPDATE_DEVICE
   !USE YOETHF_CUF, ONLY: YOETHF_UPDATE_DEVICE
   
-  USE CLOUDSC_GPU_OMP_SCC_K_CACHING_DR_LOOP_MOD, ONLY: CLOUDSC_SCC_CUF_K_CACHING
-
+  ! USE CLOUDSC_GPU_OMP_SCC_K_CACHING_DR_LOOP_MOD, ONLY: CLOUDSC_SCC_CUF_K_CACHING
+  USE cloudsc_c_k_caching_hip_mod, only: cloudsc_c_hip  
   IMPLICIT NONE
   
   CONTAINS
@@ -88,7 +95,29 @@ MODULE CLOUDSC_DRIVER_MOD
     REAL(KIND=JPRB), INTENT(OUT) :: PFPLSN(NPROMA, NLEV + 1, NGPBLKS)    ! ice+snow sedim flux
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSL(NPROMA, NLEV + 1, NGPBLKS)    ! Enthalpy flux for liq
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSN(NPROMA, NLEV + 1, NGPBLKS)    ! Enthalp flux for ice
-    
+   
+    REAL(KIND=JPRB) :: TENDENCY_TMP_T(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: TENDENCY_TMP_Q(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: TENDENCY_TMP_A(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: TENDENCY_TMP_CLD(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB) :: TENDENCY_LOC_T(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: TENDENCY_LOC_Q(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: TENDENCY_LOC_A(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: TENDENCY_LOC_CLD(NPROMA, NLEV, NCLV, NGPBLKS)
+
+    ! tend_loc_t   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_loc_q   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_loc_a   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_loc_cld = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
+    ! tend_cml_t   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_cml_q   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_cml_a   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_cml_cld = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
+    ! tend_tmp_t   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_tmp_q   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_tmp_a   = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
+    ! tend_tmp_cld = (double*) malloc( sizeof(double) * nblocks*nlev*nproma*nclv );
+
     INTEGER(KIND=JPIM) :: JKGLO, IBL, ICEND
     
     TYPE(TECLDP) :: LOCAL_YRECLDP
@@ -103,19 +132,30 @@ MODULE CLOUDSC_DRIVER_MOD
 
     LOCAL_YRECLDP = YRECLDP
 
-    ! $omp target data &
-    ! $omp map(to: &
-    ! $omp   pt,pq,buffer_tmp,pvfa, &
-    ! $omp   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
-    ! $omp   pap,paph,plsm,ldcum,ktype,plu,psnde, &
-    ! $omp   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
-    ! $omp   pre_ice,pccn,pnice, yrecldp) &
-    ! $omp map(tofrom: &
-    ! $omp   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
-    ! $omp map(from: &
-    ! $omp   pfsqlf,pfsqif,pfcqnng, &
-    ! $omp   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
-    ! $omp   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
+    TENDENCY_TMP_T = BUFFER_TMP(:,:,1,:) 
+    TENDENCY_TMP_Q = BUFFER_TMP(:,:,3,:)
+    TENDENCY_TMP_A = BUFFER_TMP(:,:,2,:)
+    TENDENCY_TMP_CLD = BUFFER_TMP(:,:,4:8,:)
+    TENDENCY_LOC_T = BUFFER_LOC(:,:,1,:)
+    TENDENCY_LOC_Q = BUFFER_LOC(:,:,3,:)
+    TENDENCY_LOC_A = BUFFER_LOC(:,:,2,:)
+    TENDENCY_LOC_CLD = BUFFER_LOC(:,:,4:8,:)
+
+    !$omp target data &
+    !$omp map(to: &
+    !!! $omp   pt,pq,buffer_tmp,pvfa, &
+    !$omp   pt,pq,tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld,pvfa, &
+    !$omp   pvfl,pvfi,pdyna,pdynl,pdyni,phrsw,phrlw,pvervel, &
+    !$omp   pap,paph,plsm,ldcum,ktype,plu,psnde, &
+    !$omp   pmfu,pmfd,pa,pclv,psupsat,plcrit_aer,picrit_aer, &
+    !$omp   pre_ice,pccn,pnice, yrecldp) &
+    !$omp map(tofrom: &
+    !!! $omp   buffer_loc,plude,pcovptot,prainfrac_toprfz) &
+    !$omp   tendency_loc_t, tendency_loc_q, tendency_loc_a, tendency_loc_cld, plude,pcovptot,prainfrac_toprfz) &
+    !$omp map(from: &
+    !$omp   pfsqlf,pfsqif,pfcqnng, &
+    !$omp   pfcqlng ,pfsqrf,pfsqsf,pfcqrng,pfcqsng,pfsqltur, &
+    !$omp   pfsqitur,pfplsl,pfplsn,pfhpsl,pfhpsn)
 
     
     IF (irank == 0) THEN
@@ -134,19 +174,40 @@ MODULE CLOUDSC_DRIVER_MOD
     
     ! $omp target
 
-    ! CALL CLOUDSC_SCC_CUF_K_CACHING<<<GRIDDIM,BLOCKDIM>>>(1, ICEND, NPROMA, NLEV, PTSPHY, PT_d, PQ_d, BUFFER_TMP_d, BUFFER_LOC_d, PVFA_d,  &
-    CALL CLOUDSC_SCC_CUF_K_CACHING(1, NGPTOT, NPROMA, ICEND, NPROMA, NLEV, PTSPHY, PT, PQ, BUFFER_TMP, BUFFER_LOC, PVFA,  &
-    & PVFL, PVFI, PDYNA, PDYNL, PDYNI, PHRSW, PHRLW, PVERVEL, PAP, PAPH, PLSM, LDCUM, KTYPE, PLU,  &
-    & PLUDE, PSNDE, PMFU, PMFD, PA, PCLV, PSUPSAT, PLCRIT_AER, PICRIT_AER, PRE_ICE, PCCN, PNICE,  &
-    & PCOVPTOT, PRAINFRAC_TOPRFZ, PFSQLF, PFSQIF, PFCQNNG, PFCQLNG, PFSQRF, PFSQSF, PFCQRNG, PFCQSNG,  &
-    & PFSQLTUR, PFSQITUR, PFPLSL, PFPLSN, PFHPSL, PFHPSN, NGPBLKS, YRECLDP=LOCAL_YRECLDP)
+
+    ! BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
+    !    & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL)
+
+    !  CALL CLOUDSC_SCC_CUF_K_CACHING<<<GRIDDIM,BLOCKDIM>>>(1, ICEND, NPROMA, NLEV, PTSPHY, PT_d, PQ_d, BUFFER_TMP_d, BUFFER_LOC_d, PVFA_d,  &
+    !  CALL CLOUDSC_SCC_CUF_K_CACHING(1, NGPTOT, NPROMA, ICEND, NPROMA, NLEV, PTSPHY, PT, PQ, BUFFER_TMP, BUFFER_LOC, PVFA,  &
+    ! CALL CLOUDSC_C_HIP(1, NGPTOT, NPROMA, ICEND, NPROMA, NLEV, PTSPHY, PT, PQ, &
+    ! & TENDENCY_TMP_T, TENDENCY_TMP_Q, TENDENCY_TMP_A, TENDENCY_TMP_CLD, TENDENCY_LOC_T, TENDENCY_LOC_Q, &
+    ! & TENDENCY_LOC_A, TENDENCY_LOC_CLD , PVFA,  &
+    ! & PVFL, PVFI, PDYNA, PDYNL, PDYNI, PHRSW, PHRLW, PVERVEL, PAP, PAPH, PLSM, LDCUM, KTYPE, PLU,  &
+    ! & PLUDE, PSNDE, PMFU, PMFD, PA, PCLV, PSUPSAT, PLCRIT_AER, PICRIT_AER, PRE_ICE, PCCN, PNICE,  &
+    ! & PCOVPTOT, PRAINFRAC_TOPRFZ, PFSQLF, PFSQIF, PFCQNNG, PFCQLNG, PFSQRF, PFSQSF, PFCQRNG, PFCQSNG,  &
+    ! & PFSQLTUR, PFSQITUR, PFPLSL, PFPLSN, PFHPSL, PFHPSN, NGPBLKS, YRECLDP=LOCAL_YRECLDP)
+    CALL cloudsc_c_hip(ngptot, nproma, 1, nproma, nproma, nlev, ptsphy, pt, &
+          & pq, tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld, tendency_loc_t, &
+          & tendency_loc_q, tendency_loc_a, tendency_loc_cld, pvfa, pvfl, pvfi, pdyna, &
+          & pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, &
+          & pmfu, pmfd, pa, pclv, psupsat, plcrit_aer, picrit_aer, pre_ice, pccn, pnice, &
+          & pcovptot, prainfrac_toprfz, pfsqlf, pfsqif, pfcqnng, pfcqlng, pfsqrf, pfsqsf, &
+          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn, & ! yrecldp, &
+          & ngpblks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
+          & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+          & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
     !istat = cudaDeviceSynchronize()
-    
+   
+    ! rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
+    !      & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+    !      & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2
+
     ! $omp end target
     
     CALL TIMER%THREAD_END(TID)
     
-    ! $omp end target data
+    !$omp end target data
 
     CALL TIMER%END()
     

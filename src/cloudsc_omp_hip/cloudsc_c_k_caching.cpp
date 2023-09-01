@@ -8,7 +8,10 @@
  * granted to it by virtue of its status as an intergovernmental organisation
  * nor does it submit to any jurisdiction.
  */
-#include "cloudsc_c.h"
+// #include "cloudsc_c_k_caching.h"
+// #include "hip/hip_runtime.h"
+#include "yoecldp_c.h"
+#include "load_state.h"
 #include <float.h>
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -20,6 +23,65 @@ inline void gpuAssert(hipError_t code, const char *file, int line, bool abort=tr
       if (abort) exit(code);
    }
 }
+extern "C" {
+void cloudsc_c_hip_launch(int numcols, int nproma, int kidia, int kfdia, int klon, double ptsphy,
+  const double * __restrict__  pt,
+  const double * __restrict__  pq, const double * __restrict__  tendency_tmp_t,
+  const double * __restrict__  tendency_tmp_q, const double * __restrict__  tendency_tmp_a,
+  const double * __restrict__  tendency_tmp_cld, double * __restrict__  tendency_loc_t,
+  double * __restrict__  tendency_loc_q, double * __restrict__  tendency_loc_a,
+  double * __restrict__  tendency_loc_cld, const double * __restrict__  pvfa,
+  const double * __restrict__  pvfl, const double * __restrict__  pvfi, const double * __restrict__  pdyna,
+  const double * __restrict__  pdynl, const double * __restrict__  pdyni, const double * __restrict__  phrsw,
+  double * __restrict__  phrlw, const double * __restrict__  pvervel, const double * __restrict__  pap,
+  const double * __restrict__  paph, const double * __restrict__  plsm,
+  const int *  ktype, const double * __restrict__  plu, double * __restrict__  plude,
+  const double * __restrict__  psnde, const double * __restrict__  pmfu, const double * __restrict__  pmfd,
+  const double * __restrict__  pa, const double * __restrict__  pclv, const double * __restrict__  psupsat,
+  const double * __restrict__  plcrit_aer, const double * __restrict__  picrit_aer,
+  const double * __restrict__  pre_ice, const double * __restrict__  pccn, const double * __restrict__  pnice,
+  double * __restrict__  pcovptot, double * __restrict__  prainfrac_toprfz,
+  double * __restrict__  pfsqlf, double * __restrict__  pfsqif, double * __restrict__  pfcqnng,
+  double * __restrict__  pfcqlng, double * __restrict__  pfsqrf, double * __restrict__  pfsqsf,
+  double * __restrict__  pfcqrng, double * __restrict__  pfcqsng,
+  double * __restrict__  pfsqltur, double * __restrict__  pfsqitur,
+  double * __restrict__  pfplsl, double * __restrict__  pfplsn, double * __restrict__  pfhpsl,
+  double * __restrict__  pfhpsn, struct TECLDP *yrecldp, int ngpblks,
+  double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
+  double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
+  double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
+  double rtwat, double rtice, double rticecu, double rtwat_rtice_r, double rtwat_rticecu_r,
+  double rkoop1, double rkoop2);
+}
+
+__global__ void __launch_bounds__(128, 1) cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
+  const double * __restrict__  pt,
+  const double * __restrict__  pq, const double * __restrict__  tendency_tmp_t,
+  const double * __restrict__  tendency_tmp_q, const double * __restrict__  tendency_tmp_a,
+  const double * __restrict__  tendency_tmp_cld, double * __restrict__  tendency_loc_t,
+  double * __restrict__  tendency_loc_q, double * __restrict__  tendency_loc_a,
+  double * __restrict__  tendency_loc_cld, const double * __restrict__  pvfa,
+  const double * __restrict__  pvfl, const double * __restrict__  pvfi, const double * __restrict__  pdyna,
+  const double * __restrict__  pdynl, const double * __restrict__  pdyni, const double * __restrict__  phrsw,
+  double * __restrict__  phrlw, const double * __restrict__  pvervel, const double * __restrict__  pap,
+  const double * __restrict__  paph, const double * __restrict__  plsm,
+  const int *  ktype, const double * __restrict__  plu, double * __restrict__  plude,
+  const double * __restrict__  psnde, const double * __restrict__  pmfu, const double * __restrict__  pmfd,
+  const double * __restrict__  pa, const double * __restrict__  pclv, const double * __restrict__  psupsat,
+  const double * __restrict__  plcrit_aer, const double * __restrict__  picrit_aer,
+  const double * __restrict__  pre_ice, const double * __restrict__  pccn, const double * __restrict__  pnice,
+  double * __restrict__  pcovptot, double * __restrict__  prainfrac_toprfz,
+  double * __restrict__  pfsqlf, double * __restrict__  pfsqif, double * __restrict__  pfcqnng,
+  double * __restrict__  pfcqlng, double * __restrict__  pfsqrf, double * __restrict__  pfsqsf,
+  double * __restrict__  pfcqrng, double * __restrict__  pfcqsng,
+  double * __restrict__  pfsqltur, double * __restrict__  pfsqitur,
+  double * __restrict__  pfplsl, double * __restrict__  pfplsn, double * __restrict__  pfhpsl,
+  double * __restrict__  pfhpsn, struct TECLDP *yrecldp, int ngpblks,
+  double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
+  double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
+  double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
+  double rtwat, double rtice, double rticecu, double rtwat_rtice_r, double rtwat_rticecu_r,
+  double rkoop1, double rkoop2);
 
 void cloudsc_c_hip_launch(int numcols, int nproma, int kidia, int kfdia, int klon, double ptsphy,
   const double * __restrict__  pt,
@@ -62,8 +124,8 @@ void cloudsc_c_hip_launch(int numcols, int nproma, int kidia, int kfdia, int klo
     dim3 griddim(ceil(((double)numcols) / ((double)nproma)), 1, 1);
 
     cloudsc_c<<<griddim, blockdim>>>(kidia, kfdia, nproma, ptsphy, pt, pq,
-                tend_tmp_t, tend_tmp_q, tend_tmp_a, tend_tmp_cld,
-                tend_loc_t, tend_loc_q, tend_loc_a, tend_loc_cld,
+                tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld,
+                tendency_loc_t, tendency_loc_q, tendency_loc_a, tendency_loc_cld,
                 pvfa, pvfl, pvfi,
                 pdyna, pdynl, pdyni,
                 phrsw, phrlw, pvervel,
@@ -76,7 +138,7 @@ void cloudsc_c_hip_launch(int numcols, int nproma, int kidia, int kfdia, int klo
                 pfsqrf, pfsqsf, pfcqrng,
                 pfcqsng, pfsqltur, pfsqitur,
                 pfplsl, pfplsn, pfhpsl, pfhpsn, d_yrecldp, 
-                nblocks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt,
+                ngpblks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt,
                 rv, r2es, r3les, r3ies, r4les, r4ies, r5les,
                 r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp,
                 rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r,

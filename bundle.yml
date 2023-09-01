@@ -83,6 +83,11 @@ options :
         cmake: >
             ENABLE_CLOUDSC_HIP=ON 
 
+    - with-omp-hip:
+        help: Enable GPU kernel variant based on OMP and HIP
+        cmake: >
+            ENABLE_CLOUDSC_OMP_HIP=ON 
+
     - with-mpi :
         help  : Enable MPI-parallel kernel
         cmake : ENABLE_MPI=ON
