@@ -53,11 +53,11 @@ if( HAVE_CLOUDSC_OMP_HIP )
 	        cloudsc-common-lib
                 hip::device
 		Serialbox::Serialbox_C
-		$<${HAVE_OMP}:OpenMP::OpenMP_C>
-		OpenMP::OpenMP_Fortran
+		# $<${HAVE_OMP}:OpenMP::OpenMP_C>
+		# OpenMP::OpenMP_Fortran
     )
 
-    set_source_files_properties(cloudsc_c_k_caching.cpp PROPERTIES LANGUAGE HIP)
+    set_source_files_properties(cloudsc_c_k_caching.cpp load_state.cpp PROPERTIES LANGUAGE HIP)
     set_target_properties(dwarf-cloudsc-hip-lib PROPERTIES LINKER_LANGUAGE Fortran)
 
     # ecbuild_add_library(
@@ -96,6 +96,7 @@ if( HAVE_CLOUDSC_OMP_HIP )
     )
 
     set_target_properties(dwarf-cloudsc-omp-hip PROPERTIES LINKER_LANGUAGE Fortran)
+    # target_link_libraries(dwarf-cloudsc-omp-hip PRIVATE dwarf-cloudsc-hip-lib)
 
    # add_library(phys-hip-lib phys_hip_mod.F90 phys_hip.cpp)
    # set_source_files_properties(phys_hip.cpp PROPERTIES LANGUAGE HIP)

@@ -46,7 +46,7 @@ void cloudsc_c_hip_launch(int numcols, int nproma, int kidia, int kfdia, int klo
   double * __restrict__  pfcqrng, double * __restrict__  pfcqsng,
   double * __restrict__  pfsqltur, double * __restrict__  pfsqitur,
   double * __restrict__  pfplsl, double * __restrict__  pfplsn, double * __restrict__  pfhpsl,
-  double * __restrict__  pfhpsn, struct TECLDP *yrecldp, int ngpblks,
+  double * __restrict__  pfhpsn, /*struct TECLDP *yrecldp,*/ int ngpblks,
   double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
   double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
   double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,

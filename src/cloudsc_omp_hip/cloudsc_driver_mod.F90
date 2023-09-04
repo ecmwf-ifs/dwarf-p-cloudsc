@@ -206,8 +206,19 @@ MODULE CLOUDSC_DRIVER_MOD
     ! $omp end target
     
     CALL TIMER%THREAD_END(TID)
-    
+   
     !$omp end target data
+
+    BUFFER_TMP(:,:,1,:) = TENDENCY_TMP_T
+    BUFFER_TMP(:,:,3,:) = TENDENCY_TMP_Q
+    BUFFER_TMP(:,:,2,:) = TENDENCY_TMP_A
+    BUFFER_TMP(:,:,4:8,:) = TENDENCY_TMP_CLD
+    BUFFER_LOC(:,:,1,:) = TENDENCY_LOC_T
+    BUFFER_LOC(:,:,3,:) = TENDENCY_LOC_Q
+    BUFFER_LOC(:,:,2,:) = TENDENCY_LOC_A
+    BUFFER_LOC(:,:,4:8,:) = TENDENCY_LOC_CLD
+
+    ! $omp end target data
 
     CALL TIMER%END()
     

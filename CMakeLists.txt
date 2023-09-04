@@ -12,7 +12,7 @@ cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
 find_package( ecbuild REQUIRED )
 
 # define the project
-project( dwarf-p-cloudsc LANGUAGES C Fortran )
+project( dwarf-p-cloudsc LANGUAGES CXX Fortran )
 
 include( cmake/compat.cmake )
 if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")

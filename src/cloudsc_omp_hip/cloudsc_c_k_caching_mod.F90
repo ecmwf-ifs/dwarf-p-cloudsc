@@ -143,7 +143,7 @@ module cloudsc_c_k_caching_hip_mod
         ! tendency_loc_q, tendency_loc_a,
         ! tendency_loc_cld
 
-        !$omp target data use_device_addr(ptsphy, pt, &
+        !$omp target data use_device_addr(pt, &
           !$omp& pq, tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld, tendency_loc_t, &
           !$omp& tendency_loc_q, tendency_loc_a, tendency_loc_cld, pvfa, pvfl, pvfi, pdyna, &
           !$omp& pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, &
