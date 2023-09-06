@@ -94,7 +94,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_MPI}:MPI::MPI_Fortran>
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
-        $<${HAVE_FIELD_API}:field_api>
+        $<${HAVE_FIELD_API}:field_api_dp> # FIELD_API uses parkind1 from CLOUDSC, so both dp and sp variants are identical
 )
 
 if( HAVE_CUDA )

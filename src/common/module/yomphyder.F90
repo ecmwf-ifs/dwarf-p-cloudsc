@@ -11,7 +11,7 @@ module yomphyder
 
 USE PARKIND1, ONLY : JPIM, JPRB
 #ifdef USE_FIELD_API
-USE FIELD_MODULE, ONLY: FIELD_3D, FIELD_4D
+USE FIELD_MODULE, ONLY: FIELD_3RB, FIELD_4RB
 #endif
 
 !     ------------------------------------------------------------------
@@ -37,8 +37,8 @@ type state_type
   !REAL(KIND=JPRB), dimension(:,:), pointer :: qsat    ! spec. humidity at saturation
 
 #ifdef  USE_FIELD_API
-  CLASS(FIELD_3D), POINTER :: F_T, F_A, F_Q
-  CLASS(FIELD_4D), POINTER :: F_CLD
+  CLASS(FIELD_3RB), POINTER :: F_T, F_A, F_Q
+  CLASS(FIELD_4RB), POINTER :: F_CLD
 #endif
 end type state_type
 

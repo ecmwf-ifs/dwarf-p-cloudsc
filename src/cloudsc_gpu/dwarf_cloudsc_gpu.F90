@@ -292,6 +292,9 @@ CALL CLOUDSC_DRIVER_GPU_SCC_FIELD( &
 
 ! Validate the output against serialized reference data
 CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT, NGPTOTG)
+#ifdef CLOUDSC_GPU_SCC_FIELD
+CALL GLOBAL_STATE%FINALIZE(USE_PACKED)
+#endif
 
 ! Tear down MPI environment
 CALL CLOUDSC_MPI_END()
