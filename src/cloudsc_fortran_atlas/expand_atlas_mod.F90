@@ -25,9 +25,10 @@ module expand_atlas_mod
 
 contains
 
-  subroutine loadvar_atlas(fset, name, nlon, ngptotg)
+  subroutine loadvar_atlas(fset, fspace, name, nlon, ngptotg)
     ! Load into the local memory buffer and expand to global field
     type(atlas_fieldset), intent(inout) :: fset
+    type(atlas_functionspace_blockstructuredcolumns), intent(in) :: fspace
     character(len=*), intent(in) :: name
     integer(kind=jpim), intent(in) :: nlon
     integer(kind=jpim), intent(in), optional :: ngptotg
@@ -40,7 +41,7 @@ contains
     real(c_double), pointer :: field_r1(:,:), field_r2(:,:,:), field_r3(:,:,:,:)
     integer(c_int), pointer :: field_i1(:,:)
     logical, pointer :: field_l1(:,:)
-    type(atlas_functionspace_blockstructuredcolumns) :: fspace
+    !type(atlas_functionspace_blockstructuredcolumns) :: fspace
     logical :: lfield, rfield, ifield
 
     field = fset%field(name)
@@ -49,7 +50,7 @@ contains
     ifield = (name == "KTYPE")
     rfield = ((.not. lfield) .and. (.not. ifield))
 
-    fspace = field%functionspace()
+    !fspace = field%functionspace()
     nlev = field%levels()
     nproma = fspace%nproma()
     ngptot = fspace%size()
