@@ -97,6 +97,7 @@ contains
         deallocate(buffer_r3)
       endif
     endif
+    call field%final()
   end subroutine loadvar_atlas
 
   subroutine loadstate_atlas(fset, name, nlon, ngptotg)
@@ -135,6 +136,8 @@ contains
     call expand(buffer(:,:,3), field_r3(:,:,3,:), size, nproma, nlev, ngptot, nblocks)
     call expand(buffer(:,:,4:), field_r3(:,:,4:,:), size, nproma, nlev, ndim, ngptot, nblocks)
     deallocate(buffer)
+    call field%final()
+    call fspace%final()
   end subroutine loadstate_atlas
 
 end module expand_atlas_mod
