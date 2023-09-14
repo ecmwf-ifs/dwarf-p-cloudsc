@@ -42,7 +42,7 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/yomcst.cuf.F90
 )
 
-if( HAVE_CUDA )
+# if( HAVE_CUDA )
     # ========================================================================
     # Compile CUDA fortran files with -cuda.
     #
@@ -50,17 +50,17 @@ if( HAVE_CUDA )
     # understand CUDA-Fortran (.cuf) yet. So we simply emulate .cuf with
     # .cuf.F90 files and force the compile flags here.
     # ========================================================================
-    cloudsc_add_compile_options(
-        SOURCES ${CLOUDSC_CUDA_SOURCES}
-        FLAGS "-cuda -gpu=maxregcount:128"
-    )
+    #    cloudsc_add_compile_options(
+    #    SOURCES ${CLOUDSC_CUDA_SOURCES}
+    #    FLAGS "-cuda -gpu=maxregcount:128"
+    #)
 
     # Add CUDA-specific flags to the library if enabled
-    list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
-endif()
+    # list(APPEND CLOUDSC_COMMON_SOURCES ${CLOUDSC_CUDA_SOURCES} )
+# endif()
 
 
-if( HAVE_ACC )
+# if( HAVE_ACC )
     # ========================================================================
     # For OpenACC runs we can ensure global module variables from our utility
     # modules are copied to devices via `!$acc declare copyin(<module_vars>)`
@@ -68,9 +68,13 @@ if( HAVE_ACC )
     # https://www.pgroup.com/userforum/viewtopic.php?t=7296
     # ========================================================================
     set( LIBRARY_TYPE STATIC )
-else()
-    set( LIBRARY_TYPE SHARED )
-endif()
+#else()
+#    set( LIBRARY_TYPE SHARED )
+#endif()
+cloudsc_add_compile_options(
+	SOURCES ${CLOUDSC_COMMON_SOURCES}
+	FLAGS "-cuda"
+	)
 
 ecbuild_add_library( TARGET cloudsc-common-lib
     TYPE ${LIBRARY_TYPE}
@@ -97,6 +101,6 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_FIELD_API}:field_api>
 )
 
-if( HAVE_CUDA )
+# if( HAVE_CUDA )
     target_link_options( cloudsc-common-lib PUBLIC "-cuda" )
-endif()
+    # endif()

@@ -129,9 +129,13 @@ CONTAINS
     CALL LOAD_SCALAR('RKOOP1', RKOOP1)
     CALL LOAD_SCALAR('RKOOP2', RKOOP2)
     CALL YRTHF_COPY_PARAMETERS()
-!$acc update device(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
-!$acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
-!$acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+! $acc declare create(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
+! $acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+! $acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+    
+! $acc update device(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
+! $acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+! $acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
   END SUBROUTINE YOETHF_LOAD_PARAMETERS
 
   SUBROUTINE YRTHF_COPY_PARAMETERS()
