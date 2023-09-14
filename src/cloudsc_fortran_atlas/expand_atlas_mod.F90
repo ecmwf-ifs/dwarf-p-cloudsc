@@ -41,7 +41,6 @@ contains
     real(c_double), pointer :: field_r1(:,:), field_r2(:,:,:), field_r3(:,:,:,:)
     integer(c_int), pointer :: field_i1(:,:)
     logical, pointer :: field_l1(:,:)
-    !type(atlas_functionspace_blockstructuredcolumns) :: fspace
     logical :: lfield, rfield, ifield
     type(atlas_trace) :: trace
     trace = atlas_trace("expand_atlas_mod.F90", __LINE__, "loadvar_atlas", "IO")
@@ -52,7 +51,6 @@ contains
     ifield = (name == "KTYPE")
     rfield = ((.not. lfield) .and. (.not. ifield))
 
-    !fspace = field%functionspace()
     nlev = field%levels()
     nproma = fspace%nproma()
     ngptot = fspace%size()
