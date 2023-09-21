@@ -79,6 +79,11 @@ options :
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
             BUILD_field_api=ON
 
+    - with-cross:
+        help: Enable GPU kernel variant based on OMP and HIP
+        cmake: >
+            ENABLE_CLOUDSC_CROSS=ON
+
     - with-mpi :
         help  : Enable MPI-parallel kernel
         cmake : ENABLE_MPI=ON
@@ -134,6 +139,14 @@ options :
     - cloudsc-cuda :
         help  : Build the CUDA C version of CLOUDSC [ON|OFF]
         cmake : ENABLE_CLOUDSC_CUDA={{value}}
+
+    - cloudsc-gpu-offload :
+        help  : [OMP|ACC]
+        cmake : CLOUDSC_GPU_OFFLOAD={{value}}
+
+    - cloudsc-gpu-lang :
+        help  : [CUDA|HIP|SYCL]
+        cmake : CLOUDSC_GPU_LANG={{value}}
 
     - cloudsc-gpu-claw :
         help  : Build the deprecated CLAW-based GPU version CLOUDSC  [ON|OFF]

@@ -42,6 +42,15 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/yomcst.cuf.F90
 )
 
+if ( ENABLE_CLOUDSC_CROSS )
+  if (CLOUDSC_GPU_OFFLOAD STREQUAL "ACC")
+    cloudsc_add_compile_options(
+     SOURCES ${CLOUDSC_COMMON_SOURCES}
+     FLAGS "-gpu=nordc"
+    )
+  endif()
+endif()
+
 if( HAVE_CUDA )
     # ========================================================================
     # Compile CUDA fortran files with -cuda.
