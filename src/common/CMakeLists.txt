@@ -43,15 +43,15 @@ list(APPEND CLOUDSC_CUDA_SOURCES
 )
 
 if ( ENABLE_CLOUDSC_CROSS )
-  if (CLOUDSC_GPU_OFFLOAD STREQUAL "ACC")
-    # HACK: seems like nordc only necessary for NVIDIA machines but not AMD machines
-    if (CLOUDSC_GPU_LANG STREQUAL "CUDA" OR CLOUDSC_GPU_LANG STREQUAL "SYCL")
-      cloudsc_add_compile_options(
-       SOURCES ${CLOUDSC_COMMON_SOURCES}
-       FLAGS "-gpu=nordc"
-      )
-    endif()
+  # if (CLOUDSC_GPU_OFFLOAD STREQUAL "ACC")
+  # HACK: seems like nordc only necessary for NVIDIA machines but not AMD machines
+  if (CLOUDSC_GPU_LANG STREQUAL "CUDA" OR CLOUDSC_GPU_LANG STREQUAL "SYCL")
+    cloudsc_add_compile_options(
+     SOURCES ${CLOUDSC_COMMON_SOURCES}
+     FLAGS "-gpu=nordc"
+    )
   endif()
+  # endif()
 endif()
 
 if( HAVE_CUDA )
@@ -107,6 +107,8 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
         $<${HAVE_FIELD_API}:field_api>
+    DEFINITIONS
+        ENABLE_CLOUDSC_CROSS
 )
 
 if( HAVE_CUDA )
