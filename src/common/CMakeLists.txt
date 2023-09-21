@@ -44,10 +44,13 @@ list(APPEND CLOUDSC_CUDA_SOURCES
 
 if ( ENABLE_CLOUDSC_CROSS )
   if (CLOUDSC_GPU_OFFLOAD STREQUAL "ACC")
-    cloudsc_add_compile_options(
-     SOURCES ${CLOUDSC_COMMON_SOURCES}
-     FLAGS "-gpu=nordc"
-    )
+    # HACK: seems like nordc only necessary for NVIDIA machines but not AMD machines
+    if (CLOUDSC_GPU_LANG STREQUAL "CUDA" OR CLOUDSC_GPU_LANG STREQUAL "SYCL")
+      cloudsc_add_compile_options(
+       SOURCES ${CLOUDSC_COMMON_SOURCES}
+       FLAGS "-gpu=nordc"
+      )
+    endif()
   endif()
 endif()
 

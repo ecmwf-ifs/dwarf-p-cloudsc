@@ -124,7 +124,13 @@ module cloudsc_c_k_caching_mod
           & ralfdcp, rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2
 
 #if GPU_OFFLOAD == OMP_OFFLOAD
-        !$omp target data use_device_addr(pt, &
+! NOTE:
+!  seems like, 
+!  omp target data use_device_PTR works for both AMD and NVIDIA machines
+!  but,
+!  omp target data use_device_ADDR works for AMD but NOT for NVIDIA machines
+
+        !$omp target data use_device_ptr(pt, &
          !$omp& pq, tendency_tmp_t, tendency_tmp_q, tendency_tmp_a, tendency_tmp_cld, tendency_loc_t, &
          !$omp& tendency_loc_q, tendency_loc_a, tendency_loc_cld, pvfa, pvfl, pvfi, pdyna, &
          !$omp& pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, &

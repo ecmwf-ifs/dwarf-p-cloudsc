@@ -30,12 +30,10 @@ if( HAVE_CLOUDSC_CROSS )
     ## CUDA: 1
     ## HIP : 2
     ## SYCL: 3
-    ##########################################################
     if (CLOUDSC_GPU_LANG STREQUAL "CUDA")
         set(GPU_LANG "1")
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "-O3 -ffast-math")
-    ##########################################################
     elseif (CLOUDSC_GPU_LANG STREQUAL "HIP")
 	set(GPU_LANG "2")
 	if(NOT DEFINED ROCM_PATH)
@@ -48,14 +46,12 @@ if( HAVE_CLOUDSC_CROSS )
 	enable_language(HIP)
         find_package(hip REQUIRED)
 	set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -O3 -ffast-math")
-    ##########################################################
     elseif (CLOUDSC_GPU_LANG STREQUAL "SYCL")
         set(GPU_LANG "3")
 	enable_language(CXX)
         set (CMAKE_CXX_STANDARD 17)
 	set(CMAKE_CXX_COMPILER "/home/nams/opt/OpenSYCL/bin/syclcc")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -I/home/nams/opt/OpenSYCL/include --hipsycl-targets=cuda-nvcxx:cc80 -L/home/nams/opt/OpenSYCL/lib")
-    ##########################################################
     else ()
         set(GPU_LANG "1")
     endif()
@@ -93,7 +89,6 @@ if( HAVE_CLOUDSC_CROSS )
     target_include_directories(dwarf-cloudsc-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
     # CUDA specific
-    ##########################################################
     if (CLOUDSC_GPU_LANG STREQUAL "CUDA")
       set_source_files_properties(cloudsc_c_k_caching.cpp load_state.cpp PROPERTIES LANGUAGE CUDA)
       cloudsc_add_compile_options(
@@ -112,11 +107,10 @@ if( HAVE_CLOUDSC_CROSS )
       endif()
       set_target_properties( dwarf-cloudsc-gpu-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON) 
     # HIP specific
-    ##########################################################
     elseif (CLOUDSC_GPU_LANG STREQUAL "HIP")
-      set_source_files_properties(cloudsc_c_k_caching.cpp load_state.cpp PROPERTIES LANGUAGE HIP) 
+      set_source_files_properties(cloudsc_c_k_caching.cpp load_state.cpp PROPERTIES LANGUAGE HIP)
+      target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE --offload-arch=gfx90a) 
     # SYCL specific
-    ##########################################################
     elseif (CLOUDSC_GPU_LANG STREQUAL "SYCL")
     
     else ()
@@ -129,31 +123,18 @@ if( HAVE_CLOUDSC_CROSS )
 	LIBS dwarf-cloudsc-gpu-lib
     )
 
-    # target_compile_definitions(dwarf-cloudsc-cross PUBLIC CUDA_LANG=1)
-    # target_compile_definitions(dwarf-cloudsc-cross PUBLIC HIP_LANG=2)
-    # target_compile_definitions(dwarf-cloudsc-cross PUBLIC SYCL_LANG=3)
-    # target_compile_definitions(dwarf-cloudsc-cross PUBLIC ACC_OFFLOAD=1)
-    # target_compile_definitions(dwarf-cloudsc-cross PUBLIC OMP_OFFLOAD=2)
-    # target_compile_definitions(dwarf-cloudsc-cross PUBLIC GPU_OFFLOAD=${GPU_OFFLOAD})
-    # target_compile_definitions(dwarf-cloudsc-cross PUBLIC GPU_LANG=${GPU_LANG})
-
     set_target_properties(dwarf-cloudsc-cross PROPERTIES LINKER_LANGUAGE Fortran)
 
     # CUDA specific
-    ##########################################################
     if (CLOUDSC_GPU_LANG STREQUAL "CUDA")
       set_target_properties( dwarf-cloudsc-cross PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
       target_link_libraries(dwarf-cloudsc-cross dwarf-cloudsc-gpu-lib cudadevrt cudart)
       target_link_options(dwarf-cloudsc-cross PRIVATE "-cuda")
     # HIP specific 
-    ##########################################################
     elseif (CLOUDSC_GPU_LANG STREQUAL "HIP")
     # SYCL specific
-    ##########################################################
     elseif (CLOUDSC_GPU_LANG STREQUAL "SYCL")
-    ##########################################################
     else ()
-    ##########################################################
     endif()
 
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
