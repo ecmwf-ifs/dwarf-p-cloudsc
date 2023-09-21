@@ -63,10 +63,8 @@ if( HAVE_CLOUDSC_CROSS )
             load_state.h
     	    load_state.cpp
     	    yoecldp_c.h
-    	    cloudsc_c_k_caching.h
       	    cloudsc_c_k_caching.cpp
             cloudsc_c_k_caching_mod.F90
-     	    # cloudsc_driver_mod.F90
     	    PUBLIC_INCLUDES
     	    	$<INSTALL_INTERFACE:include>
             	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
