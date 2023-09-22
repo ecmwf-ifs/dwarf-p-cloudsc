@@ -137,7 +137,7 @@ jobs:
       # Build the targets
       - name: Bundle build
         run: |
-          ./cloudsc-bundle build --retry-verbose \
+          ./cloudsc-bundle build --verbose --retry-verbose \
           --arch=arch/github/ubuntu/${{ matrix.arch }} \
           ${{ matrix.prec_flag }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
 
