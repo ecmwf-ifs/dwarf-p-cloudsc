@@ -49,6 +49,7 @@ projects :
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
             ECKIT_ENABLE_BUILD_TOOLS=OFF
+            ECKIT_ENABLE_CUDA=OFF
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
@@ -65,6 +66,7 @@ projects :
         require : ecbuild eckit fckit
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
+            ATLAS_ENABLE_CUDA=OFF
 
     - field_api :
         git     : ${BITBUCKET}/rdx/field_api
