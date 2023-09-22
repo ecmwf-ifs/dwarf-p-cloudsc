@@ -10,6 +10,7 @@ cmake : >
         BUILD_eckit=OFF
         BUILD_fckit=OFF
         BUILD_atlas=OFF
+        ENABLE_OMP=ON
 
 projects :
 
@@ -111,6 +112,10 @@ options :
     - with-mpi :
         help  : Enable MPI-parallel kernel
         cmake : ENABLE_MPI=ON
+
+    - without-openmp :
+        help  : Disable OpenMP
+        cmake : ENABLE_OMP=OFF
 
     - with-loki :
         help  : Enable Loki source-to-source transformations
