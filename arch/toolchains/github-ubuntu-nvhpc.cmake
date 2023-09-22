@@ -19,13 +19,7 @@ set( ECBUILD_FIND_MPI ON )
 # Note: OpenMP_Fortran_FLAGS gets overwritten by the FindOpenMP module
 # unless its stored as a cache variable
 set( OpenMP_Fortran_FLAGS   "-mp -mp=bind,allcores,numa" CACHE STRING "" )
-
-# Note: OpenMP_C_FLAGS and OpenMP_C_LIB_NAMES have to be provided _both_ to
-# keep FindOpenMP from overwriting the FLAGS variable (the cache entry alone
-# doesn't have any effect here as the module uses FORCE to overwrite the
-# existing value)
 set( OpenMP_C_FLAGS         "-mp -mp=bind,allcores,numa" CACHE STRING "" )
-set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 
 ####################################################################
 # OpenAcc FLAGS
