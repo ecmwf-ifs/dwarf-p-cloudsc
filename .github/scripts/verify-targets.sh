@@ -38,7 +38,7 @@ then
   targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
   targets+=(dwarf-cloudsc-loki-idem-stack dwarf-cloudsc-loki-scc-stack)
-  if [[ "$prec_flag" != "--single-precision" ]]
+  if [[ "$build_flags" != *"--single-precision"* ]]
   then
     targets+=(dwarf-cloudsc-loki-c)
   fi
