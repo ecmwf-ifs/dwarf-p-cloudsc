@@ -141,7 +141,7 @@ options :
             CLOUDSC_PYTHON_F2PY=ON
 
     - with-atlas :
-        help  : Build Atlas and its dependencies (eckit, fckit) and enable Atlas-based variants of CLOUDSC
+        help  : Build Atlas and its dependencies (eckit, fckit) and enable Atlas-based variants of CLOUDSC (incompatible with --single-precision)
         cmake : >
             BUILD_eckit=ON
             BUILD_fckit=ON

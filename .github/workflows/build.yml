@@ -17,7 +17,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: Test on ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.prec_flag }} ${{ matrix.build_flags }}
+    name: ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
 
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
@@ -31,12 +31,11 @@ jobs:
 
         io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
 
-        prec_flag: ['', '--single-precision']  # Switch single/double precision
-
         build_flags:
           - ''  # Plain build without any options
           - '--with-gpu --with-loki --with-atlas' # Enable Loki, Atlas, and GPU variants
           - '--with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, Atlas, and GPU variants with MPI
+          - '--single-precision --with-gpu --with-loki --with-mpi' # Enable Loki, and GPU variants with MPI in a single-precision build
 
         pyiface_flag: ['']  # Enable the pyiface variant
 
@@ -48,7 +47,6 @@ jobs:
           # Add pyiface build configuration for double precision, non-MPI, HDF5 only
           - arch: gnu/9.4.0
             io_library_flag: ''
-            prec_flag: ''
             build_flags: '--cloudsc-fortran-pyiface=ON --cloudsc-python-f2py=ON'
 
           # Add nvhpc build configurations with serialbox and HDF5
@@ -56,6 +54,11 @@ jobs:
             nvhpc_version: 21.9
             io_library_flag: ''
             build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - arch: nvhpc/21.9
+            nvhpc_version: 21.9
+            io_library_flag: ''
+            build_flags: '--single-precision --with-gpu --with-loki --with-cuda'
             ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: nvhpc/21.9
             nvhpc_version: 21.9
@@ -67,6 +70,11 @@ jobs:
             nvhpc_version: 23.5
             io_library_flag: ''
             build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - arch: nvhpc/23.5
+            nvhpc_version: 23.5
+            io_library_flag: ''
+            build_flags: '--single-precision --with-gpu --with-loki --with-cuda'
             ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: nvhpc/23.5
             nvhpc_version: 23.5
@@ -139,19 +147,18 @@ jobs:
         run: |
           ./cloudsc-bundle build --verbose --retry-verbose \
           --arch=arch/github/ubuntu/${{ matrix.arch }} \
-          ${{ matrix.prec_flag }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
+          ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
 
       # Verify targets exist
       - name: Verify targets
         env:
           io_library_flag: ${{ matrix.io_library_flag }}
-          prec_flag: ${{ matrix.prec_flag }}
           build_flags: ${{ matrix.build_flags }}
         run: .github/scripts/verify-targets.sh
 
       # Run ctest
       - name: Run CTest
-        if: ${{ matrix.prec_flag == '' }}
+        if: ${{ !contains(matrix.build_flags, '--single-precision') }}
         working-directory: ./build
         run: |
           source env.sh
@@ -160,7 +167,7 @@ jobs:
       # Upload test output
       - name: Archive CTest output
         uses: actions/upload-artifact@v3
-        if: ${{ matrix.prec_flag == '' }}
+        if: ${{ !contains(matrix.build_flags, '--single-precision') }}
         with:
           name: ctest-log
           path: build/ctest.log
