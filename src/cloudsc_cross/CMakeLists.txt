@@ -9,7 +9,6 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_CROSS
 	DESCRIPTION "Build the HIP version CLOUDSC using Serialbox" DEFAULT OFF
-	CONDITION Serialbox_FOUND
 )
 
 if( HAVE_CLOUDSC_CROSS )
@@ -60,8 +59,6 @@ if( HAVE_CLOUDSC_CROSS )
         TARGET dwarf-cloudsc-gpu-lib
         INSTALL_HEADERS LISTED
         SOURCES
-            load_state.h
-    	    load_state.cpp
     	    yoecldp_c.h
       	    cloudsc_c_k_caching.cpp
             cloudsc_c_k_caching_mod.F90
@@ -70,10 +67,6 @@ if( HAVE_CLOUDSC_CROSS )
             	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
     	    PUBLIC_LIBS
     	        cloudsc-common-lib
-		# hip::device
-    		Serialbox::Serialbox_C
-    		# $<${HAVE_OMP}:OpenMP::OpenMP_C>
-    		# OpenMP::OpenMP_Fortran
     )
 
     target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC CUDA_LANG=1)
@@ -88,7 +81,7 @@ if( HAVE_CLOUDSC_CROSS )
 
     # CUDA specific
     if (CLOUDSC_GPU_LANG STREQUAL "CUDA")
-      set_source_files_properties(cloudsc_c_k_caching.cpp load_state.cpp PROPERTIES LANGUAGE CUDA)
+      set_source_files_properties(cloudsc_c_k_caching.cpp PROPERTIES LANGUAGE CUDA)
       cloudsc_add_compile_options(
          SOURCES cloudsc_c_k_caching_mod.F90 dwarf_cloudsc_gpu.F90 cloudsc_driver_mod.F90
          FLAGS   "-cuda") # -gpu=maxrregcount ...
@@ -106,7 +99,7 @@ if( HAVE_CLOUDSC_CROSS )
       set_target_properties( dwarf-cloudsc-gpu-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON) 
     # HIP specific
     elseif (CLOUDSC_GPU_LANG STREQUAL "HIP")
-      set_source_files_properties(cloudsc_c_k_caching.cpp load_state.cpp PROPERTIES LANGUAGE HIP)
+      set_source_files_properties(cloudsc_c_k_caching.cpp PROPERTIES LANGUAGE HIP)
       target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE --offload-arch=gfx90a) 
     # SYCL specific
     elseif (CLOUDSC_GPU_LANG STREQUAL "SYCL")

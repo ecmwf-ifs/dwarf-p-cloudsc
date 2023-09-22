@@ -3,7 +3,7 @@ module cloudsc_c_k_caching_mod
   use iso_fortran_env
   use iso_c_binding
   USE PARKIND1, ONLY: JPIM, JPIB, JPRB, JPRD
-
+  USE YOECLDP, ONLY: TECLDP 
   implicit none
 
   public :: cloudsc_c_wrapper
@@ -16,12 +16,13 @@ module cloudsc_c_k_caching_mod
           & pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, & 
           & pmfu, pmfd, pa, pclv, psupsat, plcrit_aer, picrit_aer, pre_ice, pccn, pnice, &
           & pcovptot, prainfrac_toprfz, pfsqlf, pfsqif, pfcqnng, pfcqlng, pfsqrf, pfsqsf, &
-          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn, & ! yrecldp, &
+          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn, yrecldp, &
           & ngpblks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
           & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, & 
           & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2) bind(c, name='cloudsc_c_launch')
    
-        use iso_c_binding 
+        use iso_c_binding
+        USE YOECLDP, ONLY: TECLDP
         implicit none
 
         type(c_ptr), value :: pt, &
@@ -35,6 +36,8 @@ module cloudsc_c_k_caching_mod
         real(c_double), value :: ptsphy, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, & 
           & r3les, r3ies, r4les, r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, & 
           & ralfdcp, rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2
+        type(TECLDP) :: yrecldp
+        ! type(c_ptr) :: yrecldp
    end subroutine cloudsc_c_launch
   
   end interface
@@ -47,10 +50,12 @@ module cloudsc_c_k_caching_mod
           & pdynl, pdyni, phrsw, phrlw, pvervel, pap, paph, plsm, ktype, plu, plude, psnde, &
           & pmfu, pmfd, pa, pclv, psupsat, plcrit_aer, picrit_aer, pre_ice, pccn, pnice, &
           & pcovptot, prainfrac_toprfz, pfsqlf, pfsqif, pfcqnng, pfcqlng, pfsqrf, pfsqsf, &
-          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn, & ! yrecldp, &
+          & pfcqrng, pfcqsng, pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn, yrecldp, &
           & ngpblks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
           & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
           & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+      
+  use iso_c_binding
 
         REAL(KIND=JPRB), INTENT(IN) :: PLCRIT_AER(:, :, :)
         REAL(KIND=JPRB), INTENT(IN) :: PICRIT_AER(:, :, :)
@@ -122,6 +127,8 @@ module cloudsc_c_k_caching_mod
         REAL(KIND=JPRB) :: rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, &
           & r3les, r3ies, r4les, r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, &
           & ralfdcp, rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2
+        type(TECLDP) :: yrecldp
+        ! type(c_ptr) :: yrecldp
 
 #if GPU_OFFLOAD == OMP_OFFLOAD
 ! NOTE:
@@ -159,7 +166,7 @@ module cloudsc_c_k_caching_mod
               & c_loc(pccn), c_loc(pnice), c_loc(pcovptot), c_loc(prainfrac_toprfz), & 
               & c_loc(pfsqlf), c_loc(pfsqif), c_loc(pfcqnng), c_loc(pfcqlng), c_loc(pfsqrf), & 
               & c_loc(pfsqsf), c_loc(pfcqrng), c_loc(pfcqsng), c_loc(pfsqltur), & 
-              & c_loc(pfsqitur), c_loc(pfplsl), c_loc(pfplsn), c_loc(pfhpsl), c_loc(pfhpsn), & 
+              & c_loc(pfsqitur), c_loc(pfplsl), c_loc(pfplsn), c_loc(pfhpsl), c_loc(pfhpsn), yrecldp, & 
               & ngpblks, rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv, r2es, r3les, r3ies, r4les, &
               & r4ies, r5les, r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
               & rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)

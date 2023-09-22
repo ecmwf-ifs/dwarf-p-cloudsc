@@ -16,8 +16,8 @@
 #include <CL/sycl.hpp>
 #endif
 
+#include <stdio.h>
 #include "yoecldp_c.h"
-#include "load_state.h"
 #include <float.h>
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -69,7 +69,7 @@ void cloudsc_c_launch(int numcols, int nproma, int kidia, int kfdia, int klon, d
   double * __restrict__  pfcqrng, double * __restrict__  pfcqsng,
   double * __restrict__  pfsqltur, double * __restrict__  pfsqitur,
   double * __restrict__  pfplsl, double * __restrict__  pfplsn, double * __restrict__  pfhpsl,
-  double * __restrict__  pfhpsn, /*struct TECLDP *yrecldp,*/ int ngpblks,
+  double * __restrict__  pfhpsn, struct TECLDP *yrecldp, int ngpblks,
   double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
   double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
   double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
@@ -138,16 +138,14 @@ void cloudsc_c_launch(int numcols, int nproma, int kidia, int kfdia, int klon, d
   double * __restrict__  pfcqrng, double * __restrict__  pfcqsng,
   double * __restrict__  pfsqltur, double * __restrict__  pfsqitur,
   double * __restrict__  pfplsl, double * __restrict__  pfplsn, double * __restrict__  pfhpsl,
-  double * __restrict__  pfhpsn/*, struct TECLDP *yrecldp*/, int ngpblks,
+  double * __restrict__  pfhpsn, struct TECLDP *yrecldp, int ngpblks,
   double rg, double rd, double rcpd, double retv, double rlvtt, double rlstt, double rlmlt, double rtt,
   double rv, double r2es, double r3les, double r3ies, double r4les, double r4ies, double r5les,
   double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
   double rtwat, double rtice, double rticecu, double rtwat_rtice_r, double rtwat_rticecu_r,
   double rkoop1, double rkoop2) {
 
-    struct TECLDP *yrecldp = (struct TECLDP*)malloc(sizeof(struct TECLDP));
     struct TECLDP *d_yrecldp;
-    load_state_helper(yrecldp);
 #if GPU_LANG == CUDA_LANG
     cudaMalloc(&d_yrecldp, sizeof(struct TECLDP));
     cudaMemcpy(d_yrecldp, yrecldp, sizeof(TECLDP), cudaMemcpyHostToDevice);
@@ -161,6 +159,7 @@ void cloudsc_c_launch(int numcols, int nproma, int kidia, int kfdia, int klon, d
     q.memcpy(d_yrecldp, yrecldp, sizeof(TECLDP));
     q.wait();
 #endif
+
 
 #if GPU_LANG == CUDA_LANG || GPU_LANG == HIP_LANG
     dim3 blockdim(nproma, 1, 1);
