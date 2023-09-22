@@ -16,7 +16,7 @@ projects :
 
     - ecbuild :
         git     : https://github.com/ecmwf/ecbuild
-        version : 3.7.0
+        version : 3.8.0
         bundle  : false
 
     - serialbox :
@@ -43,7 +43,7 @@ projects :
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : develop
+        version : 1.24.4
         optional: true
         require : ecbuild
         cmake   : >
@@ -52,7 +52,7 @@ projects :
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
-        version : develop
+        version : 0.11.0
         optional: true
         require : ecbuild eckit
         cmake   : >
@@ -60,7 +60,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : feature/MultiField
+        version : 0.34.0
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
