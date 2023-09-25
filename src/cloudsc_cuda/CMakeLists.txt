@@ -12,7 +12,7 @@ ecbuild_add_option( FEATURE CLOUDSC_C_CUDA
     CONDITION Serialbox_FOUND AND HAVE_CUDA
 )
 
-if( HAVE_CLOUDSC_CUDA )
+if( HAVE_CLOUDSC_C_CUDA )
 
     enable_language(CUDA)
     enable_language(CXX)

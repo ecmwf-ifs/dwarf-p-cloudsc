@@ -54,33 +54,33 @@ jobs:
             nvhpc_version: 21.9
             io_library_flag: ''
             build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: nvhpc/21.9
             nvhpc_version: 21.9
             io_library_flag: ''
             build_flags: '--single-precision --with-gpu --with-loki --with-cuda'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: nvhpc/21.9
             nvhpc_version: 21.9
             io_library_flag: '--with-serialbox'
             build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
 
           - arch: nvhpc/23.5
             nvhpc_version: 23.5
             io_library_flag: ''
             build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: nvhpc/23.5
             nvhpc_version: 23.5
             io_library_flag: ''
             build_flags: '--single-precision --with-gpu --with-loki --with-cuda'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
           - arch: nvhpc/23.5
             nvhpc_version: 23.5
             io_library_flag: '--with-serialbox'
             build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
