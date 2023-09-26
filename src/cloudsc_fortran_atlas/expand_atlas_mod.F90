@@ -19,7 +19,7 @@ module expand_atlas_mod
   use file_io_mod, only: input_initialize, load_scalar, load_array
   use expand_mod, only: get_offsets, expand
 
-  use, intrinsic :: iso_c_binding, only : c_int, c_double
+  use, intrinsic :: iso_c_binding, only : c_int
 
   implicit none
 
@@ -37,7 +37,7 @@ contains
     real(kind=jprb), allocatable :: buffer_r1(:), buffer_r2(:,:), buffer_r3(:,:,:)
     integer(kind=jpim), allocatable :: buffer_i1(:)
     logical, allocatable :: buffer_l1(:)
-    real(c_double), pointer :: field_r1(:,:), field_r2(:,:,:), field_r3(:,:,:,:)
+    real(kind=jprb), pointer :: field_r1(:,:), field_r2(:,:,:), field_r3(:,:,:,:)
     integer(c_int), pointer :: field_i1(:,:)
     logical, pointer :: field_l1(:,:)
     type(atlas_functionspace_blockstructuredcolumns) :: fspace
@@ -111,7 +111,7 @@ contains
     type(atlas_functionspace_blockstructuredcolumns) :: fspace
 
     real(kind=jprb), allocatable :: buffer(:,:,:)
-    real(c_double), pointer :: field_r3(:,:,:,:)
+    real(kind=jprb), pointer :: field_r3(:,:,:,:)
 
     field = fset%field(name)
     fspace = field%functionspace()
