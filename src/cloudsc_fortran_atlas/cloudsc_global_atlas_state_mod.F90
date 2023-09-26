@@ -28,10 +28,10 @@ MODULE CLOUDSC_GLOBAL_ATLAS_STATE_MOD
   IMPLICIT NONE
 
   TYPE VAR3D_PTR
-      REAL(C_DOUBLE), POINTER :: PTR(:,:,:)
+      REAL(KIND=JPRB), POINTER :: PTR(:,:,:)
   END TYPE
   TYPE VAR2D_PTR
-      REAL(C_DOUBLE), POINTER :: PTR(:,:)
+      REAL(KIND=JPRB), POINTER :: PTR(:,:)
   END TYPE
 
   CHARACTER(LEN=10), PARAMETER, DIMENSION(29) :: IN_VAR_NAMES = (/ &
@@ -51,58 +51,58 @@ MODULE CLOUDSC_GLOBAL_ATLAS_STATE_MOD
     TYPE(VAR2D_PTR), DIMENSION(15) :: OUT_VARS_2D_REAL64
 
     ! Input field variables and tendencies
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PLCRIT_AER(:,:)
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PICRIT_AER(:,:) 
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PRE_ICE(:,:) 
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PCCN(:,:)     ! liquid cloud condensation nuclei
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PNICE(:,:)    ! ice number concentration (cf. CCN)
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PT(:,:)       ! T at start of callpar
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PQ(:,:)       ! Q at start of callpar
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PVFA(:,:)     ! CC from VDF scheme
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PVFL(:,:)     ! Liq from VDF scheme
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PVFI(:,:)     ! Ice from VDF scheme
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PDYNA(:,:)    ! CC from Dynamics
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PDYNL(:,:)    ! Liq from Dynamics
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PDYNI(:,:)    ! Liq from Dynamics
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PHRSW(:,:)    ! Short-wave heating rate
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PHRLW(:,:)    ! Long-wave heating rate
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PVERVEL(:,:)  ! Vertical velocity
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PAP(:,:)      ! Pressure on full levels
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PLU(:,:)      ! Conv. condensate
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PLUDE(:,:)    ! Conv. detrained water 
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PSNDE(:,:)    ! Conv. detrained snow
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PMFU(:,:)     ! Conv. mass flux up
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PMFD(:,:)     ! Conv. mass flux down
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PA(:,:)       ! Original Cloud fraction (t)
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PSUPSAT(:,:)
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLCRIT_AER(:,:)
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PICRIT_AER(:,:) 
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PRE_ICE(:,:) 
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PCCN(:,:)     ! liquid cloud condensation nuclei
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PNICE(:,:)    ! ice number concentration (cf. CCN)
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PT(:,:)       ! T at start of callpar
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PQ(:,:)       ! Q at start of callpar
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVFA(:,:)     ! CC from VDF scheme
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVFL(:,:)     ! Liq from VDF scheme
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVFI(:,:)     ! Ice from VDF scheme
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PDYNA(:,:)    ! CC from Dynamics
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PDYNL(:,:)    ! Liq from Dynamics
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PDYNI(:,:)    ! Liq from Dynamics
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PHRSW(:,:)    ! Short-wave heating rate
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PHRLW(:,:)    ! Long-wave heating rate
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PVERVEL(:,:)  ! Vertical velocity
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PAP(:,:)      ! Pressure on full levels
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLU(:,:)      ! Conv. condensate
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLUDE(:,:)    ! Conv. detrained water 
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PSNDE(:,:)    ! Conv. detrained snow
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PMFU(:,:)     ! Conv. mass flux up
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PMFD(:,:)     ! Conv. mass flux down
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PA(:,:)       ! Original Cloud fraction (t)
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PSUPSAT(:,:)
 
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PLSM(:)       ! Land fraction (0-1) 
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PLSM(:)       ! Land fraction (0-1) 
     LOGICAL,        POINTER, CONTIGUOUS :: LDCUM(:)      ! Convection active
     INTEGER,        POINTER, CONTIGUOUS :: KTYPE(:)      ! Convection type 0,1,2
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PAPH(:,:)     ! Pressure on half levels
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PCLV(:,:,:) 
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PAPH(:,:)     ! Pressure on half levels
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PCLV(:,:,:) 
 
     TYPE(STATE_TYPE) :: TENDENCY_CML ! cumulative tendency used for final output
     TYPE(STATE_TYPE) :: TENDENCY_TMP ! cumulative tendency used as input
     TYPE(STATE_TYPE) :: TENDENCY_LOC ! local tendency from cloud scheme
 
     ! Output fields used for validation
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFSQLF(:,:)   ! Flux of liquid
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFSQIF(:,:)   ! Flux of ice
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFCQLNG(:,:)  ! -ve corr for liq
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFCQNNG(:,:)  ! -ve corr for ice
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFSQRF(:,:)   ! Flux diagnostics
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFSQSF(:,:)   ! for DDH, generic
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFCQRNG(:,:)  ! rain
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFCQSNG(:,:)  ! snow
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFSQLTUR(:,:) ! liquid flux due to VDF
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFSQITUR(:,:) ! ice flux due to VDF
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFPLSL(:,:)   ! liq+rain sedim flux
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFPLSN(:,:)   ! ice+snow sedim flux
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFHPSL(:,:)   ! Enthalpy flux for liq
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PFHPSN(:,:)   ! Enthalpy flux for ice
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PCOVPTOT(:,:) ! Precip fraction
-    REAL(C_DOUBLE), POINTER, CONTIGUOUS :: PRAINFRAC_TOPRFZ(:) 
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQLF(:,:)   ! Flux of liquid
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQIF(:,:)   ! Flux of ice
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQLNG(:,:)  ! -ve corr for liq
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQNNG(:,:)  ! -ve corr for ice
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQRF(:,:)   ! Flux diagnostics
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQSF(:,:)   ! for DDH, generic
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQRNG(:,:)  ! rain
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFCQSNG(:,:)  ! snow
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQLTUR(:,:) ! liquid flux due to VDF
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFSQITUR(:,:) ! ice flux due to VDF
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFPLSL(:,:)   ! liq+rain sedim flux
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFPLSN(:,:)   ! ice+snow sedim flux
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFHPSL(:,:)   ! Enthalpy flux for liq
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PFHPSN(:,:)   ! Enthalpy flux for ice
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PCOVPTOT(:,:) ! Precip fraction
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS :: PRAINFRAC_TOPRFZ(:) 
 
     CONTAINS
     PROCEDURE :: GET_BLOCK => CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK
@@ -132,7 +132,7 @@ CONTAINS
     CLASS(ATLAS_FIELDSET), INTENT(INOUT) :: FSET
     INTEGER, INTENT(IN) :: IBLK
 
-    REAL(C_DOUBLE), POINTER :: TMP3D(:,:,:)
+    REAL(KIND=JPRB), POINTER :: TMP3D(:,:,:)
 
     CALL FSET%DATA(1, SELF%PLCRIT_AER, IBLK)
     CALL FSET%DATA(2, SELF%PICRIT_AER, IBLK)
@@ -210,8 +210,8 @@ CONTAINS
     INTEGER(KIND=JPIM) :: KLON, IVAR, B
     TYPE(VAR3D_PTR), DIMENSION(24) :: IN_VARS_3D_REAL64
     TYPE(VAR3D_PTR), DIMENSION(15) :: OUT_VARS_3D_REAL64
-    REAL(C_DOUBLE), POINTER :: TMP3D(:,:,:)
-    REAL(C_DOUBLE), POINTER :: TMP2D(:,:)
+    REAL(KIND=JPRB), POINTER :: TMP3D(:,:,:)
+    REAL(KIND=JPRB), POINTER :: TMP2D(:,:)
     TYPE(ATLAS_FIELD) :: FIELD
     TYPE(ATLAS_PARTITIONER) :: PARTITIONER
     INTEGER(KIND=JPIM)      :: NGPTOT

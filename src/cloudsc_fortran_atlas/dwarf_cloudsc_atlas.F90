@@ -27,7 +27,6 @@ INTEGER(KIND=JPIM) :: NUMOMP   = 1     ! Number of OpenMP threads for this run
 INTEGER(KIND=JPIM) :: NGPTOTG  = 16384 ! Number of grid points (as read from command line)
 INTEGER(KIND=JPIM) :: NPROMA   = 32    ! NPROMA blocking factor (currently active)
 
-REAL(c_double), pointer :: tmp3d(:,:,:)
 type(atlas_fieldset) :: fset
 type(atlas_field) :: field
 
