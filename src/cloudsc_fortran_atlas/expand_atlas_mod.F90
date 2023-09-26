@@ -19,7 +19,7 @@ module expand_atlas_mod
   use file_io_mod, only: input_initialize, load_scalar, load_array
   use expand_mod, only: get_offsets, expand
 
-  use, intrinsic :: iso_c_binding, only : c_int, c_double
+  use, intrinsic :: iso_c_binding, only : c_int
 
   implicit none
 
@@ -38,7 +38,7 @@ contains
     real(kind=jprb), allocatable :: buffer_r1(:), buffer_r2(:,:), buffer_r3(:,:,:)
     integer(kind=jpim), allocatable :: buffer_i1(:)
     logical, allocatable :: buffer_l1(:)
-    real(c_double), pointer :: field_r1(:,:), field_r2(:,:,:), field_r3(:,:,:,:)
+    real(kind=jprb), pointer :: field_r1(:,:), field_r2(:,:,:), field_r3(:,:,:,:)
     integer(c_int), pointer :: field_i1(:,:)
     logical, pointer :: field_l1(:,:)
     logical :: lfield, rfield, ifield
@@ -114,7 +114,7 @@ contains
     type(atlas_trace) :: trace
 
     real(kind=jprb), allocatable :: buffer(:,:,:)
-    real(c_double), pointer :: field_r3(:,:,:,:)
+    real(kind=jprb), pointer :: field_r3(:,:,:,:)
 
     trace = atlas_trace("expand_atlas_mod.F90", __LINE__, "loadstate_atlas", "IO")
 
