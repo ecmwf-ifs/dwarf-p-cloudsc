@@ -218,7 +218,7 @@ CONTAINS
     TYPE(ATLAS_CONFIG), DIMENSION(14) :: OUT_MFIELD_CONFIG ! the last two variables are special and added through FieldSet
     INTEGER :: INVAR_SIZE, OUTVAR_SIZE
     LOGICAL :: LMULTIFIELD
-    CHARACTER(len=8) :: CENV
+    CHARACTER(len=8) :: CENV, FPREC
     INTEGER :: CENV_LEN
     TYPE(ATLAS_TRACE) :: TRACE, TRACE_IO
 
@@ -252,7 +252,8 @@ CONTAINS
     CALL CONFIG%SET("type", "MultiFieldCreatorIFS")
     CALL CONFIG%SET("nproma", NPROMA)
     CALL CONFIG%SET("ngptot", FSPACE%SIZE())
-    CALL CONFIG%SET("datatype", "real64")
+    WRITE (FPREC,"(A4,I2)") "real", 8*jprb
+    CALL CONFIG%SET("datatype", TRIM(FPREC))
     
     INVAR_SIZE = SIZE(IN_VAR_NAMES) - 5
     IF (LMULTIFIELD) THEN
