@@ -7,12 +7,6 @@
 # nor does it submit to any jurisdiction.
 
 ####################################################################
-# COMPILER
-####################################################################
-
-set( ECBUILD_FIND_MPI ON )
-
-####################################################################
 # OpenMP FLAGS
 ####################################################################
 
@@ -22,7 +16,7 @@ set( OpenMP_Fortran_FLAGS   "-mp -mp=bind,allcores,numa" CACHE STRING "" )
 set( OpenMP_C_FLAGS         "-mp -mp=bind,allcores,numa" CACHE STRING "" )
 
 ####################################################################
-# OpenAcc FLAGS
+# OpenACC FLAGS
 ####################################################################
 
 # NB: We have to add `-mp` again to avoid undefined symbols during linking
