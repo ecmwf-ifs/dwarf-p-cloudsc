@@ -6,6 +6,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+# Disable MPI in Github runner with NVHPC
+set( ENABLE_MPI OFF CACHE STRING "" )
+
 ####################################################################
 # OpenMP FLAGS
 ####################################################################
