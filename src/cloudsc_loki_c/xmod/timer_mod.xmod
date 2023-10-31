@@ -1,0 +1,786 @@
+<OmniFortranModule version="1.0">
+  <name>timer_mod</name>
+  <depends>
+    <name>parkind1</name>
+  </depends>
+  <typeTable>
+    <FbasicType type="I1e9e380" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1e9e5b0" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1e9e840" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I1e9ead0" is_parameter="true" ref="Fint"/>
+    <FfunctionType type="F1e9b2a0" return_type="Fint"/>
+    <FfunctionType type="F1f15580" return_type="Fint"/>
+    <FbasicType type="R1e91ab0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1e91ce0" is_parameter="true" ref="R1e91ab0"/>
+    <FbasicType type="R1e92d00" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprd</Var>
+      </kind>
+    </FbasicType>
+    <FstructType type="S1e944a0">
+      <symbols>
+        <id type="I1e95120">
+          <name>numomp</name>
+        </id>
+        <id type="R1e971d0">
+          <name>tstart</name>
+        </id>
+        <id type="R1e97400">
+          <name>tend</name>
+        </id>
+        <id type="A1e99610">
+          <name>tthread</name>
+        </id>
+        <id type="A1eb5e00">
+          <name>coreid</name>
+        </id>
+        <id type="A1eb6170">
+          <name>icalls</name>
+        </id>
+        <id type="A1eb64e0">
+          <name>igpc</name>
+        </id>
+      </symbols>
+      <typeBoundProcedures>
+        <typeBoundProcedure type="F1eb6da0" pass="pass">
+          <name>start</name>
+          <binding>
+            <name>performance_timer_start</name>
+          </binding>
+        </typeBoundProcedure>
+        <typeBoundProcedure type="F1eb75a0" pass="pass">
+          <name>end</name>
+          <binding>
+            <name>performance_timer_end</name>
+          </binding>
+        </typeBoundProcedure>
+        <typeBoundProcedure type="F1eb7db0" pass="pass">
+          <name>thread_start</name>
+          <binding>
+            <name>performance_timer_thread_start</name>
+          </binding>
+        </typeBoundProcedure>
+        <typeBoundProcedure type="F1eb85c0" pass="pass">
+          <name>thread_end</name>
+          <binding>
+            <name>performance_timer_thread_end</name>
+          </binding>
+        </typeBoundProcedure>
+        <typeBoundProcedure type="F1eb8dd0" pass="pass">
+          <name>thread_log</name>
+          <binding>
+            <name>performance_timer_thread_log</name>
+          </binding>
+        </typeBoundProcedure>
+        <typeBoundProcedure type="F1eb9600" pass="pass">
+          <name>print_performance</name>
+          <binding>
+            <name>performance_timer_print_performance</name>
+          </binding>
+        </typeBoundProcedure>
+      </typeBoundProcedures>
+    </FstructType>
+    <FbasicType type="I1e94ef0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1e95120" ref="I1e94ef0"/>
+    <FbasicType type="R1e96fa0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1e971d0" ref="R1e96fa0"/>
+    <FbasicType type="R1e97400" ref="R1e96fa0"/>
+    <FbasicType type="R1e992a0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1e994d0" is_allocatable="true" ref="R1e992a0"/>
+    <FbasicType type="A1e99610" is_allocatable="true" ref="R1e994d0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1eb5a90" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1eb5cc0" is_allocatable="true" ref="I1eb5a90"/>
+    <FbasicType type="A1eb5e00" is_allocatable="true" ref="I1eb5cc0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1eb6030" is_allocatable="true" ref="I1eb5a90"/>
+    <FbasicType type="A1eb6170" is_allocatable="true" ref="I1eb6030">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1eb63a0" is_allocatable="true" ref="I1eb5a90"/>
+    <FbasicType type="A1eb64e0" is_allocatable="true" ref="I1eb63a0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F1eba480" return_type="I1ebb0a0">
+      <params>
+      </params>
+    </FfunctionType>
+    <FbasicType type="I1ebaf60" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1ebb0a0" ref="I1ebaf60"/>
+    <FfunctionType type="F1ebb740" return_type="FnumericAll"/>
+    <FfunctionType type="F1ebc5f0" return_type="R1ebe550">
+      <params>
+      </params>
+    </FfunctionType>
+    <FbasicType type="R1ebe410" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1ebe550" ref="R1ebe410"/>
+    <FbasicType type="I1ebf0d0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">8</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1ebf300" ref="I1ebf0d0"/>
+    <FbasicType type="I1ebf530" ref="I1ebf0d0"/>
+    <FfunctionType type="F1ec02f0" return_type="Fvoid"/>
+    <FfunctionType type="F1ec2030" return_type="R1ec2c60"/>
+    <FbasicType type="R1ec2c60" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>kind</name>
+          <arguments>
+            <Var type="R1ebe550" scope="local">ftimer</Var>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FfunctionType type="F1ec2da0" return_type="R1ec2c60"/>
+    <FfunctionType type="F1ec1a50" return_type="Fint"/>
+    <FfunctionType type="F1ec27c0" return_type="Fint"/>
+    <FbasicType type="R1ec1ef0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>kind</name>
+          <arguments>
+            <Var type="R1ebe550" scope="local">ftimer</Var>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FfunctionType type="F1ec40e0" return_type="Fvoid">
+      <params>
+        <name type="S1ec4f40">self</name>
+        <name type="I1ec5ac0">numomp</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="S1ec4f40" is_class="true" ref="S1e944a0"/>
+    <FbasicType type="I1ec5980" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1ec5ac0" intent="in" ref="I1ec5980"/>
+    <FbasicType type="I1ec63f0" ref="I1e95120"/>
+    <FbasicType type="A1ec9530" is_allocatable="true" ref="R1e994d0">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1ec7380" is_allocatable="true" ref="R1e994d0"/>
+    <FbasicType type="A1ec74c0" is_allocatable="true" ref="R1ec7380">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ec7dc0" ref="Fint">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1eccdf0" is_allocatable="true" ref="I1eb5cc0">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1ecac40" is_allocatable="true" ref="I1eb5cc0"/>
+    <FbasicType type="A1ecad80" is_allocatable="true" ref="I1ecac40">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ecb680" ref="Fint">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ed06b0" is_allocatable="true" ref="I1eb6030">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1ece500" is_allocatable="true" ref="I1eb6030"/>
+    <FbasicType type="A1ece640" is_allocatable="true" ref="I1ece500">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ecef40" ref="Fint">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ed3f70" is_allocatable="true" ref="I1eb63a0">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1ed1dc0" is_allocatable="true" ref="I1eb63a0"/>
+    <FbasicType type="A1ed1f00" is_allocatable="true" ref="I1ed1dc0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ed2800" ref="Fint">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">0</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <minusExpr type="I1ec5ac0">
+            <Var type="I1ec5ac0" scope="local">numomp</Var>
+            <FintConstant type="Fint">1</FintConstant>
+          </minusExpr>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ed5ed0" is_allocatable="true" ref="I1eb6030">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1ed5370" is_allocatable="true" ref="I1eb6030"/>
+    <FbasicType type="A1ed54b0" is_allocatable="true" ref="I1ed5370">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ed5950" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ed7770" is_allocatable="true" ref="I1eb63a0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1ed6c10" is_allocatable="true" ref="I1eb63a0"/>
+    <FbasicType type="A1ed6d50" is_allocatable="true" ref="I1ed6c10">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A1ed71f0" ref="Fint">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1ed8060" ref="R1e971d0"/>
+    <FfunctionType type="F1ed90b0" return_type="Fvoid">
+      <params>
+        <name type="S1ed9be0">self</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="S1ed9be0" is_class="true" ref="S1e944a0"/>
+    <FbasicType type="R1eda480" ref="R1e97400"/>
+    <FfunctionType type="F1edb540" return_type="Fvoid">
+      <params>
+        <name type="S1edc3a0">self</name>
+        <name type="I1edcf20">tid</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="S1edc3a0" is_class="true" ref="S1e944a0"/>
+    <FbasicType type="I1edcde0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1edcf20" intent="in" ref="I1edcde0"/>
+    <FbasicType type="R1edde10" is_allocatable="true" ref="R1e994d0"/>
+    <FbasicType type="A1eddf50" is_allocatable="true" ref="R1edde10">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F1edf680" return_type="Fvoid">
+      <params>
+        <name type="S1ee04e0">self</name>
+        <name type="I1ee1060">tid</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="S1ee04e0" is_class="true" ref="S1e944a0"/>
+    <FbasicType type="I1ee0f20" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1ee1060" intent="in" ref="I1ee0f20"/>
+    <FbasicType type="R1ee23a0" is_allocatable="true" ref="R1e994d0"/>
+    <FbasicType type="A1ee24e0" is_allocatable="true" ref="R1ee23a0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1ee32f0" is_allocatable="true" ref="R1e994d0"/>
+    <FbasicType type="A1ee3430" is_allocatable="true" ref="R1ee32f0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F1ee4da0" return_type="Fvoid">
+      <params>
+        <name type="S1ee5f30">self</name>
+        <name type="I1ee6c90">tid</name>
+        <name type="I1ee6dd0">igpc</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="S1ee5f30" is_class="true" ref="S1e944a0"/>
+    <FbasicType type="I1ee6b50" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1ee6c90" intent="in" ref="I1ee6b50"/>
+    <FbasicType type="I1ee6dd0" intent="in" ref="I1ee6b50"/>
+    <FbasicType type="I1ee81a0" is_allocatable="true" ref="I1eb6030"/>
+    <FbasicType type="A1ee82e0" is_allocatable="true" ref="I1ee81a0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1ee8f40" is_allocatable="true" ref="I1eb6030"/>
+    <FbasicType type="A1ee9080" is_allocatable="true" ref="I1ee8f40">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1eea8f0" is_allocatable="true" ref="I1eb63a0"/>
+    <FbasicType type="A1eeaa30" is_allocatable="true" ref="I1eea8f0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1eeb630" is_allocatable="true" ref="I1eb63a0"/>
+    <FbasicType type="A1eeb770" is_allocatable="true" ref="I1eeb630">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F1eecff0" return_type="Fvoid">
+      <params>
+        <name type="S1eee4b0">self</name>
+        <name type="I1eef3f0">nproma</name>
+        <name type="I1eef530">ngpblks</name>
+        <name type="I1eef670">ngptot</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="S1eee4b0" is_class="true" ref="S1e944a0"/>
+    <FbasicType type="I1eef2b0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1eef3f0" intent="in" ref="I1eef2b0"/>
+    <FbasicType type="I1eef530" intent="in" ref="I1eef2b0"/>
+    <FbasicType type="I1eef670" intent="in" ref="I1eef2b0"/>
+    <FbasicType type="R1ef14f0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1ef1720" ref="R1ef14f0"/>
+    <FbasicType type="R1ef1950" ref="R1ef14f0"/>
+    <FbasicType type="R1ef3810" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1ef3a40" ref="R1ef3810"/>
+    <FbasicType type="R1ef3c70" ref="R1ef3810"/>
+    <FbasicType type="I1ef4530" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1ef4760" ref="I1ef4530"/>
+    <FfunctionType type="F1efc4a0" return_type="R1f0fb50"/>
+    <FbasicType type="R1f0fb50" ref="Freal">
+      <kind>
+        <Var type="I1e9e840" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FfunctionType type="F1f0fc90" return_type="R1f0fb50"/>
+    <FfunctionType type="F1f081e0" return_type="Fint"/>
+    <FfunctionType type="F1f16610" return_type="Fint"/>
+    <FfunctionType type="F1f13d40" return_type="Fint"/>
+    <FbasicType type="C1ef4e30" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">26</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef55f0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">42</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef5da0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">39</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef7300" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">6</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef74f0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">6</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef76e0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">8</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef78d0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">5</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef7ac0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">6</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef7cb0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">4</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef7ea0" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">10</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="C1ef8090" ref="Fcharacter">
+      <len>
+        <FintConstant type="Fint">8</FintConstant>
+      </len>
+    </FbasicType>
+    <FbasicType type="I1ef8c20" ref="I1e95120"/>
+    <FbasicType type="R1ef9c00" is_allocatable="true" ref="R1e994d0"/>
+    <FbasicType type="A1ef9d40" is_allocatable="true" ref="R1ef9c00">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1efc360" ref="Freal">
+      <kind>
+        <Var type="I1e9e840" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1efb770" is_allocatable="true" ref="I1eb63a0"/>
+    <FbasicType type="A1efb8b0" is_allocatable="true" ref="I1efb770">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1efcaf0" ref="Freal">
+      <kind>
+        <Var type="I1e9e840" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1efd5d0" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprd</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1eff560" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1f00b70" ref="Freal">
+      <kind>
+        <Var type="I1e9e840" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1f013e0" ref="Freal">
+      <kind>
+        <Var type="I1e9e840" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1f01f40" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1f04cf0" ref="I1e95120"/>
+    <FbasicType type="I1f05360" is_allocatable="true" ref="I1eb63a0"/>
+    <FbasicType type="A1f054a0" is_allocatable="true" ref="I1f05360">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="I1f060d0" is_allocatable="true" ref="I1eb6030"/>
+    <FbasicType type="A1f06210" is_allocatable="true" ref="I1f060d0">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1f06dc0" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1f08f60" is_allocatable="true" ref="I1eb5cc0"/>
+    <FbasicType type="A1f090a0" is_allocatable="true" ref="I1f08f60">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1f0a110" ref="R1e97400"/>
+    <FbasicType type="R1f0a3d0" ref="R1e971d0"/>
+    <FbasicType type="R1f0aa60" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1f0be00" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1f0dd30" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1f0f2e0" ref="Freal">
+      <kind>
+        <Var type="I1e9e840" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1f106b0" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1f13010" ref="I1e95120"/>
+    <FbasicType type="I1f13830" is_allocatable="true" ref="I1eb63a0"/>
+    <FbasicType type="A1f13970" is_allocatable="true" ref="I1f13830">
+      <indexRange is_assumed_shape="true">
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="R1f14b20" ref="Freal">
+      <kind>
+        <Var type="Fint" scope="local">jprb</Var>
+      </kind>
+    </FbasicType>
+    <FbasicType type="F1eb6da0" ref="F1ec40e0"/>
+    <FbasicType type="F1eb75a0" ref="F1ed90b0"/>
+    <FbasicType type="F1eb7db0" ref="F1edb540"/>
+    <FbasicType type="F1eb85c0" ref="F1edf680"/>
+    <FbasicType type="F1eb8dd0" ref="F1ee4da0"/>
+    <FbasicType type="F1eb9600" ref="F1eecff0"/>
+  </typeTable>
+  <identifiers>
+    <id type="I1e9e380" sclass="flocal" original_name="jpim" declared_in="parkind1">
+      <name>jpim</name>
+    </id>
+    <id type="I1e9e5b0" sclass="flocal" original_name="jpib" declared_in="parkind1">
+      <name>jpib</name>
+    </id>
+    <id type="I1e9e840" sclass="flocal" original_name="jprb" declared_in="parkind1">
+      <name>jprb</name>
+    </id>
+    <id type="I1e9ead0" sclass="flocal" original_name="jprd" declared_in="parkind1">
+      <name>jprd</name>
+    </id>
+    <id type="F1e9b2a0" sclass="ffunc" original_name="selected_real_kind" declared_in="timer_mod">
+      <name>selected_real_kind</name>
+    </id>
+    <id type="R1e91ce0" sclass="flocal" original_name="zhpm" declared_in="timer_mod">
+      <name>zhpm</name>
+    </id>
+    <id type="S1e944a0" sclass="ftype_name" original_name="performance_timer" declared_in="timer_mod">
+      <name>performance_timer</name>
+    </id>
+    <id type="F1eba480" sclass="ffunc" original_name="get_thread_num" declared_in="timer_mod">
+      <name>get_thread_num</name>
+    </id>
+    <id type="F1ebc5f0" sclass="ffunc" original_name="ftimer" declared_in="timer_mod">
+      <name>ftimer</name>
+    </id>
+    <id type="F1ec40e0" sclass="ffunc" original_name="performance_timer_start" declared_in="timer_mod">
+      <name>performance_timer_start</name>
+    </id>
+    <id type="F1ed90b0" sclass="ffunc" original_name="performance_timer_end" declared_in="timer_mod">
+      <name>performance_timer_end</name>
+    </id>
+    <id type="F1edb540" sclass="ffunc" original_name="performance_timer_thread_start" declared_in="timer_mod">
+      <name>performance_timer_thread_start</name>
+    </id>
+    <id type="F1edf680" sclass="ffunc" original_name="performance_timer_thread_end" declared_in="timer_mod">
+      <name>performance_timer_thread_end</name>
+    </id>
+    <id type="F1ee4da0" sclass="ffunc" original_name="performance_timer_thread_log" declared_in="timer_mod">
+      <name>performance_timer_thread_log</name>
+    </id>
+    <id type="F1eecff0" sclass="ffunc" original_name="performance_timer_print_performance" declared_in="timer_mod">
+      <name>performance_timer_print_performance</name>
+    </id>
+  </identifiers>
+  <declarations>
+    <varDecl>
+      <name type="I1e9e380">jpim</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">9</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl>
+      <name type="I1e9e5b0">jpib</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_int_kind</name>
+          <arguments>
+            <FintConstant type="Fint">12</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl>
+      <name type="I1e9e840">jprb</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl>
+      <name type="I1e9ead0">jprd</name>
+      <value>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </value>
+    </varDecl>
+    <varDecl lineno="16" file="../common/module/timer_mod.F90">
+      <name type="R1e91ce0">zhpm</name>
+      <value>
+        <FrealConstant type="R1e92d00" kind="jprd">12482329.0</FrealConstant>
+      </value>
+    </varDecl>
+  </declarations>
+  <interfaceDecls>
+  </interfaceDecls>
+  <aux_info>
+  </aux_info>
+</OmniFortranModule>
