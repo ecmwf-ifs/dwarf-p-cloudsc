@@ -9,7 +9,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_LOKI
     DESCRIPTION "Use Loki source-to-source transformations with CLOUDSC " DEFAULT OFF
-    CONDITION Serialbox_FOUND # OR HDF5_FOUND
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
 function( cloudsc_xmod _TARGET )
@@ -205,8 +205,8 @@ if( HAVE_CLOUDSC_LOKI )
         TARGET dwarf-cloudsc-gpu-lib
         INSTALL_HEADERS LISTED
         SOURCES
- 	    load_state.h
-	    load_state.cpp
+	    # load_state.h
+	    # load_state.cpp
 	    yoecldp_c.h
 	    # loki-c-scc/yoecldp_fc.F90
 	    # cloudsc_c_k_caching.cpp
@@ -218,7 +218,7 @@ if( HAVE_CLOUDSC_LOKI )
             	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
     	    PUBLIC_LIBS
     	        cloudsc-common-lib
-		Serialbox::Serialbox_C
+		# Serialbox::Serialbox_C
 		# CUDA::cublas
 		# CUDA::cublasLt
 		# CUDA::curand
