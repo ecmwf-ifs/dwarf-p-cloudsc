@@ -9,7 +9,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_LOKI
     DESCRIPTION "Use Loki source-to-source transformations with CLOUDSC " DEFAULT OFF
-    CONDITION Serialbox_FOUND OR HDF5_FOUND
+    CONDITION Serialbox_FOUND # OR HDF5_FOUND
 )
 
 function( cloudsc_xmod _TARGET )
@@ -134,6 +134,11 @@ if( HAVE_CLOUDSC_LOKI )
 
     ##
     if ( TRUE  )
+    enable_language(CUDA)
+    set(CMAKE_CUDA_FLAGS "-O3 -ffast-math")
+    find_package(CUDAToolkit)
+    link_directories("/usr/local/apps/nvidia/22.11/Linux_x86_64/22.11/math_libs/lib64")
+
     cloudsc_xmod( loki-c-scc )
 
     loki_transform_convert(
@@ -192,6 +197,55 @@ if( HAVE_CLOUDSC_LOKI )
 #    )
 
 
+# /usr/bin/ld: cannot find -lcublas
+# /usr/bin/ld: cannot find -lcublasLt
+# /usr/bin/ld: cannot find -lcurand
+
+      ecbuild_add_library(
+        TARGET dwarf-cloudsc-gpu-lib
+        INSTALL_HEADERS LISTED
+        SOURCES
+ 	    load_state.h
+	    load_state.cpp
+	    yoecldp_c.h
+	    # loki-c-scc/yoecldp_fc.F90
+	    # cloudsc_c_k_caching.cpp
+            loki-c-scc/cloudsc_c.c
+	    # cloudsc_c_k_caching_mod.F90
+    	    loki-c-scc/cloudsc_fc.F90
+	    PUBLIC_INCLUDES
+    	    	$<INSTALL_INTERFACE:include>
+            	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+    	    PUBLIC_LIBS
+    	        cloudsc-common-lib
+		Serialbox::Serialbox_C
+		# CUDA::cublas
+		# CUDA::cublasLt
+		# CUDA::curand
+    )
+
+    target_include_directories(dwarf-cloudsc-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+    set_source_files_properties(loki-c-scc/cloudsc_c.c PROPERTIES LANGUAGE CUDA)
+    # cloudsc_add_compile_options(
+	# 	SOURCES loki-c-scc/cloudsc_c.c
+	# 	FLAGS "-g -G")
+
+   target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+	   --generate-line-info
+	   >) 
+
+
+      cloudsc_add_compile_options(
+         # SOURCES loki-c-scc/cloudsc_fc.F90 dwarf_cloudsc.F90 loki-c-scc/cloudsc_driver_loki_mod.c.F90
+	 SOURCES dwarf_cloudsc.F90
+         FLAGS   "-cuda") # -gpu=maxrregcount ...
+    target_include_directories(
+        dwarf-cloudsc-gpu-lib
+        PUBLIC
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
+
     # ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
     #     SOURCES
     #         dwarf_cloudsc.F90
@@ -202,20 +256,32 @@ if( HAVE_CLOUDSC_LOKI )
     #     DEFINITIONS ${CLOUDSC_DEFINITIONS}
     # )
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-c
-        SOURCES
-	    dwarf_cloudsc.F90
-            loki-c-scc/cloudsc_driver_loki_mod.c.F90
-            loki-c-scc/cloudsc_fc.F90
-            loki-c-scc/cloudsc_c.c
-            loki-c-scc/yoethf_fc.F90
-            loki-c-scc/yomcst_fc.F90
-            loki-c-scc/yoecldp_fc.F90
-	    # dwarf_cloudsc.F90
-        LIBS
-           cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    # ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-c
+    #     SOURCES
+    # 	    dwarf_cloudsc.F90
+    #        loki-c-scc/cloudsc_driver_loki_mod.c.F90
+    #         loki-c-scc/cloudsc_fc.F90
+    #         loki-c-scc/cloudsc_c.c
+    #         loki-c-scc/yoethf_fc.F90
+    #         loki-c-scc/yomcst_fc.F90
+    #         loki-c-scc/yoecldp_fc.F90
+    # 	    # dwarf_cloudsc.F90
+    #     LIBS
+    #        cloudsc-common-lib
+    #     DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    # )
+
+    ecbuild_add_executable(
+        TARGET  dwarf-cloudsc-loki-scc-c
+	SOURCES dwarf_cloudsc.F90 loki-c-scc/cloudsc_driver_loki_mod.c.F90
+	LIBS dwarf-cloudsc-gpu-lib
     )
+
+    set_target_properties(dwarf-cloudsc-loki-scc-c PROPERTIES LINKER_LANGUAGE Fortran)
+
+    set_target_properties( dwarf-cloudsc-loki-scc-c PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_link_libraries(dwarf-cloudsc-loki-scc-c dwarf-cloudsc-gpu-lib cudadevrt cudart)
+    # target_link_options(dwarf-cloudsc-loki-scc-c PRIVATE CUDA::cudart)
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-serial

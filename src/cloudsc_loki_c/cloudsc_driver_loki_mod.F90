@@ -15,6 +15,10 @@ MODULE CLOUDSC_DRIVER_LOKI_MOD
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
   USE CLOUDSC_MOD, ONLY : CLOUDSC
+  USE YOMCST   , ONLY : RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV
+  USE YOETHF   , ONLY : R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
+   & R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
+   & RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2
 
   IMPLICIT NONE
 
@@ -128,8 +132,12 @@ CONTAINS
     TENDENCY_LOC_A = BUFFER_LOC(:,:,2,:)
     TENDENCY_LOC_CLD = BUFFER_LOC(:,:,4:8,:)
     ! ...
-    
+
+    !$loki copy-data
+
     IBL = 1  ! Useless statement to show the compiler that the sepcification part is over!
+
+    print *, "executing driver ..."
 
     if (irank == 0) then
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -183,7 +191,10 @@ CONTAINS
        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-       & LOCAL_YRECLDP)
+       & LOCAL_YRECLDP, RG, RD, RCPD, RETV, RLVTT, RLSTT, RLMLT, RTT, RV, & 
+       & R2ES, R3LES, R3IES, R4LES, R4IES, R5LES, R5IES, &
+       & R5ALVCP, R5ALSCP, RALVDCP, RALSDCP, RALFDCP, RTWAT, RTICE, RTICECU, &
+       & RTWAT_RTICE_R, RTWAT_RTICECU_R, RKOOP1, RKOOP2)
 
 #ifndef CLOUDSC_GPU_TIMING
       ! Log number of columns processed by this thread (OpenMP mode)
