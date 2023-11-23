@@ -117,8 +117,10 @@ ecbuild_find_package( NAME atlas )
 ecbuild_add_option( FEATURE SINGLE_PRECISION
     DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
 )
+set(prec dp)
 if( HAVE_SINGLE_PRECISION )
     list(APPEND CLOUDSC_DEFINITIONS SINGLE)
+    set(prec sp)
 endif()
 
 # build executables
