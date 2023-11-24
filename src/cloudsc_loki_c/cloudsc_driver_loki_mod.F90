@@ -154,6 +154,8 @@ CONTAINS
 
     !$loki data
 
+    !$loki data-hoist
+
     !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID) num_threads(NUMOMP)
 
     ! Local timer for each thread
@@ -211,6 +213,8 @@ CONTAINS
     !$omp end parallel
 
     !$loki end data
+
+    !$loki end data-hoist
 
     BUFFER_TMP(:,:,1,:) = TENDENCY_TMP_T
     BUFFER_TMP(:,:,3,:) = TENDENCY_TMP_Q
