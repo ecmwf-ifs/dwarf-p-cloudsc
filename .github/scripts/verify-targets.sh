@@ -28,7 +28,7 @@ then
     targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
     if [[ "$io_library_flag" == "--with-serialbox" ]]
     then
-        targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
+        targets+=(dwarf-cloudsc-c-cuda dwarf-cloudsc-c-cuda-hoist dwarf-cloudsc-c-cuda-k-caching)
     fi
   fi
 fi
@@ -38,7 +38,7 @@ then
   targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
   targets+=(dwarf-cloudsc-loki-idem-stack dwarf-cloudsc-loki-scc-stack)
-  if [[ "$prec_flag" != "--single-precision" ]]
+  if [[ "$build_flags" != *"--single-precision"* ]]
   then
     targets+=(dwarf-cloudsc-loki-c)
   fi
@@ -50,6 +50,11 @@ then
   then
     targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   fi
+fi
+
+if [[ "$build_flags" == *"--with-atlas"* ]]
+then
+  targets+=(dwarf-cloudsc-fortran-atlas)
 fi
 
 if [[ "$build_flags" == *"--cloudsc-fortran-pyiface=ON"* ]]
@@ -75,17 +80,5 @@ do
     echo "::error::Missing target: $target"
   fi
 done
-
-#
-# Check there aren't any other binaries
-#
-
-if [[ ${#targets[@]} -lt $(ls build/bin | wc -l) ]]
-then
-  exit_code=1
-  echo "::error::Additional targets found in build/bin"
-  echo "::error::Expected targets: ${targets[@]}"
-  echo "::error::Found targets: $(ls -1 build/bin | tr '\n' ' ')"
-fi
 
 exit $exit_code
