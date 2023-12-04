@@ -18,8 +18,14 @@ set( ENABLE_USE_STMT_FUNC ON CACHE STRING "" )
 ####################################################################
 
 set( ENABLE_OMP ON CACHE STRING "" )
-set( OpenMP_C_FLAGS   "-homp" CACHE STRING "" )
-set( OpenMP_Fortran_FLAGS   "-homp -hnoacc -hlist=aimd -maxrregcount 64" CACHE STRING "" )
+set( OpenMP_C_FLAGS   "-fopenmp" CACHE STRING "" )
+set( OpenMP_CXX_FLAGS "-fopenmp" CACHE STRING "" )
+set( OpenMP_Fortran_FLAGS   "-fopenmp -hnoacc -hlist=aimd" CACHE STRING "" )
+
+set( OpenMP_C_LIB_NAMES       "craymp" )
+set( OpenMP_CXX_LIB_NAMES     "craymp" )
+set( OpenMP_Fortran_LIB_NAMES "craymp" )
+set( OpenMP_craymp_LIBRARY    "/opt/cray/pe/cce/15.0.1/cce/x86_64/lib/libcraymp.so" )
 
 ####################################################################
 # OpenACC FLAGS
@@ -29,6 +35,15 @@ set( ENABLE_ACC ON CACHE STRING "" )
 set( OpenACC_C_FLAGS "-hacc" )
 set( OpenACC_CXX_FLAGS "-hacc" )
 set( OpenACC_Fortran_FLAGS "-hacc -h acc_model=deep_copy" )
+
+####################################################################
+# OpenACC FLAGS
+####################################################################
+
+set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -03 -ffast-math")
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+  set(CMAKE_HIP_ARCHITECTURES gfx90a)
+endif()
 
 ####################################################################
 # Compiler FLAGS

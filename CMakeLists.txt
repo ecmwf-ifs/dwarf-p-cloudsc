@@ -56,6 +56,20 @@ if( HAVE_CUDA )
     enable_language( CUDA )
 endif()
 
+ecbuild_add_option( FEATURE HIP
+	DESCRIPTION "HIP" DEFAULT OFF
+	REQUIRED_PACKAGES "hip" )
+if ( HAVE_HIP )
+  if(NOT DEFINED ROCM_PATH)
+    if(DEFINED ENV{ROCM_PATH})
+      set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
+    else()
+      set(ROCM_PATH "/opt/rocm" CACHE PATH "Path to which ROCM has been installed")
+    endif()
+  endif()
+  find_package(hip REQUIRED)
+endif()
+
 ### OpenMP
 ecbuild_add_option( FEATURE OMP
     DESCRIPTION "OpenMP" DEFAULT ON
@@ -83,7 +97,7 @@ endif()
 ecbuild_add_option( FEATURE SERIALBOX
     DESCRIPTION "Use Serialbox to read input and reference data"
     REQUIRED_PACKAGES "Serialbox"
-    CONDITION NOT HAVE_HDF5 OR HAVE_SERIALBOX
+    CONDITION NOT HAVE_HDF5
     DEFAULT OFF )
 if( HAVE_SERIALBOX )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)

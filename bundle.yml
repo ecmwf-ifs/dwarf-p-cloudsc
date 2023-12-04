@@ -78,10 +78,11 @@ options :
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
             BUILD_field_api=ON
+    
     - with-hip :
         help: Enable GPU kernel variant based on HIP
         cmake: >
-            ENABLE_CLOUDSC_HIP=ON 
+            ENABLE_HIP=ON 
 
     - with-mpi :
         help  : Enable MPI-parallel kernel

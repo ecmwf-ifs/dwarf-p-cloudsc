@@ -23,14 +23,13 @@ void query_state(int *klon, int *klev)
 
 void expand_1d(double *buffer, double *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int b, l, i, buf_start_idx, buf_idx;
+  int b, i, buf_start_idx, buf_idx;
 
-#pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
+#pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
       buf_idx = (buf_start_idx + i) % nlon;
-      // field[b][i] = buffer[buf_idx];
       field_in[b*nproma+i] = buffer[buf_idx];
     }
   }
@@ -39,9 +38,9 @@ void expand_1d(double *buffer, double *field_in, int nlon, int nproma, int ngpto
 
 void expand_1d_int(int *buffer, int *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int b, l, i, buf_start_idx, buf_idx;
+  int b, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
+  #pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
@@ -49,7 +48,6 @@ void expand_1d_int(int *buffer, int *field_in, int nlon, int nproma, int ngptot,
       field_in[b*nproma+i] = buffer[buf_idx];
     }
   }
-
 }
 
 
@@ -61,13 +59,12 @@ void expand_2d(double *buffer_in, double *field_in, int nlon, int nlev, int npro
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
-    for (l = 0; l < nlev; l++) {
-       buf_idx = (buf_start_idx + i) % nlon;
-       field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+buf_idx];
-    }
+      for (l = 0; l < nlev; l++) {
+        buf_idx = (buf_start_idx + i) % nlon;
+        field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+buf_idx];
+      }
     }
   }
-
 }
 
 void expand_3d(double *buffer_in, double *field_in, int nlon, int nlev, int nclv, int nproma, int ngptot, int nblocks)
@@ -78,15 +75,14 @@ void expand_3d(double *buffer_in, double *field_in, int nlon, int nlev, int nclv
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
-    for (c = 0; c < nclv; c++) {
-    for (l = 0; l < nlev; l++) {
-      buf_idx = (buf_start_idx + i) % nlon;
-      field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+buf_idx];
-    }
-    }
+      for (c = 0; c < nclv; c++) {
+        for (l = 0; l < nlev; l++) {
+          buf_idx = (buf_start_idx + i) % nlon;
+          field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+buf_idx];
+        }
+      }
     }
   }
-
 }
 
 

@@ -8,26 +8,14 @@
 
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_HIP
-	DESCRIPTION "Build the HIP version CLOUDSC using Serialbox" DEFAULT OFF
-        CONDITION Serialbox_FOUND
+	DESCRIPTION "Build the HIP version CLOUDSC using Serialbox" DEFAULT ON
+	CONDITION Serialbox_FOUND AND HAVE_HIP
 )
 
 if( HAVE_CLOUDSC_HIP )
 
-
-    if(NOT DEFINED ROCM_PATH)
-      if(DEFINED ENV{ROCM_PATH})
-        set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
-      else()
-        set(ROCM_PATH "/opt/rocm" CACHE PATH "Path to which ROCM has been installed")
-      endif()
-    endif()
-
-    find_package(hip REQUIRED)
-
     set(CMAKE_C_COMPILER "${ROCM_PATH}/bin/hipcc")
     set(CMAKE_CXX_COMPILER "${ROCM_PATH}/bin/hipcc")
-    # set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -03 -ffast-math")
 
     ###### SCC-HIP ####
     ecbuild_add_library(
@@ -57,7 +45,11 @@ if( HAVE_CLOUDSC_HIP )
     target_include_directories(dwarf-cloudsc-hip-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
     target_link_libraries(dwarf-cloudsc-hip-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
-    target_compile_options(dwarf-cloudsc-hip-lib PRIVATE --offload-arch=gfx90a)
+    if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+      message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
+    else()
+      target_compile_options(dwarf-cloudsc-hip-lib PRIVATE --offload-arch=${CMAKE_HIP_ARCHITECTURES})
+    endif()
     
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-hip
@@ -95,8 +87,12 @@ if( HAVE_CLOUDSC_HIP )
     target_include_directories(dwarf-cloudsc-hip-hoist-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
     target_link_libraries(dwarf-cloudsc-hip-hoist-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
-    target_compile_options(dwarf-cloudsc-hip-hoist-lib PRIVATE --offload-arch=gfx90a)
-    
+    if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+      message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
+    else()
+      target_compile_options(dwarf-cloudsc-hip-hoist-lib PRIVATE --offload-arch=${CMAKE_HIP_ARCHITECTURES})
+    endif()
+
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-hip-hoist
         SOURCES dwarf_cloudsc.cpp
@@ -133,8 +129,12 @@ if( HAVE_CLOUDSC_HIP )
     target_include_directories(dwarf-cloudsc-hip-k-caching-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
     target_link_libraries(dwarf-cloudsc-hip-k-caching-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
-    target_compile_options(dwarf-cloudsc-hip-k-caching-lib PRIVATE --offload-arch=gfx90a)
-    
+    if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+      message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
+    else()
+      target_compile_options(dwarf-cloudsc-hip-k-caching-lib PRIVATE --offload-arch=${CMAKE_HIP_ARCHITECTURES})
+    endif()
+
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-hip-k-caching
         SOURCES dwarf_cloudsc.cpp
