@@ -73,7 +73,7 @@ endif()
 ### HDF5
 ecbuild_add_option( FEATURE HDF5
     DESCRIPTION "Use HDF5 to read input and reference data"
-    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran"
+    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran C"
     DEFAULT ON )
 if( HAVE_HDF5 )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 )

@@ -9,13 +9,21 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_C
     DESCRIPTION "Build the C version CLOUDSC using Serialbox" DEFAULT ON
-    CONDITION Serialbox_FOUND
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
 if( HAVE_CLOUDSC_C )
 
+    message("HDF5 include dirs: ${HDF5_C_INCLUDE_DIRS}")
+    message("HDF5 lib: ${HDF5_LIBRARIES}")
+    message("HDF5 lib c: ${HDF5_C_LIBRARIES}")
+    message("HDF5 library dirs: ${HDF5_C_LIBRARY_DIRS}")
+
     set( CMAKE_C_STANDARD 11 )
     set( CMAKE_C_STANDARD_REQUIRED ON )
+
+    # necessary for AC
+    link_directories(string (REPLACE ";" " " DEST "${HDF5_C_LIBRARY_DIRS}")>)
 
     ecbuild_add_library(
         TARGET dwarf-cloudsc-c-lib
@@ -37,12 +45,19 @@ if( HAVE_CLOUDSC_C )
             cloudsc/cloudsc_validate.c
             cloudsc/mycpu.h
             cloudsc/mycpu.c
-        PUBLIC_INCLUDES
+	PRIVATE_INCLUDES
+	    # $<${HAVE_HDF5}:${HDF5_C_INCLUDE_DIRS}> # works on LUMI, doesn't work on AC
+	    $<${HAVE_HDF5}:string (REPLACE ";" " " DEST "${HDF5_C_INCLUDE_DIRS}")> # necessar on AC, not on LUMI
+	PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-            Serialbox::Serialbox_C
-            $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	    $<${HAVE_HDF5}:hdf5>
+	    # $<${HAVE_HDF5}:string (REPLACE ";" " " DEST "${HDF5_C_LIBRARIES}")>
+	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
+	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	DEFINITIONS
+	    ${CLOUDSC_DEFINITIONS}
     )
 
     ecbuild_add_executable(
@@ -74,6 +89,17 @@ if( HAVE_CLOUDSC_C )
         CONDITION HAVE_OMP
     )
 
-else()
-    ecbuild_info( "Serialbox not found, disabling C prototype" )
+endif()
+
+# Create symlink for the input data
+if( HAVE_SERIALBOX )
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+      ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+endif()
+
+if( HAVE_HDF5 )
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
 endif()
