@@ -57,6 +57,13 @@ if( HAVE_CLOUDSC_HIP )
         LIBS dwarf-cloudsc-hip-lib
     )
 
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-hip-serial
+        COMMAND bin/dwarf-cloudsc-hip
+        ARGS 1 1000 64
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
     ## 
 
     ###### SCC-HOIST-HIP ####
@@ -99,6 +106,13 @@ if( HAVE_CLOUDSC_HIP )
         LIBS dwarf-cloudsc-hip-hoist-lib
     )
 
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-hip-hoist-serial
+        COMMAND bin/dwarf-cloudsc-hip-hoist
+        ARGS 1 1000 64
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
     ## 
 
     ###### SCC-K-CACHING-HIP ####
@@ -141,28 +155,17 @@ if( HAVE_CLOUDSC_HIP )
         LIBS dwarf-cloudsc-hip-k-caching-lib
     )
 
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-hip-k-caching-serial
+        COMMAND bin/dwarf-cloudsc-hip-k-caching
+        ARGS 1 1000 64
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
     ## 
-
-    
     
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-hip-serial
-        COMMAND bin/dwarf-cloudsc-hip
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-hip-omp
-        COMMAND bin/dwarf-cloudsc-hip
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
-        CONDITION HAVE_OMP
-    )
 
 endif()
