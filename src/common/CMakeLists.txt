@@ -42,6 +42,18 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/yomcst.cuf.F90
 )
 
+if ( ENABLE_CLOUDSC_MIX )
+  # if (CLOUDSC_GPU_OFFLOAD STREQUAL "ACC")
+  # HACK: seems like nordc only necessary for NVIDIA machines but not AMD machines
+  if (CLOUDSC_GPU_LANG STREQUAL "CUDA" OR CLOUDSC_GPU_LANG STREQUAL "SYCL")
+    cloudsc_add_compile_options(
+     SOURCES ${CLOUDSC_COMMON_SOURCES}
+     FLAGS "-gpu=nordc"
+    )
+  endif()
+  # endif()
+endif()
+
 if( HAVE_CUDA )
     # ========================================================================
     # Compile CUDA fortran files with -cuda.
@@ -98,6 +110,8 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
         $<${HAVE_FIELD_API}:field_api_${prec}>
+    DEFINITIONS
+        ENABLE_CLOUDSC_MIX
 )
 
 if( HAVE_CUDA )
