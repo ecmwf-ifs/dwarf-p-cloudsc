@@ -48,6 +48,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST_DR_LOOP
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenMP offload" DEFAULT ON
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT ON
     CONDITION HAVE_FIELD_API AND ( Serialbox_FOUND OR HDF5_FOUND )
@@ -236,6 +241,20 @@ if ( HAVE_CLOUDSC_GPU_SCC_CUF_K_CACHING )
 
 endif()
 
+if (HAVE_CLOUDSC_GPU_OMP_SCC_HOIST_DR_LOOP)
+    
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-omp-scc-hoist-dr-loop
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_hoist_dr_loop_mod.F90
+            cloudsc_gpu_omp_scc_hoist_dr_loop_mod.F90
+        LIBS
+            cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_OMP_SCC_HOIST_DR_LOOP
+    )   
+            
+endif()  
 
 if( HAVE_CLOUDSC_GPU_SCC_FIELD )
     ecbuild_add_executable(
