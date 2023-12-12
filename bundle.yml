@@ -115,6 +115,11 @@ options :
         cmake: >
             ENABLE_HIP=ON 
 
+    - with-sycl :
+        help: Enable GPU kernel variant based on HIP
+        cmake: >
+            ENABLE_SYCL=ON
+
     - with-mpi :
         help  : Enable MPI-parallel kernel
         cmake : ENABLE_MPI=ON
