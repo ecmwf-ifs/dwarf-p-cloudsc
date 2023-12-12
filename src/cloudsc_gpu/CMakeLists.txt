@@ -73,6 +73,16 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
     CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND ( Serialbox_FOUND OR HDF5_FOUND )
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_STD_PAR_SCC
+    DESCRIPTION "Build STD parallelism SCC layout" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_STD_PAR_SCC_K_CACHING
+    DESCRIPTION "Build STD parallelism SCC-K-CACHING layout" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 
 if( HAVE_CLOUDSC_GPU_CLAW )
     ecbuild_add_executable(
@@ -440,6 +450,61 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
 
 endif()
 
+if ( HAVE_CLOUDSC_STD_PAR_SCC )
+
+	#cloudsc_add_compile_options(
+	#SOURCES cloudsc_std_par_scc_mod.F90  cloudsc_driver_std_par_scc_mod.F90
+	#FLAGS   "-O3 -fast -stdpar=gpu -acc=gpu -gpu=cc80 -Minfo=accel")
+
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-std-par-scc
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_std_par_scc_mod.F90
+            cloudsc_std_par_scc_mod.F90
+            nlev_mod.F90
+        LIBS
+            cloudsc-common-lib
+	DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_STD_PAR_SCC
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-std-par-scc
+        COMMAND bin/dwarf-cloudsc-gpu-scc-cuf
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+endif()
+
+if ( HAVE_CLOUDSC_STD_PAR_SCC_K_CACHING )
+
+	#cloudsc_add_compile_options(
+	#SOURCES cloudsc_std_par_scc_k_caching_mod.F90  cloudsc_driver_std_par_scc_k_caching_mod.F90
+	#FLAGS   "-O3 -fast -stdpar=gpu -acc=gpu -gpu=cc80 -Minfo=accel")
+
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-std-par-scc-k-caching
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_std_par_scc_k_caching_mod.F90
+            cloudsc_std_par_scc_k_caching_mod.F90
+            nlev_mod.F90
+        LIBS
+            cloudsc-common-lib
+	    DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_STD_PAR_SCC_K_CACHING
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-std-par-scc-k-caching-serial
+        COMMAND bin/dwarf-cloudsc-std-par-scc-k-caching
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+endif()
 
 # Create symlink for the input data
 if( HAVE_SERIALBOX )
