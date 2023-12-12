@@ -1,5 +1,4 @@
 #include "load_state.h"
-//#include "yomcst_c.hpp"
 #include <iostream>
 
 #include <math.h>
@@ -23,124 +22,70 @@ void query_state(int *klon, int *klev)
 
 void expand_1d(double *buffer, double *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, i;
+  int b, l, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, i)
+#pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
-      for (i = 0; i < fsize; i++) { field_in[b*nproma+i] = buffer[bidx + i]; }
-      for (i = 0; i < bsize-fsize; i++) { field_in[b*nproma+fsize+i] = buffer[i]; }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (i = 0; i < bsize; i++) { field_in[b*nproma+i] = buffer[bidx+i]; }
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
+      buf_idx = (buf_start_idx + i) % nlon;
+      // field[b][i] = buffer[buf_idx];
+      field_in[b*nproma+i] = buffer[buf_idx];
     }
-    // Zero out the remainder of last block
-    for (i=bsize; i<nproma; i++) { field_in[b*nproma+i] = 0.0; }
   }
 }
+
 
 void expand_1d_int(int *buffer, int *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, i;
+  int b, l, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, i)
+  #pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
-      for (i = 0; i < fsize; i++) { field_in[b*nproma+i] = buffer[bidx + i]; }
-      for (i = 0; i < bsize-fsize; i++) { field_in[b*nproma+fsize+i] = buffer[i]; }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (i = 0; i < bsize; i++) { field_in[b*nproma+i] = buffer[bidx+i]; }
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
+      buf_idx = (buf_start_idx + i) % nlon;
+      field_in[b*nproma+i] = buffer[buf_idx];
     }
-    // Zero out the remainder of last block
-    for (i=bsize; i<nproma; i++) { field_in[b*nproma+i] = 0.0; }
   }
+
 }
+
 
 void expand_2d(double *buffer_in, double *field_in, int nlon, int nlev, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, i;
+  int b, l, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, i)
+  #pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
-      for (l = 0; l < nlev; l++) {
-      	for (i = 0; i < fsize; i++) { field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+bidx + i]; }
-	for (i = 0; i < bsize-fsize; i++) { field_in[b*nlev*nproma+l*nproma+fsize+i] = buffer_in[l*nlon+i]; }
-      }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (l = 0; l < nlev; l++) {
-	for (i = 0; i < bsize; i++) { field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+bidx+i]; }
-      }
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
+    for (l = 0; l < nlev; l++) {
+       buf_idx = (buf_start_idx + i) % nlon;
+       field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+buf_idx];
     }
-    // Zero out the remainder of last block
-    for (l=0; l<nlev; l++ ) { 
-      for (i=bsize; i<nproma; i++) { field_in[b*nlev*nproma+l*nproma+i] = 0.0; }
     }
   }
+
 }
 
 void expand_3d(double *buffer_in, double *field_in, int nlon, int nlev, int nclv, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, c, i;
+  int b, l, c, i, buf_start_idx, buf_idx;
 
-#pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, c, i)
+#pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
-      for (c = 0; c < nclv; c++) {
-	for (l = 0; l < nlev; l++) {
-	  for (i = 0; i < fsize; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+bidx + i]; }
-	  for (i = 0; i < bsize-fsize; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+fsize+i] = buffer_in[c*nlev*nlon+l*nlon+i]; }
-	}
-      }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (c = 0; c < nclv; c++) {
-	for (l = 0; l < nlev; l++) {
-	  for (i = 0; i < bsize; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+bidx+i]; }
-	}
-      }
-    }
-    // Zero out the remainder of last block
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
     for (c = 0; c < nclv; c++) {
-      for (l=0; l < nlev; l++ ) { 
-	for (i=bsize; i<nproma; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = 0.0; }
-      }
+    for (l = 0; l < nlev; l++) {
+      buf_idx = (buf_start_idx + i) % nlon;
+      field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+buf_idx];
+    }
+    }
     }
   }
+
 }
 
 

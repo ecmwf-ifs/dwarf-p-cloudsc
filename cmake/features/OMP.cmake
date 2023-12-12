@@ -33,11 +33,11 @@ if( HAVE_OMP )
     ecbuild_debug_var( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
     ecbuild_debug_var( _HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD_OUTPUT )
 
-    if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL OR HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
-        set( HAVE_OMP_TARGET_LOOP_CONSTRUCT ON CACHE BOOL "OpenMP target teams loop is supported" )
-    else()
-        set( HAVE_OMP_TARGET_LOOP_CONSTRUCT OFF CACHE BOOL "OpenMP target teams loop is not supported" )
-    endif()
+    #if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL OR HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
+    #    set( HAVE_OMP_TARGET_LOOP_CONSTRUCT ON CACHE BOOL "OpenMP target teams loop is supported" )
+    #else()
+    #    set( HAVE_OMP_TARGET_LOOP_CONSTRUCT OFF CACHE BOOL "OpenMP target teams loop is not supported" )
+    #endif()
 
     ecbuild_debug_var( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
 

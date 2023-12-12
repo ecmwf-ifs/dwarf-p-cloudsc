@@ -160,16 +160,23 @@ CONTAINS
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
-
+!#define NEWLOOP
+#ifdef NEWLOOP
+!$omp target teams distribute parallel do simd collapse(2) thread_limit(128)
+    DO IBL=1,NGPBLKS
+       DO JL=1,NPROMA
+          
+#else
+    
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
 !$omp target teams loop bind(teams)
 #else
-!$omp target teams distribute
+!$omp target teams distribute thread_limit(512)
 #endif
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
-
+       !   WRITE(*,*) "JKGLO=",JKGLO," IBL=",IBL," ICEND=",ICEND
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
 !$omp loop bind(parallel)
 #elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
@@ -177,7 +184,8 @@ CONTAINS
 #else
 !$omp parallel do
 #endif
-      DO JL=1,ICEND
+       DO JL=1,ICEND
+#endif
         CALL CLOUDSC_SCC_HOIST &
          & (1, ICEND, NPROMA, NLEV, PTSPHY,&
          & PT(:,:,IBL), PQ(:,:,IBL), &
@@ -206,6 +214,11 @@ CONTAINS
          & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), ZPFPLSX(:,:,:,IBL), &
          & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
          & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), JL=JL)
+#ifdef NEWLOOP
+      ENDDO
+   ENDDO
+   !$omp end target teams distribute parallel do simd
+#else
       ENDDO
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
 !$omp end loop
@@ -219,7 +232,7 @@ CONTAINS
 !$omp end target teams distribute
 #endif
 
-
+#endif
     CALL TIMER%THREAD_END(TID)
 
 !$omp end target data

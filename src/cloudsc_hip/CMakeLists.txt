@@ -57,7 +57,7 @@ if( HAVE_CLOUDSC_HIP )
     target_include_directories(dwarf-cloudsc-hip-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
     target_link_libraries(dwarf-cloudsc-hip-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
-    target_compile_options(dwarf-cloudsc-hip-lib PRIVATE --offload-arch=gfx90a)
+    target_compile_options(dwarf-cloudsc-hip-lib PRIVATE -Wall --save-temps)
     
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-hip
@@ -95,7 +95,7 @@ if( HAVE_CLOUDSC_HIP )
     target_include_directories(dwarf-cloudsc-hip-hoist-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
     target_link_libraries(dwarf-cloudsc-hip-hoist-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
-    target_compile_options(dwarf-cloudsc-hip-hoist-lib PRIVATE --offload-arch=gfx90a)
+    target_compile_options(dwarf-cloudsc-hip-hoist-lib PRIVATE -Wall --save-temps)
     
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-hip-hoist
@@ -133,7 +133,7 @@ if( HAVE_CLOUDSC_HIP )
     target_include_directories(dwarf-cloudsc-hip-k-caching-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
     target_link_libraries(dwarf-cloudsc-hip-k-caching-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
-    target_compile_options(dwarf-cloudsc-hip-k-caching-lib PRIVATE --offload-arch=gfx90a)
+    target_compile_options(dwarf-cloudsc-hip-k-caching-lib PRIVATE -Wall --save-temps)
     
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-hip-k-caching

@@ -13,7 +13,7 @@
 #include "yoecldp_c.h"
 #include <stdio.h>
 
-__global__ void __launch_bounds__(128, 1) cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
+__global__ void __launch_bounds__(256, 1) cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   const double * __restrict__  pt,
   const double * __restrict__  pq, const double * __restrict__  tendency_tmp_t,
   const double * __restrict__  tendency_tmp_q, const double * __restrict__  tendency_tmp_a,

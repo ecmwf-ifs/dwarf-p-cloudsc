@@ -168,6 +168,7 @@ if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS}
     )
+    target_link_options(dwarf-cloudsc-gpu-omp-scc-hoist PRIVATE "-hkeepfiles")
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-omp-scc-hoist-serial
