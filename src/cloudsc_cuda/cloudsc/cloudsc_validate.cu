@@ -40,18 +40,20 @@ void print_error(const char *name, double zminval, double zmaxval, double zmaxer
   const char* clwarn = (zrelerr > 10.0 * zeps) ? " !!!!" : "     ";
   zrelerr = 100.0 * zrelerr;
 
+  printf(" zsum: %20.13le   zerrsum: %20.13le", zsum, zerrsum);
   printf(" %+20s %dD%d %20.13le %20.13le %20.13le %20.13le %20.13le %s\n",
          name, ndim, iopt, zminval, zmaxval, zmaxerr, zavgpgp, zrelerr, clwarn);
 }
 
 
-void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, int ngptot, int nblocks)
+void validate_1d(const char *name, float * v_ref, float * v_field, int nlon, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  double (*field)[nlon] = (double (*)[nlon]) v_field;
-  double (*reference)[nlon] = (double (*)[nlon]) v_ref;
+  double field_val, ref_val;
+  float (*field)[nlon] = (float (*)[nlon]) v_field;
+  float (*reference)[nlon] = (float (*)[nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
@@ -59,19 +61,22 @@ void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, i
   zerrsum = 0.0;
   zsum = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize, jk)		\
-    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  // # pragma omp parallel for default(shared) private(b, bsize, jk)		\
+  //   reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jk = 0; jk < bsize; jk++) {
-      zminval = fmin(zminval, field[b][jk]);
-      zmaxval = fmax(zmaxval, field[b][jk]);
+      field_val = (double) field[b][jk];
+      ref_val = (double) reference[b][jk];
+
+      zminval = fmin(zminval, field_val);
+      zmaxval = fmax(zmaxval, field_val);
 
       // Difference against reference result in one-norm sense
-      zdiff = fabs(field[b][jk] - reference[b][jk]);
+      zdiff = fabs(field_val - ref_val);
       zmaxerr = fmax(zmaxerr, zdiff);
       zerrsum = zerrsum + zdiff;
-      zsum = zsum + abs(reference[b][jk]);
+      zsum = zsum + fabs(ref_val);
     }
   }
   zavgpgp = zerrsum / (double) ngptot;
@@ -79,33 +84,39 @@ void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, i
 }
 
 
-void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int nlev, int ngptot, int nblocks)
+void validate_2d(const char *name, float *v_ref, float *v_field, int nlon, int nlev, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk;
-  double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  double (*field)[nlev][nlon] = (double (*)[nlev][nlon]) v_field;
-  double (*reference)[nlev][nlon] = (double (*)[nlev][nlon]) v_ref;
+  double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp, zdiffmax;
+  double field_val, ref_val;
+  float (*field)[nlev][nlon] = (float (*)[nlev][nlon]) v_field;
+  float (*reference)[nlev][nlon] = (float (*)[nlev][nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
   zmaxerr = 0.0;
   zerrsum = 0.0;
   zsum = 0.0;
+  zdiffmax = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
-    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  // # pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
+  //   reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jl = 0; jl < nlev; jl++) {
       for (jk = 0; jk < bsize; jk++) {
-	zminval = fmin(zminval, field[b][jl][jk]);
-	zmaxval = fmax(zmaxval, field[b][jl][jk]);
+        field_val = (double) field[b][jl][jk];
+        ref_val = (double) reference[b][jl][jk];
+
+	zminval = fmin(zminval, field_val);
+	zmaxval = fmax(zmaxval, field_val);
 	// Difference against reference result in one-norm sense
-	zdiff = fabs(field[b][jl][jk] - reference[b][jl][jk]);
+	zdiff = fabs(field_val - ref_val);
 	zmaxerr = fmax(zmaxerr, zdiff);
+	zdiffmax = fmax(zdiffmax, zdiff);
 	zerrsum = zerrsum + zdiff;
-	zsum = zsum + abs(reference[b][jl][jk]);
+	zsum = zsum + fabs(ref_val);
       }
     }
   }
@@ -114,73 +125,79 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
 }
 
 
-void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
+void validate_3d(const char *name, float *v_ref, float *v_field, int nlon,
     int nlev, int nclv, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk, jm;
-  double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  double (*field)[nclv][nlev][nlon] = (double (*)[nclv][nlev][nlon]) v_field;
-  double (*reference)[nclv][nlev][nlon] = (double (*)[nclv][nlev][nlon]) v_ref;
+  double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp, zdiffmax;
+  double field_val, ref_val;
+  float (*field)[nclv][nlev][nlon] = (float (*)[nclv][nlev][nlon]) v_field;
+  float (*reference)[nclv][nlev][nlon] = (float (*)[nclv][nlev][nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
   zmaxerr = 0.0;
   zerrsum = 0.0;
   zsum = 0.0;
+  zdiffmax = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
-    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  // # pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
+  //   reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jm = 0; jm < nclv; jm++) {
       for (jl = 0; jl < nlev; jl++) {
 	for (jk = 0; jk < bsize; jk++) {
-	  zminval = fmin(zminval, field[b][jm][jl][jk]);
-	  zmaxval = fmax(zmaxval, field[b][jm][jl][jk]);
+          field_val = (double) field[b][jm][jl][jk];
+          ref_val = (double) reference[b][jm][jl][jk];
+
+	  zminval = fmin(zminval, field_val);
+	  zmaxval = fmax(zmaxval, field_val);
 
 	  // Difference against reference result in one-norm sense
-	  zdiff = fabs(field[b][jm][jl][jk] - reference[b][jm][jl][jk]);
+	  zdiff = fabs(field_val - ref_val);
 	  zmaxerr = fmax(zmaxerr, zdiff);
+	  zdiffmax = fmax(zdiffmax, zdiff);
 	  zerrsum = zerrsum + zdiff;
-	  zsum = zsum + abs(reference[b][jm][jl][jk]);
+	  zsum = zsum + fabs(ref_val);
 	}
       }
     }
   }
   zavgpgp = zerrsum / (double) ngptot;
-  print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 2);
+  print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 3);
 }
 
 
 int cloudsc_validate(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
-		     double *plude, double *pcovptot, double *prainfrac_toprfz, double *pfsqlf, double *pfsqif,
-		     double *pfcqlng, double *pfcqnng, double *pfsqrf, double *pfsqsf, double *pfcqrng, double *pfcqsng,
-		     double *pfsqltur, double *pfsqitur, double *pfplsl, double *pfplsn, double *pfhpsl, double *pfhpsn,
-		     double *tend_loc_a, double *tend_loc_q, double *tend_loc_t, double *tend_loc_cld)
+		     float *plude, float *pcovptot, float *prainfrac_toprfz, float *pfsqlf, float *pfsqif,
+		     float *pfcqlng, float *pfcqnng, float *pfsqrf, float *pfsqsf, float *pfcqrng, float *pfcqsng,
+		     float *pfsqltur, float *pfsqitur, float *pfplsl, float *pfplsn, float *pfhpsl, float *pfhpsn,
+		     float *tend_loc_a, float *tend_loc_q, float *tend_loc_t, float *tend_loc_cld)
 {
   const int nblocks = (ngptot / nproma) + min(ngptot % nproma, 1);
-  double *ref_plude = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_pcovptot = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_prainfrac_toprfz = (double*) malloc( sizeof(double) * nblocks*nproma );
-  double *ref_pfsqlf = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqif = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqlng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqnng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqrf = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqsf = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqrng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqsng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqltur = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqitur = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfplsl = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfplsn = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfhpsl = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfhpsn = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_tend_loc_a = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_tend_loc_q = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_tend_loc_t = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_tend_loc_cld = (double*) malloc( sizeof(double) * nblocks*nclv*nlev*nproma );
+  float *ref_plude = (float*) malloc( sizeof(float) * nblocks*nlev*nproma );
+  float *ref_pcovptot = (float*) malloc( sizeof(float) * nblocks*nlev*nproma );
+  float *ref_prainfrac_toprfz = (float*) malloc( sizeof(float) * nblocks*nproma );
+  float *ref_pfsqlf = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfsqif = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfcqlng = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfcqnng = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfsqrf = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfsqsf = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfcqrng = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfcqsng = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfsqltur = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfsqitur = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfplsl = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfplsn = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfhpsl = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_pfhpsn = (float*) malloc( sizeof(float) * nblocks*(nlev+1)*nproma );
+  float *ref_tend_loc_a = (float*) malloc( sizeof(float) * nblocks*nlev*nproma );
+  float *ref_tend_loc_q = (float*) malloc( sizeof(float) * nblocks*nlev*nproma );
+  float *ref_tend_loc_t = (float*) malloc( sizeof(float) * nblocks*nlev*nproma );
+  float *ref_tend_loc_cld = (float*) malloc( sizeof(float) * nblocks*nclv*nlev*nproma );
 
   load_reference(nlon, nlev, nclv, ngptot, nproma,
                  ref_plude, ref_pcovptot, ref_prainfrac_toprfz, ref_pfsqlf, ref_pfsqif,

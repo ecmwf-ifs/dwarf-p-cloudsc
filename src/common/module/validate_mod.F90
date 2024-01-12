@@ -169,13 +169,17 @@ CONTAINS
     INTEGER(KIND=JPIM), INTENT(IN) :: NLON, NLEV, NBLOCKS, NGPTOT
     INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NGPTOTG
 
-    INTEGER :: B, BSIZE, JL, JK
+    INTEGER :: B, BSIZE, JL, JK, C_B, C_JL, C_JK
     REAL(KIND=JPRB) :: ZMINVAL(1), ZMAX_VAL_ERR(2), ZDIFF, ZSUM_ERR_ABS(2), ZRELERR, ZAVGPGP
 
     ZMINVAL(1) = +HUGE(ZMINVAL(1))
     ZMAX_VAL_ERR(1) = -HUGE(ZMAX_VAL_ERR(1))
     ZMAX_VAL_ERR(2) = 0.0_JPRB
     ZSUM_ERR_ABS(:) = 0.0_JPRB
+    
+    C_B = 0
+    C_JL = 0
+    C_JK = 0
 
     !OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(B, BSIZE) &
     !& REDUCTION(MIN:ZMINVAL, MAX:ZMAX_VAL_ERR, +:ZSUM_ERR_ABS)
@@ -188,12 +192,19 @@ CONTAINS
           ! Difference against reference result in one-norm sense
           ZDIFF = ABS(FIELD(JK,JL,B) - REF(JK,JL,B))
           ZMAX_VAL_ERR(2) = MAX(ZMAX_VAL_ERR(2),ZDIFF)
+          if (ZMAX_VAL_ERR(2) >= ZDIFF) THEN
+            C_B = B
+            C_JL = JL
+            C_JK = JK
+          ENDIF
           ZSUM_ERR_ABS(1) = ZSUM_ERR_ABS(1) + ZDIFF
           ZSUM_ERR_ABS(2) = ZSUM_ERR_ABS(2) + ABS(REF(JK,JL,B))
         ENDDO
       END DO
     END DO
 
+    ! print *, "max error for ", NAME, " equals to ", ZMAX_VAL_ERR(2), " for b = ", c_b, " jl = ", c_jl, " jk = ", c_jk, &
+    !         & " value there: ", FIELD(c_JK,c_JL,c_B), " ref = ", ref(c_jk, c_jl, c_b) 
     CALL CLOUDSC_MPI_REDUCE_MIN(ZMINVAL, 1, 0)
     CALL CLOUDSC_MPI_REDUCE_MAX(ZMAX_VAL_ERR, 2, 0)
     CALL CLOUDSC_MPI_REDUCE_SUM(ZSUM_ERR_ABS, 2, 0)

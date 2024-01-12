@@ -17,24 +17,24 @@ struct TECLDP ;
 void query_state(int *klon, int *klev);
 
 void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
-		double* ptsphy, double* plcrit_aer, double* picrit_aer,
-		double* pre_ice, double* pccn, double* pnice, double* pt, double* pq, 
-		double* tend_cml_t, double* tend_cml_q, double* tend_cml_a, double* tend_cml_cld,
-		double* tend_tmp_t, double* tend_tmp_q, double* tend_tmp_a, double* tend_tmp_cld,
-		double* pvfa, double* pvfl, double* pvfi, double* pdyna, double* pdynl, double* pdyni, 
-		double* phrsw, double* phrlw, double* pvervel, double* pap, double* paph, double* plsm,
-		int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
-		double* pmfd, double* pa, double* pclv, double* psupsat, struct TECLDP* yrecldp,
-		double* rg, double* rd, double* rcpd, double* retv, double* rlvtt, double* rlstt,
-                double* rlmlt, double* rtt, double* rv, double* r2es, double* r3les, double* r3ies,
-                double* r4les, double* r4ies, double* r5les, double* r5ies, double* r5alvcp, double* r5alscp,
-                double* ralvdcp, double* ralsdcp, double* ralfdcp, double* rtwat,
-                double* rtice, double* rticecu, double* rtwat_rtice_r, double *rtwat_rticecu_r,
-                double* rkoop1, double* rkoop2);
+		float* ptsphy, float* plcrit_aer, float* picrit_aer,
+		float* pre_ice, float* pccn, float* pnice, float* pt, float* pq, 
+		float* tend_cml_t, float* tend_cml_q, float* tend_cml_a, float* tend_cml_cld,
+		float* tend_tmp_t, float* tend_tmp_q, float* tend_tmp_a, float* tend_tmp_cld,
+		float* pvfa, float* pvfl, float* pvfi, float* pdyna, float* pdynl, float* pdyni, 
+		float* phrsw, float* phrlw, float* pvervel, float* pap, float* paph, float* plsm,
+		int* ktype, float* plu, float* plude, float* psnde, float* pmfu,
+		float* pmfd, float* pa, float* pclv, float* psupsat, struct TECLDP* yrecldp,
+		float* rg, float* rd, float* rcpd, float* retv, float* rlvtt, float* rlstt,
+                float* rlmlt, float* rtt, float* rv, float* r2es, float* r3les, float* r3ies,
+                float* r4les, float* r4ies, float* r5les, float* r5ies, float* r5alvcp, float* r5alscp,
+                float* ralvdcp, float* ralsdcp, float* ralfdcp, float* rtwat,
+                float* rtice, float* rticecu, float* rtwat_rtice_r, float *rtwat_rticecu_r,
+                float* rkoop1, float* rkoop2);
 
 
 void load_reference(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
-		    double *plude, double *pcovptot, double *prainfrac_toprfz, double *pfsqlf, double *pfsqif,
-		    double *pfcqlng, double *pfcqnng, double *pfsqrf, double *pfsqsf, double *pfcqrng, double *pfcqsng,
-		    double *pfsqltur, double *pfsqitur, double *pfplsl, double *pfplsn, double *pfhpsl, double *pfhpsn,
-		    double *tend_loc_a, double *tend_loc_q, double *tend_loc_t, double *tend_loc_cld);
+		    float *plude, float *pcovptot, float *prainfrac_toprfz, float *pfsqlf, float *pfsqif,
+		    float *pfcqlng, float *pfcqnng, float *pfsqrf, float *pfsqsf, float *pfcqrng, float *pfcqsng,
+		    float *pfsqltur, float *pfsqitur, float *pfplsl, float *pfplsn, float *pfhpsl, float *pfhpsn,
+		    float *tend_loc_a, float *tend_loc_q, float *tend_loc_t, float *tend_loc_cld);

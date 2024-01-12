@@ -50,11 +50,13 @@ contains
     ! Initialize input file for a given data set name
     character(len=*), intent(in) :: name
 #ifdef HAVE_SERIALBOX
+    print *, "read via serialbox"
     ! Get dimensions information from stored metadata
     call ppser_initialize(directory='data', prefix='dummy', prefix_ref=NAME)
     call fs_create_savepoint(NAME, ppser_savepoint)
     call ppser_set_mode(1)
 #elif defined(HAVE_HDF5)
+     print *, "read via hdf5"
     call input_file%open_file(NAME//'.h5')
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
@@ -82,7 +84,7 @@ contains
     variable = buffer
 #elif defined(HAVE_HDF5)
     call input_file%load(name, buffer)
-    variable = buffer
+    variable = REAL(buffer, kind=JPRB)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
@@ -170,7 +172,7 @@ contains
 #elif defined(HAVE_HDF5)
     allocate(rbuf(size))
     call input_file%load(name, rbuf, start, size)
-    buffer(:) = rbuf(:)
+    buffer(:) = real(rbuf(:), kind=jprb)
     deallocate(rbuf)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
@@ -197,7 +199,7 @@ contains
     isize(2) = nlev
     allocate(rbuf(size,nlev))
     call input_file%load(name, rbuf, istart, isize)
-    buffer(:,:) = rbuf(:,:)
+    buffer(:,:) = real(rbuf(:,:), kind=jprb)
     deallocate(rbuf)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
@@ -226,7 +228,7 @@ contains
     isize(3) = ndim
     allocate(rbuf(size,nlev,ndim))
     call input_file%load(name, rbuf, istart, isize)
-    buffer(:,:,:) = rbuf(:,:,:)
+    buffer(:,:,:) = real(rbuf(:,:,:), kind=jprb)
     deallocate(rbuf)
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
