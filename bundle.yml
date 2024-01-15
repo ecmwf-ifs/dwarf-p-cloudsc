@@ -116,7 +116,7 @@ options :
             ENABLE_HIP=ON 
 
     - with-sycl :
-        help: Enable GPU kernel variant based on HIP
+        help: Enable GPU kernel variant based on SYCL
         cmake: >
             ENABLE_SYCL=ON
 

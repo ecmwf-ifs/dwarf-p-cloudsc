@@ -70,6 +70,9 @@ if ( HAVE_HIP )
   find_package(hip REQUIRED)
 endif()
 
+ecbuild_add_option( FEATURE SYCL
+	DESCRIPTION "SYCL" DEFAULT OFF)
+
 ### OpenMP
 ecbuild_add_option( FEATURE OMP
     DESCRIPTION "OpenMP" DEFAULT ON
