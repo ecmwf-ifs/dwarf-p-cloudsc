@@ -656,8 +656,8 @@ endif()
     #############################################################################
 
     if ( NOT HAVE_SINGLE_PRECISION )
-
-        cloudsc_xmod( loki-c )
+	# CLOUDSC C version via 'transpile'
+	cloudsc_xmod( loki-c )
 
         loki_transform_transpile(
             FRONTEND ${LOKI_FRONTEND} CPP
@@ -713,7 +713,59 @@ endif()
             CONDITION HAVE_OMP
         )
 
-    endif()
+	# CLOUDSC C version via 'convert'
+	cloudsc_xmod( loki-idem-c )
+
+	loki_transform_convert(
+      	    MODE c FRONTEND ${LOKI_FRONTEND} CPP
+ 	    CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+ 	    PATH ${CMAKE_CURRENT_SOURCE_DIR}
+            HEADERS
+                ${COMMON_MODULE}/parkind1.F90
+                ${COMMON_MODULE}/yomphyder.F90
+                ${COMMON_MODULE}/yomcst.F90
+                ${COMMON_MODULE}/yoethf.F90
+                ${COMMON_MODULE}/yoecldp.F90
+                ${COMMON_MODULE}/fcttre_mod.F90
+                ${COMMON_MODULE}/fccld_mod.F90
+            INCLUDES ${COMMON_INCLUDE}
+            DATA_OFFLOAD REMOVE_OPENMP
+            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+ 	    OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-c
+            OUTPUT
+                loki-idem-c/cloudsc_driver_loki_mod.c.F90
+                loki-idem-c/cloudsc_fc.F90 loki-idem-c/cloudsc_c.c
+                loki-idem-c/yoethf_fc.F90 loki-idem-c/yomcst_fc.F90
+                loki-idem-c/yoecldp_fc.F90
+            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        )
+
+
+        ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem-c
+            SOURCES
+ 	        dwarf_cloudsc.F90
+                loki-idem-c/cloudsc_driver_loki_mod.c.F90
+                loki-idem-c/cloudsc_fc.F90
+                loki-idem-c/cloudsc_c.c
+                loki-idem-c/yoethf_fc.F90
+                loki-idem-c/yomcst_fc.F90
+                loki-idem-c/yoecldp_fc.F90
+            LIBS
+                cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS}
+	)
+
+        ecbuild_add_test(
+            TARGET dwarf-cloudsc-loki-idem-c-serial
+            COMMAND bin/dwarf-cloudsc-loki-idem-c
+            ARGS 1 100 16
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+            OMP 1
+            ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
+        )
+    
+    endif() # HAVE_SINGLE_PRECISION
+    # endif()
 
     # Create symlink for the input data
     if( HAVE_SERIALBOX )
