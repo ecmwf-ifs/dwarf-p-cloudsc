@@ -17,18 +17,21 @@ set( ENABLE_USE_STMT_FUNC ON CACHE STRING "" )
 # OpenMP FLAGS
 ####################################################################
 
-set( ENABLE_OMP ON CACHE STRING "" )
-set( OpenMP_C_FLAGS   "-homp" CACHE STRING "" )
-set( OpenMP_Fortran_FLAGS   "-homp -hnoacc -hlist=aimd -maxrregcount 64" CACHE STRING "" )
+set( OpenMP_C_FLAGS           "-fopenmp" CACHE STRING "" )
+set( OpenMP_CXX_FLAGS         "-fopenmp" CACHE STRING "" )
+set( OpenMP_Fortran_FLAGS     "-fopenmp" CACHE STRING "" )
+set( OpenMP_C_LIB_NAMES       "craymp" CACHE STRING "" )
+set( OpenMP_CXX_LIB_NAMES     "craymp" CACHE STRING "" )
+set( OpenMP_Fortran_LIB_NAMES "craymp" CACHE STRING "" )
+set( OpenMP_craymp_LIBRARY    "/opt/cray/pe/cce/16.0.1/cce/x86_64/lib/libcraymp.so" CACHE STRING "" )
 
 ####################################################################
 # OpenACC FLAGS
 ####################################################################
 
-set( ENABLE_ACC ON CACHE STRING "" )
-set( OpenACC_C_FLAGS "-hacc" )
-set( OpenACC_CXX_FLAGS "-hacc" )
-set( OpenACC_Fortran_FLAGS "-hacc") # -h acc_model=deep_copy" )
+set( OpenACC_C_FLAGS "-hacc" CACHE STRING "" )
+set( OpenACC_CXX_FLAGS "-hacc" CACHE STRING "" )
+set( OpenACC_Fortran_FLAGS "-hacc" CACHE STRING "" )
 
 ####################################################################
 # Compiler FLAGS
