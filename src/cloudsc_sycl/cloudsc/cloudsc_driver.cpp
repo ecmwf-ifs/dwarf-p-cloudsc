@@ -398,7 +398,6 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     cl::sycl::range<1> local(nproma);
 
     q.submit([&](cl::sycl::handler &h) {
-        cl::sycl::stream out_stream(16384, 512, h);
         h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) {			 
 
     cloudsc_c(1, icend, nproma, ptsphy, d_pt, d_pq,
@@ -420,7 +419,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
                 rv, r2es, r3les, r3ies, r4les, r4ies, r5les,
                 r5ies, r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp,
                 rtwat, rtice, rticecu, rtwat_rtice_r, rtwat_rticecu_r,
-                rkoop1, rkoop2, out_stream, item_ct1);
+                rkoop1, rkoop2, item_ct1);
 
 	});
     });

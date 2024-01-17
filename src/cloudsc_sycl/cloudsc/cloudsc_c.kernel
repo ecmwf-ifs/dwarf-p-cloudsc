@@ -39,7 +39,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   double r5ies, double r5alvcp, double r5alscp, double ralvdcp, double ralsdcp, double ralfdcp,
   double rtwat, double rtice, double rticecu, double rtwat_rtice_r, double rtwat_rticecu_r,
   double rkoop1, double rkoop2,
-  cl::sycl:: stream out_stream, cl::sycl::nd_item<1> item_ct) {
+  cl::sycl::nd_item<1> item_ct) {
 
   //-------------------------------------------------------------------------------
   //                 Declare input/output arguments

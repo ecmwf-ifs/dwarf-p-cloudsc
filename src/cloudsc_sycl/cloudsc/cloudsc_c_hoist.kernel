@@ -45,7 +45,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, double ptsphy,
   double * __restrict__ zpfplsx, double * __restrict__ zlneg, double * __restrict__ zqxn2d,
   double * __restrict__ zqsmix, double * __restrict__ zqsliq, double * __restrict__ zqsice,
   double * __restrict__ zfoeewmt, double * __restrict__ zfoeew, double * __restrict__ zfoeeliqt,
-  cl::sycl:: stream out_stream, cl::sycl::nd_item<1> item_ct) {
+  cl::sycl::nd_item<1> item_ct) {
 
   //-------------------------------------------------------------------------------
   //                 Declare input/output arguments
