@@ -561,9 +561,9 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
     //----------------------------------------
     // old *diagnostic* mixed phase saturation
     //----------------------------------------
-    zfoealfa[jk] = ((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))));
+    zfoealfa[jk] = ((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))));
     zfoeewmt[jk] =
-      cl::sycl::fmin(((float)(r2es*((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)) + (1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies))))) / pap[jl + klon*(jk + klev*(ibl))], (float) 0.5);
+      cl::sycl::fmin(((float)(r2es*((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)) + ((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies))))) / pap[jl + klon*(jk + klev*(ibl))], (float) 0.5);
     zqsmix[jk] = zfoeewmt[jk];
     zqsmix[jk] = zqsmix[jk] / ((float) 1.0 - retv*zqsmix[jk]);
 
@@ -743,13 +743,13 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
     // Reminder: RETV=RV/RD-1
 
     // liquid
-    zfacw = r5les / (cl::sycl::pow((ztp1[jk] - r4les), 2.0));
+    zfacw = r5les / (cl::sycl::pow((ztp1[jk] - r4les), (float)2.0));
     zcor = (float) 1.0 / ((float) 1.0 - retv*zfoeeliqt[jk]);
     zdqsliqdt = zfacw*zcor*zqsliq[jk];
     zcorqsliq = (float) 1.0 + ralvdcp*zdqsliqdt;
 
     // ice
-    zfaci = r5ies / (cl::sycl::pow((ztp1[jk] - r4ies), 2.0));
+    zfaci = r5ies / (cl::sycl::pow((ztp1[jk] - r4ies), (float)2.0));
     zcor = (float) 1.0 / ((float) 1.0 - retv*zfoeew[jk]);
     zdqsicedt = zfaci*zcor*zqsice[jk];
     zcorqsice = (float) 1.0 + ralsdcp*zdqsicedt;
@@ -760,7 +760,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
     zfac = zalfaw*zfacw + ((float) 1.0 - zalfaw)*zfaci;
     zcor = (float) 1.0 / ((float) 1.0 - retv*zfoeewmt[jk]);
     zdqsmixdt = zfac*zcor*zqsmix[jk];
-    zcorqsmix = (float) 1.0 + ((float)((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*ralvdcp + (1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*ralsdcp))*zdqsmixdt;
+    zcorqsmix = (float) 1.0 + ((float)((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*ralvdcp + ((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*ralsdcp))*zdqsmixdt;
 
     // evaporation/sublimation limits
     zevaplimmix =
@@ -813,7 +813,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
     // 3.1.1 Supersaturation limit (from Koop)
     //-----------------------------------
     // Needs to be set for all temperatures
-    zfokoop = ((float)(cl::sycl::fmin(rkoop1 - rkoop2*ztp1[jk], (float)(r2es*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)))*1.0/(float)(r2es*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies))))));
+    zfokoop = ((float)(cl::sycl::fmin(rkoop1 - rkoop2*ztp1[jk], (float)(r2es*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)))*(float)1.0/(float)(r2es*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies))))));
 
     if (ztp1[jk] >= rtt || (*yrecldp).nssopt == 0) {
       zfac = (float) 1.0;
@@ -1116,19 +1116,19 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
 
     // Formerly a call to CUADJTQ(..., ICALL=5)
     zqp = (float) 1.0 / pap[jl + klon*(jk + klev*(ibl))];
-    zqsat = ((float)(r2es*((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)) + (1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies)))))*zqp;
+    zqsat = ((float)(r2es*((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)) + ((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies)))))*zqp;
     zqsat = cl::sycl::fmin((float) 0.5, zqsat);
     zcor = (float) 1.0 / ((float) 1.0 - retv*zqsat);
     zqsat = zqsat*zcor;
-    zcond = (zqsmix[jk] - zqsat) / ((float) 1.0 + zqsat*zcor*((float)(((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*r5alvcp)*(1.0/cl::sycl::pow(ztp1[jk] - r4les, 2.0)) + ((1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*r5alscp)*(1.0/cl::sycl::pow(ztp1[jk] - r4ies, 2.0)))));
-    ztp1[jk] = ztp1[jk] + ((float)((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*ralvdcp + (1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*ralsdcp))*zcond;
+    zcond = (zqsmix[jk] - zqsat) / ((float) 1.0 + zqsat*zcor*((float)(((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*r5alvcp)*((float)1.0/cl::sycl::pow(ztp1[jk] - r4les, (float)2.0)) + (((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*r5alscp)*((float)1.0/cl::sycl::pow(ztp1[jk] - r4ies, (float)2.0)))));
+    ztp1[jk] = ztp1[jk] + ((float)((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*ralvdcp + ((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*ralsdcp))*zcond;
     zqsmix[jk] = zqsmix[jk] - zcond;
-    zqsat = ((float)(r2es*((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)) + (1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies)))))*zqp;
+    zqsat = ((float)(r2es*((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les)) + ((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*cl::sycl::exp((r3ies*(ztp1[jk] - rtt))/(ztp1[jk] - r4ies)))))*zqp;
     zqsat = cl::sycl::fmin((float) 0.5, zqsat);
     zcor = (float) 1.0 / ((float) 1.0 - retv*zqsat);
     zqsat = zqsat*zcor;
-    zcond1 = (zqsmix[jk] - zqsat) / ((float) 1.0 + zqsat*zcor*((float)(((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*r5alvcp)*(1.0/cl::sycl::pow(ztp1[jk] - r4les, 2.0)) + ((1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*r5alscp)*(1.0/cl::sycl::pow(ztp1[jk] - r4ies, 2.0)))));
-    ztp1[jk] = ztp1[jk] + ((float)((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*ralvdcp + (1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*ralsdcp))*zcond1;
+    zcond1 = (zqsmix[jk] - zqsat) / ((float) 1.0 + zqsat*zcor*((float)(((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*r5alvcp)*((float)1.0/cl::sycl::pow(ztp1[jk] - r4les, (float)2.0)) + (((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*r5alscp)*((float)1.0/cl::sycl::pow(ztp1[jk] - r4ies, (float)2.0)))));
+    ztp1[jk] = ztp1[jk] + ((float)((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*ralvdcp + ((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*ralsdcp))*zcond1;
     zqsmix[jk] = zqsmix[jk] - zcond1;
 
     zdqs = zqsmix[jk] - zqold;
@@ -1176,7 +1176,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
       if (za[jk] > (float) 0.99) {
         zcor = (float) 1.0 / ((float) 1.0 - retv*zqsmix[jk]);
         zcdmax = (zqx[jk + klev*(4)] - zqsmix[jk]) / ((float) 1.0 +
-          zcor*zqsmix[jk]*((float)(((float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0)))*r5alvcp)*(1.0/cl::sycl::pow(ztp1[jk] - r4les, 2.0)) + ((1.0 - (float)(cl::sycl::fmin(1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, 2.0))))*r5alscp)*(1.0/cl::sycl::pow(ztp1[jk] - r4ies, 2.0)))));
+          zcor*zqsmix[jk]*((float)(((float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0)))*r5alvcp)*((float)1.0/cl::sycl::pow(ztp1[jk] - r4les, (float)2.0)) + (((float)1.0 - (float)(cl::sycl::fmin((float)1.0, cl::sycl::pow((cl::sycl::fmax(rtice, cl::sycl::fmin(rtwat, ztp1[jk])) - rtice)*rtwat_rtice_r, (float)2.0))))*r5alscp)*((float)1.0/cl::sycl::pow(ztp1[jk] - r4ies, (float)2.0)))));
       } else {
         zcdmax = (zqx[jk + klev*(4)] - za[jk]*zqsmix[jk]) / za[jk];
       }
@@ -1218,7 +1218,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
       // Increase RHcrit to 1.0 towards the surface (eta>0.8)
       if (zsigk > (float) 0.8) {
         zrhc = (*yrecldp).ramid + ((float) 1.0 - (*yrecldp).ramid)*(cl::sycl::pow(((zsigk -
-          (float) 0.8) / (float) 0.2), 2.0));
+          (float) 0.8) / (float) 0.2), (float)2.0));
       }
 
       // Commented out for CY37R1 to reduce humidity in high trop and strat
@@ -1621,7 +1621,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
           zlcrit = (*yrecldp).rlcritsnow;
         }
 
-        zsnowaut = zzco*((float) 1.0 - cl::sycl::exp(-(cl::sycl::pow((zicecld / zlcrit), 2.0))));
+        zsnowaut = zzco*((float) 1.0 - cl::sycl::exp(-(cl::sycl::pow((zicecld / zlcrit), (float)2.0))));
         zsolqb[3 + 5*(1)] = zsolqb[3 + 5*(1)] + zsnowaut;
 
       }
@@ -1682,7 +1682,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
 
         if (zliqcld / zlcrit < (float) 20.0) {
           // Security for exp for some compilers
-          zrainaut = zzco*((float) 1.0 - cl::sycl::exp(-(cl::sycl::pow((zliqcld / zlcrit), 2.0))));
+          zrainaut = zzco*((float) 1.0 - cl::sycl::exp(-(cl::sycl::pow((zliqcld / zlcrit), (float)2.0))));
         } else {
           zrainaut = zzco;
         }
@@ -1958,8 +1958,8 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
 
       if (llo1) {
         // note: zpreclr is a rain flux
-        zpreclr = zqxfg[2]*zcovpclr / copysign(cl::sycl::fmax(fabs(zcovptot*zdtgdp),
-          zepsilon), zcovptot*zdtgdp);
+        zpreclr = zqxfg[2]*zcovpclr / copysign(cl::sycl::fmax((float)fabs((float)zcovptot*zdtgdp),
+          zepsilon), (float)zcovptot*zdtgdp);
 
         //--------------------------------------
         // actual microphysics formula in zbeta
@@ -2042,7 +2042,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
         zpreclr = zqxfg[2] / zcovptot;
 
         // Fallspeed air density correction
-        zfallcorr = cl::sycl::pow(((*yrecldp).rdensref / zrho), 0.4);
+        zfallcorr = cl::sycl::pow(((*yrecldp).rdensref / zrho), (float)0.4);
 
         // Saturation vapour pressure with respect to liquid phase
         zesatliq = rv / rd*((float)(r2es*cl::sycl::exp((r3les*(ztp1[jk] - rtt))/(ztp1[jk] - r4les))));
@@ -2119,8 +2119,8 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
 
       if (llo1) {
         // note: zpreclr is a rain flux a
-        zpreclr = zqxfg[3]*zcovpclr / copysign(cl::sycl::fmax(fabs(zcovptot*zdtgdp),
-          zepsilon), zcovptot*zdtgdp);
+        zpreclr = zqxfg[3]*zcovpclr / copysign(cl::sycl::fmax((float)fabs((float)zcovptot*zdtgdp),
+          (float)zepsilon), (float)zcovptot*zdtgdp);
 
         //--------------------------------------
         // actual microphysics formula in zbeta
@@ -2197,17 +2197,17 @@ void cloudsc_c(int kidia, int kfdia, int klon, float ptsphy,
 
         zaplusb = (*yrecldp).rcl_apb1*zvpice - (*yrecldp).rcl_apb2*zvpice*ztp1[jk] +
           pap[jl + klon*(jk + klev*(ibl))]*(*yrecldp).rcl_apb3*(cl::sycl::pow(ztp1[jk],
-           3.0));
-        zcorrfac = cl::sycl::pow((1.0 / zrho), 0.5);
-        zcorrfac2 = (cl::sycl::pow((ztp1[jk] / 273.0), 1.5))*(393.0 / (ztp1[jk] + 120.0));
+           (float)3.0));
+        zcorrfac = cl::sycl::pow(((float)1.0 / zrho), (float)0.5);
+        zcorrfac2 = (cl::sycl::pow((ztp1[jk] / (float)273.0), (float)1.5))*((float)393.0 / (ztp1[jk] + (float)120.0));
 
         zpr02 = zrho*zpreclr*(*yrecldp).rcl_const1s / (ztcg*zfacx1s);
 
-        zterm1 = (zqsice[jk] - zqe)*(cl::sycl::pow(ztp1[jk], 2.0))*zvpice*zcorrfac2*ztcg*(*yrecldp)
+        zterm1 = (zqsice[jk] - zqe)*(cl::sycl::pow(ztp1[jk], (float)2.0))*zvpice*zcorrfac2*ztcg*(*yrecldp)
           .rcl_const2s*zfacx1s / (zrho*zaplusb*zqsice[jk]);
         zterm2 = 0.65*(*yrecldp).rcl_const6s*(cl::sycl::pow(zpr02, (*yrecldp).rcl_const4s)) +
-          (*yrecldp).rcl_const3s*(cl::sycl::pow(zcorrfac, 0.5))*(cl::sycl::pow(zrho, 0.5))*(cl::sycl::pow(zpr02,
-          (*yrecldp).rcl_const5s)) / (cl::sycl::pow(zcorrfac2, 0.5));
+          (*yrecldp).rcl_const3s*(cl::sycl::pow(zcorrfac, (float)0.5))*(cl::sycl::pow(zrho, (float)0.5))*(cl::sycl::pow(zpr02,
+          (*yrecldp).rcl_const5s)) / (cl::sycl::pow(zcorrfac2, (float)0.5));
 
         zdpevap = cl::sycl::fmax(zcovpclr*zterm1*zterm2*ptsphy, (float) 0.0);
 

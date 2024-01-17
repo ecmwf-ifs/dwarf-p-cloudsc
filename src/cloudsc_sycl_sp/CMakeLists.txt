@@ -46,7 +46,7 @@ if( HAVE_CLOUDSC_SYCL )
 
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-scc-sycl
+        TARGET  dwarf-cloudsc-scc-sycl-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-sycl-lib
     )
@@ -60,7 +60,6 @@ if( HAVE_CLOUDSC_SYCL )
     )
 
     ######
-
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-hoist-sycl-lib
         INSTALL_HEADERS LISTED
@@ -85,7 +84,7 @@ if( HAVE_CLOUDSC_SYCL )
     )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-scc-hoist-sycl
+        TARGET  dwarf-cloudsc-scc-hoist-sycl-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-hoist-sycl-lib
     )
@@ -99,7 +98,7 @@ if( HAVE_CLOUDSC_SYCL )
     )
 
     ######
-
+    if (True)
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-k-caching-sycl-lib
         INSTALL_HEADERS LISTED
@@ -124,7 +123,7 @@ if( HAVE_CLOUDSC_SYCL )
     )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-scc-k-caching-sycl
+        TARGET  dwarf-cloudsc-scc-k-caching-sycl-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-k-caching-sycl-lib
     )
@@ -140,6 +139,7 @@ if( HAVE_CLOUDSC_SYCL )
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+endif()
 endif()
 else()
 	ecbuild_info( "Serialbox not found, disabling SYCL version" )

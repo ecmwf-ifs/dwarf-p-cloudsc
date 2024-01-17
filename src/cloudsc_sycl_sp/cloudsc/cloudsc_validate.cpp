@@ -113,7 +113,6 @@ void validate_2d(const char *name, float *v_ref, float *v_field, int nlon, int n
 	// Difference against reference result in one-norm sense
 	zdiff = fabs(field_val - ref_val);
 	zmaxerr = fmax(zmaxerr, zdiff);
-	zdiffmax = fmax(zdiffmax, zdiff);
 	zerrsum = zerrsum + zdiff;
 	zsum = zsum + fabs(ref_val);
       }

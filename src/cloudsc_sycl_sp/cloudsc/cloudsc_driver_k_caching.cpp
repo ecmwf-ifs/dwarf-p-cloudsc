@@ -382,12 +382,12 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   q.wait();
   // end host to device
 
-  float t1 = omp_get_wtime();
+  double t1 = omp_get_wtime();
 
     int b, bsize, icalls=0, igpc=numcols;
     int coreid = mycpu();
     int tid = omp_get_thread_num();
-    float start = omp_get_wtime();
+    double start = omp_get_wtime();
 
     int jkglo = 0;
     int ibl = (jkglo - 1) / nproma + 1;
@@ -427,7 +427,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 
     q.wait();
 
-    float end = omp_get_wtime();
+    double end = omp_get_wtime();
 
     // device to host
     q.memcpy(tend_loc_t, d_tend_loc_t, sizeof(float) * nblocks*nlev*nproma);
@@ -462,12 +462,12 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     zinfo[2][tid] = (float) icalls;
     zinfo[3][tid] = (float) igpc;
 
-  float t2 = omp_get_wtime();
+  double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
   printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
     "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
-  float zfrac, zmflops, zthrput;
+  double zfrac, zmflops, zthrput;
   for (int t = 0; t < numthreads; t++) {
     const float tloc = zinfo[0][t];
     const int coreid = (int) zinfo[1][t];
@@ -475,8 +475,8 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     const int igpc = (int) zinfo[3][t];
     zfrac = (float)igpc / (float)numcols;
     if (tloc > 0.0) {
-      zmflops = 1.0e-06 * zfrac * zhpm * ((float)numcols / 100.) / tloc;
-      zthrput = (float)numcols/tloc;
+      zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tloc;
+      zthrput = (double)numcols/tloc;
     } else {
       zmflops = 0.;
       zthrput = 0.0;
@@ -484,11 +484,11 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     printf(" %10d%10d%10d%10d%10d %4d : %10d%10d%10d @ core#\n",
            numthreads, numcols, igpc, icalls, nproma, t, (int)(tloc * 1000.), (int)zmflops, (int)zthrput);
   }
-  float tdiff = t2 - t1;
+  double tdiff = t2 - t1;
   zfrac = 1.0;
   if (tdiff > 0.0) {
-    zmflops = 1.0e-06 * zfrac * zhpm * ((float)numcols / 100.) / tdiff;
-    zthrput = (float)numcols/tdiff;
+    zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tdiff;
+    zthrput = (double)numcols/tdiff;
   } else {
     zmflops = 0.0;
     zthrput = 0.0;

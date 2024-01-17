@@ -49,7 +49,7 @@ if( HAVE_CLOUDSC_SYCL )
     )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-scc-sycl-sp
+        TARGET  dwarf-cloudsc-scc-sycl
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-sycl-lib
     )
@@ -97,7 +97,7 @@ if( HAVE_CLOUDSC_SYCL )
     )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-scc-hoist-sycl-sp
+        TARGET  dwarf-cloudsc-scc-hoist-sycl
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-hoist-sycl-lib
     )
@@ -145,7 +145,7 @@ if( HAVE_CLOUDSC_SYCL )
     )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-scc-k-caching-sycl-sp
+        TARGET  dwarf-cloudsc-scc-k-caching-sycl
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-k-caching-sycl-lib
     )
