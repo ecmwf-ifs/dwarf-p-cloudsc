@@ -325,6 +325,8 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   d_pfhpsl = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
   d_pfhpsn = cl::sycl::malloc_device<double>(nblocks*(nlev+1)*nproma, q);
 
+  int n_runs = 2;
+  for (int i_runs=0; i_runs<n_runs; i_runs++) {
   load_state(klon, nlev, nclv, numcols, nproma, &ptsphy, plcrit_aer, picrit_aer,
 	     pre_ice, pccn, pnice, pt, pq,
 	     tend_cml_t, tend_cml_q, tend_cml_a, tend_cml_cld,
@@ -383,7 +385,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   q.wait();
   // end host to device
 
-  double t1 = omp_get_wtime();
+    double t1 = omp_get_wtime();
 
     int b, bsize, icalls=0, igpc=numcols;
     int coreid = mycpu();
@@ -398,8 +400,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     cl::sycl::range<1> local(nproma);
 
     q.submit([&](cl::sycl::handler &h) {
-        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) {			 
-
+        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) /* TODO: insert: [intel::reqd_sub_group_size(16)]*/ {			 
     cloudsc_c(1, icend, nproma, ptsphy, d_pt, d_pq,
     		d_tend_tmp_t, d_tend_tmp_q, d_tend_tmp_a, d_tend_tmp_cld,
     		d_tend_loc_t, d_tend_loc_q, d_tend_loc_a, d_tend_loc_cld,
@@ -494,6 +495,8 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   }
   printf(" %10d%10d%10d%10d%10d %4d: %10d%10d%10d TOTAL\n",
          numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops, (int)zthrput);
+
+  } // n_runs
 
   cloudsc_validate(klon, nlev, nclv, numcols, nproma,
 		   plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,

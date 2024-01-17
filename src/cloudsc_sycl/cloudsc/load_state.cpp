@@ -1,14 +1,6 @@
-/*
- * (C) Copyright 1988- ECMWF.
- *
- * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
- * In applying this licence, ECMWF does not waive the privileges and immunities
- * granted to it by virtue of its status as an intergovernmental organisation
- * nor does it submit to any jurisdiction.
- */
-
 #include "load_state.h"
+//#include "yomcst_c.hpp"
+#include <iostream>
 
 #include <math.h>
 #ifdef HAVE_SERIALBOX
@@ -221,6 +213,7 @@ void load_and_expand_3d(hid_t file_id, const char *name, int nlon, int nlev, int
   expand_3d((double *)buffer, field, nlon, nlev, nclv, nproma, ngptot, nblocks);
 }
 #endif
+
 
 /* Read input state into memory */
 void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
@@ -646,8 +639,6 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
 #endif
 
 }
-
-
 
 /* Read reference result into memory */
 void load_reference(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
