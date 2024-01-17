@@ -1,21 +1,12 @@
-/*
- * (C) Copyright 1988- ECMWF.
- *
- * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
- * In applying this licence, ECMWF does not waive the privileges and immunities
- * granted to it by virtue of its status as an intergovernmental organisation
- * nor does it submit to any jurisdiction.
- */
-
 #include "load_state.h"
+//#include "yomcst_c.hpp"
+#include <iostream>
 
 #include <math.h>
 #include "serialbox-c/Serialbox.h"
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
-
 
 /* Query sizes and dimensions of state arrays */
 void query_state(int *klon, int *klev)
@@ -32,121 +23,63 @@ void query_state(int *klon, int *klev)
 
 void expand_1d(double *buffer, double *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, i;
+  int b, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, i)
+#pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
-      for (i = 0; i < fsize; i++) { field_in[b*nproma+i] = buffer[bidx + i]; }
-      for (i = 0; i < bsize-fsize; i++) { field_in[b*nproma+fsize+i] = buffer[i]; }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (i = 0; i < bsize; i++) { field_in[b*nproma+i] = buffer[bidx+i]; }
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
+      buf_idx = (buf_start_idx + i) % nlon;
+      field_in[b*nproma+i] = buffer[buf_idx];
     }
-    // Zero out the remainder of last block
-    for (i=bsize; i<nproma; i++) { field_in[b*nproma+i] = 0.0; }
   }
 }
+
 
 void expand_1d_int(int *buffer, int *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, i;
+  int b, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, i)
+  #pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
-      for (i = 0; i < fsize; i++) { field_in[b*nproma+i] = buffer[bidx + i]; }
-      for (i = 0; i < bsize-fsize; i++) { field_in[b*nproma+fsize+i] = buffer[i]; }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (i = 0; i < bsize; i++) { field_in[b*nproma+i] = buffer[bidx+i]; }
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
+      buf_idx = (buf_start_idx + i) % nlon;
+      field_in[b*nproma+i] = buffer[buf_idx];
     }
-    // Zero out the remainder of last block
-    for (i=bsize; i<nproma; i++) { field_in[b*nproma+i] = 0.0; }
   }
 }
 
+
 void expand_2d(double *buffer_in, double *field_in, int nlon, int nlev, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, i;
+  int b, l, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, i)
+  #pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
       for (l = 0; l < nlev; l++) {
-      	for (i = 0; i < fsize; i++) { field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+bidx + i]; }
-	for (i = 0; i < bsize-fsize; i++) { field_in[b*nlev*nproma+l*nproma+fsize+i] = buffer_in[l*nlon+i]; }
+        buf_idx = (buf_start_idx + i) % nlon;
+        field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+buf_idx];
       }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (l = 0; l < nlev; l++) {
-	for (i = 0; i < bsize; i++) { field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+bidx+i]; }
-      }
-    }
-    // Zero out the remainder of last block
-    for (l=0; l<nlev; l++ ) { 
-      for (i=bsize; i<nproma; i++) { field_in[b*nlev*nproma+l*nproma+i] = 0.0; }
     }
   }
 }
 
 void expand_3d(double *buffer_in, double *field_in, int nlon, int nlev, int nclv, int nproma, int ngptot, int nblocks)
 {
-  int gidx, bsize, bidx, bend, fsize, b, l, c, i;
+  int b, l, c, i, buf_start_idx, buf_idx;
 
-#pragma omp parallel for default(shared) private(gidx, bsize, bidx, bend, fsize, b, l, c, i)
+#pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
   for (b = 0; b < nblocks; b++) {
-    gidx = b*nproma;  // Global starting index of the block in the general domain
-    bsize = min(nproma, ngptot - gidx);  // Size of the field block
-    bidx = gidx % nlon;  // Rolling index into the input buffer
-    bend = min(bidx+bsize, nlon);  // Idealised final index in the input buffer
-
-    if (bend-bidx < bsize) {
-      // The input buffer does not hold enough data to fill field block;
-      // we need to fill the rest of the block with data from front of buffer.
-      fsize = nlon - bidx;
+    buf_start_idx = ((b)*nproma) % nlon;
+    for (i = 0; i < nproma; i++) {
       for (c = 0; c < nclv; c++) {
-	for (l = 0; l < nlev; l++) {
-	  for (i = 0; i < fsize; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+bidx + i]; }
-	  for (i = 0; i < bsize-fsize; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+fsize+i] = buffer_in[c*nlev*nlon+l*nlon+i]; }
-	}
-      }
-    } else {
-      // Simply copy a block of data from the rolling buffer index
-      for (c = 0; c < nclv; c++) {
-	for (l = 0; l < nlev; l++) {
-	  for (i = 0; i < bsize; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+bidx+i]; }
-	}
-      }
-    }
-    // Zero out the remainder of last block
-    for (c = 0; c < nclv; c++) {
-      for (l=0; l < nlev; l++ ) { 
-	for (i=bsize; i<nproma; i++) { field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = 0.0; }
+        for (l = 0; l < nlev; l++) {
+          buf_idx = (buf_start_idx + i) % nlon;
+          field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+buf_idx];
+        }
       }
     }
   }
@@ -192,6 +125,7 @@ void load_and_expand_3d(serialboxSerializer_t *serializer, serialboxSavepoint_t*
   serialboxSerializerRead(serializer, name, savepoint, buffer, strides, 3);
   expand_3d((double *)buffer, field, nlon, nlev, nclv, nproma, ngptot, nblocks);
 }
+
 
 /* Read input state into memory */
 void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma, 
@@ -413,8 +347,6 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
   serialboxSerializerDestroySavepointVector(savepoints, 1);
   serialboxSerializerDestroy(serializer);
 }
-
-
 
 /* Read reference result into memory */
 void load_reference(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
