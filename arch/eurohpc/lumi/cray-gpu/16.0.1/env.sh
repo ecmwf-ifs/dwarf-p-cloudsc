@@ -24,19 +24,19 @@ module_unload() {
 module reset
 
 # Load modules
-module_load CrayEnv
+module_load LUMI/23.09
+module_load partition/G
 module_load PrgEnv-cray/8.4.0
 module_load cce/16.0.1
-module_load craype-x86-trento
 module_load cray-mpich/8.1.27
 module_load craype-network-ofi
-module_load craype-accel-amd-gfx90a
-module_load cray-python/3.10.10
 module_load rocm/5.2.3
-module_load buildtools/22.12
-module_load LUMI/23.09
+module_load buildtools/23.09
 module_load Boost/1.82.0-cpeCray-23.09
-module_load cray-hdf5/1.12.2.3
+module_load cray-python/3.10.10
+module_load cray-hdf5/1.12.2.7
+module_load craype-x86-trento
+module_load craype-accel-amd-gfx90a
 
 module list
 
