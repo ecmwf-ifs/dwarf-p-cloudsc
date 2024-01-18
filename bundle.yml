@@ -119,6 +119,7 @@ options :
         help: Enable GPU kernel variant based on SYCL
         cmake: >
             ENABLE_SYCL=ON
+            ENABLE_CLOUDSC_SYCL=ON
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
