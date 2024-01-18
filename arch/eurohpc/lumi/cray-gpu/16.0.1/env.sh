@@ -36,6 +36,7 @@ module_load rocm/5.2.3
 module_load buildtools/22.12
 module_load LUMI/23.09
 module_load Boost/1.82.0-cpeCray-23.09
+module_load cray-hdf5/1.12.2.3
 
 module list
 

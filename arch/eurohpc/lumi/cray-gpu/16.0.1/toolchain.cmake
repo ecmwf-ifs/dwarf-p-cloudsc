@@ -19,7 +19,7 @@ set( ENABLE_USE_STMT_FUNC ON CACHE STRING "" )
 
 set( OpenMP_C_FLAGS           "-fopenmp" CACHE STRING "" )
 set( OpenMP_CXX_FLAGS         "-fopenmp" CACHE STRING "" )
-set( OpenMP_Fortran_FLAGS     "-fopenmp" CACHE STRING "" )
+set( OpenMP_Fortran_FLAGS     "-homp -hlist=aimd" CACHE STRING "" )
 set( OpenMP_C_LIB_NAMES       "craymp" CACHE STRING "" )
 set( OpenMP_CXX_LIB_NAMES     "craymp" CACHE STRING "" )
 set( OpenMP_Fortran_LIB_NAMES "craymp" CACHE STRING "" )
@@ -42,5 +42,8 @@ set(ECBUILD_Fortran_FLAGS "-hcontiguous")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl, --as-needed")
 
-# set(ECBUILD_Fortran_FLAGS_BIT "-O3 -G2 -haggress -DNDEBUG")
 set(ECBUILD_Fortran_FLAGS_BIT "-O3 -hfp1 -hscalar3 -hvector3 -G2 -haggress -DNDEBUG")
+
+set( GPU_TARGETS "gfx90a" CACHE STRING "" )
+# select OpenMP pragma to be used 
+set( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL OFF CACHE BOOL "" )
