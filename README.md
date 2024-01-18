@@ -228,6 +228,22 @@ Isambard. A set of arch and toolchain files and detailed installation
 and run instructions are provided
 [here](https://confluence.ecmwf.int/display/~nabr/3rd+Isambard+Hackathon).
 
+### SYCL version of CLOUDSC
+
+A preliminary SYCL code variant has been added and tested with a custom
+DPCPP install on ECMWF's AC partition. To build this, please use the
+SYCL-specific environment setups:
+
+```
+./cloudsc-bundle build --clean --build-dir=build-sycl --with-gpu --with-sycl --with-serialbox --arch=arch/ecmwf/hpc2020/intel-sycl/2021.4.0
+
+# Then run with
+cd build-sycl && . env.sh
+./bin/dwarf-cloudsc-scc-sycl 1 240000 128
+./bin/dwarf-cloudsc-scc-hoist-sycl 1 240000 128
+./bin/dwarf-cloudsc-scc-k-caching-sycl 1 240000 128
+```
+
 ## Running and testing
 
 The different prototype variants of the dwarf create different binaries that
