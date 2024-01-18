@@ -457,9 +457,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
-  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s\n",
-    "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s");
-  double zfrac, zmflops;
+  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
+    "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
+  double zfrac, zmflops, zthrput;
   for (int t = 0; t < numthreads; t++) {
     const double tloc = zinfo[0][t];
     const int coreid = (int) zinfo[1][t];
@@ -468,21 +468,25 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     zfrac = (double)igpc / (double)numcols;
     if (tloc > 0.0) {
       zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tloc;
+      zthrput = (double)numcols/tloc;
     } else {
       zmflops = 0.;
+      zthrput = 0.0;
     }
-    printf(" %10d%10d%10d%10d%10d %4d : %10d%10d @ core#\n",
-	   numthreads, numcols, igpc, icalls, nproma, t, (int)(tloc * 1000.), (int)zmflops);
+    printf(" %10d%10d%10d%10d%10d %4d : %10d%10d%10d @ core#\n",
+	   numthreads, numcols, igpc, icalls, nproma, t, (int)(tloc * 1000.), (int)zmflops, (int)zthrput);
   }
   double tdiff = t2 - t1;
   zfrac = 1.0;
   if (tdiff > 0.0) {
     zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tdiff;
+    zthrput = (double)numcols/tdiff;
   } else {
     zmflops = 0.0;
+    zthrput = 0.0;
   }
-  printf(" %10d%10d%10d%10d%10d %4d : %10d%10d TOTAL\n",
-	 numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops);
+  printf(" %10d%10d%10d%10d%10d %4d: %10d%10d%10d TOTAL\n",
+	 numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops, (int)zthrput);
 
   cloudsc_validate(klon, nlev, nclv, numcols, nproma,
 		   plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,
