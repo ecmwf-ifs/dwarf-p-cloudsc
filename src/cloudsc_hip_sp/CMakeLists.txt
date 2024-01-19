@@ -14,10 +14,11 @@ ecbuild_add_option( FEATURE CLOUDSC_HIP
 
 if( HAVE_CLOUDSC_HIP )
 
-  if ( NOT HAVE_SINGLE_PRECISION )
+  if ( HAVE_SINGLE_PRECISION )
 
     set(CMAKE_C_COMPILER "${ROCM_PATH}/bin/hipcc")
     set(CMAKE_CXX_COMPILER "${ROCM_PATH}/bin/hipcc")
+    set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -O3 --ffast-math -ffp-contract=fast")
 
     ###### SCC-HIP ####
     ecbuild_add_library(
@@ -54,7 +55,7 @@ if( HAVE_CLOUDSC_HIP )
     endif()
     
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-hip
+        TARGET  dwarf-cloudsc-hip-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-hip-lib
     )
@@ -67,7 +68,6 @@ if( HAVE_CLOUDSC_HIP )
         OMP 1
     )
     ## 
-
     ###### SCC-HOIST-HIP ####
     ecbuild_add_library(
         TARGET dwarf-cloudsc-hip-hoist-lib
@@ -103,7 +103,7 @@ if( HAVE_CLOUDSC_HIP )
     endif()
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-hip-hoist
+        TARGET  dwarf-cloudsc-hip-hoist-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-hip-hoist-lib
     )
@@ -152,7 +152,7 @@ if( HAVE_CLOUDSC_HIP )
     endif()
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-hip-k-caching
+        TARGET  dwarf-cloudsc-hip-k-caching-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-hip-k-caching-lib
     )
@@ -169,7 +169,7 @@ if( HAVE_CLOUDSC_HIP )
     # Create symlink for the input data
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-
+ 
   endif()
 
 endif()
