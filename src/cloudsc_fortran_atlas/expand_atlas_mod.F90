@@ -52,7 +52,8 @@ contains
     rfield = ((.not. lfield) .and. (.not. ifield))
 
     nlev = field%levels()
-    nproma = fspace%nproma()
+    !nproma = fspace%nproma()
+    nproma = field%shape(1)
     ngptot = fspace%size()
     nblocks = fspace%nblks()
 
@@ -122,7 +123,8 @@ contains
     fspace = field%functionspace()
     nlev = field%levels()
     ngptot = fspace%size()
-    nproma = fspace%nproma()
+    !nproma = fspace%nproma()
+    nproma = field%shape(1)
     nblocks = fspace%nblks()
     ndim = field%shape(3) - 3
 

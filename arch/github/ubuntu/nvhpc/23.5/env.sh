@@ -16,7 +16,10 @@ export NVHPC_DIR=${NVHPC_INSTALL_DIR}/Linux_x86_64/${NVHPC_VERSION}
 ### Compilers
 export PATH=${NVHPC_DIR}/compilers/bin:${PATH}
 export NVHPC_LIBRARY_PATH=${NVHPC_DIR}/compilers/lib
-export LD_LIBRARY_PATH=${NVHPC_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${NVHPC_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
+### CUDA runtime
+export LD_LIBRARY_PATH=${NVHPC_DIR}/cuda/lib64/stubs:${NVHPC_DIR}/cuda/lib64:${LD_LIBRARY_PATH}
 
 ### MPI
 export MPI_HOME=${NVHPC_DIR}/comm_libs/mpi
