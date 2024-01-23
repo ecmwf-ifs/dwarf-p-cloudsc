@@ -61,7 +61,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : feature/nab_atlas_MultiField
+        version : feature/MultiField
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
