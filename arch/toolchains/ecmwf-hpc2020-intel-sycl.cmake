@@ -150,7 +150,6 @@ set(CMAKE_CXX_COMPILER "/home/nams/opt/dpcpp/bin/clang++")
 set(CMAKE_CXX_FLAGS "-O3 -L/home/nams/opt/dpcpp/lib -fopenmp -lstdc++")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl-early-optimizations -fsycl")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl-targets=nvptx64-nvidia-cuda")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xcuda-ptxas --maxrregcount=128")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xsycl-target-backend --cuda-gpu-arch=sm_80")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/apps/intel/2021.4.0/compiler/2021.4.0/linux/compiler/include")
 
