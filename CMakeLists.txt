@@ -71,7 +71,8 @@ if ( HAVE_HIP )
 endif()
 
 ecbuild_add_option( FEATURE SYCL
-	DESCRIPTION "SYCL" DEFAULT OFF)
+	DESCRIPTION "SYCL" DEFAULT OFF
+	REQUIRED_PACKAGES "IntelSYCL")
 
 ### OpenMP
 ecbuild_add_option( FEATURE OMP

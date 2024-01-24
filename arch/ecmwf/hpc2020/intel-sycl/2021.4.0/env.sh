@@ -42,6 +42,8 @@ module_load java/11.0.6
 
 set -x
 
+export IntelSYCL_DIR="/usr/local/apps/intel/2023.2.0/compiler/2023.2.0/linux/IntelSYCL"
+
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null
 

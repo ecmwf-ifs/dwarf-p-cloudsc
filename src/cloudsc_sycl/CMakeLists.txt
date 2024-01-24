@@ -14,11 +14,6 @@ ecbuild_add_option( FEATURE CLOUDSC_SYCL
 
 if( HAVE_CLOUDSC_SYCL )
 
-    set(LINK_SYCL OFF)
-    if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC") 
-	    set(LINK_SYCL ON)
-    endif()
-
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-sycl-lib
         INSTALL_HEADERS LISTED
@@ -37,11 +32,16 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-	    $<$<BOOL:${LINK_SYCL}>:sycl>
             Serialbox::Serialbox_C
     	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
     )
 
+    add_sycl_to_target(
+	    TARGET
+	    	dwarf-cloudsc-scc-sycl-lib
+	    SOURCES
+	    	cloudsc/cloudsc_c.kernel
+    )
 
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-scc-sycl
@@ -77,9 +77,15 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-            $<$<BOOL:${LINK_SYCL}>:sycl>
 	    Serialbox::Serialbox_C
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
+    )
+
+    add_sycl_to_target(
+	    TARGET
+	    	dwarf-cloudsc-scc-hoist-sycl-lib
+	    SOURCES
+	    	cloudsc/cloudsc_c_hoist.kernel
     )
 
     ecbuild_add_executable(
@@ -116,9 +122,15 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-            $<$<BOOL:${LINK_SYCL}>:sycl>
 	    Serialbox::Serialbox_C
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
+    )
+
+    add_sycl_to_target(
+	    TARGET 
+	    	dwarf-cloudsc-scc-k-caching-sycl-lib 
+	    SOURCES 
+	    	cloudsc/cloudsc_c_k_caching.kernel
     )
 
     ecbuild_add_executable(
