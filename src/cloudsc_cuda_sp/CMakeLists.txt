@@ -13,11 +13,12 @@ ecbuild_add_option( FEATURE CLOUDSC_C_CUDA
 )
 
 if( HAVE_CLOUDSC_C_CUDA )
-
- if ( NOT HAVE_SINGLE_PRECISION )
+  if ( HAVE_SINGLE_PRECISION )
     enable_language(CUDA)
     enable_language(CXX)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --ptxas-options=-v -O0 -g")
 
+   if (TRUE) 
     ###### SCC-CUDA ####
     ecbuild_add_library(
         TARGET dwarf-cloudsc-c-cuda-lib
@@ -51,28 +52,30 @@ if( HAVE_CLOUDSC_C_CUDA )
         target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
     else()
         target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-            -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+            --ptxas-options=-v -O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
     endif()
 
     set_target_properties( dwarf-cloudsc-c-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-c-cuda
+        TARGET  dwarf-cloudsc-c-cuda-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-c-cuda-lib
     )
 
-    target_link_libraries(dwarf-cloudsc-c-cuda dwarf-cloudsc-c-cuda-lib)
+    target_link_libraries(dwarf-cloudsc-c-cuda-sp dwarf-cloudsc-c-cuda-lib)
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-c-cuda-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda
+        TARGET dwarf-cloudsc-c-cuda-sp-serial
+        COMMAND bin/dwarf-cloudsc-c-cuda-sp
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ###
+endif()
 
+if (TRUE)
     ###### SCC-CUDA-HOIST ####
     ecbuild_add_library(
         TARGET dwarf-cloudsc-c-cuda-hoist-lib
@@ -106,28 +109,28 @@ if( HAVE_CLOUDSC_C_CUDA )
       target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
     else()
       target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-                       -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+                       --ptxas-options=-v -O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
     endif()
 
     set_target_properties( dwarf-cloudsc-c-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-c-cuda-hoist
+        TARGET  dwarf-cloudsc-c-cuda-hoist-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-c-cuda-hoist-lib
     )
 
-    target_link_libraries(dwarf-cloudsc-c-cuda-hoist dwarf-cloudsc-c-cuda-hoist-lib)
+    target_link_libraries(dwarf-cloudsc-c-cuda-hoist-sp dwarf-cloudsc-c-cuda-hoist-lib)
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-c-cuda-hoist-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda-hoist
+        TARGET dwarf-cloudsc-c-cuda-hoist-sp-serial
+        COMMAND bin/dwarf-cloudsc-c-cuda-hoist-sp
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ###
-
+endif()
     ###### SCC-CUDA-K-CACHING ####
     ecbuild_add_library(
         TARGET dwarf-cloudsc-c-cuda-k-caching-lib
@@ -138,8 +141,8 @@ if( HAVE_CLOUDSC_C_CUDA )
             cloudsc/load_state.cu
             cloudsc/cloudsc_c_k_caching.h
             cloudsc/cloudsc_c_k_caching.cu
-            cloudsc/cloudsc_driver.h
-            cloudsc/cloudsc_driver.cu
+            cloudsc/cloudsc_driver_k_caching.h
+            cloudsc/cloudsc_driver_k_caching.cu
             cloudsc/cloudsc_validate.h
             cloudsc/cloudsc_validate.cu
             cloudsc/mycpu.h
@@ -161,21 +164,21 @@ if( HAVE_CLOUDSC_C_CUDA )
       target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
     else()
       target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-                       -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+                       --ptxas-options=-v -O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
     endif()
     set_target_properties( dwarf-cloudsc-c-cuda-k-caching-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-c-cuda-k-caching
+        TARGET  dwarf-cloudsc-c-cuda-k-caching-sp
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-c-cuda-k-caching-lib
     )
 
-    target_link_libraries(dwarf-cloudsc-c-cuda-k-caching dwarf-cloudsc-c-cuda-k-caching-lib)
+    target_link_libraries(dwarf-cloudsc-c-cuda-k-caching-sp dwarf-cloudsc-c-cuda-k-caching-lib)
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-c-cuda-k-caching-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda-k-caching
+        TARGET dwarf-cloudsc-c-cuda-k-caching-sp-serial
+        COMMAND bin/dwarf-cloudsc-c-cuda-k-caching-sp
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
