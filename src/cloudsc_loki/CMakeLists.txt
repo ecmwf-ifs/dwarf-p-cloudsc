@@ -658,28 +658,29 @@ endif()
     if ( NOT HAVE_SINGLE_PRECISION )
 
         cloudsc_xmod( loki-c )
-
-        loki_transform_transpile(
-            FRONTEND ${LOKI_FRONTEND} CPP
-            HEADERS
-                ${COMMON_MODULE}/parkind1.F90
-                ${COMMON_MODULE}/yomphyder.F90
-                ${COMMON_MODULE}/yomcst.F90
-                ${COMMON_MODULE}/yoethf.F90
-                ${COMMON_MODULE}/yoecldp.F90
-                ${COMMON_MODULE}/fcttre_mod.F90
-                ${COMMON_MODULE}/fccld_mod.F90
-            DRIVER ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_driver_loki_mod.F90
-            SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc.F90
-            INCLUDES ${COMMON_INCLUDE}
-            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-            OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c
-            OUTPUT
-                loki-c/cloudsc_driver_loki_mod.c.F90
-                loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
-                loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
-                loki-c/yoecldp_fc.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+	
+	loki_transform(
+	    COMMAND convert
+	    MODE c FRONTEND ${LOKI_FRONTEND} CPP
+	    CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+	    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
+	    HEADERS
+	        ${COMMON_MODULE}/parkind1.F90
+		${COMMON_MODULE}/yomphyder.F90
+		${COMMON_MODULE}/yomcst.F90
+		${COMMON_MODULE}/yoethf.F90
+		${COMMON_MODULE}/yoecldp.F90
+		${COMMON_MODULE}/fcttre_mod.F90
+		${COMMON_MODULE}/fccld_mod.F90
+	    INCLUDES ${COMMON_INCLUDE}
+	    XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+	    BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-c
+	    OUTPUT
+	        loki-c/cloudsc_driver_loki_mod.c.F90
+		loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
+		loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
+		loki-c/yoecldp_fc.F90
+	    DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
         )
 
         # Define the CLAW-CPU build target for this variant
