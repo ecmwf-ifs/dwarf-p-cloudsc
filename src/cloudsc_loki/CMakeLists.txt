@@ -158,7 +158,6 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem-stack
         SOURCES
             dwarf_cloudsc.F90
-            stack_mod.F90
             loki-idem-stack/cloudsc_driver_loki_mod.idem_stack.F90
             loki-idem-stack/cloudsc.idem_stack.F90
         LIBS
@@ -471,7 +470,6 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-stack
         SOURCES
             dwarf_cloudsc.F90
-            stack_mod.F90
             loki-scc-stack/cloudsc_driver_loki_mod.scc_stack.F90
             loki-scc-stack/cloudsc.scc_stack.F90
         LIBS
