@@ -80,16 +80,28 @@ if( HAVE_CLOUDSC_LOKI )
 
     cloudsc_xmod( loki-idem )
 
-    loki_transform_convert(
-        MODE idem FRONTEND ${LOKI_FRONTEND} CPP
+    loki_transform(
+        COMMAND convert
+        OUTPUT
+            loki-idem/cloudsc.idem.F90
+            loki-idem/cloudsc_driver_loki_mod.idem.F90
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE idem
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS ${COMMON_MODULE}/yomphyder.F90
-        INCLUDES ${COMMON_INCLUDE}
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
-        OUTPUT loki-idem/cloudsc.idem.F90 loki-idem/cloudsc_driver_loki_mod.idem.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        CPP
+        FRONTEND ${LOKI_FRONTEND}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem
@@ -143,16 +155,28 @@ if( HAVE_CLOUDSC_LOKI )
 
     cloudsc_xmod( loki-idem-stack )
 
-    loki_transform_convert(
-        MODE idem-stack FRONTEND ${LOKI_FRONTEND} CPP
+    loki_transform(
+        COMMAND convert
+        OUTPUT
+            loki-idem-stack/cloudsc.idem_stack.F90
+            loki-idem-stack/cloudsc_driver_loki_mod.idem_stack.F90
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-stack
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE idem-stack
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS ${COMMON_MODULE}/yomphyder.F90
-        INCLUDES ${COMMON_INCLUDE}
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-stack
-        OUTPUT loki-idem-stack/cloudsc.idem_stack.F90 loki-idem-stack/cloudsc_driver_loki_mod.idem_stack.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        CPP
+        FRONTEND ${LOKI_FRONTEND}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem-stack
@@ -213,16 +237,28 @@ if( HAVE_CLOUDSC_LOKI )
 
     cloudsc_xmod( loki-sca )
 
-    loki_transform_convert(
-        MODE sca FRONTEND ${LOKI_FRONTEND} CPP
+    loki_transform(
+        COMMAND convert
+        OUTPUT
+            loki-sca/cloudsc.sca.F90
+            loki-sca/cloudsc_driver_loki_mod.sca.F90
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE sca
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS ${COMMON_MODULE}/yomphyder.F90
-        INCLUDES ${COMMON_INCLUDE}
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
-        OUTPUT loki-sca/cloudsc.sca.F90 loki-sca/cloudsc_driver_loki_mod.sca.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        CPP
+        FRONTEND ${LOKI_FRONTEND}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-sca
@@ -261,16 +297,28 @@ if( HAVE_CLOUDSC_LOKI )
 
         cloudsc_xmod( loki-claw-cpu )
 
-        loki_transform_convert(
-            MODE claw FRONTEND ${LOKI_FRONTEND} CPP
+        loki_transform(
+            COMMAND convert
+            OUTPUT
+                loki-claw-cpu/cloudsc.claw.F90
+                loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
+            BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
+            DEPENDS
+                cloudsc.F90
+                cloudsc_driver_loki_mod.F90
+                ${_OMNI_DEPENDENCIES}
+            MODE claw
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-            PATH ${CMAKE_CURRENT_SOURCE_DIR}
-            HEADERS ${COMMON_MODULE}/yomphyder.F90
-            INCLUDES ${COMMON_INCLUDE}
-            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-            OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-cpu
-            OUTPUT loki-claw-cpu/cloudsc.claw.F90 loki-claw-cpu/cloudsc_driver_loki_mod.claw.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+            CPP
+            FRONTEND ${LOKI_FRONTEND}
+            SOURCES
+                ${CMAKE_CURRENT_SOURCE_DIR}
+                ${COMMON_MODULE}
+            INCLUDES
+                ${COMMON_INCLUDE}
+            XMOD
+                ${_TARGET_XMOD_DIR}
+                ${XMOD_DIR}
         )
 
         # We purposefully suppress CLAWs insertion of OpenMP loops,
@@ -349,18 +397,34 @@ if( HAVE_CLOUDSC_LOKI )
 
         # Uses Loki-frontend CPP to switch to statement function variant again,
         # but suppresses inlining of stmt funcs by omitting `--include`
-        loki_transform_convert(
-            MODE claw FRONTEND ${LOKI_FRONTEND} CPP
+
+        loki_transform(
+            COMMAND convert
+            OUTPUT
+                loki-claw-gpu/cloudsc.claw.F90
+                loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
+            BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
+            DEPENDS
+                cloudsc.F90
+                cloudsc_driver_loki_mod.F90
+                ${_OMNI_DEPENDENCIES}
+            MODE claw
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-            PATH ${CMAKE_CURRENT_SOURCE_DIR}
-            HEADERS ${COMMON_MODULE}/yomphyder.F90
-            INCLUDES ${COMMON_INCLUDE}
-            DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
-            DATA_OFFLOAD REMOVE_OPENMP
-            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-            OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-claw-gpu
-            OUTPUT loki-claw-gpu/cloudsc.claw.F90 loki-claw-gpu/cloudsc_driver_loki_mod.claw.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+            CPP
+            DATA_OFFLOAD
+            REMOVE_OPENMP
+            DEFINITIONS
+                CLOUDSC_GPU_TIMING
+                ${CLOUDSC_DEFINE_STMT_FUNC}
+            FRONTEND ${LOKI_FRONTEND}
+            SOURCES
+                ${CMAKE_CURRENT_SOURCE_DIR}
+                ${COMMON_MODULE}
+            INCLUDES
+                ${COMMON_INCLUDE}
+            XMOD
+                ${_TARGET_XMOD_DIR}
+                ${XMOD_DIR}
         )
 
         claw_compile(
@@ -409,18 +473,33 @@ if( HAVE_CLOUDSC_LOKI )
 
     cloudsc_xmod( loki-scc )
 
-    loki_transform_convert(
-        MODE scc FRONTEND ${LOKI_FRONTEND} CPP
+    loki_transform(
+        COMMAND convert
+        OUTPUT
+            loki-scc/cloudsc.scc.F90
+            loki-scc/cloudsc_driver_loki_mod.scc.F90
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE scc
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS ${COMMON_MODULE}/yomphyder.F90 ${COMMON_MODULE}/yoecldp.F90
-        INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
-        DATA_OFFLOAD REMOVE_OPENMP
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
-        OUTPUT loki-scc/cloudsc.scc.F90 loki-scc/cloudsc_driver_loki_mod.scc.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        CPP
+        DATA_OFFLOAD
+        REMOVE_OPENMP
+        DEFINITIONS
+            CLOUDSC_GPU_TIMING
+            ${CLOUDSC_DEFINE_STMT_FUNC}
+        FRONTEND ${LOKI_FRONTEND}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
@@ -451,20 +530,33 @@ if( HAVE_CLOUDSC_LOKI )
 
     cloudsc_xmod( loki-scc-stack )
 
-    loki_transform_convert(
-        MODE scc-stack FRONTEND ${LOKI_FRONTEND} CPP
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS ${COMMON_MODULE}/yomphyder.F90 ${COMMON_MODULE}/yoecldp.F90
-        INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
-        DATA_OFFLOAD REMOVE_OPENMP
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
+    loki_transform(
+        COMMAND convert
         OUTPUT
             loki-scc-stack/cloudsc.scc_stack.F90
             loki-scc-stack/cloudsc_driver_loki_mod.scc_stack.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE scc-stack
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+        CPP
+        DATA_OFFLOAD
+        REMOVE_OPENMP
+        DEFINITIONS
+            CLOUDSC_GPU_TIMING
+            ${CLOUDSC_DEFINE_STMT_FUNC}
+        FRONTEND ${LOKI_FRONTEND}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-stack
@@ -501,20 +593,33 @@ if( HAVE_CLOUDSC_LOKI )
 
     cloudsc_xmod( loki-scc-hoist )
 
-    loki_transform_convert(
-        MODE scc-hoist FRONTEND ${LOKI_FRONTEND} CPP
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS ${COMMON_MODULE}/yomphyder.F90 ${COMMON_MODULE}/yoecldp.F90
-        INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING ${CLOUDSC_DEFINE_STMT_FUNC}
-        DATA_OFFLOAD REMOVE_OPENMP
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
+    loki_transform(
+        COMMAND convert
         OUTPUT
             loki-scc-hoist/cloudsc.scc_hoist.F90
             loki-scc-hoist/cloudsc_driver_loki_mod.scc_hoist.F90
-        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE scc-hoist
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+        CPP
+        DATA_OFFLOAD
+        REMOVE_OPENMP
+        DEFINITIONS
+            CLOUDSC_GPU_TIMING
+            ${CLOUDSC_DEFINE_STMT_FUNC}
+        FRONTEND ${LOKI_FRONTEND}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-hoist
