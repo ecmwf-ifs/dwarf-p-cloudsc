@@ -79,7 +79,7 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
     C version of CLOUDSC including loop fusion and temporary local 
     array demotion.  
 - **dwarf-cloudsc-gpu-scc-field**: GPU-enabled and optimized version of
-  CLOUDSC that uses the SCC loop layout, and uses [FIELD API](https://git.ecmwf.int/projects/RDX/repos/field_api/browse) (a Fortran library purpose-built for IFS data-structures that facilitates the
+  CLOUDSC that uses the SCC loop layout, and uses [FIELD API](https://github.com/ecmwf-ifs/field_api) (a Fortran library purpose-built for IFS data-structures that facilitates the
   creation and management of field objects in scientific code) to perform device offload 
   and copyback. The intent is to demonstrate the explicit use of pinned host memory to speed-up 
   data transfers, as provided by the shipped prototype implmentation, and 
