@@ -52,6 +52,14 @@ projects :
             ECKIT_ENABLE_BUILD_TOOLS=OFF
             ECKIT_ENABLE_CUDA=OFF
 
+    - field_api :
+        git     : https://github.com/ecmwf-ifs/field_api.git
+        version : main
+        optional: true
+        require : ecbuild
+        cmake   : >
+            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+
     - fckit :
         git     : https://github.com/ecmwf/fckit
         version : 0.11.0
@@ -68,14 +76,6 @@ projects :
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
             ATLAS_ENABLE_CUDA=OFF
-
-    - field_api :
-        git     : https://github.com/ecmwf-ifs/field_api.git
-        version : main
-        optional: true
-        require : ecbuild
-        cmake   : >
-            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
 
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
