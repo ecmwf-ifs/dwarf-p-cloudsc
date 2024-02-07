@@ -96,6 +96,9 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
   minor modifications (i.e. derived types/global paramters handling).
   Turned off by default, activate at the build stage with 
   `--cloudsc-fortran-pyiface=ON`.
+- **dwarf-cloudsc-fortran-atlas**: A version of **dwarf-cloudsc-fortran** which uses the [Atlas library](https://github.com/ecmwf/atlas) 
+  and its Field and FieldSet data stuctures. There are two storage settings for variables. If the environment variable
+  CLOUDSC_ATLAS_MULTIFIELD is "0", "OFF", or "FALSE", the variables are managed as atlas::FieldSet, which is an array of atlas::Fields. For other values of CLOUDSC_ATLAS_MULTIFIELD, a batching of variables is used as (BLK_IDX, LEV, VAR_ID, BLK_ID).
   
 
 ## Download and Installation
