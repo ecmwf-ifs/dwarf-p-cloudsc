@@ -525,7 +525,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     zmflops = 0.0;
     zthrput = 0.0;
   }
-  printf(" %10d%10d%10d%10d%10d %4d: %10d%10d%10d TOTAL\n",
+  printf(" %10d%10d%10d%10d%10d %4d : %10d%10d%10d TOTAL\n",
          numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops, (int)zthrput);
 
   cloudsc_validate(klon, nlev, nclv, numcols, nproma,
