@@ -2,1712 +2,91 @@
   <name>yoecldp</name>
   <depends>
     <name>parkind1</name>
+    <name>file_io_mod</name>
   </depends>
   <typeTable>
-    <FbasicType type="I2227060" is_parameter="true" ref="Fint"/>
-    <FbasicType type="I2227290" is_parameter="true" ref="Fint"/>
-    <FbasicType type="I22231f0" ref="Fint">
+    <FbasicType type="I17c2380" is_parameter="true" ref="Fint"/>
+    <FbasicType type="I17c25b0" is_parameter="true" ref="Fint"/>
+    <FfunctionType type="F17dc1a0" return_type="Fvoid"/>
+    <FfunctionType type="F1810380" return_type="Fvoid">
+      <params>
+        <name type="C17e2bd0">name</name>
+        <name type="R17e2fd0">variable</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C17e35f0" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C17e2bd0" intent="in" ref="C17e35f0"/>
+    <FbasicType type="R17e3e00" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R17e2fd0" intent="inout" ref="R17e3e00"/>
+    <FfunctionType type="F1810ac0" return_type="Fvoid">
+      <params>
+        <name type="C17e8560">name</name>
+        <name type="L17e8940">variable</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C17e8d00" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C17e8560" intent="in" ref="C17e8d00"/>
+    <FbasicType type="L17e8940" intent="inout" ref="Flogical"/>
+    <FfunctionType type="F1811300" return_type="Fvoid">
+      <params>
+        <name type="C17e6b70">name</name>
+        <name type="I17e6f50">variable</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C17e7310" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C17e6b70" intent="in" ref="C17e7310"/>
+    <FbasicType type="I17e7ac0" ref="Fint">
       <kind>
         <FintConstant type="Fint">4</FintConstant>
       </kind>
     </FbasicType>
-    <FbasicType type="I2223420" is_parameter="true" ref="I22231f0"/>
-    <FbasicType type="I2224300" ref="Fint">
+    <FbasicType type="I17e6f50" intent="inout" ref="I17e7ac0"/>
+    <FfunctionType type="F17bf320" return_type="Fvoid"/>
+    <FfunctionType type="F1811a60" return_type="Fvoid">
+      <params>
+        <name type="C17f3df0">name</name>
+        <name type="I17f41d0">start</name>
+        <name type="I17f4590">end</name>
+        <name type="I17f4950">size</name>
+        <name type="I17f4d10">nlon</name>
+        <name type="A17f50d0">buffer</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C17f5490" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C17f3df0" intent="in" ref="C17f5490"/>
+    <FbasicType type="I17f5e60" ref="Fint">
       <kind>
         <FintConstant type="Fint">4</FintConstant>
       </kind>
     </FbasicType>
-    <FbasicType type="I2224530" is_parameter="true" ref="I2224300"/>
-    <FbasicType type="I221ad30" ref="Fint">
+    <FbasicType type="I17f41d0" intent="in" ref="I17f5e60"/>
+    <FbasicType type="I17f4590" intent="in" ref="I17f5e60"/>
+    <FbasicType type="I17f4950" intent="in" ref="I17f5e60"/>
+    <FbasicType type="I17f4d10" intent="in" ref="I17f5e60"/>
+    <FbasicType type="R17f6aa0" ref="Freal">
       <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I221af60" is_parameter="true" ref="I221ad30"/>
-    <FbasicType type="I221be40" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I221c070" is_parameter="true" ref="I221be40"/>
-    <FbasicType type="I221d680" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I221d8b0" is_parameter="true" ref="I221d680"/>
-    <FbasicType type="I221e790" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I221e9c0" is_parameter="true" ref="I221e790"/>
-    <FstructType type="S221f250">
-      <symbols>
-        <id type="R2221360">
-          <name>ramid</name>
-        </id>
-        <id type="R223e580">
-          <name>rcldiff</name>
-        </id>
-        <id type="R22403d0">
-          <name>rcldiff_convi</name>
-        </id>
-        <id type="R2242240">
-          <name>rclcrit</name>
-        </id>
-        <id type="R2243fc0">
-          <name>rclcrit_sea</name>
-        </id>
-        <id type="R2245d50">
-          <name>rclcrit_land</name>
-        </id>
-        <id type="R2247bc0">
-          <name>rkconv</name>
-        </id>
-        <id type="R2249a30">
-          <name>rprc1</name>
-        </id>
-        <id type="R224b8a0">
-          <name>rprc2</name>
-        </id>
-        <id type="R224d710">
-          <name>rcldmax</name>
-        </id>
-        <id type="R224f580">
-          <name>rpecons</name>
-        </id>
-        <id type="R22513f0">
-          <name>rvrfactor</name>
-        </id>
-        <id type="R2253260">
-          <name>rprecrhmax</name>
-        </id>
-        <id type="R22550d0">
-          <name>rtaumel</name>
-        </id>
-        <id type="R2256f40">
-          <name>ramin</name>
-        </id>
-        <id type="R2258db0">
-          <name>rlmin</name>
-        </id>
-        <id type="R225ac20">
-          <name>rkooptau</name>
-        </id>
-        <id type="R225ca90">
-          <name>rcldtopp</name>
-        </id>
-        <id type="R225e900">
-          <name>rlcritsnow</name>
-        </id>
-        <id type="R2260770">
-          <name>rsnowlin1</name>
-        </id>
-        <id type="R22625e0">
-          <name>rsnowlin2</name>
-        </id>
-        <id type="R2264450">
-          <name>ricehi1</name>
-        </id>
-        <id type="R22662c0">
-          <name>ricehi2</name>
-        </id>
-        <id type="R2268130">
-          <name>riceinit</name>
-        </id>
-        <id type="R2269fa0">
-          <name>rvice</name>
-        </id>
-        <id type="R226be10">
-          <name>rvrain</name>
-        </id>
-        <id type="R226dc80">
-          <name>rvsnow</name>
-        </id>
-        <id type="R226faf0">
-          <name>rthomo</name>
-        </id>
-        <id type="R2271960">
-          <name>rcovpmin</name>
-        </id>
-        <id type="R22737d0">
-          <name>rccn</name>
-        </id>
-        <id type="R2275640">
-          <name>rnice</name>
-        </id>
-        <id type="R22774b0">
-          <name>rccnom</name>
-        </id>
-        <id type="R2279320">
-          <name>rccnss</name>
-        </id>
-        <id type="R227b190">
-          <name>rccnsu</name>
-        </id>
-        <id type="R227d000">
-          <name>rcldtopcf</name>
-        </id>
-        <id type="R227ee70">
-          <name>rdepliqrefrate</name>
-        </id>
-        <id type="R2280ce0">
-          <name>rdepliqrefdepth</name>
-        </id>
-        <id type="R2282b50">
-          <name>rcl_kkaac</name>
-        </id>
-        <id type="R22849c0">
-          <name>rcl_kkbac</name>
-        </id>
-        <id type="R2286830">
-          <name>rcl_kkaau</name>
-        </id>
-        <id type="R22886a0">
-          <name>rcl_kkbauq</name>
-        </id>
-        <id type="R228a510">
-          <name>rcl_kkbaun</name>
-        </id>
-        <id type="R228c380">
-          <name>rcl_kk_cloud_num_sea</name>
-        </id>
-        <id type="R228e1f0">
-          <name>rcl_kk_cloud_num_land</name>
-        </id>
-        <id type="R2290060">
-          <name>rcl_ai</name>
-        </id>
-        <id type="R2291ed0">
-          <name>rcl_bi</name>
-        </id>
-        <id type="R2293d40">
-          <name>rcl_ci</name>
-        </id>
-        <id type="R2295bb0">
-          <name>rcl_di</name>
-        </id>
-        <id type="R2297a20">
-          <name>rcl_x1i</name>
-        </id>
-        <id type="R2299890">
-          <name>rcl_x2i</name>
-        </id>
-        <id type="R229b700">
-          <name>rcl_x3i</name>
-        </id>
-        <id type="R229d570">
-          <name>rcl_x4i</name>
-        </id>
-        <id type="R229f3e0">
-          <name>rcl_const1i</name>
-        </id>
-        <id type="R22a1250">
-          <name>rcl_const2i</name>
-        </id>
-        <id type="R22a30c0">
-          <name>rcl_const3i</name>
-        </id>
-        <id type="R22a4f30">
-          <name>rcl_const4i</name>
-        </id>
-        <id type="R22a6da0">
-          <name>rcl_const5i</name>
-        </id>
-        <id type="R22a8c10">
-          <name>rcl_const6i</name>
-        </id>
-        <id type="R22aaa80">
-          <name>rcl_apb1</name>
-        </id>
-        <id type="R22ac8f0">
-          <name>rcl_apb2</name>
-        </id>
-        <id type="R22ae760">
-          <name>rcl_apb3</name>
-        </id>
-        <id type="R22b05d0">
-          <name>rcl_as</name>
-        </id>
-        <id type="R22b2440">
-          <name>rcl_bs</name>
-        </id>
-        <id type="R22b42b0">
-          <name>rcl_cs</name>
-        </id>
-        <id type="R22b6120">
-          <name>rcl_ds</name>
-        </id>
-        <id type="R22b7f90">
-          <name>rcl_x1s</name>
-        </id>
-        <id type="R22b9e00">
-          <name>rcl_x2s</name>
-        </id>
-        <id type="R22bbc70">
-          <name>rcl_x3s</name>
-        </id>
-        <id type="R22bdae0">
-          <name>rcl_x4s</name>
-        </id>
-        <id type="R22bf950">
-          <name>rcl_const1s</name>
-        </id>
-        <id type="R22c17c0">
-          <name>rcl_const2s</name>
-        </id>
-        <id type="R22c3630">
-          <name>rcl_const3s</name>
-        </id>
-        <id type="R22c54a0">
-          <name>rcl_const4s</name>
-        </id>
-        <id type="R22c7310">
-          <name>rcl_const5s</name>
-        </id>
-        <id type="R22c9180">
-          <name>rcl_const6s</name>
-        </id>
-        <id type="R22caff0">
-          <name>rcl_const7s</name>
-        </id>
-        <id type="R22cce60">
-          <name>rcl_const8s</name>
-        </id>
-        <id type="R22cecd0">
-          <name>rdenswat</name>
-        </id>
-        <id type="R22d0b40">
-          <name>rdensref</name>
-        </id>
-        <id type="R22d29b0">
-          <name>rcl_ar</name>
-        </id>
-        <id type="R22d4820">
-          <name>rcl_br</name>
-        </id>
-        <id type="R22d6690">
-          <name>rcl_cr</name>
-        </id>
-        <id type="R22d8500">
-          <name>rcl_dr</name>
-        </id>
-        <id type="R22da370">
-          <name>rcl_x1r</name>
-        </id>
-        <id type="R22dc1e0">
-          <name>rcl_x2r</name>
-        </id>
-        <id type="R22de050">
-          <name>rcl_x4r</name>
-        </id>
-        <id type="R22dfec0">
-          <name>rcl_ka273</name>
-        </id>
-        <id type="R22e1d30">
-          <name>rcl_cdenom1</name>
-        </id>
-        <id type="R22e3ba0">
-          <name>rcl_cdenom2</name>
-        </id>
-        <id type="R22e5a10">
-          <name>rcl_cdenom3</name>
-        </id>
-        <id type="R22e7880">
-          <name>rcl_schmidt</name>
-        </id>
-        <id type="R22e96f0">
-          <name>rcl_dynvisc</name>
-        </id>
-        <id type="R22eb560">
-          <name>rcl_const1r</name>
-        </id>
-        <id type="R22ed3d0">
-          <name>rcl_const2r</name>
-        </id>
-        <id type="R22ef240">
-          <name>rcl_const3r</name>
-        </id>
-        <id type="R22f10b0">
-          <name>rcl_const4r</name>
-        </id>
-        <id type="R22f2f20">
-          <name>rcl_fac1</name>
-        </id>
-        <id type="R22f4d90">
-          <name>rcl_fac2</name>
-        </id>
-        <id type="R22f6c00">
-          <name>rcl_const5r</name>
-        </id>
-        <id type="R22f8a70">
-          <name>rcl_const6r</name>
-        </id>
-        <id type="R22fa8e0">
-          <name>rcl_fzrab</name>
-        </id>
-        <id type="R22fc750">
-          <name>rcl_fzrbb</name>
-        </id>
-        <id type="Flogical">
-          <name>lcldextra</name>
-        </id>
-        <id type="Flogical">
-          <name>lcldbudget</name>
-        </id>
-        <id type="I22fdf30">
-          <name>nssopt</name>
-        </id>
-        <id type="I22fea60">
-          <name>ncldtop</name>
-        </id>
-        <id type="I22ffe10">
-          <name>naeclbc</name>
-        </id>
-        <id type="I2300040">
-          <name>naecldu</name>
-        </id>
-        <id type="I2300270">
-          <name>naeclom</name>
-        </id>
-        <id type="I23004a0">
-          <name>naeclss</name>
-        </id>
-        <id type="I23006d0">
-          <name>naeclsu</name>
-        </id>
-        <id type="I2301200">
-          <name>nclddiag</name>
-        </id>
-        <id type="I2301d50">
-          <name>naercld</name>
-        </id>
-        <id type="Flogical">
-          <name>laerliqautolsp</name>
-        </id>
-        <id type="Flogical">
-          <name>laerliqautocp</name>
-        </id>
-        <id type="Flogical">
-          <name>laerliqautocpb</name>
-        </id>
-        <id type="Flogical">
-          <name>laerliqcoll</name>
-        </id>
-        <id type="Flogical">
-          <name>laericesed</name>
-        </id>
-        <id type="Flogical">
-          <name>laericeauto</name>
-        </id>
-        <id type="R2306ca0">
-          <name>nshapep</name>
-        </id>
-        <id type="R2308b10">
-          <name>nshapeq</name>
-        </id>
-        <id type="I2309640">
-          <name>nbeta</name>
-        </id>
-        <id type="A230b860">
-          <name>rbeta</name>
-        </id>
-        <id type="A230ddc0">
-          <name>rbetap1</name>
-        </id>
-      </symbols>
-    </FstructType>
-    <FbasicType type="R2221130" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2221360" ref="R2221130"/>
-    <FbasicType type="R223e350" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R223e580" ref="R223e350"/>
-    <FbasicType type="R22401a0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22403d0" ref="R22401a0"/>
-    <FbasicType type="R2242010" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2242240" ref="R2242010"/>
-    <FbasicType type="R2243e80" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2243fc0" ref="R2243e80"/>
-    <FbasicType type="R2245b20" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2245d50" ref="R2245b20"/>
-    <FbasicType type="R2247990" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2247bc0" ref="R2247990"/>
-    <FbasicType type="R2249800" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2249a30" ref="R2249800"/>
-    <FbasicType type="R224b670" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R224b8a0" ref="R224b670"/>
-    <FbasicType type="R224d4e0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R224d710" ref="R224d4e0"/>
-    <FbasicType type="R224f350" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R224f580" ref="R224f350"/>
-    <FbasicType type="R22511c0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22513f0" ref="R22511c0"/>
-    <FbasicType type="R2253030" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2253260" ref="R2253030"/>
-    <FbasicType type="R2254ea0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22550d0" ref="R2254ea0"/>
-    <FbasicType type="R2256d10" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2256f40" ref="R2256d10"/>
-    <FbasicType type="R2258b80" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2258db0" ref="R2258b80"/>
-    <FbasicType type="R225a9f0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R225ac20" ref="R225a9f0"/>
-    <FbasicType type="R225c860" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R225ca90" ref="R225c860"/>
-    <FbasicType type="R225e6d0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R225e900" ref="R225e6d0"/>
-    <FbasicType type="R2260540" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2260770" ref="R2260540"/>
-    <FbasicType type="R22623b0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22625e0" ref="R22623b0"/>
-    <FbasicType type="R2264220" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2264450" ref="R2264220"/>
-    <FbasicType type="R2266090" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22662c0" ref="R2266090"/>
-    <FbasicType type="R2267f00" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2268130" ref="R2267f00"/>
-    <FbasicType type="R2269d70" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2269fa0" ref="R2269d70"/>
-    <FbasicType type="R226bbe0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R226be10" ref="R226bbe0"/>
-    <FbasicType type="R226da50" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R226dc80" ref="R226da50"/>
-    <FbasicType type="R226f8c0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R226faf0" ref="R226f8c0"/>
-    <FbasicType type="R2271730" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2271960" ref="R2271730"/>
-    <FbasicType type="R22735a0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22737d0" ref="R22735a0"/>
-    <FbasicType type="R2275410" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2275640" ref="R2275410"/>
-    <FbasicType type="R2277280" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22774b0" ref="R2277280"/>
-    <FbasicType type="R22790f0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2279320" ref="R22790f0"/>
-    <FbasicType type="R227af60" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R227b190" ref="R227af60"/>
-    <FbasicType type="R227cdd0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R227d000" ref="R227cdd0"/>
-    <FbasicType type="R227ec40" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R227ee70" ref="R227ec40"/>
-    <FbasicType type="R2280ab0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2280ce0" ref="R2280ab0"/>
-    <FbasicType type="R2282920" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2282b50" ref="R2282920"/>
-    <FbasicType type="R2284790" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22849c0" ref="R2284790"/>
-    <FbasicType type="R2286600" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2286830" ref="R2286600"/>
-    <FbasicType type="R2288470" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22886a0" ref="R2288470"/>
-    <FbasicType type="R228a2e0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R228a510" ref="R228a2e0"/>
-    <FbasicType type="R228c150" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R228c380" ref="R228c150"/>
-    <FbasicType type="R228dfc0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R228e1f0" ref="R228dfc0"/>
-    <FbasicType type="R228fe30" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2290060" ref="R228fe30"/>
-    <FbasicType type="R2291ca0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2291ed0" ref="R2291ca0"/>
-    <FbasicType type="R2293b10" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2293d40" ref="R2293b10"/>
-    <FbasicType type="R2295980" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2295bb0" ref="R2295980"/>
-    <FbasicType type="R22977f0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2297a20" ref="R22977f0"/>
-    <FbasicType type="R2299660" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2299890" ref="R2299660"/>
-    <FbasicType type="R229b4d0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R229b700" ref="R229b4d0"/>
-    <FbasicType type="R229d340" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R229d570" ref="R229d340"/>
-    <FbasicType type="R229f1b0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R229f3e0" ref="R229f1b0"/>
-    <FbasicType type="R22a1020" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22a1250" ref="R22a1020"/>
-    <FbasicType type="R22a2e90" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22a30c0" ref="R22a2e90"/>
-    <FbasicType type="R22a4d00" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22a4f30" ref="R22a4d00"/>
-    <FbasicType type="R22a6b70" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22a6da0" ref="R22a6b70"/>
-    <FbasicType type="R22a89e0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22a8c10" ref="R22a89e0"/>
-    <FbasicType type="R22aa850" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22aaa80" ref="R22aa850"/>
-    <FbasicType type="R22ac6c0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22ac8f0" ref="R22ac6c0"/>
-    <FbasicType type="R22ae530" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22ae760" ref="R22ae530"/>
-    <FbasicType type="R22b03a0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22b05d0" ref="R22b03a0"/>
-    <FbasicType type="R22b2210" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22b2440" ref="R22b2210"/>
-    <FbasicType type="R22b4080" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22b42b0" ref="R22b4080"/>
-    <FbasicType type="R22b5ef0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22b6120" ref="R22b5ef0"/>
-    <FbasicType type="R22b7d60" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22b7f90" ref="R22b7d60"/>
-    <FbasicType type="R22b9bd0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22b9e00" ref="R22b9bd0"/>
-    <FbasicType type="R22bba40" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22bbc70" ref="R22bba40"/>
-    <FbasicType type="R22bd8b0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22bdae0" ref="R22bd8b0"/>
-    <FbasicType type="R22bf720" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22bf950" ref="R22bf720"/>
-    <FbasicType type="R22c1590" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22c17c0" ref="R22c1590"/>
-    <FbasicType type="R22c3400" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22c3630" ref="R22c3400"/>
-    <FbasicType type="R22c5270" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22c54a0" ref="R22c5270"/>
-    <FbasicType type="R22c70e0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22c7310" ref="R22c70e0"/>
-    <FbasicType type="R22c8f50" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22c9180" ref="R22c8f50"/>
-    <FbasicType type="R22cadc0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22caff0" ref="R22cadc0"/>
-    <FbasicType type="R22ccc30" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22cce60" ref="R22ccc30"/>
-    <FbasicType type="R22ceaa0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22cecd0" ref="R22ceaa0"/>
-    <FbasicType type="R22d0910" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22d0b40" ref="R22d0910"/>
-    <FbasicType type="R22d2780" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22d29b0" ref="R22d2780"/>
-    <FbasicType type="R22d45f0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22d4820" ref="R22d45f0"/>
-    <FbasicType type="R22d6460" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22d6690" ref="R22d6460"/>
-    <FbasicType type="R22d82d0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22d8500" ref="R22d82d0"/>
-    <FbasicType type="R22da140" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22da370" ref="R22da140"/>
-    <FbasicType type="R22dbfb0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22dc1e0" ref="R22dbfb0"/>
-    <FbasicType type="R22dde20" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22de050" ref="R22dde20"/>
-    <FbasicType type="R22dfc90" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22dfec0" ref="R22dfc90"/>
-    <FbasicType type="R22e1b00" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22e1d30" ref="R22e1b00"/>
-    <FbasicType type="R22e3970" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22e3ba0" ref="R22e3970"/>
-    <FbasicType type="R22e57e0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22e5a10" ref="R22e57e0"/>
-    <FbasicType type="R22e7650" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22e7880" ref="R22e7650"/>
-    <FbasicType type="R22e94c0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22e96f0" ref="R22e94c0"/>
-    <FbasicType type="R22eb330" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22eb560" ref="R22eb330"/>
-    <FbasicType type="R22ed1a0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22ed3d0" ref="R22ed1a0"/>
-    <FbasicType type="R22ef010" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22ef240" ref="R22ef010"/>
-    <FbasicType type="R22f0e80" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22f10b0" ref="R22f0e80"/>
-    <FbasicType type="R22f2cf0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22f2f20" ref="R22f2cf0"/>
-    <FbasicType type="R22f4b60" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22f4d90" ref="R22f4b60"/>
-    <FbasicType type="R22f69d0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22f6c00" ref="R22f69d0"/>
-    <FbasicType type="R22f8840" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22f8a70" ref="R22f8840"/>
-    <FbasicType type="R22fa6b0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22fa8e0" ref="R22fa6b0"/>
-    <FbasicType type="R22fc520" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R22fc750" ref="R22fc520"/>
-    <FbasicType type="I22fdd00" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I22fdf30" ref="I22fdd00"/>
-    <FbasicType type="I22fe830" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I22fea60" ref="I22fe830"/>
-    <FbasicType type="I22ffbe0" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I22ffe10" ref="I22ffbe0"/>
-    <FbasicType type="I2300040" ref="I22ffbe0"/>
-    <FbasicType type="I2300270" ref="I22ffbe0"/>
-    <FbasicType type="I23004a0" ref="I22ffbe0"/>
-    <FbasicType type="I23006d0" ref="I22ffbe0"/>
-    <FbasicType type="I2300fd0" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I2301200" ref="I2300fd0"/>
-    <FbasicType type="I2301b20" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I2301d50" ref="I2301b20"/>
-    <FbasicType type="R2306a70" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2306ca0" ref="R2306a70"/>
-    <FbasicType type="R23088e0" ref="Freal">
-      <kind>
-        <functionCall type="Fint" is_intrinsic="true">
-          <name>selected_real_kind</name>
-          <arguments>
-            <FintConstant type="Fint">13</FintConstant>
-            <FintConstant type="Fint">300</FintConstant>
-          </arguments>
-        </functionCall>
-      </kind>
-    </FbasicType>
-    <FbasicType type="R2308b10" ref="R23088e0"/>
-    <FbasicType type="I2309410" ref="Fint">
-      <kind>
-        <FintConstant type="Fint">4</FintConstant>
-      </kind>
-    </FbasicType>
-    <FbasicType type="I2309640" ref="I2309410"/>
-    <FbasicType type="R230b4f0" ref="Freal">
-      <kind>
         <functionCall type="Fint" is_intrinsic="true">
           <name>selected_real_kind</name>
           <arguments>
@@ -1717,18 +96,45 @@
         </functionCall>
       </kind>
     </FbasicType>
-    <FbasicType type="R230b720" ref="R230b4f0"/>
-    <FbasicType type="A230b860" ref="R230b720">
+    <FbasicType type="R17f7be0" intent="out" ref="R17f6aa0"/>
+    <FbasicType type="R17f8040" intent="out" ref="R17f7be0"/>
+    <FbasicType type="A17f50d0" intent="out" ref="R17f8040">
       <indexRange>
         <lowerBound>
-          <FintConstant type="Fint">0</FintConstant>
+          <FintConstant type="Fint">1</FintConstant>
         </lowerBound>
         <upperBound>
-          <FintConstant type="Fint">100</FintConstant>
+          <Var type="I17f4950" scope="local">size</Var>
         </upperBound>
       </indexRange>
     </FbasicType>
-    <FbasicType type="R230da50" ref="Freal">
+    <FfunctionType type="F18129e0" return_type="Fvoid">
+      <params>
+        <name type="C17fa2f0">name</name>
+        <name type="I17fa6b0">start</name>
+        <name type="I17faa70">end</name>
+        <name type="I17fae30">size</name>
+        <name type="I17fb1f0">nlon</name>
+        <name type="I17fb6b0">nlev</name>
+        <name type="A17fbab0">buffer</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C17fbe70" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C17fa2f0" intent="in" ref="C17fbe70"/>
+    <FbasicType type="I17fc620" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I17fa6b0" intent="in" ref="I17fc620"/>
+    <FbasicType type="I17faa70" intent="in" ref="I17fc620"/>
+    <FbasicType type="I17fae30" intent="in" ref="I17fc620"/>
+    <FbasicType type="I17fb1f0" intent="in" ref="I17fc620"/>
+    <FbasicType type="I17fb6b0" intent="in" ref="I17fc620"/>
+    <FbasicType type="R17fd530" ref="Freal">
       <kind>
         <functionCall type="Fint" is_intrinsic="true">
           <name>selected_real_kind</name>
@@ -1739,61 +145,226 @@
         </functionCall>
       </kind>
     </FbasicType>
-    <FbasicType type="R230dc80" ref="R230da50"/>
-    <FbasicType type="A230ddc0" ref="R230dc80">
+    <FbasicType type="R17fe690" intent="out" ref="R17fd530"/>
+    <FbasicType type="R17ff220" intent="out" ref="R17fe690"/>
+    <FbasicType type="A17ff5b0" intent="out" ref="R17ff220">
       <indexRange>
         <lowerBound>
-          <FintConstant type="Fint">0</FintConstant>
+          <FintConstant type="Fint">1</FintConstant>
         </lowerBound>
         <upperBound>
-          <FintConstant type="Fint">100</FintConstant>
+          <Var type="I17fae30" scope="local">size</Var>
         </upperBound>
       </indexRange>
     </FbasicType>
-    <FfunctionType type="F2220490" return_type="Fint"/>
-    <FfunctionType type="F230d780" return_type="Fint"/>
-    <FbasicType type="S230ea00" is_pointer="true" ref="S221f250"/>
-    <FbasicType type="S230ec30" is_pointer="true" is_save="true" ref="S230ea00"/>
-    <FbasicType type="V230f060" is_target="true" ref="FnumericAll"/>
+    <FbasicType type="A17fbab0" intent="out" ref="R17ff220">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I17fae30" scope="local">size</Var>
+        </upperBound>
+      </indexRange>
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I17fb6b0" scope="local">nlev</Var>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F1813b70" return_type="Fvoid">
+      <params>
+        <name type="C1803e90">name</name>
+        <name type="I1804250">start</name>
+        <name type="I1804610">end</name>
+        <name type="I18049d0">size</name>
+        <name type="I1804d90">nlon</name>
+        <name type="I1805150">nlev</name>
+        <name type="I1805510">ndim</name>
+        <name type="A18058d0">buffer</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C1805d50" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C1803e90" intent="in" ref="C1805d50"/>
+    <FbasicType type="I1806500" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I1804250" intent="in" ref="I1806500"/>
+    <FbasicType type="I1804610" intent="in" ref="I1806500"/>
+    <FbasicType type="I18049d0" intent="in" ref="I1806500"/>
+    <FbasicType type="I1804d90" intent="in" ref="I1806500"/>
+    <FbasicType type="I1805150" intent="in" ref="I1806500"/>
+    <FbasicType type="I1805510" intent="in" ref="I1806500"/>
+    <FbasicType type="R18075a0" ref="Freal">
+      <kind>
+        <functionCall type="Fint" is_intrinsic="true">
+          <name>selected_real_kind</name>
+          <arguments>
+            <FintConstant type="Fint">13</FintConstant>
+            <FintConstant type="Fint">300</FintConstant>
+          </arguments>
+        </functionCall>
+      </kind>
+    </FbasicType>
+    <FbasicType type="R1808720" intent="out" ref="R18075a0"/>
+    <FbasicType type="R1809d50" intent="out" ref="R1808720"/>
+    <FbasicType type="A180a0e0" intent="out" ref="R1809d50">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I18049d0" scope="local">size</Var>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A180a450" intent="out" ref="R1809d50">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I18049d0" scope="local">size</Var>
+        </upperBound>
+      </indexRange>
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I1805150" scope="local">nlev</Var>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FbasicType type="A18058d0" intent="out" ref="R1809d50">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I18049d0" scope="local">size</Var>
+        </upperBound>
+      </indexRange>
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I1805150" scope="local">nlev</Var>
+        </upperBound>
+      </indexRange>
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I1805510" scope="local">ndim</Var>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F18150f0" return_type="Fvoid">
+      <params>
+        <name type="C17ea6a0">name</name>
+        <name type="I17eaa80">start</name>
+        <name type="I17eae40">end</name>
+        <name type="I17eb220">size</name>
+        <name type="I17eb600">nlon</name>
+        <name type="A17eb9c0">buffer</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C17ec000" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C17ea6a0" intent="in" ref="C17ec000"/>
+    <FbasicType type="I17ec7f0" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I17eaa80" intent="in" ref="I17ec7f0"/>
+    <FbasicType type="I17eae40" intent="in" ref="I17ec7f0"/>
+    <FbasicType type="I17eb220" intent="in" ref="I17ec7f0"/>
+    <FbasicType type="I17eb600" intent="in" ref="I17ec7f0"/>
+    <FbasicType type="L17ed3d0" intent="out" ref="Flogical"/>
+    <FbasicType type="L17ed9c0" intent="out" ref="L17ed3d0"/>
+    <FbasicType type="A17eb9c0" intent="out" ref="L17ed9c0">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I17eb220" scope="local">size</Var>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
+    <FfunctionType type="F1816050" return_type="Fvoid">
+      <params>
+        <name type="C17eeea0">name</name>
+        <name type="I17ef260">start</name>
+        <name type="I17ef620">end</name>
+        <name type="I17ef9e0">size</name>
+        <name type="I17efda0">nlon</name>
+        <name type="A17f0470">buffer</name>
+      </params>
+    </FfunctionType>
+    <FbasicType type="C17f0850" ref="Fcharacter">
+      <len is_assumed_size="true">
+      </len>
+    </FbasicType>
+    <FbasicType type="C17eeea0" intent="in" ref="C17f0850"/>
+    <FbasicType type="I17f1000" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I17ef260" intent="in" ref="I17f1000"/>
+    <FbasicType type="I17ef620" intent="in" ref="I17f1000"/>
+    <FbasicType type="I17ef9e0" intent="in" ref="I17f1000"/>
+    <FbasicType type="I17efda0" intent="in" ref="I17f1000"/>
+    <FbasicType type="I17f1d40" ref="Fint">
+      <kind>
+        <FintConstant type="Fint">4</FintConstant>
+      </kind>
+    </FbasicType>
+    <FbasicType type="I17f2210" intent="out" ref="I17f1d40"/>
+    <FbasicType type="I17f2670" intent="out" ref="I17f2210"/>
+    <FbasicType type="A17f0470" intent="out" ref="I17f2670">
+      <indexRange>
+        <lowerBound>
+          <FintConstant type="Fint">1</FintConstant>
+        </lowerBound>
+        <upperBound>
+          <Var type="I17ef9e0" scope="local">size</Var>
+        </upperBound>
+      </indexRange>
+    </FbasicType>
   </typeTable>
   <identifiers>
-    <id type="I2227060" sclass="flocal" original_name="jpim" declared_in="parkind1">
+    <id type="I17c2380" sclass="flocal" original_name="jpim" declared_in="parkind1">
       <name>jpim</name>
     </id>
-    <id type="I2227290" sclass="flocal" original_name="jprb" declared_in="parkind1">
+    <id type="I17c25b0" sclass="flocal" original_name="jprb" declared_in="parkind1">
       <name>jprb</name>
     </id>
-    <id type="I2223420" sclass="flocal" original_name="nclv" declared_in="yoecldp">
-      <name>nclv</name>
+    <id type="F17dc1a0" sclass="ffunc" original_name="load_scalar" declared_in="file_io_mod">
+      <name>load_scalar</name>
     </id>
-    <id type="I2224530" sclass="flocal" original_name="ncldql" declared_in="yoecldp">
-      <name>ncldql</name>
-    </id>
-    <id type="I221af60" sclass="flocal" original_name="ncldqi" declared_in="yoecldp">
-      <name>ncldqi</name>
-    </id>
-    <id type="I221c070" sclass="flocal" original_name="ncldqr" declared_in="yoecldp">
-      <name>ncldqr</name>
-    </id>
-    <id type="I221d8b0" sclass="flocal" original_name="ncldqs" declared_in="yoecldp">
-      <name>ncldqs</name>
-    </id>
-    <id type="I221e9c0" sclass="flocal" original_name="ncldqv" declared_in="yoecldp">
-      <name>ncldqv</name>
-    </id>
-    <id type="S221f250" sclass="ftype_name" original_name="tecldp" declared_in="yoecldp">
-      <name>tecldp</name>
-    </id>
-    <id type="F2220490" sclass="ffunc" original_name="selected_real_kind" declared_in="yoecldp">
-      <name>selected_real_kind</name>
-    </id>
-    <id type="S230ec30" sclass="fsave" original_name="yrecldp" declared_in="yoecldp">
-      <name>yrecldp</name>
+    <id type="F17bf320" sclass="ffunc" original_name="load_array" declared_in="file_io_mod">
+      <name>load_array</name>
     </id>
   </identifiers>
   <declarations>
     <varDecl>
-      <name type="I2227060">jpim</name>
+      <name type="I17c2380">jpim</name>
       <value>
         <functionCall type="Fint" is_intrinsic="true">
           <name>selected_int_kind</name>
@@ -1804,7 +375,7 @@
       </value>
     </varDecl>
     <varDecl>
-      <name type="I2227290">jprb</name>
+      <name type="I17c25b0">jprb</name>
       <value>
         <functionCall type="Fint" is_intrinsic="true">
           <name>selected_real_kind</name>
@@ -1813,42 +384,6 @@
             <FintConstant type="Fint">300</FintConstant>
           </arguments>
         </functionCall>
-      </value>
-    </varDecl>
-    <varDecl lineno="76" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/yoecldp.F90">
-      <name type="I2223420">nclv</name>
-      <value>
-        <FintConstant type="Fint">5</FintConstant>
-      </value>
-    </varDecl>
-    <varDecl lineno="77" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/yoecldp.F90">
-      <name type="I2224530">ncldql</name>
-      <value>
-        <FintConstant type="Fint">1</FintConstant>
-      </value>
-    </varDecl>
-    <varDecl lineno="78" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/yoecldp.F90">
-      <name type="I221af60">ncldqi</name>
-      <value>
-        <FintConstant type="Fint">2</FintConstant>
-      </value>
-    </varDecl>
-    <varDecl lineno="79" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/yoecldp.F90">
-      <name type="I221c070">ncldqr</name>
-      <value>
-        <FintConstant type="Fint">3</FintConstant>
-      </value>
-    </varDecl>
-    <varDecl lineno="80" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/yoecldp.F90">
-      <name type="I221d8b0">ncldqs</name>
-      <value>
-        <FintConstant type="Fint">4</FintConstant>
-      </value>
-    </varDecl>
-    <varDecl lineno="81" file="/perm/rd/naml/apps/cloudsc-dwarf/source/cloudsc-dwarf/src/common/module/yoecldp.F90">
-      <name type="I221e9c0">ncldqv</name>
-      <value>
-        <FintConstant type="Fint">5</FintConstant>
       </value>
     </varDecl>
   </declarations>
