@@ -285,13 +285,16 @@ print *, 'Executing CLOUDSC-GPU, "SCC" variant with FIELD API, PACKED STORAGE', 
 ! Call the driver to perform the parallel loop over our kernel
 CALL CLOUDSC_DRIVER_GPU_SCC_FIELD( &
      & NUMOMP, NPROMA, GLOBAL_STATE%KLEV, NGPTOT, GLOBAL_STATE%NBLOCKS, NGPTOTG, &
-     & GLOBAL_STATE%KFLDX, GLOBAL_STATE%PTSPHY, GLOBAL_STATE &
+     & GLOBAL_STATE%KFLDX, GLOBAL_STATE%PTSPHY, GLOBAL_STATE, USE_PACKED &
      & )
 #endif
 
 
 ! Validate the output against serialized reference data
 CALL GLOBAL_STATE%VALIDATE(NPROMA, NGPTOT, NGPTOTG)
+#ifdef CLOUDSC_GPU_SCC_FIELD
+CALL GLOBAL_STATE%FINALIZE(USE_PACKED)
+#endif
 
 ! Tear down MPI environment
 CALL CLOUDSC_MPI_END()
