@@ -113,6 +113,13 @@ options :
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
             BUILD_field_api=ON
 
+    - with-field_api :
+        help  : Enable GPU kernel using FIELD_API for data offload
+        cmake : >
+            ENABLE_CUDA=ON
+            ENABLE_CLOUDSC_GPU_SCC=ON
+            BUILD_field_api=ON
+
     - with-hip :
         help: Enable GPU kernel variant based on HIP
         cmake: >
