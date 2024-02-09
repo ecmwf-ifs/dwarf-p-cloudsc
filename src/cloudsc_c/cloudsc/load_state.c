@@ -247,8 +247,6 @@ void load_and_expand_1d_int(hid_t file_id, const char *name, int nlon, int nprom
   herr_t  status;
   status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer);
   status = H5Dclose(dataset_id);
-  //expand_1d((double *)buffer, field, nlon, nproma, ngptot, nblocks);
-  //serialboxSerializerRead(serializer, name, savepoint, buffer, strides, 1);
   expand_1d_int((int *)buffer, field, nlon, nproma, ngptot, nblocks);
 }
 
@@ -261,8 +259,6 @@ void load_and_expand_2d(hid_t file_id, const char *name, int nlon, int nlev, int
   herr_t  status;
   status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer);
   status = H5Dclose(dataset_id);
-  //expand_1d((double *)buffer, field, nlon, nproma, ngptot, nblocks);
-  //serialboxSerializerRead(serializer, name, savepoint, buffer, strides, 2);
   expand_2d((double *)buffer, field, nlon, nlev, nproma, ngptot, nblocks);
 }
 
@@ -275,8 +271,6 @@ void load_and_expand_3d(hid_t file_id, const char *name, int nlon, int nlev, int
   herr_t  status;
   status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer);
   status = H5Dclose(dataset_id);
-  //expand_1d((double *)buffer, field, nlon, nproma, ngptot, nblocks);
-  //expand_2d((double *)buffer, field, nlon, nlev, nproma, ngptot, nblocks);
   expand_3d((double *)buffer, field, nlon, nlev, nclv, nproma, ngptot, nblocks);
 }
 #endif
