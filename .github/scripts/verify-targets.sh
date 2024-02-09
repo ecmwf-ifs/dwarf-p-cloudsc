@@ -8,12 +8,7 @@ exit_code=0
 # Build the list of targets
 #
 
-targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-fortran)
-
-if [[ "$io_library_flag" == "--with-serialbox" ]]
-then
-  targets+=(dwarf-cloudsc-c)
-fi
+targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-fortran dwarf-cloudsc-c)
 
 if [[ "$build_flags" == *"--with-gpu"* ]]
 then
