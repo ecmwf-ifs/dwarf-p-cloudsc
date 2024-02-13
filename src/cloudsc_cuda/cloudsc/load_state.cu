@@ -68,119 +68,66 @@ void query_state(int *klon, int *klev)
 
 void expand_1d(double *buffer, double *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int b, l, i, buf_start_idx, buf_idx;
-  double (*field)[nproma] = (double (*)[nproma]) field_in;
+  int b, i, buf_start_idx, buf_idx;
 
-#pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
+#pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
       buf_idx = (buf_start_idx + i) % nlon;
-      field[b][i] = buffer[buf_idx];
+      field_in[b*nproma+i] = buffer[buf_idx];
     }
   }
-
-  // Zero out the remainder of last block
-  /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
-  printf("zeroing last block : %d \n",bsize);
-  for (i=bsize; i<nproma; i++) {
-    for (l=0; l<nlev; l++) {
-      field[nblocks-1][l][i] = 0.0;
-    }
-  }
-  */
-
 }
 
 
 void expand_1d_int(int *buffer, int *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int b, l, i, buf_start_idx, buf_idx;
-  int (*field)[nproma] = (int (*)[nproma]) field_in;
+  int b, i, buf_start_idx, buf_idx;
 
-  #pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
+  #pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
       buf_idx = (buf_start_idx + i) % nlon;
-      field[b][i] = buffer[buf_idx];
+      field_in[b*nproma+i] = buffer[buf_idx];
     }
   }
-
-  // Zero out the remainder of last block
-  /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
-  printf("zeroing last block : %d \n",bsize);
-  for (i=bsize; i<nproma; i++) {
-    for (l=0; l<nlev; l++) {
-      field[nblocks-1][l][i] = 0;
-    }
-  }
-  */
 }
+
 
 void expand_2d(double *buffer_in, double *field_in, int nlon, int nlev, int nproma, int ngptot, int nblocks)
 {
   int b, l, i, buf_start_idx, buf_idx;
-  double (*buffer)[nlon] = (double (*)[nlon]) buffer_in;
-  double (*field)[nlev][nproma] = (double (*)[nlev][nproma]) field_in;
-  
+
   #pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
-    for (l = 0; l < nlev; l++) {
-       buf_idx = (buf_start_idx + i) % nlon;
-       field[b][l][i] = buffer[l][buf_idx];       
-    }
-    }
-  }
-
-  // Zero out the remainder of last block
-  /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
-  printf("zeroing last block : %d \n",bsize);
-  for (i=bsize; i<nproma; i++) {
-    for (l=0; l<nlev; l++) {
-      field[nblocks-1][l][i] = 0.0;
+      for (l = 0; l < nlev; l++) {
+        buf_idx = (buf_start_idx + i) % nlon;
+        field_in[b*nlev*nproma+l*nproma+i] = buffer_in[l*nlon+buf_idx];
+      }
     }
   }
-  */
-  
 }
-
 
 void expand_3d(double *buffer_in, double *field_in, int nlon, int nlev, int nclv, int nproma, int ngptot, int nblocks)
 {
   int b, l, c, i, buf_start_idx, buf_idx;
-  double (*buffer)[nlev][nlon] = (double (*)[nlev][nlon]) buffer_in;
-  double (*field)[nclv][nlev][nproma] = (double (*)[nclv][nlev][nproma]) field_in;
-  
+
 #pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
   for (b = 0; b < nblocks; b++) {
-    buf_start_idx = ((b)*nproma) % nlon;   
+    buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
-    for (c = 0; c < nclv; c++) {
-    for (l = 0; l < nlev; l++) {
-      buf_idx = (buf_start_idx + i) % nlon;
-      field[b][c][l][i] = buffer[c][l][buf_idx];
-    }
-    }
-    }
-  }
-
-  // Zero out the remainder of last block
-  /*
-  bsize = min(nproma, ngptot - (nblocks-1)*nproma);  // Size of the field block
-  printf("zeroing last block : %d \n",bsize);
-  for (i=bsize; i<nproma; i++) {
-    for (l=0; l<nlev; l++) {
-      field[nblocks-1][l][i] = 0.0;
+      for (c = 0; c < nclv; c++) {
+        for (l = 0; l < nlev; l++) {
+          buf_idx = (buf_start_idx + i) % nlon;
+          field_in[b*nclv*nlev*nproma+c*nlev*nproma+l*nproma+i] = buffer_in[c*nlev*nlon+l*nlon+buf_idx];
+        }
+      }
     }
   }
-  */
-
 }
 
 #ifdef HAVE_SERIALBOX
