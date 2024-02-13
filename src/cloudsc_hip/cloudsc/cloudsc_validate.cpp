@@ -50,8 +50,6 @@ void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, i
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  //double (*field)[nlon] = (double (*)[nlon]) v_field;
-  //double (*reference)[nlon] = (double (*)[nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
@@ -59,8 +57,8 @@ void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, i
   zerrsum = 0.0;
   zsum = 0.0;
 
-//  #pragma omp parallel for default(shared) private(b, bsize, jk)		\
-//    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  #pragma omp parallel for default(shared) private(b, bsize, jk)		\
+    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jk = 0; jk < bsize; jk++) {
@@ -84,8 +82,6 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-//  double (*field)[nlev][nlon] = (double (*)[nlev][nlon]) v_field;
-//  double (*reference)[nlev][nlon] = (double (*)[nlev][nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
@@ -93,9 +89,8 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
   zerrsum = 0.0;
   zsum = 0.0;
 
-//  #pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
-//    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
-
+  #pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
+    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jl = 0; jl < nlev; jl++) {
@@ -111,7 +106,6 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
       }
     }
   }
-
   zavgpgp = zerrsum / (double) ngptot;
   print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 2);
 }
@@ -123,8 +117,6 @@ void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk, jm;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-//  double (*field)[nclv][nlev][nlon] = (double (*)[nclv][nlev][nlon]) v_field;
-//  double (*reference)[nclv][nlev][nlon] = (double (*)[nclv][nlev][nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
@@ -132,8 +124,8 @@ void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
   zerrsum = 0.0;
   zsum = 0.0;
 
-//  #pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
-//    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  #pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
+    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jm = 0; jm < nclv; jm++) {
@@ -150,7 +142,7 @@ void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
 	}
       }
     }
-  }
+  }  
   zavgpgp = zerrsum / (double) ngptot;
   print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 2);
 }

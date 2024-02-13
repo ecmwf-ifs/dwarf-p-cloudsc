@@ -9,7 +9,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_HIP
 	DESCRIPTION "Build the HIP version CLOUDSC using Serialbox" DEFAULT ON
-	CONDITION Serialbox_FOUND AND HAVE_HIP
+	CONDITION (Serialbox_FOUND OR HDF5_FOUND) AND HAVE_HIP
 )
 
 if( HAVE_CLOUDSC_HIP )
@@ -37,13 +37,16 @@ if( HAVE_CLOUDSC_HIP )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-    	    hip::device
-            Serialbox::Serialbox_C
+            hip::device
+	    $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
     )
 
     target_include_directories(dwarf-cloudsc-hip-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
-    target_link_libraries(dwarf-cloudsc-hip-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
+    target_link_libraries(dwarf-cloudsc-hip-lib PUBLIC hip::device $<${HAVE_HDF5}:hdf5::hdf5> $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C> $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
     if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
       message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
@@ -86,13 +89,16 @@ if( HAVE_CLOUDSC_HIP )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-    	    hip::device
-            Serialbox::Serialbox_C
+            hip::device
+            $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
     )
 
     target_include_directories(dwarf-cloudsc-hip-hoist-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
-    target_link_libraries(dwarf-cloudsc-hip-hoist-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
+    target_link_libraries(dwarf-cloudsc-hip-hoist-lib PUBLIC hip::device $<${HAVE_HDF5}:hdf5::hdf5> $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C> $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
     if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
       message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
@@ -135,13 +141,16 @@ if( HAVE_CLOUDSC_HIP )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-    	    hip::device
-            Serialbox::Serialbox_C
+            hip::device
+            $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
     )
 
     target_include_directories(dwarf-cloudsc-hip-k-caching-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
-    target_link_libraries(dwarf-cloudsc-hip-k-caching-lib PUBLIC hip::device Serialbox::Serialbox_C $<${HAVE_OMP}:OpenMP::OpenMP_C>)
+    target_link_libraries(dwarf-cloudsc-hip-k-caching-lib PUBLIC hip::device $<${HAVE_HDF5}:hdf5::hdf5> $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C> $<${HAVE_OMP}:OpenMP::OpenMP_C>)
 
     if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
       message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
@@ -164,8 +173,17 @@ if( HAVE_CLOUDSC_HIP )
     )
     ## 
     
-    # Create symlink for the input data
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+ # Create symlink for the input data
+ if( HAVE_SERIALBOX )
+   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+       ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+ endif()
+    
+ if( HAVE_HDF5 )
+   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+       ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
+   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+       ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
+ endif()
 
 endif()
