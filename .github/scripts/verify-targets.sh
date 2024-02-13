@@ -21,10 +21,7 @@ then
   if [[ "$build_flags" == *"--with-cuda"* ]]
   then
     targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
-    if [[ "$io_library_flag" == "--with-serialbox" ]]
-    then
-        targets+=(dwarf-cloudsc-c-cuda dwarf-cloudsc-c-cuda-hoist dwarf-cloudsc-c-cuda-k-caching)
-    fi
+    targets+=(dwarf-cloudsc-c-cuda dwarf-cloudsc-c-cuda-hoist dwarf-cloudsc-c-cuda-k-caching)
   fi
 fi
 
