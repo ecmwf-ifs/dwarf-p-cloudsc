@@ -33,7 +33,7 @@ if( HAVE_CLOUDSC_LOKI )
     # OFP frontend cannot deal with statement functions, so we toggle them here
     set( CLOUDSC_DEFINE_STMT_FUNC "" )
     if(NOT "${LOKI_FRONTEND}" STREQUAL "ofp")
-      set( CLOUDSC_DEFINE_STMT_FUNC CLOUDSC_STMT_FUNC )
+    set( CLOUDSC_DEFINE_STMT_FUNC CLOUDSC_STMT_FUNC )
     endif()
 
     ####################################################
@@ -54,6 +54,8 @@ if( HAVE_CLOUDSC_LOKI )
         MODE idem
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
+        DEFINITIONS
+            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -127,6 +129,8 @@ if( HAVE_CLOUDSC_LOKI )
         MODE idem-stack
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
+        DEFINITIONS
+            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -207,6 +211,8 @@ if( HAVE_CLOUDSC_LOKI )
         MODE sca
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
+        DEFINITIONS
+            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -265,6 +271,8 @@ if( HAVE_CLOUDSC_LOKI )
             MODE claw
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
             CPP
+            DEFINITIONS
+                ${CLOUDSC_DEFINE_STMT_FUNC}
             FRONTEND ${LOKI_FRONTEND}
             SOURCES
                 ${CMAKE_CURRENT_SOURCE_DIR}
