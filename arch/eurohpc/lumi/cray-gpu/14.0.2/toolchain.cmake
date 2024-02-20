@@ -18,8 +18,13 @@ set( ENABLE_USE_STMT_FUNC ON CACHE STRING "" )
 ####################################################################
 
 set( ENABLE_OMP ON CACHE STRING "" )
-set( OpenMP_C_FLAGS   "-homp" CACHE STRING "" )
-set( OpenMP_Fortran_FLAGS   "-homp" CACHE STRING "" )
+set( OpenMP_C_FLAGS   "-fopenmp" CACHE STRING "" )
+set( OpenMP_CXX_FLAGS "-fopenmp" CACHE STRING "" )
+
+set( OpenMP_C_LIB_NAMES       "craymp" )
+set( OpenMP_CXX_LIB_NAMES     "craymp" )
+set( OpenMP_Fortran_LIB_NAMES "craymp" )
+set( OpenMP_craymp_LIBRARY    "/opt/cray/pe/cce/14.0.2/cce/x86_64/lib/libcraymp.so" )
 
 ####################################################################
 # OpenACC FLAGS
