@@ -40,3 +40,7 @@ set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl, --as-needed")
 
 set(ECBUILD_Fortran_FLAGS_BIT "-O3 -hfp1 -hscalar3 -hvector3 -G2 -haggress -DNDEBUG")
+
+if(NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+  set(CMAKE_HIP_ARCHITECTURES gfx90a)
+endif()

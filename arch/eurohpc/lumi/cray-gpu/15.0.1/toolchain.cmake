@@ -41,7 +41,7 @@ set( OpenACC_Fortran_FLAGS "-hacc -h acc_model=deep_copy" )
 ####################################################################
 
 set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -03 -ffast-math")
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+if(NOT DEFINED CMAKE_HIP_ARCHITECTURES)
   set(CMAKE_HIP_ARCHITECTURES gfx90a)
 endif()
 
