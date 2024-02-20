@@ -38,7 +38,7 @@ if( HAVE_CLOUDSC_HIP )
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
             hip::device
-	    $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_HDF5}:hdf5::hdf5>
             $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
         DEFINITIONS
@@ -53,7 +53,7 @@ if( HAVE_CLOUDSC_HIP )
     else()
       target_compile_options(dwarf-cloudsc-hip-lib PRIVATE --offload-arch=${CMAKE_HIP_ARCHITECTURES})
     endif()
-    
+
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-hip
         SOURCES dwarf_cloudsc.cpp
@@ -67,7 +67,7 @@ if( HAVE_CLOUDSC_HIP )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
-    ## 
+    ##
 
     ###### SCC-HOIST-HIP ####
     ecbuild_add_library(
@@ -119,7 +119,7 @@ if( HAVE_CLOUDSC_HIP )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
-    ## 
+    ##
 
     ###### SCC-K-CACHING-HIP ####
     ecbuild_add_library(
@@ -171,14 +171,14 @@ if( HAVE_CLOUDSC_HIP )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
-    ## 
-    
+    ##
+
  # Create symlink for the input data
  if( HAVE_SERIALBOX )
    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
  endif()
-    
+
  if( HAVE_HDF5 )
    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
        ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
