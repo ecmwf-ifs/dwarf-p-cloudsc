@@ -9,7 +9,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_C_CUDA
     DESCRIPTION "Build the CUDA version of CLOUDSC C using Serialbox" DEFAULT ON
-    CONDITION Serialbox_FOUND AND HAVE_CUDA
+    CONDITION (Serialbox_FOUND OR HDF5_FOUND) AND HAVE_CUDA
 )
 
 if( HAVE_CLOUDSC_C_CUDA )
@@ -36,9 +36,12 @@ if( HAVE_CLOUDSC_C_CUDA )
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-        PUBLIC_LIBS
-            Serialbox::Serialbox_C
-            $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	PUBLIC_LIBS
+	    $<${HAVE_HDF5}:hdf5::hdf5>
+	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
+	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	DEFINITIONS
+	    ${CLOUDSC_DEFINITIONS}
     )
 
     target_include_directories(
@@ -91,9 +94,12 @@ if( HAVE_CLOUDSC_C_CUDA )
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-        PUBLIC_LIBS
-            Serialbox::Serialbox_C
-            $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	PUBLIC_LIBS
+	    $<${HAVE_HDF5}:hdf5::hdf5>
+	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
+	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	DEFINITIONS
+	    ${CLOUDSC_DEFINITIONS}
     )
 
     target_include_directories(
@@ -146,9 +152,12 @@ if( HAVE_CLOUDSC_C_CUDA )
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-        PUBLIC_LIBS
-            Serialbox::Serialbox_C
-            $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	PUBLIC_LIBS
+	    $<${HAVE_HDF5}:hdf5::hdf5>
+	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
+	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	DEFINITIONS
+	    ${CLOUDSC_DEFINITIONS}
     )
 
     target_include_directories(
@@ -181,9 +190,19 @@ if( HAVE_CLOUDSC_C_CUDA )
     )
     ###
 
-    # Create symlink for the input data
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+
+ # Create symlink for the input data
+ if( HAVE_SERIALBOX )
+   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+       ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+ endif()
+
+ if( HAVE_HDF5 )
+   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+       ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
+   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+       ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
+ endif()
 
 else()
     ecbuild_info( "Serialbox and/or CUDA not found, disabling CUDA prototype(s)" )

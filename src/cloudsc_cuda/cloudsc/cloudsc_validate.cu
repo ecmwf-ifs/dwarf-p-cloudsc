@@ -50,8 +50,6 @@ void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, i
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  double (*field)[nlon] = (double (*)[nlon]) v_field;
-  double (*reference)[nlon] = (double (*)[nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
@@ -64,14 +62,14 @@ void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, i
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jk = 0; jk < bsize; jk++) {
-      zminval = fmin(zminval, field[b][jk]);
-      zmaxval = fmax(zmaxval, field[b][jk]);
+      zminval = fmin(zminval, v_field[b*nlon+jk]);
+      zmaxval = fmax(zmaxval, v_field[b*nlon+jk]);
 
       // Difference against reference result in one-norm sense
-      zdiff = fabs(field[b][jk] - reference[b][jk]);
+      zdiff = fabs(v_field[b*nlon+jk] - v_ref[b*nlon+jk]);
       zmaxerr = fmax(zmaxerr, zdiff);
       zerrsum = zerrsum + zdiff;
-      zsum = zsum + abs(reference[b][jk]);
+      zsum = zsum + abs(v_ref[b*nlon+jk]);
     }
   }
   zavgpgp = zerrsum / (double) ngptot;
@@ -84,8 +82,6 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  double (*field)[nlev][nlon] = (double (*)[nlev][nlon]) v_field;
-  double (*reference)[nlev][nlon] = (double (*)[nlev][nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
@@ -99,13 +95,14 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jl = 0; jl < nlev; jl++) {
       for (jk = 0; jk < bsize; jk++) {
-	zminval = fmin(zminval, field[b][jl][jk]);
-	zmaxval = fmax(zmaxval, field[b][jl][jk]);
+	zminval = fmin(zminval, v_field[b*nlev*nlon+jl*nlon+jk]);
+	zmaxval = fmax(zmaxval, v_field[b*nlev*nlon+jl*nlon+jk]);
+
 	// Difference against reference result in one-norm sense
-	zdiff = fabs(field[b][jl][jk] - reference[b][jl][jk]);
+	zdiff = fabs(v_field[b*nlev*nlon+jl*nlon+jk] - v_ref[b*nlev*nlon+jl*nlon+jk]);
 	zmaxerr = fmax(zmaxerr, zdiff);
 	zerrsum = zerrsum + zdiff;
-	zsum = zsum + abs(reference[b][jl][jk]);
+	zsum = zsum + abs(v_ref[b*nlev*nlon+jl*nlon+jk]);
       }
     }
   }
@@ -120,8 +117,6 @@ void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk, jm;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  double (*field)[nclv][nlev][nlon] = (double (*)[nclv][nlev][nlon]) v_field;
-  double (*reference)[nclv][nlev][nlon] = (double (*)[nclv][nlev][nlon]) v_ref;
 
   zminval = +DBL_MAX;
   zmaxval = -DBL_MAX;
@@ -136,18 +131,18 @@ void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
     for (jm = 0; jm < nclv; jm++) {
       for (jl = 0; jl < nlev; jl++) {
 	for (jk = 0; jk < bsize; jk++) {
-	  zminval = fmin(zminval, field[b][jm][jl][jk]);
-	  zmaxval = fmax(zmaxval, field[b][jm][jl][jk]);
+	  zminval = fmin(zminval, v_field[b*nclv*nlev*nlon+jm*nlev*nlon+jl*nlon+jk]);
+	  zmaxval = fmax(zmaxval, v_field[b*nclv*nlev*nlon+jm*nlev*nlon+jl*nlon+jk]);
 
 	  // Difference against reference result in one-norm sense
-	  zdiff = fabs(field[b][jm][jl][jk] - reference[b][jm][jl][jk]);
+	  zdiff = fabs(v_field[b*nclv*nlev*nlon+jm*nlev*nlon+jl*nlon+jk] - v_ref[b*nclv*nlev*nlon+jm*nlev*nlon+jl*nlon+jk]);
 	  zmaxerr = fmax(zmaxerr, zdiff);
 	  zerrsum = zerrsum + zdiff;
-	  zsum = zsum + abs(reference[b][jm][jl][jk]);
+	  zsum = zsum + abs(v_ref[b*nclv*nlev*nlon+jm*nlev*nlon+jl*nlon+jk]);
 	}
       }
     }
-  }
+  }  
   zavgpgp = zerrsum / (double) ngptot;
   print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 2);
 }
