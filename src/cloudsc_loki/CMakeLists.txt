@@ -1007,7 +1007,7 @@ if (FALSE)
 endif()
 
 if( HAVE_CUDA )
-
+if (FALSE)
     # scc-cuf-parametrise
     cloudsc_xmod( loki-scc-cuf-parametrise )
 
@@ -1109,14 +1109,14 @@ if( HAVE_CUDA )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
-
+endif()
 endif()
 
     #############################################################################
     ## C-transpilation mode for generating vectorized C host code (experimental!)
     #############################################################################
 
-    if ( FALSE ) # NOT HAVE_SINGLE_PRECISION )
+    if ( TRUE ) # NOT HAVE_SINGLE_PRECISION )
 
         cloudsc_xmod( loki-c )
 	
