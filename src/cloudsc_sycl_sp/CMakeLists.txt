@@ -9,7 +9,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_SYCL
     DESCRIPTION "Build the SYCL version CLOUDSC using Serialbox" DEFAULT ON
-    CONDITION Serialbox_FOUND AND HAVE_SYCL
+    CONDITION (Serialbox_FOUND OR HDF5_FOUND) AND HAVE_SYCL
 )
 
 if( HAVE_CLOUDSC_SYCL )
@@ -34,9 +34,11 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-	    $<$<BOOL:${LINK_SYCL}>:sycl>
-            Serialbox::Serialbox_C
-    	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+    	    $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
+	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	DEFINITIONS
+	    ${CLOUDSC_DEFINITIONS}
     )
 
 
@@ -73,9 +75,11 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-            $<$<BOOL:${LINK_SYCL}>:sycl>
-	    Serialbox::Serialbox_C
+            $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
     )
 
     ecbuild_add_executable(
@@ -112,9 +116,11 @@ if( HAVE_CLOUDSC_SYCL )
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
-            $<$<BOOL:${LINK_SYCL}>:sycl>
-	    Serialbox::Serialbox_C
+            $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
     )
 
     ecbuild_add_executable(
@@ -131,9 +137,20 @@ if( HAVE_CLOUDSC_SYCL )
         OMP 1
     )
 
-    # Create symlink for the input data
+
+ # Create symlink for the input data
+  if( HAVE_SERIALBOX )
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
+  endif()
+
+  if( HAVE_HDF5 )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
+  endif()
+
 endif()
 endif()
 else()
