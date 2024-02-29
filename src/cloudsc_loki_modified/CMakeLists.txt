@@ -157,7 +157,7 @@ endif()
 if( HAVE_CUDA )
 if (TRUE)
     # scc-cuf-parametrise
-    cloudsc_xmod( loki-scc-cuf-parametrise-new )
+    cloudsc_xmod( loki-modified-scc-cuf-parametrise-new )
 
     loki_transform_convert(
         MODE cuf-parametrise-new FRONTEND ${LOKI_FRONTEND} CPP
@@ -174,40 +174,40 @@ if (TRUE)
 	DEFINITIONS CLOUDSC_GPU_TIMING CUF_IMPORTS 
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise-new
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-modified-scc-cuf-parametrise-new
         OUTPUT
-            loki-scc-cuf-parametrise-new/cuf_cloudsc_driver_loki_mod.cuf_parametrise_new.F90
-            loki-scc-cuf-parametrise-new/cuf_cloudsc.cuf_parametrise_new.F90
-	    loki-scc-cuf-parametrise-new/cloudsc_init_seq.cuf_parametrise_new.F90
-	    loki-scc-cuf-parametrise-new/cloudsc_init_vec.cuf_parametrise_new.F90
+            loki-modified-scc-cuf-parametrise-new/cuf_cloudsc_driver_loki_mod.cuf_parametrise_new.F90
+            loki-modified-scc-cuf-parametrise-new/cuf_cloudsc.cuf_parametrise_new.F90
+	    loki-modified-scc-cuf-parametrise-new/cloudsc_init_seq.cuf_parametrise_new.F90
+	    loki-modified-scc-cuf-parametrise-new/cloudsc_init_vec.cuf_parametrise_new.F90
             DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     set_source_files_properties(
-        loki-scc-cuf-parametrise-new/cuf_cloudsc_driver_loki_mod.cuf_parametrise_new.F90
-        loki-scc-cuf-parametrise-new/cuf_cloudsc.cuf_parametrise_new.F90
-        loki-scc-cuf-parametrise-new/cloudsc_init_seq.cuf_parametrise_new.F90
-        loki-scc-cuf-parametrise-new/cloudsc_init_vec.cuf_parametrise_new.F90
+        loki-modified-scc-cuf-parametrise-new/cuf_cloudsc_driver_loki_mod.cuf_parametrise_new.F90
+        loki-modified-scc-cuf-parametrise-new/cuf_cloudsc.cuf_parametrise_new.F90
+        loki-modified-scc-cuf-parametrise-new/cloudsc_init_seq.cuf_parametrise_new.F90
+        loki-modified-scc-cuf-parametrise-new/cloudsc_init_vec.cuf_parametrise_new.F90
 	# PROPERTIES COMPILE_FLAGS "-g -cuda -gpu=debug,maxregcount:128 -Minfo"
 	PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128 -Minfo"
     )
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-parametrise-new
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-modified-scc-cuf-parametrise-new
         SOURCES
             dwarf_cloudsc.F90
-            loki-scc-cuf-parametrise-new/cuf_cloudsc_driver_loki_mod.cuf_parametrise_new.F90
-            loki-scc-cuf-parametrise-new/cuf_cloudsc.cuf_parametrise_new.F90
-            loki-scc-cuf-parametrise-new/cloudsc_init_seq.cuf_parametrise_new.F90
-            loki-scc-cuf-parametrise-new/cloudsc_init_vec.cuf_parametrise_new.F90
+            loki-modified-scc-cuf-parametrise-new/cuf_cloudsc_driver_loki_mod.cuf_parametrise_new.F90
+            loki-modified-scc-cuf-parametrise-new/cuf_cloudsc.cuf_parametrise_new.F90
+            loki-modified-scc-cuf-parametrise-new/cloudsc_init_seq.cuf_parametrise_new.F90
+            loki-modified-scc-cuf-parametrise-new/cloudsc_init_vec.cuf_parametrise_new.F90
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    target_link_options(dwarf-cloudsc-loki-scc-cuf-parametrise-new PUBLIC "-cuda")
+    target_link_options(dwarf-cloudsc-loki-modified-scc-cuf-parametrise-new PUBLIC "-cuda")
 
     # scc-cuf-hoist
-    cloudsc_xmod( loki-scc-cuf-hoist-new )
+    cloudsc_xmod( loki-modified-scc-cuf-hoist-new )
 
     loki_transform_convert(
         MODE cuf-hoist-new FRONTEND ${LOKI_FRONTEND} CPP
@@ -224,37 +224,37 @@ if (TRUE)
 	DEFINITIONS CLOUDSC_GPU_TIMING CUF_IMPORTS
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist-new
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-modified-scc-cuf-hoist-new
         OUTPUT
-            loki-scc-cuf-hoist-new/cuf_cloudsc_driver_loki_mod.cuf_hoist_new.F90
-            loki-scc-cuf-hoist-new/cuf_cloudsc.cuf_hoist_new.F90
-            loki-scc-cuf-hoist-new/cloudsc_init_seq.cuf_hoist_new.F90
-            loki-scc-cuf-hoist-new/cloudsc_init_vec.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cuf_cloudsc_driver_loki_mod.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cuf_cloudsc.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cloudsc_init_seq.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cloudsc_init_vec.cuf_hoist_new.F90
             DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     set_source_files_properties(
-        loki-scc-cuf-hoist-new/cuf_cloudsc_driver_loki_mod.cuf_hoist_new.F90
-        loki-scc-cuf-hoist-new/cuf_cloudsc.cuf_hoist_new.F90
-        loki-scc-cuf-hoist-new/cloudsc_init_seq.cuf_hoist_new.F90
-        loki-scc-cuf-hoist-new/cloudsc_init_vec.cuf_hoist_new.F90
+        loki-modified-scc-cuf-hoist-new/cuf_cloudsc_driver_loki_mod.cuf_hoist_new.F90
+        loki-modified-scc-cuf-hoist-new/cuf_cloudsc.cuf_hoist_new.F90
+        loki-modified-scc-cuf-hoist-new/cloudsc_init_seq.cuf_hoist_new.F90
+        loki-modified-scc-cuf-hoist-new/cloudsc_init_vec.cuf_hoist_new.F90
 	# PROPERTIES COMPILE_FLAGS "-g -cuda -gpu=debug,maxregcount:128 -Minfo"
 	PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128 -Minfo"
     )
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-hoist-new
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-modified-scc-cuf-hoist-new
         SOURCES
             dwarf_cloudsc.F90
-            loki-scc-cuf-hoist-new/cuf_cloudsc_driver_loki_mod.cuf_hoist_new.F90
-            loki-scc-cuf-hoist-new/cuf_cloudsc.cuf_hoist_new.F90
-            loki-scc-cuf-hoist-new/cloudsc_init_seq.cuf_hoist_new.F90
-            loki-scc-cuf-hoist-new/cloudsc_init_vec.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cuf_cloudsc_driver_loki_mod.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cuf_cloudsc.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cloudsc_init_seq.cuf_hoist_new.F90
+            loki-modified-scc-cuf-hoist-new/cloudsc_init_vec.cuf_hoist_new.F90
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
 
-    target_link_options(dwarf-cloudsc-loki-scc-cuf-hoist-new PUBLIC "-cuda")
+    target_link_options(dwarf-cloudsc-loki-modified-scc-cuf-hoist-new PUBLIC "-cuda")
 endif()
 ###
 
@@ -265,7 +265,7 @@ if (TRUE)
     link_directories("/usr/local/apps/nvidia/22.11/Linux_x86_64/22.11/math_libs/lib64")
 
     #### CUDA PARAMETRISE #####
-    cloudsc_xmod( loki-c-scc-parametrise )
+    cloudsc_xmod( loki-modified-c-scc-parametrise )
 
     loki_transform_convert(
         MODE c-parametrise FRONTEND ${LOKI_FRONTEND} CPP
@@ -285,27 +285,27 @@ if (TRUE)
         DEFINITIONS CLOUDSC_GPU_TIMING
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-	OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c-scc-parametrise
+	OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-modified-c-scc-parametrise
         OUTPUT
-            loki-c-scc-parametrise/cuf_cloudsc_driver_loki_mod.c_parametrise.F90
-            loki-c-scc-parametrise/cloudsc_cuf_fc.F90 loki-c-scc-parametrise/cloudsc_cuf_c.c
-            loki-c-scc-parametrise/yoethf_fc.F90 loki-c-scc-parametrise/yomcst_fc.F90
-            loki-c-scc-parametrise/yoecldp_fc.F90
-	    loki-c-scc-parametrise/cloudsc_init_seq_c.c
-            loki-c-scc-parametrise/cloudsc_init_vec_c.c
+            loki-modified-c-scc-parametrise/cuf_cloudsc_driver_loki_mod.c_parametrise.F90
+            loki-modified-c-scc-parametrise/cloudsc_cuf_fc.F90 loki-modified-c-scc-parametrise/cloudsc_cuf_c.c
+            loki-modified-c-scc-parametrise/yoethf_fc.F90 loki-modified-c-scc-parametrise/yomcst_fc.F90
+            loki-modified-c-scc-parametrise/yoecldp_fc.F90
+	    loki-modified-c-scc-parametrise/cloudsc_init_seq_c.c
+            loki-modified-c-scc-parametrise/cloudsc_init_vec_c.c
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
 
       ecbuild_add_library(
-        TARGET dwarf-cloudsc-scc-parametrise-gpu-lib
+        TARGET dwarf-cloudsc-modified-cuda-parametrise-lib
         INSTALL_HEADERS LISTED
         SOURCES
 	    # yoecldp_c.h
-            loki-c-scc-parametrise/cloudsc_cuf_c.c
-    	    loki-c-scc-parametrise/cloudsc_cuf_fc.F90
-            loki-c-scc-parametrise/cloudsc_init_seq_c.c
-            loki-c-scc-parametrise/cloudsc_init_vec_c.c
+            loki-modified-c-scc-parametrise/cloudsc_cuf_c.c
+    	    loki-modified-c-scc-parametrise/cloudsc_cuf_fc.F90
+            loki-modified-c-scc-parametrise/cloudsc_init_seq_c.c
+            loki-modified-c-scc-parametrise/cloudsc_init_vec_c.c
 	    PUBLIC_INCLUDES
     	    	$<INSTALL_INTERFACE:include>
             	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
@@ -313,11 +313,11 @@ if (TRUE)
     	        cloudsc-common-lib
     )
 
-    target_include_directories(dwarf-cloudsc-scc-parametrise-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+    target_include_directories(dwarf-cloudsc-modified-cuda-parametrise-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-    set_source_files_properties(loki-c-scc-parametrise/cloudsc_cuf_c.c PROPERTIES LANGUAGE CUDA)
+    set_source_files_properties(loki-modified-c-scc-parametrise/cloudsc_cuf_c.c PROPERTIES LANGUAGE CUDA)
 
-   target_compile_options(dwarf-cloudsc-scc-parametrise-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+   target_compile_options(dwarf-cloudsc-modified-cuda-parametrise-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
 	   --generate-line-info
 	   >)
 
@@ -326,26 +326,26 @@ if (TRUE)
 	 SOURCES dwarf_cloudsc.F90
          FLAGS   "-cuda") # -gpu=maxrregcount ...
     target_include_directories(
-        dwarf-cloudsc-scc-parametrise-gpu-lib
+        dwarf-cloudsc-modified-cuda-parametrise-lib
         PUBLIC
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-loki-scc-parametrise-cuda
-	SOURCES dwarf_cloudsc.F90 loki-c-scc-parametrise/cuf_cloudsc_driver_loki_mod.c_parametrise.F90
-	LIBS dwarf-cloudsc-scc-parametrise-gpu-lib
+        TARGET  dwarf-cloudsc-loki-modified-scc-parametrise-cuda
+	SOURCES dwarf_cloudsc.F90 loki-modified-c-scc-parametrise/cuf_cloudsc_driver_loki_mod.c_parametrise.F90
+	LIBS dwarf-cloudsc-modified-cuda-parametrise-lib
     )
 
-    target_compile_definitions(dwarf-cloudsc-loki-scc-parametrise-cuda PUBLIC CUF_DRIVER=1)
+    target_compile_definitions(dwarf-cloudsc-loki-modified-scc-parametrise-cuda PUBLIC CUF_DRIVER=1)
 
-    set_target_properties(dwarf-cloudsc-loki-scc-parametrise-cuda PROPERTIES LINKER_LANGUAGE Fortran)
+    set_target_properties(dwarf-cloudsc-loki-modified-scc-parametrise-cuda PROPERTIES LINKER_LANGUAGE Fortran)
 
-    set_target_properties( dwarf-cloudsc-loki-scc-parametrise-cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    target_link_libraries(dwarf-cloudsc-loki-scc-parametrise-cuda dwarf-cloudsc-scc-parametrise-gpu-lib cudadevrt cudart)
+    set_target_properties( dwarf-cloudsc-loki-modified-scc-parametrise-cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_link_libraries(dwarf-cloudsc-loki-modified-scc-parametrise-cuda dwarf-cloudsc-modified-cuda-parametrise-lib cudadevrt cudart)
 
     #### CUDA HOIST #####
-    cloudsc_xmod( loki-c-scc-hoist )
+    cloudsc_xmod( loki-modified-c-scc-hoist )
 
     loki_transform_convert(
         MODE c-hoist FRONTEND ${LOKI_FRONTEND} CPP
@@ -365,27 +365,27 @@ if (TRUE)
         DEFINITIONS CLOUDSC_GPU_TIMING
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-	OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c-scc-hoist
+	OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-modified-c-scc-hoist
         OUTPUT
-            loki-c-scc-hoist/cuf_cloudsc_driver_loki_mod.c_hoist.F90
-            loki-c-scc-hoist/cloudsc_cuf_fc.F90 loki-c-scc-hoist/cloudsc_cuf_c.c
-            loki-c-scc-hoist/yoethf_fc.F90 loki-c-scc-hoist/yomcst_fc.F90
-            loki-c-scc-hoist/yoecldp_fc.F90
-            loki-c-scc-hoist/cloudsc_init_seq_c.c
-            loki-c-scc-hoist/cloudsc_init_vec_c.c
+            loki-modified-c-scc-hoist/cuf_cloudsc_driver_loki_mod.c_hoist.F90
+            loki-modified-c-scc-hoist/cloudsc_cuf_fc.F90 loki-modified-c-scc-hoist/cloudsc_cuf_c.c
+            loki-modified-c-scc-hoist/yoethf_fc.F90 loki-modified-c-scc-hoist/yomcst_fc.F90
+            loki-modified-c-scc-hoist/yoecldp_fc.F90
+            loki-modified-c-scc-hoist/cloudsc_init_seq_c.c
+            loki-modified-c-scc-hoist/cloudsc_init_vec_c.c
         DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
 
       ecbuild_add_library(
-        TARGET dwarf-cloudsc-scc-hoist-gpu-lib
+        TARGET dwarf-cloudsc-modified-cuda-hoist-lib
         INSTALL_HEADERS LISTED
         SOURCES
 	    # yoecldp_c.h
-            loki-c-scc-hoist/cloudsc_cuf_c.c
-    	    loki-c-scc-hoist/cloudsc_cuf_fc.F90
-            loki-c-scc-hoist/cloudsc_init_seq_c.c
-            loki-c-scc-hoist/cloudsc_init_vec_c.c
+            loki-modified-c-scc-hoist/cloudsc_cuf_c.c
+    	    loki-modified-c-scc-hoist/cloudsc_cuf_fc.F90
+            loki-modified-c-scc-hoist/cloudsc_init_seq_c.c
+            loki-modified-c-scc-hoist/cloudsc_init_vec_c.c
 	    PUBLIC_INCLUDES
     	    	$<INSTALL_INTERFACE:include>
             	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
@@ -393,11 +393,11 @@ if (TRUE)
     	        cloudsc-common-lib
     )
 
-    target_include_directories(dwarf-cloudsc-scc-hoist-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+    target_include_directories(dwarf-cloudsc-modified-cuda-hoist-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-    set_source_files_properties(loki-c-scc-hoist/cloudsc_cuf_c.c PROPERTIES LANGUAGE CUDA)
+    set_source_files_properties(loki-modified-c-scc-hoist/cloudsc_cuf_c.c PROPERTIES LANGUAGE CUDA)
 
-   target_compile_options(dwarf-cloudsc-scc-hoist-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+   target_compile_options(dwarf-cloudsc-modified-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
 	   --generate-line-info
 	   >)
 
@@ -406,23 +406,23 @@ if (TRUE)
 	 SOURCES dwarf_cloudsc.F90
          FLAGS   "-cuda") # -gpu=maxrregcount ...
     target_include_directories(
-        dwarf-cloudsc-scc-hoist-gpu-lib
+        dwarf-cloudsc-modified-cuda-hoist-lib
         PUBLIC
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-loki-scc-hoist-cuda
-	SOURCES dwarf_cloudsc.F90 loki-c-scc-hoist/cuf_cloudsc_driver_loki_mod.c_hoist.F90
-	LIBS dwarf-cloudsc-scc-hoist-gpu-lib
+        TARGET  dwarf-cloudsc-loki-modified-scc-hoist-cuda
+	SOURCES dwarf_cloudsc.F90 loki-modified-c-scc-hoist/cuf_cloudsc_driver_loki_mod.c_hoist.F90
+	LIBS dwarf-cloudsc-modified-cuda-hoist-lib
     )
 
-    target_compile_definitions(dwarf-cloudsc-loki-scc-hoist-cuda PUBLIC CUF_DRIVER=1)
+    target_compile_definitions(dwarf-cloudsc-loki-modified-scc-hoist-cuda PUBLIC CUF_DRIVER=1)
 
-    set_target_properties(dwarf-cloudsc-loki-scc-hoist-cuda PROPERTIES LINKER_LANGUAGE Fortran)
+    set_target_properties(dwarf-cloudsc-loki-modified-scc-hoist-cuda PROPERTIES LINKER_LANGUAGE Fortran)
 
-    set_target_properties( dwarf-cloudsc-loki-scc-hoist-cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    target_link_libraries(dwarf-cloudsc-loki-scc-hoist-cuda dwarf-cloudsc-scc-hoist-gpu-lib cudadevrt cudart)
+    set_target_properties( dwarf-cloudsc-loki-modified-scc-hoist-cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_link_libraries(dwarf-cloudsc-loki-modified-scc-hoist-cuda dwarf-cloudsc-modified-cuda-hoist-lib cudadevrt cudart)
 
 endif()
 
