@@ -15,11 +15,6 @@ ecbuild_add_option( FEATURE CLOUDSC_SYCL
 if( HAVE_CLOUDSC_SYCL )
 
     if ( HAVE_SINGLE_PRECISION )
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -gline-tables-only -fopenmp -fsycl")
-    set(LINK_SYCL OFF)
-    if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC") 
-	    set(LINK_SYCL ON)
-    endif()
 
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-sycl-lib
