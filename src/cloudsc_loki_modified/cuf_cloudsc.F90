@@ -639,6 +639,9 @@ IMELT(NCLDQS)=NCLDQR
 ! -----------------------------------------------
 ! INITIALIZATION OF OUTPUT TENDENCIES
 ! -----------------------------------------------
+! and double initialized to be sure :D
+CALL CLOUDSC_INIT_VEC(PCOVPTOT, KLON, KLEV, KIDIA, KFDIA)
+
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
     ! replaced
@@ -646,6 +649,7 @@ DO JK=1,KLEV
     ! TENDENCY_LOC_Q(JL,JK)=0.0_JPRB
     ! TENDENCY_LOC_A(JL,JK)=0.0_JPRB
     ! with
+    CALL CLOUDSC_INIT_SEQ(PCOVPTOT(JL,JK))
     CALL CLOUDSC_INIT_SEQ(PCOVPTOT(JL,JK))
   ENDDO
 ENDDO

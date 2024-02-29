@@ -433,7 +433,7 @@ endif()
 if (HAVE_HIP)
 
     enable_language(HIP)
-    set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -O3 -ffast-math")
+    set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -O3 -ffast-math") #  -fgpu-rdc") #  --hip-link -Wno-deprecated-register")
 
     set(CMAKE_C_COMPILER "${ROCM_PATH}/bin/hipcc")
     set(CMAKE_CXX_COMPILER "${ROCM_PATH}/bin/hipcc")
@@ -723,8 +723,8 @@ endif()
                 loki-modified-c/yoethf_fc.F90
                 loki-modified-c/yomcst_fc.F90
                 loki-modified-c/yoecldp_fc.F90
-		# loki-c/cloudsc_init_seq_c.c
-		# loki-c/cloudsc_init_vec_c.c
+		loki-modified-c/cloudsc_init_seq_c.c
+		loki-modified-c/cloudsc_init_vec_c.c
             LIBS
                 cloudsc-common-lib
             DEFINITIONS ${CLOUDSC_DEFINITIONS}

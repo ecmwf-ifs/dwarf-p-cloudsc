@@ -783,7 +783,7 @@ if (HAVE_HIP)
 
 
       ecbuild_add_library(
-        TARGET dwarf-cloudsc-scc-parametrise-gpu-lib
+        TARGET dwarf-cloudsc-hip-parametrise-lib
         INSTALL_HEADERS LISTED
         SOURCES
             # yoecldp_c.h
@@ -796,33 +796,20 @@ if (HAVE_HIP)
                 cloudsc-common-lib
     )
 
-   target_include_directories(dwarf-cloudsc-scc-parametrise-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+   target_include_directories(dwarf-cloudsc-hip-parametrise-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
    set_source_files_properties(loki-hip-scc-parametrise/cloudsc_cuf_c.c PROPERTIES LANGUAGE HIP)
-   target_compile_options(dwarf-cloudsc-scc-parametrise-gpu-lib PRIVATE --offload-arch=gfx90a) 
-
-
-    # cloudsc_add_compile_options(
-    #      SOURCES dwarf_cloudsc.F90
-    #      FLAGS   "-cuda") # -gpu=maxrregcount ...
-    # target_include_directories(
-    #     dwarf-cloudsc-scc-parametrise-gpu-lib
-    #     PUBLIC
-    #     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    # )
+   target_compile_options(dwarf-cloudsc-hip-parametrise-lib PRIVATE --offload-arch=gfx90a) 
 
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-loki-scc-parametrise-hip
         SOURCES dwarf_cloudsc.F90 loki-hip-scc-parametrise/cuf_cloudsc_driver_loki_mod.hip_parametrise.F90
-        LIBS dwarf-cloudsc-scc-parametrise-gpu-lib
+        LIBS dwarf-cloudsc-hip-parametrise-lib
     )
 
     target_compile_definitions(dwarf-cloudsc-loki-scc-parametrise-hip PUBLIC CUF_DRIVER=1)
 
     set_target_properties(dwarf-cloudsc-loki-scc-parametrise-hip PROPERTIES LINKER_LANGUAGE Fortran)
-
-    # set_target_properties( dwarf-cloudsc-loki-scc-parametrise-c PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    # target_link_libraries(dwarf-cloudsc-loki-scc-parametrise-c dwarf-cloudsc-scc-parametrise-gpu-lib cudadevrt cudart)
 
     # HOIST
     cloudsc_xmod( loki-hip-scc-hoist )
@@ -856,7 +843,7 @@ if (HAVE_HIP)
 
 
       ecbuild_add_library(
-        TARGET dwarf-cloudsc-scc-hoist-gpu-lib
+        TARGET dwarf-cloudsc-hip-hoist-lib
         INSTALL_HEADERS LISTED
         SOURCES
             # yoecldp_c.h
@@ -869,25 +856,15 @@ if (HAVE_HIP)
                 cloudsc-common-lib
     )
 
-   target_include_directories(dwarf-cloudsc-scc-hoist-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+   target_include_directories(dwarf-cloudsc-hip-hoist-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
    set_source_files_properties(loki-hip-scc-hoist/cloudsc_cuf_c.c PROPERTIES LANGUAGE HIP)
-   target_compile_options(dwarf-cloudsc-scc-hoist-gpu-lib PRIVATE --offload-arch=gfx90a)
-
-
-    # cloudsc_add_compile_options(
-    #      SOURCES dwarf_cloudsc.F90
-    #      FLAGS   "-cuda") # -gpu=maxrregcount ...
-    # target_include_directories(
-    #     dwarf-cloudsc-scc-parametrise-gpu-lib
-    #     PUBLIC
-    #     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    # )
+   target_compile_options(dwarf-cloudsc-hip-hoist-lib PRIVATE --offload-arch=gfx90a)
 
     ecbuild_add_executable(
         TARGET  dwarf-cloudsc-loki-scc-hoist-hip
         SOURCES dwarf_cloudsc.F90 loki-hip-scc-hoist/cuf_cloudsc_driver_loki_mod.hip_hoist.F90
-        LIBS dwarf-cloudsc-scc-hoist-gpu-lib
+        LIBS dwarf-cloudsc-hip-hoist-lib
     )
 
     target_compile_definitions(dwarf-cloudsc-loki-scc-hoist-hip PUBLIC CUF_DRIVER=1)
