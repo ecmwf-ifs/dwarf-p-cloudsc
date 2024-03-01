@@ -23,6 +23,13 @@
 
 #elif GPU_MATH == STD_MATH
 
+#define MYMAX(x,y) std::max((float)x,(float)y)
+#define MYMIN(x,y) std::min((float)x,(float)y)
+#define MYEXP(x) std::exp(x)
+#define MYPOW(x,y) std::pow(x,y)
+#define MYPOWN(x,y) std::pow(x,y)
+#define MYABS(x) std::abs(x)
+
 #elif GPU_MATH == SYCL_MATH
 
 #define MYMAX(x,y) cl::sycl::max(x,y)

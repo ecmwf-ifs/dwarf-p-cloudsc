@@ -434,7 +434,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 
     q.submit([&](cl::sycl::handler &h) {
         /*cl::sycl::stream out_stream(16384, 512, h);*/
-        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) [[intel::reqd_sub_group_size(16)]] {
+        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) [[intel::reqd_sub_group_size(SUB_GROUP_SIZE)]] {
 
     cloudsc_c(1, icend, nproma, ptsphy, d_pt, d_pq,
     		d_tend_tmp_t, d_tend_tmp_q, d_tend_tmp_a, d_tend_tmp_cld,

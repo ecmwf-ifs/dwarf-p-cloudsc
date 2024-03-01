@@ -122,6 +122,10 @@ options :
         help: Enable GPU kernel variant based on SYCL
         cmake: >
             ENABLE_SYCL=ON
+
+    - sycl-sub-group-size :
+         help  : SYCL subgroup size
+         cmake : SYCL_SUB_GROUP_SIZE={{value}}
     
     - cloudsc-math :
          help  : [C|STD|SYCL]
