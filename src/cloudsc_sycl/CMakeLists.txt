@@ -16,6 +16,16 @@ if( HAVE_CLOUDSC_SYCL )
 
     if ( NOT HAVE_SINGLE_PRECISION )
 
+     if (CLOUDSC_MATH STREQUAL "C")
+	set(GPU_MATH "1")
+     elseif (CLOUDSC_MATH STREQUAL "STD")
+	set(GPU_MATH "2")
+     elseif(CLOUDSC_MATH STREQUAL "SYCL")
+	set(GPU_MATH "3")
+     else ()
+        set(GPU_MATH "1")
+     endif()
+
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-sycl-lib
         INSTALL_HEADERS LISTED
@@ -40,6 +50,11 @@ if( HAVE_CLOUDSC_SYCL )
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
     )
+
+    target_compile_definitions(dwarf-cloudsc-scc-sycl-lib PUBLIC C_MATH=1)
+    target_compile_definitions(dwarf-cloudsc-scc-sycl-lib PUBLIC STD_MATH=2)
+    target_compile_definitions(dwarf-cloudsc-scc-sycl-lib PUBLIC SYCL_MATH=3)
+    target_compile_definitions(dwarf-cloudsc-scc-sycl-lib PUBLIC GPU_MATH=${GPU_MATH})
 
     add_sycl_to_target(
 	    TARGET
@@ -89,6 +104,11 @@ if( HAVE_CLOUDSC_SYCL )
             ${CLOUDSC_DEFINITIONS}
     )
 
+    target_compile_definitions(dwarf-cloudsc-scc-hoist-sycl-lib PUBLIC C_MATH=1)
+    target_compile_definitions(dwarf-cloudsc-scc-hoist-sycl-lib PUBLIC STD_MATH=2)
+    target_compile_definitions(dwarf-cloudsc-scc-hoist-sycl-lib PUBLIC SYCL_MATH=3)
+    target_compile_definitions(dwarf-cloudsc-scc-hoist-sycl-lib PUBLIC GPU_MATH=${GPU_MATH})
+
     add_sycl_to_target(
 	    TARGET
 	    	dwarf-cloudsc-scc-hoist-sycl-lib
@@ -136,6 +156,11 @@ if( HAVE_CLOUDSC_SYCL )
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
     )
+
+    target_compile_definitions(dwarf-cloudsc-scc-k-caching-sycl-lib PUBLIC C_MATH=1)
+    target_compile_definitions(dwarf-cloudsc-scc-k-caching-sycl-lib PUBLIC STD_MATH=2)
+    target_compile_definitions(dwarf-cloudsc-scc-k-caching-sycl-lib PUBLIC SYCL_MATH=3)
+    target_compile_definitions(dwarf-cloudsc-scc-k-caching-sycl-lib PUBLIC GPU_MATH=${GPU_MATH})
 
     add_sycl_to_target(
 	    TARGET 

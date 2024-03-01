@@ -11,7 +11,7 @@
 #include <CL/sycl.hpp>
 #include <limits> 
 
-#if 1
+#if GPU_MATH == C_MATH
 
 #define MYMAX(x,y) fmax(x,y)
 #define MYMIN(x,y) fmin(x,y)
@@ -20,7 +20,9 @@
 #define MYPOWN(x,y) pow(x,y)
 #define MYABS(x) fabs(x)
 
-#else
+#elif GPU_MATH == STD_MATH
+
+#elif GPU_MATH == SYCL_MATH
 
 #define MYMAX(x,y) cl::sycl::max(x,y)
 #define MYMIN(x,y) cl::sycl::min(x,y)

@@ -122,6 +122,10 @@ options :
         help: Enable GPU kernel variant based on SYCL
         cmake: >
             ENABLE_SYCL=ON
+    
+    - cloudsc-math :
+         help  : [C|STD|SYCL]
+         cmake : CLOUDSC_MATH={{value}}
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
