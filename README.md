@@ -220,6 +220,9 @@ The different prototype variants of the dwarf create different binaries that
 all behave similarly. The basic three arguments define (in this order):
 
 - Number of OpenMP threads
+  - 1 : single thread mode, skip multithread MPI init; default value;
+  - 2 or higher : force OpenMP thread count, enables multithread MPI;
+  - 0 or negative : read OMP_NUM_THREADS variable if present or defaults to CPU count (`omp_get_max_threads()`);
 - Size of overall working set in columns
 - Block size (NPROMA) in columns
 
