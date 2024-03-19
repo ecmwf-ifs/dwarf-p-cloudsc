@@ -97,6 +97,12 @@ options :
             ENABLE_DOUBLE_PRECISION=OFF
             FIELD_API_DEFINITIONS=SINGLE
 
+    - with-std-par :
+        help: Enable STD par variants
+        cmake : >
+            ENABLE_CLOUDSC_STD_PAR_SCC=ON
+            ENABLE_CLOUDSC_STD_PAR_SCC_K_CACHING=ON
+
     - with-gpu :
         help  : Enable GPU kernels
         cmake : >

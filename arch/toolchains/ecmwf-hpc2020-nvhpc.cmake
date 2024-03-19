@@ -18,7 +18,7 @@ set( ECBUILD_FIND_MPI ON )
 
 # Note: OpenMP_Fortran_FLAGS gets overwritten by the FindOpenMP module
 # unless its stored as a cache variable
-set( OpenMP_Fortran_FLAGS   "-mp -mp=gpu,bind,allcores,numa" CACHE STRING "" )
+#set( OpenMP_Fortran_FLAGS   "-mp -mp=gpu,bind,allcores,numa" CACHE STRING "" )
 
 # Note: OpenMP_C_FLAGS and OpenMP_C_LIB_NAMES have to be provided _both_ to
 # keep FindOpenMP from overwriting the FLAGS variable (the cache entry alone
@@ -35,7 +35,7 @@ set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 # per thread block
 # NB: We have to add `-mp` again to avoid undefined symbols during linking
 # (smells like an Nvidia bug)
-set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath,gvmode" CACHE STRING "" )
+#set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath,gvmode" CACHE STRING "" )
 # Enable this to get more detailed compiler output
 # set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
@@ -51,7 +51,7 @@ endif()
 # COMMON FLAGS
 ####################################################################
 
-set(ECBUILD_Fortran_FLAGS "-fpic")
+set(ECBUILD_Fortran_FLAGS "-O3 -fast -fpic -stdpar=gpu -acc=gpu -gpu=cc80 -Minfo=accel")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mframe")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mbyteswapio")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mstack_arrays")
