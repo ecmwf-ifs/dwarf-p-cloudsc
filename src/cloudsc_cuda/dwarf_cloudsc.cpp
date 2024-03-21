@@ -34,7 +34,12 @@ int main( int argc, char *argv[] ) {
     ngptot      = atoi( argv[2] );
     nproma      = atoi( argv[3] );
     if (omp_threads <= 0) {
+#ifdef _OPENMP
       omp_threads = omp_get_max_threads();
+#else
+      // if arg is 0 or negative, and OpenMP disabled; defaults to 1
+      omp_threads = 1;
+#endif
     }
     cloudsc_driver(omp_threads, ngptot, nproma);
   }

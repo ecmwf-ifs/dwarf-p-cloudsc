@@ -42,7 +42,9 @@ USE CLOUDSC_FIELD_STATE_MOD, ONLY: CLOUDSC_FIELD_STATE
 USE CLOUDSC_DRIVER_GPU_SCC_FIELD_MOD, ONLY: CLOUDSC_DRIVER_GPU_SCC_FIELD
 #endif
 
+#ifdef _OPENMP
 USE OMP_LIB
+#endif
 
 IMPLICIT NONE
 
@@ -69,11 +71,16 @@ IARGS = COMMAND_ARGUMENT_COUNT()
 
 ! Get the number of OpenMP threads to use for the benchmark
 if (IARGS >= 1) then
-   CALL GET_COMMAND_ARGUMENT(1, CLARG, LENARG)
-   READ(CLARG(1:LENARG),*) NUMOMP
-   if (NUMOMP <= 0) then
-     NUMOMP = OMP_GET_MAX_THREADS()
-   end if
+  CALL GET_COMMAND_ARGUMENT(1, CLARG, LENARG)
+  READ(CLARG(1:LENARG),*) NUMOMP
+  if (NUMOMP <= 0) then
+#ifdef _OPENMP
+    NUMOMP = OMP_GET_MAX_THREADS()
+#else
+     ! if arg is 0 or negative, and OpenMP disabled; defaults to 1
+    NUMOMP = 1
+#endif
+  end if
 end if
 
 ! Initialize MPI environment
