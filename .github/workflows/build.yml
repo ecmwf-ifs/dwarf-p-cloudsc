@@ -95,7 +95,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Installs required packages
       - name: Package installation
@@ -174,11 +174,3 @@ jobs:
         run: |
           source env.sh
           ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
-
-      # Upload test output
-      - name: Archive CTest output
-        uses: actions/upload-artifact@v3
-        if: ${{ !contains(matrix.build_flags, '--single-precision') }}
-        with:
-          name: ctest-log
-          path: build/ctest.log
