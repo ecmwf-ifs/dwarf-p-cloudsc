@@ -306,7 +306,6 @@ contains
     real(kind=jprb), intent(inout) :: field(nproma, nlev, ndim, nblocks)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
-
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain
@@ -333,5 +332,4 @@ contains
     end do
 !$omp end parallel do
   end subroutine expand_r3
-
 end module expand_mod

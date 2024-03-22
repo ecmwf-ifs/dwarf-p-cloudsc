@@ -9,9 +9,6 @@
 # define minimum version of cmake required
 cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
 
-# Disable warnings about setting `ENABLE_ACC` variable for ecbuild_add_option
-cmake_policy( SET CMP0077 NEW )
-
 find_package( ecbuild REQUIRED )
 
 # define the project
@@ -31,7 +28,7 @@ endif()
 include( cloudsc_compile_options )
 
 ### OpenACC
-if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
+if( ${CMAKE_VERSION} VERSION_LESS "3.25" AND (NOT DEFINED ENABLE_ACC OR ENABLE_ACC ) )
     # Incredibly inconvenient: FindOpenACC does _not_ set OpenACC_FOUND, only
     # the language-specific components OpenACC_Fortran_FOUND and OpenACC_C_FOUND.
     # This means, even internally CMake considers OpenACC as not found.
@@ -40,6 +37,7 @@ if( NOT DEFINED ENABLE_ACC OR ENABLE_ACC )
     # the result, and then, trigger a second find_package via ecbuild_add_option.
     # This then conveniently takes the previously set OpenACC_FOUND into account
     # and rectifies CMake's internal bookkeeping in the process.
+    # This has been fixed in CMake 3.25
     find_package( OpenACC )
     if( OpenACC_Fortran_FOUND AND OpenACC_C_FOUND )
         set( OpenACC_FOUND ON )
@@ -58,6 +56,24 @@ if( HAVE_CUDA )
     enable_language( CUDA )
 endif()
 
+ecbuild_add_option( FEATURE HIP
+	DESCRIPTION "HIP" DEFAULT OFF
+	REQUIRED_PACKAGES "hip" )
+if ( HAVE_HIP )
+  if(NOT DEFINED ROCM_PATH)
+    if(DEFINED ENV{ROCM_PATH})
+      set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
+    else()
+      set(ROCM_PATH "/opt/rocm" CACHE PATH "Path to which ROCM has been installed")
+    endif()
+  endif()
+  find_package(hip REQUIRED)
+endif()
+
+ecbuild_add_option( FEATURE SYCL
+	DESCRIPTION "SYCL" DEFAULT OFF
+	REQUIRED_PACKAGES "IntelSYCL")
+
 ### OpenMP
 ecbuild_add_option( FEATURE OMP
     DESCRIPTION "OpenMP" DEFAULT ON
@@ -75,7 +91,7 @@ endif()
 ### HDF5
 ecbuild_add_option( FEATURE HDF5
     DESCRIPTION "Use HDF5 to read input and reference data"
-    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran"
+    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran C"
     DEFAULT ON )
 if( HAVE_HDF5 )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 )
@@ -91,14 +107,24 @@ if( HAVE_SERIALBOX )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
 
+# Add field_api library to manage data fields
+ecbuild_add_option( FEATURE FIELD_API
+    DESCRIPTION "Use field_api to manage GPU data offload and copyback"
+    REQUIRED_PACKAGES "field_api"
+    CONDITION HAVE_CUDA
+    DEFAULT ON )
+
 ecbuild_find_package( NAME loki )
+ecbuild_find_package( NAME atlas )
 
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION
     DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
 )
+set(prec dp)
 if( HAVE_SINGLE_PRECISION )
     list(APPEND CLOUDSC_DEFINITIONS SINGLE)
+    set(prec sp)
 endif()
 
 # build executables

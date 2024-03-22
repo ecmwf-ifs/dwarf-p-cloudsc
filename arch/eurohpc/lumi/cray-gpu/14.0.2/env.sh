@@ -34,14 +34,28 @@ module_load cray-mpich/8.1.18
 module_load craype/2.7.17
 module_load craype-accel-amd-gfx90a
 module_load buildtools/22.08
-module_load cray-hdf5/1.12.1.5
 module_load cray-python/3.9.12.1
+
+### Handling of "magic" cray modules
+# 1) Load the cray modules
+module_load cray-hdf5/1.12.1.5
+# 2) Store variables to locate the packages
+_HDF5_ROOT=${CRAY_HDF5_PREFIX}
+# 3) Unload the cray modules in reverse order, removing all the magic
+module_unload cray-hdf5
+# 4) Define variables that CMake introspects
+export HDF5_ROOT=${_HDF5_ROOT}
+
+# Export environment variable3s
+export MPI_HOME=${MPICH_DIR}
+export CC=cc
+export CXX=CC
+export FC=ftn
+export HIPCXX=$(hipconfig --hipclangpath)/clang++
 
 module list
 
 set -x
-
-export CC=cc CXX=CC FC=ftn
 
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null

@@ -2,6 +2,7 @@
 
 - M. Ahlgrimm (ECMWF)
 - P. Bechtold (ECMWF)
+- S. Brdar (ECMWF)
 - W. Deconinck (ECMWF)
 - R. Forbes (ECMWF)
 - C. Jakob (ECMWF)
@@ -12,7 +13,9 @@
 - L. Lucido (Atos)
 - O. Marsden (ECMWF)
 - G. Mengaldo (ECMWF)
+- A. Morvan (Atos)
 - G. Mozdzynski (ECMWF)
+- A. Nawab (ECMWF)
 - Z. Piotrowski (ECMWF)
 - B. Reuter (ECMWF)
 - D. Salmond (ECMWF)

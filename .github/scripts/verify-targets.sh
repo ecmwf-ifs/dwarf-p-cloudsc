@@ -8,47 +8,55 @@ exit_code=0
 # Build the list of targets
 #
 
-targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-fortran)
+targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-fortran dwarf-cloudsc-c)
 
-if [[ "$io_library_flag" == "--with-serialbox" ]]
+if [[ "$build_flags" == *"--with-gpu"* ]]
 then
-  targets+=(dwarf-cloudsc-c)
-fi
-
-if [[ "$gpu_flag" == "--with-gpu" ]]
-then
-  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-omp-scc-hoist)
-  if [[ "$claw_flag" == "--with-claw" ]]
+  targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching)
+  targets+=(dwarf-cloudsc-gpu-omp-scc-hoist)
+  if [[ "$build_flags" == *"--with-claw"* ]]
   then
     targets+=(dwarf-cloudsc-gpu-claw)
   fi
-  if [[ "$cuda_flag" == "--with-cuda" ]]
+  if [[ "$build_flags" == *"--with-cuda"* ]]
   then
     targets+=(dwarf-cloudsc-gpu-scc-cuf dwarf-cloudsc-gpu-scc-cuf-k-caching)
-    targets+=(dwarf-cloudsc-gpu-scc-field)
-  fi
-  if [[ "$cuda_flag" == "--with-cuda" && "$io_library_flag" == "--with-serialbox" ]]
-  then
-      targets+=(dwarf-cloudsc-cuda dwarf-cloudsc-cuda-hoist dwarf-cloudsc-cuda-k-caching)
+    targets+=(dwarf-cloudsc-c-cuda dwarf-cloudsc-c-cuda-hoist dwarf-cloudsc-c-cuda-k-caching)
   fi
 fi
 
-if [[ "$loki_flag" == "--with-loki" ]]
+if [[ "$build_flags" == *"--with-loki"* ]]
 then
   targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
-  if [[ "$prec_flag" != "--single-precision" ]]
+  targets+=(dwarf-cloudsc-loki-idem-stack dwarf-cloudsc-loki-scc-stack)
+  if [[ "$build_flags" != *"--single-precision"* ]]
   then
     targets+=(dwarf-cloudsc-loki-c)
   fi
-  if [[ "$claw_flag" == "--with-claw" ]]
+  if [[ "$build_flags" == *"--with-claw"* ]]
   then
     targets+=(dwarf-cloudsc-loki-claw-cpu dwarf-cloudsc-loki-claw-gpu)
   fi
-  if [[ "$cuda_flag" == "--with-cuda" ]]
+  if [[ "$build_flags" == *"--with-cuda"* ]]
   then
     targets+=(dwarf-cloudsc-loki-scc-cuf-hoist dwarf-cloudsc-loki-scc-cuf-parametrise)
   fi
+fi
+
+if [[ "$build_flags" == *"--with-atlas"* ]]
+then
+  targets+=(dwarf-cloudsc-fortran-atlas)
+fi
+
+if [[ "$build_flags" == *"--cloudsc-fortran-pyiface=ON"* ]]
+then
+  targets+=(cloudsc_pyiface.py)
+fi
+
+if [[ "$build_flags" == *"--cloudsc-python-f2py=ON"* ]]
+then
+  targets+=(cloudsc_f2py.py)
 fi
 
 #
@@ -64,17 +72,5 @@ do
     echo "::error::Missing target: $target"
   fi
 done
-
-#
-# Check there aren't any other binaries
-#
-
-if [[ ${#targets[@]} -lt $(ls build/bin | wc -l) ]]
-then
-  exit_code=1
-  echo "::error::Additional targets found in build/bin"
-  echo "::error::Expected targets: ${targets[@]}"
-  echo "::error::Found targets: $(ls -1 build/bin | tr '\n' ' ')"
-fi
 
 exit $exit_code

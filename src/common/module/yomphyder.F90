@@ -10,8 +10,8 @@
 module yomphyder
 
 USE PARKIND1, ONLY : JPIM, JPRB
-#ifdef  USE_FIELD_API
-USE FIELD_MODULE, ONLY: FIELD_3D, FIELD_4D
+#ifdef USE_FIELD_API
+USE FIELD_MODULE, ONLY: FIELD_3RB, FIELD_4RB
 #endif
 
 !     ------------------------------------------------------------------
@@ -37,8 +37,8 @@ type state_type
   !REAL(KIND=JPRB), dimension(:,:), pointer :: qsat    ! spec. humidity at saturation
 
 #ifdef  USE_FIELD_API
-  TYPE(FIELD_3D), POINTER :: F_T, F_A, F_Q
-  TYPE(FIELD_4D), POINTER :: F_CLD
+  CLASS(FIELD_3RB), POINTER :: F_T, F_A, F_Q
+  CLASS(FIELD_4RB), POINTER :: F_CLD
 #endif
 end type state_type
 
@@ -63,7 +63,7 @@ type aux_type
   REAL(KIND=JPRB), dimension(:), pointer   :: PGAW         ! GAUSSIAN WEIGHTS - Reduced Grid - ~ grid box area
   REAL(KIND=JPRB), dimension(:), pointer   :: PCLON, PSLON ! cosine, sine of longitude
   REAL(KIND=JPRB), dimension(:), pointer   :: PMU0, PMU0M  ! local cosine of instantaneous (mean) solar zenith angle
-  REAL(KIND=JPRB), dimension(:), pointer   :: PGEMU        ! sine of latitude 
+  REAL(KIND=JPRB), dimension(:), pointer   :: PGEMU        ! sine of latitude
   REAL(KIND=JPRB), dimension(:), pointer   :: POROG        ! orography
   REAL(KIND=JPRB), dimension(:), pointer   :: PGNORDL,PGNORDM ! Longitudial/latitudial derivatives of orography
   REAL(KIND=JPRB), dimension(:), pointer   :: PGSQM2
@@ -73,7 +73,7 @@ type surf_and_more_type
   REAL(KIND=JPRB), dimension(:,:), pointer :: PSP_SG, PSP_SL, PSP_RR, PSP_X2, PSD_WS, PSD_VF, &
     &                                         PSD_VN, PSD_V2, PSD_VD, PSD_X2, PSD_WW
   REAL(KIND=JPRB), dimension(:,:,:), pointer :: PSP_OM, PSP_SB, PSP_EP, PSD_V3, PSD_XA
-  REAL(KIND=JPRB), dimension(:,:,:), pointer :: PEXTRD 
+  REAL(KIND=JPRB), dimension(:,:,:), pointer :: PEXTRD
   REAL(KIND=JPRB), dimension(:,:), pointer :: PCOVPTOT  !Precip fraction
   REAL(KIND=JPRB), dimension(:), pointer :: PQCFL
   ! T star tiles
@@ -82,7 +82,7 @@ type surf_and_more_type
   REAL(KIND=JPRB), dimension(:,:), pointer :: PAHFSTI  ! (INSTANTANEOUS) SURFACE SENSIBLE HEAT FLUX FOR EACH TILE
   REAL(KIND=JPRB), dimension(:,:), pointer :: PEVAPTI  ! (INSTANTANEOUS) EVAPORATION FOR EACH TILE
   REAL(KIND=JPRB), dimension(:,:), pointer :: PTSKTI   ! SKIN TEMPERATURE FOR EACH TILE
-  ! other 
+  ! other
   REAL(KIND=JPRB), dimension(:), pointer ::  PEMIS      ! MODEL SURFACE LONGWAVE EMISSIVITY.
   ! GPP/REC flux adjustment coefficients
   REAL(KIND=JPRB), dimension(:), pointer :: PCGPP, PCREC ! to store bias correction coefficients
@@ -109,7 +109,7 @@ type surf_and_more_type
   REAL(KIND=JPRB), dimension(:),  pointer  :: PTLMNWE1       ! tendency of lake totat layer temperature
   REAL(KIND=JPRB), dimension(:),  pointer  :: PTLWMLE1       ! tendency of lake mixed layer temperature
   REAL(KIND=JPRB), dimension(:),  pointer  :: PTLBOTE1       ! tendency of lake bottom layer temperature
-  REAL(KIND=JPRB), dimension(:),  pointer  :: PTLSFE1        ! tendency of lake shape factor - 
+  REAL(KIND=JPRB), dimension(:),  pointer  :: PTLSFE1        ! tendency of lake shape factor -
   REAL(KIND=JPRB), dimension(:),  pointer  :: PHLICEE1       ! tendency of lake ice depth m
   REAL(KIND=JPRB), dimension(:),  pointer  :: PHLMLE1        ! tendency of lake mixed layer depth m/s
 end type surf_and_more_type
@@ -117,11 +117,11 @@ end type surf_and_more_type
 type perturb_in_type
   REAL(KIND=JPRB), dimension(:), pointer ::  PSTOPHU,PSTOPHV,PSTOPHT,PSTOPHQ ! random number for defining stochastic
                                                                 !  perturbation for U, V, T, and Q diabatic tendency.
-  REAL(KIND=JPRB), dimension(:), pointer ::  PSTOPHCA  ! CA pattern 
+  REAL(KIND=JPRB), dimension(:), pointer ::  PSTOPHCA  ! CA pattern
   REAL(KIND=JPRB), dimension(:,:), pointer :: PGP2DSDT
   REAL(KIND=JPRB), dimension(:,:), pointer :: PVORT, PVORTGRADX, PVORTGRADY ! vorticity and its horizontal gradients
   REAL(KIND=JPRB), dimension(:,:), pointer :: PTOTDISS_SMOOTH ! smoothed total dissipation rate
-  REAL(KIND=JPRB), dimension(:,:), pointer :: PFORCEU, PFORCEV, PFORCET, PFORCEQ ! nonlinear stochastic forcing terms 
+  REAL(KIND=JPRB), dimension(:,:), pointer :: PFORCEU, PFORCEV, PFORCET, PFORCEQ ! nonlinear stochastic forcing terms
 end type perturb_in_type
 
 
@@ -144,7 +144,7 @@ type aux_rad_type
   REAL(KIND=JPRB), dimension(:,:), pointer :: PTRSC    ! (KLON,0:KLEV)  Clear-sky shortwave transmissivity
   REAL(KIND=JPRB), dimension(:,:,:), pointer :: PTAUAER ! (KLON,KLEV,6)  OPTICAL THICKNESS FOR 6 AEROSOL TYPES
   REAL(KIND=JPRB), dimension(:), pointer :: PSRLWD     ! (KLON)  Surface downward longwave flux
-  REAL(KIND=JPRB), dimension(:), pointer :: PSRLWDC    ! (KLON)  SURFACE DOWNWARD CLEAR-SKY LONGWAVE 
+  REAL(KIND=JPRB), dimension(:), pointer :: PSRLWDC    ! (KLON)  SURFACE DOWNWARD CLEAR-SKY LONGWAVE
   REAL(KIND=JPRB), dimension(:), pointer :: PSRSWD     ! (KLON)  SURFACE SHORTWAVE DOWNWARDS
   REAL(KIND=JPRB), dimension(:), pointer :: PSRSWDC    ! (KLON)  SURFACE DOWNWARD CLEAR-SKY SHORTWAVE
   REAL(KIND=JPRB), dimension(:), pointer :: PSRSWDCS   ! (KLON)  SURFACE NET SHORTWAVE CLEAR-SKY
@@ -186,7 +186,7 @@ type aux_diag_type
   !    3D DIAGNOSTICS FOR ERA40
   REAL(KIND=JPRB), dimension(:,:), pointer :: PMFUDE_RATE   ! UD detrainmnet rate (KG/(M3*S))
   REAL(KIND=JPRB), dimension(:,:), pointer :: PMFDDE_RATE   ! DD detrainmnet rate (KG/(M3*S))
-  REAL(KIND=JPRB), dimension(:,:), pointer :: PKH_VDF       ! turbulent diffusion coefficient for heat 
+  REAL(KIND=JPRB), dimension(:,:), pointer :: PKH_VDF       ! turbulent diffusion coefficient for heat
   !    array for precipitation fraction
   REAL(KIND=JPRB), dimension(:,:), pointer :: PCOVPTOT     !  PRECIPITATION FRACTION IN EACH LAYER
   ! Convection and PBL types
@@ -305,13 +305,13 @@ type surf_and_more_local_type
    REAL(KIND=JPRB), dimension(:,:),  pointer  :: ZFRSOTI
    REAL(KIND=JPRB), dimension(:,:),  pointer  :: ZAHFTRTI
    REAL(KIND=JPRB), dimension(:,:),  pointer  :: ZALBD,ZALBP ! KLON,NTSW
-   !  CTESSEL: Carbon model 
+   !  CTESSEL: Carbon model
    REAL(KIND=JPRB), dimension(:,:),  pointer  :: ZANDAYVT, ZANFMVT
    REAL(KIND=JPRB), dimension(:,:,:),pointer  :: ZDHVEGS
 end type surf_and_more_local_type
 
 type aux_diag_local_type
-  INTEGER(KIND=JPIM), pointer :: IEXT3D   ! position in extra field for diagnostics 
+  INTEGER(KIND=JPIM), pointer :: IEXT3D   ! position in extra field for diagnostics
   REAL(KIND=JPRB), dimension(:), pointer :: ZWND     ! horizontal wind in the lowest model level
   REAL(KIND=JPRB), dimension(:), pointer :: ZCCNL, ZCCNO
   INTEGER(KIND=JPIM), dimension(:), pointer :: ITOPC, IBASC, IBOTSC
@@ -327,8 +327,8 @@ type aux_diag_local_type
   REAL(KIND=JPRB), dimension(:,:), pointer :: ZSOTEV    ! Explicit part of V-tendency from subgrid orography scheme
   REAL(KIND=JPRB), dimension(:,:), pointer :: ZSOBETA   ! Implicit part of subgrid orography
   ! aerosols in microphysics
-  REAL(KIND=JPRB), dimension(:,:), pointer :: ZLCRIT_AER ! critical liquid mmr for rain autoconversion process 
-  REAL(KIND=JPRB), dimension(:,:), pointer :: ZICRIT_AER ! critical liquid mmr for snow autoconversion process 
+  REAL(KIND=JPRB), dimension(:,:), pointer :: ZLCRIT_AER ! critical liquid mmr for rain autoconversion process
+  REAL(KIND=JPRB), dimension(:,:), pointer :: ZICRIT_AER ! critical liquid mmr for snow autoconversion process
   REAL(KIND=JPRB), dimension(:,:), pointer :: ZRE_LIQ    ! effective radius liquid
   REAL(KIND=JPRB), dimension(:,:), pointer :: ZRE_ICE    ! effective radius ice
   REAL(KIND=JPRB), dimension(:,:), pointer :: ZCCN       ! CCN (prognostic, diagnostic)
@@ -352,4 +352,3 @@ type keys_local_type
 end type keys_local_type
 
 end module yomphyder
-

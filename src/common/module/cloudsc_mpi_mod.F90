@@ -61,21 +61,28 @@ contains
     integer(kind=jpim), intent(in), optional :: numomp   ! number of OpenMP threads
 #ifdef HAVE_MPI
     integer(kind=jpim) :: ierror, iprovided, irequired  ! MPI status variables
+    logical :: linit
 
-    ! request threading support if multiple OpenMP threads are used
-    iprovided = mpi_thread_single
-    irequired = mpi_thread_single
-    if (present(numomp)) then
-      if (numomp > 1) then
-        irequired = mpi_thread_multiple
+    ! check if MPI has already been initialized
+    call mpi_initialized(linit, ierror)
+    if (ierror /= 0) call abor1('cloudsc_mpi: mpi_initialized failed')
+
+    if (.not. linit) then
+      ! request threading support if multiple OpenMP threads are used
+      iprovided = mpi_thread_single
+      irequired = mpi_thread_single
+      if (present(numomp)) then
+        if (numomp > 1) then
+          irequired = mpi_thread_multiple
+        end if
       end if
-    end if
 
-    call mpi_init_thread(irequired, iprovided, ierror)
+      call mpi_init_thread(irequired, iprovided, ierror)
 
-    if (ierror /= 0) call abor1('cloudsc_mpi: mpi_init_thread failed')
-    if (iprovided < irequired) then
-      print *, "WARNING: MPI_INIT_THREAD reports insufficient threading support"
+      if (ierror /= 0) call abor1('cloudsc_mpi: mpi_init_thread failed')
+      if (iprovided < irequired) then
+        print *, "WARNING: MPI_INIT_THREAD reports insufficient threading support"
+      end if
     end if
 
     ! determine communicator size and local rank
