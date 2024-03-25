@@ -453,7 +453,8 @@ if( HAVE_CLOUDSC_LOKI )
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
+	HEADERS
+            ${COMMON_MODULE}/yoecldp.F90
         INCLUDES
             ${COMMON_INCLUDE}
         XMOD
@@ -508,7 +509,8 @@ if( HAVE_CLOUDSC_LOKI )
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
+	HEADERS
+            ${COMMON_MODULE}/yoecldp.F90
         INCLUDES
             ${COMMON_INCLUDE}
         XMOD
@@ -569,7 +571,8 @@ if( HAVE_CLOUDSC_LOKI )
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
+	HEADERS
+            ${COMMON_MODULE}/yoecldp.F90
         INCLUDES
             ${COMMON_INCLUDE}
         XMOD
