@@ -35,7 +35,7 @@ projects :
 
     - loki :
         git     : https://github.com/ecmwf-ifs/loki
-        version : v0.2.0
+        version : v0.2.1
         optional: true
         require : ecbuild
         cmake   : >
@@ -112,11 +112,11 @@ options :
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
             BUILD_field_api=ON
-    
+
     - with-hip :
         help: Enable GPU kernel variant based on HIP
         cmake: >
-            ENABLE_HIP=ON 
+            ENABLE_HIP=ON
 
     - with-sycl :
         help: Enable GPU kernel variant based on SYCL
