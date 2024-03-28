@@ -23,7 +23,6 @@ projects :
     - serialbox :
         git     : https://github.com/reuterbal/serialbox
         version : v2.5.4/patched
-        optional: true
         cmake   : >
             SERIALBOX_BUILD_SHARED=ON
             SERIALBOX_ENABLE_FORTRAN=ON
@@ -36,7 +35,6 @@ projects :
     - loki :
         git     : https://github.com/ecmwf-ifs/loki
         version : v0.2.1
-        optional: true
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
@@ -45,7 +43,6 @@ projects :
     - eckit :
         git     : https://github.com/ecmwf/eckit
         version : 1.24.4
-        optional: true
         require : ecbuild
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
@@ -54,8 +51,7 @@ projects :
 
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
-        version : 0.3.0
-        optional: true
+        version : v0.3.0
         require : ecbuild
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
@@ -63,7 +59,6 @@ projects :
     - fckit :
         git     : https://github.com/ecmwf/fckit
         version : 0.11.0
-        optional: true
         require : ecbuild eckit
         cmake   : >
             FCKIT_ENABLE_TESTS=OFF
@@ -71,7 +66,6 @@ projects :
     - atlas :
         git     : https://github.com/ecmwf/atlas
         version : feature/MultiField
-        optional: true
         require : ecbuild eckit fckit
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
