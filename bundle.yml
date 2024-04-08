@@ -70,7 +70,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : feature/MultiField
+        version : feature/gpu-fields-nproma
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
@@ -100,18 +100,20 @@ options :
     - with-gpu :
         help  : Enable GPU kernels
         cmake : >
-            ENABLE_CLOUDSC_GPU_SCC=ON
-            ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
-            ENABLE_CLOUDSC_GPU_SCC_K_CACHING=ON
-            ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=ON
+            ENABLE_CLOUDSC_GPU_SCC=OFF
+            ENABLE_CLOUDSC_GPU_SCC_HOIST=OFF
+            ENABLE_CLOUDSC_GPU_SCC_K_CACHING=OFF
+            ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=OFF
+            ATLAS_ENABLE_ACC=ON
+            ATLAS_ENABLE_CUDA=ON
 
     - with-cuda :
         help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran
         cmake : >
             ENABLE_CUDA=ON
-            ENABLE_CLOUDSC_GPU_SCC_CUF=ON
-            ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
-            BUILD_field_api=ON
+            ENABLE_CLOUDSC_GPU_SCC_CUF=OFF
+            ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=OFF
+            BUILD_field_api=OFF
 
     - with-hip :
         help: Enable GPU kernel variant based on HIP
