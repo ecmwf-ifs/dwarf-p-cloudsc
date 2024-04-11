@@ -7,14 +7,14 @@
 # nor does it submit to any jurisdiction.
 
 # Define this dwarf variant as an ECBuild feature
-ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_ATLAS
-    DESCRIPTION "Build the Fortran version CLOUDSC using Atlas and Serialbox" DEFAULT ON
-    CONDITION atlas_FOUND AND NOT ENABLE_CUDA AND (Serialbox_FOUND OR HDF5_FOUND)
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_ATLAS
+    DESCRIPTION "Build the GPU version CLOUDSC using Atlas and Serialbox" DEFAULT ON
+    CONDITION atlas_FOUND AND ENABLE_CUDA AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
-if( HAVE_CLOUDSC_FORTRAN_ATLAS )
+if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-fortran-atlas
+        TARGET dwarf-cloudsc-gpu-scc-atlas
         SOURCES
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
@@ -25,7 +25,7 @@ if( HAVE_CLOUDSC_FORTRAN_ATLAS )
         LIBS
             cloudsc-common-lib
             atlas_f
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_ATLAS
     )
 
     # Create symlink for the input data
@@ -42,37 +42,16 @@ if( HAVE_CLOUDSC_FORTRAN_ATLAS )
     endif()
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-atlas-serial
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
-        ARGS 1 100 16
+        TARGET dwarf-cloudsc-gpu-scc-atlas
+        COMMAND bin/dwarf-cloudsc-gpu-scc-atlas
+        ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-atlas-omp
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
-        CONDITION HAVE_OMP
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-atlas-mpi
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 1
-        CONDITION HAVE_MPI
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-mpi-atlas-omp
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 4
-        CONDITION HAVE_OMP AND HAVE_MPI
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
     )
 
+    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+        target_link_options( dwarf-cloudsc-gpu-scc-atlas PUBLIC "-gpu=pinned" )
+    endif()
 endif()
