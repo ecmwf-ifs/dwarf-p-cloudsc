@@ -16,16 +16,17 @@ if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-atlas
         SOURCES
+            nlev_mod.F90
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
             validate_atlas_mod.F90
+            ../cloudsc_gpu/cloudsc_gpu_scc_mod.F90
             cloudsc_driver_mod.F90
-            cloudsc.F90
             dwarf_cloudsc_atlas.F90
         LIBS
-            cloudsc-common-lib
             atlas_f
-            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_ATLAS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_ATLAS
     )
 
     # Create symlink for the input data
@@ -51,7 +52,7 @@ if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
     )
 
     # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
-    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
-        target_link_options( dwarf-cloudsc-gpu-scc-atlas PUBLIC "-gpu=pinned" )
-    endif()
+    #if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+    #    target_link_options( dwarf-cloudsc-gpu-scc-atlas PUBLIC "-gpu=pinned" )
+    #endif()
 endif()
