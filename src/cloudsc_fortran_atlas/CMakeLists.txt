@@ -9,7 +9,7 @@
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_ATLAS
     DESCRIPTION "Build the Fortran version CLOUDSC using Atlas and Serialbox" DEFAULT ON
-    CONDITION atlas_FOUND AND NOT ENABLE_CUDA AND (Serialbox_FOUND OR HDF5_FOUND)
+    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
 if( HAVE_CLOUDSC_FORTRAN_ATLAS )
