@@ -45,6 +45,8 @@ contains
     type(atlas_trace) :: trace
     trace = atlas_trace("expand_atlas_mod.F90", __LINE__, "loadvar_atlas", "IO")
 
+    print *, " loading Atlas var: ", name
+
     field = fset%field(name)
     frank = field%rank()
     lfield = (name == "LDCUM")
@@ -101,51 +103,5 @@ contains
     call field%final()
     call trace%final()
   end subroutine loadvar_atlas
-
-  subroutine loadstate_atlas(fset, name, nlon, ngptotg)
-    ! Load into the local memory buffer and expand to global field
-    type(atlas_fieldset), intent(inout) :: fset
-    character(len=*) :: name
-    integer(kind=jpim), intent(in) :: nlon
-    integer(kind=jpim), intent(in), optional :: ngptotg
-
-    integer(kind=jpim) :: start, end, size, nlev, nproma, ngptot, nblocks, ndim
-    type(atlas_field) :: field
-    type(atlas_functionspace_blockstructuredcolumns) :: fspace
-    type(atlas_trace) :: trace
-
-    real(kind=jprb), allocatable :: buffer(:,:,:)
-    real(kind=jprb), pointer :: field_r3(:,:,:,:)
-
-    trace = atlas_trace("expand_atlas_mod.F90", __LINE__, "loadstate_atlas", "IO")
-
-    field = fset%field(name)
-    fspace = field%functionspace()
-    nlev = field%levels()
-    ngptot = fspace%size()
-    !nproma = fspace%nproma()
-    nproma = field%shape(1)
-    nblocks = fspace%nblks()
-    ndim = field%shape(3) - 3
-
-    call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)
-    allocate(buffer(size, nlev, 3+ndim))
-    call field%data(field_r3)
-
-    call load_array(name//'_T', start, end, size, nlon, nlev, buffer(:,:,1))
-    call load_array(name//'_A', start, end, size, nlon, nlev, buffer(:,:,2))
-    call load_array(name//'_Q', start, end, size, nlon, nlev, buffer(:,:,3))
-    call load_array(name//'_CLD', start, end, size, nlon, nlev, ndim, buffer(:,:,4:))
-
-    call expand(buffer(:,:,1), field_r3(:,:,1,:), size, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,2), field_r3(:,:,2,:), size, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,3), field_r3(:,:,3,:), size, nproma, nlev, ngptot, nblocks)
-    call expand(buffer(:,:,4:), field_r3(:,:,4:,:), size, nproma, nlev, ndim, ngptot, nblocks)
-
-    deallocate(buffer)
-    call field%final()
-    call fspace%final()
-    call trace%final()
-  end subroutine loadstate_atlas
 
 end module expand_atlas_mod
