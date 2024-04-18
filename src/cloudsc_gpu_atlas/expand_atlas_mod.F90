@@ -45,8 +45,6 @@ contains
     type(atlas_trace) :: trace
     trace = atlas_trace("expand_atlas_mod.F90", __LINE__, "loadvar_atlas", "IO")
 
-    print *, " loading Atlas var: ", name
-
     field = fset%field(name)
     frank = field%rank()
     lfield = (name == "LDCUM")

@@ -186,13 +186,11 @@ CONTAINS
     CALL FSET%DATA(57, TENDENCY_LOC_CLD)
 
     DO JKGLO = 1, 37
-        print *, " device allocate + update for ", FIELD%NAME()
         FIELD = FSET%FIELD(JKGLO)
         CALL FIELD%ALLOCATE_DEVICE()
         CALL FIELD%UPDATE_DEVICE()
     END DO
     DO JKGLO = 38, FSET%SIZE()
-        print *, " device allocate for ", FIELD%NAME()
         FIELD = FSET%FIELD(JKGLO)
         CALL FIELD%ALLOCATE_DEVICE()
         CALL FIELD%UPDATE_DEVICE()
