@@ -54,7 +54,7 @@ projects :
 
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
-        version : 0.3.0
+        version : v0.3.0
         optional: true
         require : ecbuild
         cmake   : >
