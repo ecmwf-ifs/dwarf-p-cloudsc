@@ -178,7 +178,6 @@ CONTAINS
 !        CALL MULTIFIELD_OUT%FINAL()
     ELSE
         DO IVAR = 1, SIZE(OUT_VAR_NAMES) - 6
-            PRINT *, "crating field : ", TRIM(OUT_VAR_NAMES(IVAR))
             CALL FSET%ADD(FSPACE%CREATE_FIELD(NAME=TRIM(OUT_VAR_NAMES(IVAR)),   KIND=ATLAS_REAL(JPRB), LEVELS=SELF%KLEV+1))
         END DO
     ENDIF
@@ -212,7 +211,6 @@ CONTAINS
     DO IVAR = 1, SIZE(OUT_VAR_NAMES) - 2
         FIELD = FSET%FIELD(TRIM(OUT_VAR_NAMES(IVAR)))
         CALL FIELD%DATA(TMP3D)
-        PRINT *, " --- doing ", FIELD%NAME()
         !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
         DO B=1, SELF%NBLOCKS
            TMP3D(:,:,B) = 0.0_JPRB
@@ -222,17 +220,14 @@ CONTAINS
 
     FIELD = FSET%FIELD(TRIM("PRAINFRAC_TOPRFZ"))
     CALL FIELD%DATA(TMP2D)
-    PRINT *, " --- doing 2d ", FIELD%NAME()
     !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
     DO B=1, SELF%NBLOCKS
        TMP2D(:,B) = 0.0_JPRB
     END DO
     !$OMP END PARALLEL DO
 
-    PRINT *, " --- done doing 2d ", FIELD%NAME()
     FIELD = FSET%FIELD(TRIM("TENDENCY_LOC_CLD"))
     CALL FIELD%DATA(TMP4D)
-    PRINT *, " --- doing 4d ", FIELD%NAME()
     !$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(B) schedule(runtime)
     DO B=1, SELF%NBLOCKS
        TMP4D(:,:,:,B) = 0.0_JPRB
