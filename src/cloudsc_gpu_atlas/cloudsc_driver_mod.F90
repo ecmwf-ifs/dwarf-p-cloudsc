@@ -107,8 +107,6 @@ CONTAINS
 
     REAL(KIND=JPRB), POINTER :: TMP3D(:,:,:,:)
 
-print *, "exit 111"
-
     TRACE = ATLAS_TRACE("cloudsc_driver_mod.F90", __LINE__, "CLOUDSC_DRIVER","COMPUTE")
 
     FIELD = FSET%FIELD("PCLV")
@@ -125,23 +123,6 @@ print *, "exit 111"
 
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
-
-    !field = FSPACE%CREATE_FIELD(NAME="PLSM",   KIND=ATLAS_REAL(JPRB))
-
-!call field%allocate_device()
-!call field%update_device()
-
-print *, "exit"
-return
-
-    DO JKGLO = 1, 1 !FSET%SIZE()-2
-        print *, " device update for ", FIELD%NAME()
-        FIELD = FSET%FIELD(JKGLO)
-!        CALL FIELD%ALLOCATE_DEVICE()
-!        CALL FIELD%UPDATE_DEVICE()
-    END DO
-
-    return
 
     ! input
     CALL FSET%DATA(1, PLCRIT_AER)
@@ -204,6 +185,18 @@ return
     CALL FSET%DATA(56, PRAINFRAC_TOPRFZ)
     CALL FSET%DATA(57, TENDENCY_LOC_CLD)
 
+    DO JKGLO = 1, 37
+        print *, " device allocate + update for ", FIELD%NAME()
+        FIELD = FSET%FIELD(JKGLO)
+        CALL FIELD%ALLOCATE_DEVICE()
+        CALL FIELD%UPDATE_DEVICE()
+    END DO
+    DO JKGLO = 38, FSET%SIZE()
+        print *, " device allocate for ", FIELD%NAME()
+        FIELD = FSET%FIELD(JKGLO)
+        CALL FIELD%ALLOCATE_DEVICE()
+        CALL FIELD%UPDATE_DEVICE()
+    END DO
 
 !$acc data copyin(YRECLDP) present(&
 !$acc & PLCRIT_AER, PICRIT_AER, PRE_ICE,    PCCN,       PNICE, &
@@ -262,6 +255,54 @@ return
       CALL TIMER%THREAD_END(TID)
 
       ! copy back to host
+      FIELD = FSET%FIELD("PLUDE")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PCOVPTOT")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PRAINFRAC_TOPRFZ")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("TENDENCY_LOC_T")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("TENDENCY_LOC_A")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("TENDENCY_LOC_Q")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("TENDENCY_LOC_CLD")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFSQLF")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFSQIF")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFCQLNG")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFCQNNG")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFSQRF")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFSQSF")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFCQRNG")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFCQSNG")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFSQLTUR")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFSQITUR")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFPLSL")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFPLSN")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFHPSL")
+      CALL FIELD%UPDATE_HOST()
+      FIELD = FSET%FIELD("PFHPSN")
+      CALL FIELD%UPDATE_HOST()
+
+      !DO JKGLO = 38, FSET%SIZE()
+      !  print *, " host update for ", FIELD%NAME()
+      !  FIELD = FSET%FIELD(JKGLO)
+      !  CALL FIELD%UPDATE_HOST()
+      !END DO
 
       CALL TIMER%END()
 
