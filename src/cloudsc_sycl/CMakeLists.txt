@@ -12,32 +12,39 @@ ecbuild_add_option( FEATURE CLOUDSC_SYCL
     CONDITION (Serialbox_FOUND OR HDF5_FOUND) AND HAVE_SYCL
 )
 
-if( HAVE_CLOUDSC_SYCL )
+if( HAVE_CLOUDSC_SYCL AND NOT HAVE_SINGLE_PRECISION )
 
-    if ( NOT HAVE_SINGLE_PRECISION )
+    unset(SYCL_COMPILE_OPTIONS)
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM" )
+        set(SYCL_COMPILE_OPTIONS -gline-tables-only -fsycl -fsycl-targets=spir64 -fsycl-early-optimizations)
+    endif()
 
-     if (CLOUDSC_MATH STREQUAL "C")
-	set(GPU_MATH "1")
-     elseif (CLOUDSC_MATH STREQUAL "STD")
-	set(GPU_MATH "2")
-     elseif(CLOUDSC_MATH STREQUAL "SYCL")
-	set(GPU_MATH "3")
-     else ()
+    if (CLOUDSC_MATH STREQUAL "C")
         set(GPU_MATH "1")
-     endif()
+        ecbuild_info("Building SYCL variant using C math interface")
+    elseif (CLOUDSC_MATH STREQUAL "STD")
+        set(GPU_MATH "2")
+        ecbuild_info("Building SYCL variant using C++ STL math interface")
+    elseif(CLOUDSC_MATH STREQUAL "SYCL")
+        set(GPU_MATH "3")
+        ecbuild_info("Building SYCL variant using SYCL math interface")
+    else ()
+        set(GPU_MATH "1")
+        ecbuild_info("Building SYCL variant using C math interface")
+    endif()
 
-     if (SYCL_SUB_GROUP_SIZE)
-	set(SUB_GROUP_SIZE "${SYCL_SUB_GROUP_SIZE}")
-     else ()
+    if (SYCL_SUB_GROUP_SIZE)
+        set(SUB_GROUP_SIZE "${SYCL_SUB_GROUP_SIZE}")
+    else ()
         set(SUB_GROUP_SIZE "16")
-     endif()
+    endif()
 
     ecbuild_add_library(
         TARGET dwarf-cloudsc-scc-sycl-lib
         INSTALL_HEADERS LISTED
         SOURCES
             cloudsc/yoecldp_c.h
-	    cloudsc/load_state.h
+            cloudsc/load_state.h
             cloudsc/load_state.cpp
             cloudsc/cloudsc_c.kernel
             cloudsc/cloudsc_driver.h
@@ -46,7 +53,7 @@ if( HAVE_CLOUDSC_SYCL )
             cloudsc/cloudsc_validate.cpp
             cloudsc/mycpu.h
             cloudsc/mycpu.cpp
-	PUBLIC_INCLUDES
+        PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
         PUBLIC_LIBS
@@ -63,11 +70,15 @@ if( HAVE_CLOUDSC_SYCL )
     target_compile_definitions(dwarf-cloudsc-scc-sycl-lib PUBLIC GPU_MATH=${GPU_MATH})
     target_compile_definitions(dwarf-cloudsc-scc-sycl-lib PUBLIC SUB_GROUP_SIZE=${SUB_GROUP_SIZE})
 
+    if( DEFINED SYCL_COMPILE_OPTIONS )
+        target_compile_options(dwarf-cloudsc-scc-sycl-lib PUBLIC ${SYCL_COMPILE_OPTIONS})
+    endif()
+
     add_sycl_to_target(
-	    TARGET
-	    	dwarf-cloudsc-scc-sycl-lib
-	    SOURCES
-	    	cloudsc/cloudsc_c.kernel
+            TARGET
+                dwarf-cloudsc-scc-sycl-lib
+            SOURCES
+                cloudsc/cloudsc_c.kernel
     )
 
     ecbuild_add_executable(
@@ -75,6 +86,10 @@ if( HAVE_CLOUDSC_SYCL )
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-sycl-lib
     )
+
+    if( DEFINED SYCL_COMPILE_OPTIONS )
+        target_compile_options(dwarf-cloudsc-scc-sycl PUBLIC ${SYCL_COMPILE_OPTIONS})
+    endif()
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-sycl-serial
@@ -117,11 +132,15 @@ if( HAVE_CLOUDSC_SYCL )
     target_compile_definitions(dwarf-cloudsc-scc-hoist-sycl-lib PUBLIC GPU_MATH=${GPU_MATH})
     target_compile_definitions(dwarf-cloudsc-scc-hoist-sycl-lib PUBLIC SUB_GROUP_SIZE=${SUB_GROUP_SIZE})
 
+    if( DEFINED SYCL_COMPILE_OPTIONS )
+        target_compile_options(dwarf-cloudsc-scc-hoist-sycl-lib PUBLIC ${SYCL_COMPILE_OPTIONS})
+    endif()
+
     add_sycl_to_target(
-	    TARGET
-	    	dwarf-cloudsc-scc-hoist-sycl-lib
-	    SOURCES
-	    	cloudsc/cloudsc_c_hoist.kernel
+            TARGET
+                dwarf-cloudsc-scc-hoist-sycl-lib
+            SOURCES
+                cloudsc/cloudsc_c_hoist.kernel
     )
 
     ecbuild_add_executable(
@@ -129,6 +148,9 @@ if( HAVE_CLOUDSC_SYCL )
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-hoist-sycl-lib
     )
+    if( DEFINED SYCL_COMPILE_OPTIONS )
+        target_compile_options(dwarf-cloudsc-scc-hoist-sycl PUBLIC ${SYCL_COMPILE_OPTIONS})
+    endif()
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-sycl-hoist-serial
@@ -171,11 +193,15 @@ if( HAVE_CLOUDSC_SYCL )
     target_compile_definitions(dwarf-cloudsc-scc-k-caching-sycl-lib PUBLIC GPU_MATH=${GPU_MATH})
     target_compile_definitions(dwarf-cloudsc-scc-k-caching-sycl-lib PUBLIC SUB_GROUP_SIZE=${SUB_GROUP_SIZE})
 
+    if( DEFINED SYCL_COMPILE_OPTIONS )
+        target_compile_options(dwarf-cloudsc-scc-k-caching-sycl-lib PUBLIC ${SYCL_COMPILE_OPTIONS})
+    endif()
+
     add_sycl_to_target(
-	    TARGET 
-	    	dwarf-cloudsc-scc-k-caching-sycl-lib 
-	    SOURCES 
-	    	cloudsc/cloudsc_c_k_caching.kernel
+            TARGET
+                dwarf-cloudsc-scc-k-caching-sycl-lib
+            SOURCES
+                cloudsc/cloudsc_c_k_caching.kernel
     )
 
     ecbuild_add_executable(
@@ -183,6 +209,9 @@ if( HAVE_CLOUDSC_SYCL )
         SOURCES dwarf_cloudsc.cpp
         LIBS dwarf-cloudsc-scc-k-caching-sycl-lib
     )
+    if( DEFINED SYCL_COMPILE_OPTIONS )
+        target_compile_options(dwarf-cloudsc-scc-k-caching-sycl PUBLIC ${SYCL_COMPILE_OPTIONS})
+    endif()
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-sycl-k-caching-serial
@@ -205,7 +234,4 @@ if( HAVE_CLOUDSC_SYCL )
        ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
  endif()
 
-endif()
-else()
-	ecbuild_info( "Serialbox not found, disabling SYCL version" )
 endif()
