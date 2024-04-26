@@ -27,10 +27,10 @@ module purge
 module load rhel8/slurm
 module load rhel8/global
 module load dot
-module load dawn-env/2023-12-22
-module load intel-oneapi-compilers/2024.0.0
-module load intel-oneapi-mpi/2021.11.0
-module_load boost/1.83.0
+module load dawn-env/2024-04-15
+module load intel-oneapi-compilers/2024.1.0
+module load intel-oneapi-mpi/2021.12.0
+module_load boost/1.84.0
 module_load cmake/3.27.9
 module_load hdf5/1.14.3
 
