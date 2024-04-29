@@ -90,6 +90,6 @@ endif()
 
 
 # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
-if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
-    target_link_options( dwarf-cloudsc-gpu-scc-atlas PUBLIC "-gpu=pinned" )
-endif()
+#if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+#    target_link_options( dwarf-cloudsc-gpu-scc-atlas PUBLIC "-gpu=pinned" )
+#endif()
