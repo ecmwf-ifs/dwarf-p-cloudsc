@@ -15,6 +15,11 @@ parameterset:
   # The build options
   - name: build_set
     parameter:
+      # Patch list
+      - name: patch
+        mode: shell
+        _: "find $patches_dir -type f | tr '\n' ', '"
+
       # Build single (sp) or double (dp) precision (or both by choosing `dp,sp`)
       - {name: precision, tag: "sp+dp" , _: "dp,sp"}
       - {name: precision, tag: "!sp" , _: "dp"}
