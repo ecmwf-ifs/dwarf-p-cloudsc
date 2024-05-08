@@ -89,9 +89,6 @@ benchmark:
 
     # Benchmark parameters
     parameterset:
-      - name: patches_dir
-        # Put the directory containing git patches here
-        init_with: ""
       - { name: patches_mode, _: '1' }
       - name: build_set
         init_with: include_parameterset.yml
