@@ -24,14 +24,15 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_FIELD_MOD
 CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER_GPU_SCC_FIELD( &
-     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG, KFLDX, PTSPHY, FIELD_STATE, USE_PACKED &
+     & NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG, KFLDX, PTSPHY, FIELD_STATE, BUFFER_BLKS, BUFFER, USE_PACKED &
      & )
     ! Driver routine that invokes the optimized CLAW-based CLOUDSC GPU kernel
 
-    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG
+    INTEGER(KIND=JPIM)                                    :: NUMOMP, NPROMA, NLEV, NGPTOT, NGPBLKS, NGPTOTG, BUFFER_BLKS
     INTEGER(KIND=JPIM)                                    :: KFLDX 
     REAL(KIND=JPRB)                                       :: PTSPHY       ! Physics timestep
     TYPE(CLOUDSC_FIELD_STATE), INTENT(INOUT)              :: FIELD_STATE
+    REAL(KIND=JPRB), INTENT(INOUT) :: BUFFER(NPROMA,NLEV,BUFFER_BLKS)
     LOGICAL, INTENT(IN) :: USE_PACKED
 
     REAL(KIND=JPRB), POINTER, CONTIGUOUS  :: PT(:,:,:)       ! T at start of callpar
