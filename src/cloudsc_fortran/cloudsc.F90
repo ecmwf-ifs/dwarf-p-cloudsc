@@ -2453,7 +2453,7 @@ ENDIF ! on IEVAPSNOW
     !---------------------------------
     ZANEWM1(JL)=ZANEW
   ENDDO
-
+!################################################################
   !--------------------------------
   ! 5.2 solver for the microphysics
   !--------------------------------
@@ -2464,67 +2464,67 @@ ENDIF ! on IEVAPSNOW
   ! since the clipping will alter the balance for the other vars
   !--------------------------------------------------------------
 
-  DO JM=1,NCLV
-    DO JN=1,NCLV
-      DO JL=KIDIA,KFDIA
-        LLINDEX3(JL,JN,JM)=.FALSE.
-      ENDDO
-    ENDDO
-    DO JL=KIDIA,KFDIA
-      ZSINKSUM(JL,JM)=0.0_JPRB
-    ENDDO
-  ENDDO
+!  DO JM=1,NCLV
+!    DO JN=1,NCLV
+!      DO JL=KIDIA,KFDIA
+!        LLINDEX3(JL,JN,JM)=.FALSE.
+!      ENDDO
+!    ENDDO
+!    DO JL=KIDIA,KFDIA
+!      ZSINKSUM(JL,JM)=0.0_JPRB
+!    ENDDO
+!  ENDDO
 
   !----------------------------
   ! collect sink terms and mark
   !----------------------------
-  DO JM=1,NCLV
-    DO JN=1,NCLV
-      DO JL=KIDIA,KFDIA
-        ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-ZSOLQA(JL,JM,JN) ! +ve total is bad
-      ENDDO
-    ENDDO
-  ENDDO
+!  DO JM=1,NCLV
+!    DO JN=1,NCLV
+!      DO JL=KIDIA,KFDIA
+!        ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-ZSOLQA(JL,JM,JN) ! +ve total is bad
+!      ENDDO
+!    ENDDO
+!  ENDDO
 
   !---------------------------------------
   ! calculate overshoot and scaling factor
   !---------------------------------------
-  DO JM=1,NCLV
-    DO JL=KIDIA,KFDIA
-      ZMAX=MAX(ZQX(JL,JK,JM),ZEPSEC)
-      ZRAT=MAX(ZSINKSUM(JL,JM),ZMAX)
-      ZRATIO(JL,JM)=ZMAX/ZRAT
-    ENDDO
-  ENDDO
+!  DO JM=1,NCLV
+!    DO JL=KIDIA,KFDIA
+!      ZMAX=MAX(ZQX(JL,JK,JM),ZEPSEC)
+!      ZRAT=MAX(ZSINKSUM(JL,JM),ZMAX)
+!      ZRATIO(JL,JM)=ZMAX/ZRAT
+!    ENDDO
+!  ENDDO
   !--------------------------------------------------------
   ! now sort zratio to find out which species run out first
   !--------------------------------------------------------
-  DO JM=1,NCLV
-    DO JL=KIDIA,KFDIA
-      IORDER(JL,JM)=-999
-    ENDDO
-  ENDDO
-  DO JN=1,NCLV
-    DO JL=KIDIA,KFDIA
-      LLINDEX1(JL,JN)=.TRUE.
-    ENDDO
-  ENDDO
-  DO JM=1,NCLV
-    DO JL=KIDIA,KFDIA
-      ZMIN(JL)=1.E32_JPRB
-    ENDDO
-    DO JN=1,NCLV
-      DO JL=KIDIA,KFDIA
-        IF (LLINDEX1(JL,JN) .AND. ZRATIO(JL,JN)<ZMIN(JL)) THEN
-          IORDER(JL,JM)=JN
-          ZMIN(JL)=ZRATIO(JL,JN)
-        ENDIF
-      ENDDO
-    ENDDO
-    DO JL=KIDIA,KFDIA
-      LLINDEX1(JL,IORDER(JL,JM))=.FALSE. ! marked as searched
-    ENDDO
-  ENDDO
+!  DO JM=1,NCLV
+!    DO JL=KIDIA,KFDIA
+!      IORDER(JL,JM)=-999
+!    ENDDO
+!  ENDDO
+!  DO JN=1,NCLV
+!    DO JL=KIDIA,KFDIA
+!      LLINDEX1(JL,JN)=.TRUE.
+!    ENDDO
+!  ENDDO
+!  DO JM=1,NCLV
+!    DO JL=KIDIA,KFDIA
+!      ZMIN(JL)=1.E32_JPRB
+!    ENDDO
+!    DO JN=1,NCLV
+!      DO JL=KIDIA,KFDIA
+!        IF (LLINDEX1(JL,JN) .AND. ZRATIO(JL,JN)<ZMIN(JL)) THEN
+!          IORDER(JL,JM)=JN
+!          ZMIN(JL)=ZRATIO(JL,JN)
+!        ENDIF
+!      ENDDO
+!    ENDDO
+!    DO JL=KIDIA,KFDIA
+!      LLINDEX1(JL,IORDER(JL,JM))=.FALSE. ! marked as searched
+!    ENDDO
+!  ENDDO
 
   !--------------------------------------------
   ! scale the sink terms, in the correct order, 
@@ -2542,43 +2542,43 @@ ENDIF ! on IEVAPSNOW
   DO JM=1,NCLV
 !   DO JN=1,NCLV
     DO JL=KIDIA,KFDIA
-      JO=IORDER(JL,JM)
+!      JO=IORDER(JL,JM)
 !     ZZSUM=ZSINKSUM(JL,JO)
 !DIR$ IVDEP
 !DIR$ PREFERVECTOR
       DO JN=1,NCLV
-        LLINDEX3(JL,JO,JN)=ZSOLQA(JL,JO,JN)<0.0_JPRB
-!       ZSINKSUM(JL,JO)=ZSINKSUM(JL,JO)-ZSOLQA(JL,JO,JN)
-!       ZZSUM=ZZSUM-ZSOLQA(JL,JO,JN)
+        LLINDEX3(JL,JM,JN)=ZSOLQA(JL,JM,JN)<0.0_JPRB
+!       ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-ZSOLQA(JL,JM,JN)
+!       ZZSUM=ZZSUM-ZSOLQA(JL,JM,JN)
       ENDDO
-      ZSINKSUM(JL,JO)=ZSINKSUM(JL,JO)-SUM(ZSOLQA(JL,JO,1:NCLV))
+      ZSINKSUM(JL,JM)=ZSINKSUM(JL,JM)-SUM(ZSOLQA(JL,JM,1:NCLV))
     ENDDO
     !---------------------------
     ! recalculate scaling factor
     !---------------------------
     DO JL=KIDIA,KFDIA
-      JO=IORDER(JL,JM)
-      ZMM=MAX(ZQX(JL,JK,JO),ZEPSEC)
-      ZRR=MAX(ZSINKSUM(JL,JO),ZMM)
-      ZRATIO(JL,JO)=ZMM/ZRR
+!      JO=IORDER(JL,JM)
+      ZMM=MAX(ZQX(JL,JK,JM),ZEPSEC)
+      ZRR=MAX(ZSINKSUM(JL,JM),ZMM)
+      ZRATIO(JL,JM)=ZMM/ZRR
     ENDDO
     !------
     ! scale
     !------
     DO JL=KIDIA,KFDIA
-      JO=IORDER(JL,JM)
-      ZZRATIO=ZRATIO(JL,JO)
+!      JO=IORDER(JL,JM)
+      ZZRATIO=ZRATIO(JL,JM)
 !DIR$ IVDEP
 !DIR$ PREFERVECTOR
       DO JN=1,NCLV
-        IF (LLINDEX3(JL,JO,JN)) THEN
-          ZSOLQA(JL,JO,JN)=ZSOLQA(JL,JO,JN)*ZZRATIO
-          ZSOLQA(JL,JN,JO)=ZSOLQA(JL,JN,JO)*ZZRATIO
+        IF (LLINDEX3(JL,JM,JN)) THEN
+          ZSOLQA(JL,JM,JN)=ZSOLQA(JL,JM,JN)*ZZRATIO
+          ZSOLQA(JL,JN,JM)=ZSOLQA(JL,JN,JM)*ZZRATIO
         ENDIF
       ENDDO
     ENDDO
   ENDDO
-
+!################################################################
   !--------------------------------------------------------------
   ! 5.2.2 Solver
   !------------------------
