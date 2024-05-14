@@ -15,6 +15,15 @@ parameterset:
   # The build options
   - name: build_set
     parameter:
+      # Patch list
+
+      # Put the directory containing git patches here
+      - {name: patches_dir, _: ""}
+
+      - name: patch
+        mode: shell
+        _: "find $patches_dir -type f | tr '\n' ',' | sed 's/.$//'"
+
       # Build single (sp) or double (dp) precision (or both by choosing `dp,sp`)
       - {name: precision, tag: "sp+dp" , _: "dp,sp"}
       - {name: precision, tag: "!sp" , _: "dp"}
