@@ -20,9 +20,7 @@ export F77=ifx
 ulimit -s unlimited
 
 set -x
-echo foo
 # Restore tracing to stored setting
 #{ if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null
 set +x
-echo bar
 export ECBUILD_TOOLCHAIN="./toolchain.cmake"
