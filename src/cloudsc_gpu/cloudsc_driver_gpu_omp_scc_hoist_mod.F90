@@ -162,9 +162,9 @@ CONTAINS
     CALL TIMER%THREAD_START(TID)
 
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp target teams loop bind(teams)
+!$omp target teams loop bind(teams) thread_limit(nproma)
 #else
-!$omp target teams distribute
+!$omp target teams distribute thread_limit(nproma)
 #endif
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
