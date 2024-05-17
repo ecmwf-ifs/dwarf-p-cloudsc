@@ -140,9 +140,9 @@ MODULE CLOUDSC_DRIVER_GPU_OMP_SCC_STACK_MOD
     CALL TIMER%THREAD_START(TID)
     
 #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp target teams loop bind(teams) private(YLSTACK_L)
+!$omp target teams loop bind(teams) private(YLSTACK_L) thread_limit(nproma)
 #else
-!$omp target teams distribute private(YLSTACK_L)
+!$omp target teams distribute private(YLSTACK_L) thread_limit(nproma)
 #endif 
     DO JKGLO=1,NGPTOT,NPROMA
       IBL = (JKGLO - 1) / NPROMA + 1
