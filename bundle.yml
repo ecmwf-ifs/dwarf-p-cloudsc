@@ -66,7 +66,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : develop
+        version : feature/gpu_discontiguous_data
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
