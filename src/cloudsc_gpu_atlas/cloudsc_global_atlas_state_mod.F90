@@ -88,7 +88,7 @@ CONTAINS
     TYPE(ATLAS_CONFIG) :: CONFIG
     TYPE(ATLAS_CONFIG), DIMENSION(30) :: IN_MFIELD_CONFIG ! the last five variables are special and added through FieldSet
     TYPE(ATLAS_CONFIG), DIMENSION(14) :: OUT_MFIELD_CONFIG ! the last two variables are special and added through FieldSet
-    LOGICAL :: LMULTIFIELD
+    LOGICAL :: LMULTIFIELD, LPINNED, LMAPPED
     CHARACTER(len=8) :: CENV, FPREC
     INTEGER :: CENV_LEN
     TYPE(ATLAS_TRACE) :: TRACE, TRACE_IO
@@ -103,9 +103,25 @@ CONTAINS
         LMULTIFIELD = .FALSE.
       ENDIF
     ENDIF
+    LPINNED = .TRUE.
+    CALL GET_ENVIRONMENT_VARIABLE("CLOUDSC_ATLAS_PINNED",CENV,CENV_LEN)
+    IF (CENV_LEN > 0 ) THEN
+      IF( TRIM(CENV) == "0" .OR. TRIM(CENV) == "OFF" .OR. TRIM(CENV) == "FALSE" ) THEN
+          LPINNED = .FALSE.
+      ENDIF
+    ENDIF
+    LMAPPED = .FALSE.
+    CALL GET_ENVIRONMENT_VARIABLE("CLOUDSC_ATLAS_MAPPED",CENV,CENV_LEN)
+    IF (CENV_LEN > 0 ) THEN
+      IF( TRIM(CENV) == "1" .OR. TRIM(CENV) == "ON" .OR. TRIM(CENV) == "TRUE" ) THEN
+        LMAPPED = .TRUE.
+      ENDIF
+    ENDIF
 
     IF (IRANK == 0) THEN
       PRINT *, " LMULTIFIELD: ", LMULTIFIELD
+      PRINT *, " LPINNED: ", LPINNED
+      PRINT *, " LMAPPED: ", LMAPPED
     ENDIF
 
     CALL INPUT_INITIALIZE(NAME='input')
@@ -127,8 +143,8 @@ CONTAINS
     CALL CONFIG%SET("type", "MultiFieldCreatorIFS")
     CALL CONFIG%SET("nproma", NPROMA)
     CALL CONFIG%SET("ngptot", FSPACE%SIZE())
-    CALL CONFIG%SET("host_memory_pinned", .false.);
-    CALL CONFIG%SET("host_memory_mapped", .false.);
+    CALL CONFIG%SET("host_memory_pinned", LPINNED);
+    CALL CONFIG%SET("host_memory_mapped", LMAPPED);
     WRITE (FPREC,"(A4,I2)") "real", 8*jprb
     CALL CONFIG%SET("datatype", TRIM(FPREC))
 
