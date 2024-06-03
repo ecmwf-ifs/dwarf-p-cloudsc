@@ -36,6 +36,8 @@ set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 # NB: We have to add `-mp` again to avoid undefined symbols during linking
 # (smells like an Nvidia bug)
 set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath,gvmode" CACHE STRING "" )
+set( OpenACC_C_FLAGS "${OpenACC_Fortran_FLAGS}")
+
 # Enable this to get more detailed compiler output
 # set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
