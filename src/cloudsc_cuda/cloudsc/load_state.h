@@ -11,30 +11,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "yoecldp_c.h"
+#include "dtype.h"
 
 struct TECLDP ;
 
 void query_state(int *klon, int *klev);
 
 void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
-		double* ptsphy, double* plcrit_aer, double* picrit_aer,
-		double* pre_ice, double* pccn, double* pnice, double* pt, double* pq, 
-		double* tend_cml_t, double* tend_cml_q, double* tend_cml_a, double* tend_cml_cld,
-		double* tend_tmp_t, double* tend_tmp_q, double* tend_tmp_a, double* tend_tmp_cld,
-		double* pvfa, double* pvfl, double* pvfi, double* pdyna, double* pdynl, double* pdyni, 
-		double* phrsw, double* phrlw, double* pvervel, double* pap, double* paph, double* plsm,
-		int* ktype, double* plu, double* plude, double* psnde, double* pmfu,
-		double* pmfd, double* pa, double* pclv, double* psupsat, struct TECLDP* yrecldp,
-		double* rg, double* rd, double* rcpd, double* retv, double* rlvtt, double* rlstt,
-                double* rlmlt, double* rtt, double* rv, double* r2es, double* r3les, double* r3ies,
-                double* r4les, double* r4ies, double* r5les, double* r5ies, double* r5alvcp, double* r5alscp,
-                double* ralvdcp, double* ralsdcp, double* ralfdcp, double* rtwat,
-                double* rtice, double* rticecu, double* rtwat_rtice_r, double *rtwat_rticecu_r,
-                double* rkoop1, double* rkoop2);
+		dtype* ptsphy, dtype* plcrit_aer, dtype* picrit_aer,
+		dtype* pre_ice, dtype* pccn, dtype* pnice, dtype* pt, dtype* pq, 
+		dtype* tend_cml_t, dtype* tend_cml_q, dtype* tend_cml_a, dtype* tend_cml_cld,
+		dtype* tend_tmp_t, dtype* tend_tmp_q, dtype* tend_tmp_a, dtype* tend_tmp_cld,
+		dtype* pvfa, dtype* pvfl, dtype* pvfi, dtype* pdyna, dtype* pdynl, dtype* pdyni, 
+		dtype* phrsw, dtype* phrlw, dtype* pvervel, dtype* pap, dtype* paph, dtype* plsm,
+		int* ktype, dtype* plu, dtype* plude, dtype* psnde, dtype* pmfu,
+		dtype* pmfd, dtype* pa, dtype* pclv, dtype* psupsat, struct TECLDP* yrecldp,
+		dtype* rg, dtype* rd, dtype* rcpd, dtype* retv, dtype* rlvtt, dtype* rlstt,
+                dtype* rlmlt, dtype* rtt, dtype* rv, dtype* r2es, dtype* r3les, dtype* r3ies,
+                dtype* r4les, dtype* r4ies, dtype* r5les, dtype* r5ies, dtype* r5alvcp, dtype* r5alscp,
+                dtype* ralvdcp, dtype* ralsdcp, dtype* ralfdcp, dtype* rtwat,
+                dtype* rtice, dtype* rticecu, dtype* rtwat_rtice_r, dtype *rtwat_rticecu_r,
+                dtype* rkoop1, dtype* rkoop2);
 
 
 void load_reference(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
-		    double *plude, double *pcovptot, double *prainfrac_toprfz, double *pfsqlf, double *pfsqif,
-		    double *pfcqlng, double *pfcqnng, double *pfsqrf, double *pfsqsf, double *pfcqrng, double *pfcqsng,
-		    double *pfsqltur, double *pfsqitur, double *pfplsl, double *pfplsn, double *pfhpsl, double *pfhpsn,
-		    double *tend_loc_a, double *tend_loc_q, double *tend_loc_t, double *tend_loc_cld);
+		    dtype *plude, dtype *pcovptot, dtype *prainfrac_toprfz, dtype *pfsqlf, dtype *pfsqif,
+		    dtype *pfcqlng, dtype *pfcqnng, dtype *pfsqrf, dtype *pfsqsf, dtype *pfcqrng, dtype *pfcqsng,
+		    dtype *pfsqltur, dtype *pfsqitur, dtype *pfplsl, dtype *pfplsn, dtype *pfhpsl, dtype *pfhpsn,
+		    dtype *tend_loc_a, dtype *tend_loc_q, dtype *tend_loc_t, dtype *tend_loc_cld);
