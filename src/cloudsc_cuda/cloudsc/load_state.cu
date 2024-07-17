@@ -70,10 +70,10 @@ void query_state(int *klon, int *klev)
 
 void expand_1d(dtype *buffer, dtype *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int b, l, i, buf_start_idx, buf_idx;
+  int b, i, buf_start_idx, buf_idx;
   dtype (*field)[nproma] = (dtype (*)[nproma]) field_in;
 
-#pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
+#pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
@@ -86,10 +86,10 @@ void expand_1d(dtype *buffer, dtype *field_in, int nlon, int nproma, int ngptot,
 
 void expand_1d_int(int *buffer, int *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
-  int b, l, i, buf_start_idx, buf_idx;
+  int b, i, buf_start_idx, buf_idx;
   int (*field)[nproma] = (int (*)[nproma]) field_in;
 
-  #pragma omp parallel for default(shared) private(b, l, i, buf_start_idx, buf_idx)
+  #pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
@@ -124,7 +124,7 @@ void expand_3d(dtype *buffer_in, dtype *field_in, int nlon, int nlev, int nclv, 
   dtype (*buffer)[nlev][nlon] = (dtype (*)[nlev][nlon]) buffer_in;
   dtype (*field)[nclv][nlev][nproma] = (dtype (*)[nclv][nlev][nproma]) field_in;
   
-#pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
+#pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i, c)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;   
     for (i = 0; i < nproma; i++) {
@@ -156,7 +156,7 @@ void load_and_expand_1d(serialboxSerializer_t *serializer, serialboxSavepoint_t*
 void load_and_expand_1d_int(serialboxSerializer_t *serializer, serialboxSavepoint_t* savepoint,
     const char *name, int nlon, int nproma, int ngptot, int nblocks, int *field)
 {
-  double buffer[nlon];
+  int buffer[nlon];
   int strides[1] = {1};
 
   serialboxSerializerRead(serializer, name, savepoint, buffer, strides, 1);
