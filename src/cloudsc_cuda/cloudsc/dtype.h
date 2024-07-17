@@ -8,6 +8,9 @@
  * nor does it submit to any jurisdiction.
  */
 
+#ifndef CLOUDSC_DTYPE_H
+#define CLOUDSC_DTYPE_H
+
 // FLOATING POINT PRECISION
 #ifdef SINGLE
 typedef float dtype;
@@ -36,3 +39,5 @@ typedef double dtype;
 #define MYABS(x) fabs(x)
 
 #endif
+
+#endif // CLOUDSC_DTYPE_H
