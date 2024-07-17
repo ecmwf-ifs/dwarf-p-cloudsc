@@ -16,5 +16,6 @@
 #include "yoecldp_c.h"
 #include "load_state.h"
 #include "cloudsc_validate.h"
+#include "dtype.h"
 
 void cloudsc_driver(int numthreads, int numcols, int nproma);

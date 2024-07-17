@@ -12,20 +12,20 @@ ecbuild_add_option( FEATURE CLOUDSC_SYCL
     CONDITION (Serialbox_FOUND OR HDF5_FOUND) AND HAVE_SYCL
 )
 
-if( HAVE_CLOUDSC_SYCL AND NOT HAVE_SINGLE_PRECISION )
+if( HAVE_CLOUDSC_SYCL )
 
     unset(SYCL_COMPILE_OPTIONS)
     if( CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM" )
         set(SYCL_COMPILE_OPTIONS -gline-tables-only -fsycl -fsycl-targets=spir64 -fsycl-early-optimizations)
     endif()
 
-    if (CLOUDSC_MATH STREQUAL "C")
+    if (CLOUDSC_CPP_MATH STREQUAL "C")
         set(GPU_MATH "1")
         ecbuild_info("Building SYCL variant using C math interface")
-    elseif (CLOUDSC_MATH STREQUAL "STD")
+    elseif (CLOUDSC_CPP_MATH STREQUAL "STD")
         set(GPU_MATH "2")
         ecbuild_info("Building SYCL variant using C++ STL math interface")
-    elseif(CLOUDSC_MATH STREQUAL "SYCL")
+    elseif(CLOUDSC_CPP_MATH STREQUAL "SYCL")
         set(GPU_MATH "3")
         ecbuild_info("Building SYCL variant using SYCL math interface")
     else ()
@@ -43,6 +43,7 @@ if( HAVE_CLOUDSC_SYCL AND NOT HAVE_SINGLE_PRECISION )
         TARGET dwarf-cloudsc-scc-sycl-lib
         INSTALL_HEADERS LISTED
         SOURCES
+	    cloudsc/dtype.h
             cloudsc/yoecldp_c.h
             cloudsc/load_state.h
             cloudsc/load_state.cpp
@@ -105,6 +106,7 @@ if( HAVE_CLOUDSC_SYCL AND NOT HAVE_SINGLE_PRECISION )
         TARGET dwarf-cloudsc-scc-hoist-sycl-lib
         INSTALL_HEADERS LISTED
         SOURCES
+	    cloudsc/dtype.h
             cloudsc/yoecldp_c.h
             cloudsc/load_state.h
             cloudsc/load_state.cpp
@@ -166,6 +168,7 @@ if( HAVE_CLOUDSC_SYCL AND NOT HAVE_SINGLE_PRECISION )
         TARGET dwarf-cloudsc-scc-k-caching-sycl-lib
         INSTALL_HEADERS LISTED
         SOURCES
+	    cloudsc/dtype.h
             cloudsc/yoecldp_c.h
             cloudsc/load_state.h
             cloudsc/load_state.cpp

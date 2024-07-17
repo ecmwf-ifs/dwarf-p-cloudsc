@@ -128,9 +128,9 @@ options :
          help  : SYCL subgroup size
          cmake : SYCL_SUB_GROUP_SIZE={{value}}
     
-    - cloudsc-math :
+    - cloudsc-cpp-math :
          help  : [C|STD|SYCL]
-         cmake : CLOUDSC_MATH={{value}}
+         cmake : CLOUDSC_CPP_MATH={{value}}
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
