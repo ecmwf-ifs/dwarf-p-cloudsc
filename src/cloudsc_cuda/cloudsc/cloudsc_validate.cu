@@ -60,8 +60,8 @@ void validate_1d(const char *name, dtype * v_ref, dtype * v_field, int nlon, int
   zerrsum = 0.0;
   zsum = 0.0;
 
-  // # pragma omp parallel for default(shared) private(b, bsize, jk)		\
-  //   reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  # pragma omp parallel for default(shared) private(b, bsize, jk)		\
+     reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jk = 0; jk < bsize; jk++) {
@@ -99,8 +99,8 @@ void validate_2d(const char *name, dtype *v_ref, dtype *v_field, int nlon, int n
   zsum = 0.0;
   zdiffmax = 0.0;
 
-  // # pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
-  //   reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  # pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
+     reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jl = 0; jl < nlev; jl++) {
@@ -141,8 +141,8 @@ void validate_3d(const char *name, dtype *v_ref, dtype *v_field, int nlon,
   zsum = 0.0;
   zdiffmax = 0.0;
 
-  // # pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
-  //   reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+  #pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
+     reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jm = 0; jm < nclv; jm++) {
