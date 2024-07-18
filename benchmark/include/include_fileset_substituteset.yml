@@ -12,6 +12,7 @@ substituteset:
     - {source: "${{ CLOUDSC_HOME }}", dest: $cloudsc_home}
     - {source: "${{ JUBE_WP_ABSPATH }}", dest: $jube_wp_abspath}
     - {source: "${{ ARCH }}", dest: $arch}
+    - { source: "${{ PATCH }}", dest: $patch }
     - {source: "${{ PRECISION_FLAG }}", dest: $precision_flag}
     - {source: "${{ IO_LIBRARY_FLAG }}", dest: $io_library_flag}
     - {source: "${{ MPI_FLAG }}", dest: $mpi_flag}
