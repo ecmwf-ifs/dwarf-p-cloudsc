@@ -575,11 +575,13 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
     ! -----------------------------------------------
     ! INITIALIZATION OF OUTPUT TENDENCIES
     ! -----------------------------------------------
+    !$acc loop seq
     DO JK=1,KLEV
       TENDENCY_LOC(JL, JK, 1, IBL) = 0.0_JPRB
       TENDENCY_LOC(JL, JK, 3, IBL) = 0.0_JPRB
       TENDENCY_LOC(JL, JK, 2, IBL) = 0.0_JPRB
     END DO
+    !$acc loop seq
     DO JM=1,NCLV - 1
       DO JK=1,KLEV
         TENDENCY_LOC(JL, JK, 3 + JM, IBL) = 0.0_JPRB
@@ -587,6 +589,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
     END DO
     
     !-- These were uninitialized : meaningful only when we compare error differences
+    !$acc loop seq
     DO JK=1,KLEV
       PCOVPTOT(JL, JK, IBL) = 0.0_JPRB
       TENDENCY_LOC(JL, JK, 3 + NCLV, IBL) = 0.0_JPRB
@@ -616,6 +619,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
     ZVQX(NCLDQR) = YRECLDP%RVRAIN
     ZVQX(NCLDQS) = YRECLDP%RVSNOW
     LLFALL(:) = .false.
+    !$acc loop seq
     DO JM=1,NCLV
       IF (ZVQX(JM) > 0.0_JPRB)         LLFALL(JM) = .true.
       ! falling species
@@ -644,6 +648,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
     !-------------
     ! zero arrays
     !-------------
+    !$acc loop seq
     DO JM=1,NCLV
       ZPFPLSX(1, JM) = 0.0_JPRB          ! precip fluxes
       ZPFPLSX(2, JM) = 0.0_JPRB
@@ -652,6 +657,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
     ! ----------------------
     ! non CLV initialization
     ! ----------------------
+    !$acc loop seq
     DO JK=1,KLEV+1
     ! DO CONCURRENT( JL=1:NPROMA, IBL=1:CEILING(REAL(NGPTOT) / REAL(NPROMA)), JK=1:KLEV+1) local(ZTP1, ZLCUST, ZA, IPHASE, IMELT, LLFALL, LLINDEX1, LLINDEX3, IORDER, ZQX, ZQX0, ZQXN, ZQXFG, ZQXNM1, ZFLUXQ, ZPFPLSX, ZLNEG, ZQXN2D, ZSOLQA, ZSOLQB, ZQLHS, ZVQX, ZRATIO, ZSINKSUM, ZFALLSINK, ZFALLSRCE, ZCONVSRCE, ZCONVSINK, ZPSUPSATSRCE) 
 
@@ -670,11 +676,13 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
     ! -------------------------------------
     ! initialization for CLV family
     ! -------------------------------------
+    !$acc loop seq
     DO JM=1,NCLV - 1
       ZQX(JM) = PCLV(JL, JK, JM, IBL) + PTSPHY*TENDENCY_TMP(JL, JK, 3 + JM, IBL)
       ZQX0(JM) = PCLV(JL, JK, JM, IBL) + PTSPHY*TENDENCY_TMP(JL, JK, 3 + JM, IBL)
     END DO
 
+    !$acc loop seq
     DO JM=1,NCLV
       ZQXN2D(JM) = 0.0_JPRB          ! end of timestep values in 2D
       ZLNEG(JM) = 0.0_JPRB          ! negative input check
@@ -711,6 +719,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
     ! Tidy up small CLV variables
     ! ---------------------------------
     !DIR$ IVDEP
+    !$acc loop seq
     DO JM=1,NCLV - 1
       IF (ZQX(JM) < YRECLDP%RLMIN) THEN
         ZLNEG(JM) = ZLNEG(JM) + ZQX(JM)
@@ -825,6 +834,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !---------------------------------
       ! First guess microphysics
       !---------------------------------
+      !$acc loop seq
       DO JM=1,NCLV
         ZQXFG(JM) = ZQX(JM)
       END DO
@@ -860,7 +870,9 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !------------------------------------------
       ! reset matrix so missing pathways are set
       !------------------------------------------
+      !$acc loop seq
       DO JM=1,NCLV
+        !$acc loop seq
         DO JN=1,NCLV
           ZSOLQB(JN, JM) = 0.0_JPRB
           ZSOLQA(JN, JM) = 0.0_JPRB
@@ -870,6 +882,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !----------------------------------
       ! reset new microphysics variables
       !----------------------------------
+      !$acc loop seq
       DO JM=1,NCLV
         ZFALLSRCE(JM) = 0.0_JPRB
         ZFALLSINK(JM) = 0.0_JPRB
@@ -1103,7 +1116,8 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
         
         ZMF = MAX(0.0_JPRB, (PMFU(JL, JK, IBL) + PMFD(JL, JK, IBL))*ZDTGDP)
         ZACUST = ZMF*ZANEWM1
-        
+       
+        !$acc loop seq 
         DO JM=1,NCLV
           IF (.not.LLFALL(JM) .and. IPHASE(JM) > 0) THEN
             ZLCUST(JM) = ZMF*ZQXNM1(JM)
@@ -1121,6 +1135,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
         ![#Note: Diagnostic mixed phase should be replaced below]
         ZDQS = ZANEWM1*ZDTFORC*ZDQSMIXDT
         
+        !$acc loop seq
         DO JM=1,NCLV
           IF (.not.LLFALL(JM) .and. IPHASE(JM) > 0) THEN
             ZLFINAL = MAX(0.0_JPRB, ZLCUST(JM) - ZDQS)                !lim to zero
@@ -1631,7 +1646,8 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !     the precipitation flux can be defined directly level by level
       !     There is no vertical memory required from the flux variable
       !----------------------------------------------------------------------
-      
+     
+      !$acc loop seq 
       DO JM=1,NCLV
         IF (LLFALL(JM) .or. JM == NCLDQI) THEN
           !------------------------
@@ -1929,6 +1945,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       END IF
       
       ! Loop over frozen hydrometeors (ice, snow)
+      !$acc loop seq
       DO JM=1,NCLV
         IF (IPHASE(JM) == 2) THEN
           JN = IMELT(JM)
@@ -2303,6 +2320,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !--------------------------------------
       ! Evaporate small precipitation amounts
       !--------------------------------------
+      !$acc loop seq
       DO JM=1,NCLV
         IF (LLFALL(JM)) THEN
           IF (ZQXFG(JM) < YRECLDP%RLMIN) THEN
@@ -2339,8 +2357,10 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       ! Note: Species are treated in the order in which they run out
       ! since the clipping will alter the balance for the other vars
       !--------------------------------------------------------------
-      
+     
+      !$acc loop seq 
       DO JM=1,NCLV
+        !$acc loop seq
         DO JN=1,NCLV
           LLINDEX3(JN, JM) = .false.
         END DO
@@ -2350,7 +2370,9 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !----------------------------
       ! collect sink terms and mark
       !----------------------------
+      !$acc loop seq
       DO JM=1,NCLV
+        !$acc loop seq
         DO JN=1,NCLV
           ZSINKSUM(JM) = ZSINKSUM(JM) - ZSOLQA(JM, JN)              ! +ve total is bad
         END DO
@@ -2359,6 +2381,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !---------------------------------------
       ! calculate overshoot and scaling factor
       !---------------------------------------
+      !$acc loop seq
       DO JM=1,NCLV
         ZMAX = MAX(ZQX(JM), ZEPSEC)
         ZRAT = MAX(ZSINKSUM(JM), ZMAX)
@@ -2369,6 +2392,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       ! scale the sink terms, in the correct order,
       ! recalculating the scale factor each time
       !--------------------------------------------
+      !$acc loop seq
       DO JM=1,NCLV
         ZSINKSUM(JM) = 0.0_JPRB
       END DO
@@ -2376,8 +2400,10 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !----------------
       ! recalculate sum
       !----------------
+      !$acc loop seq
       DO JM=1,NCLV
         PSUM_SOLQA = 0.0
+        !$acc loop seq
         DO JN=1,NCLV
           PSUM_SOLQA = PSUM_SOLQA + ZSOLQA(JM, JN)
         END DO
@@ -2395,6 +2421,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
         ZZRATIO = ZRATIO(JM)
         !DIR$ IVDEP
         !DIR$ PREFERVECTOR
+        !$acc loop seq
         DO JN=1,NCLV
           IF (ZSOLQA(JM, JN) < 0.0_JPRB) THEN
             ZSOLQA(JM, JN) = ZSOLQA(JM, JN)*ZZRATIO
@@ -2410,13 +2437,16 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !------------------------
       ! set the LHS of equation
       !------------------------
+      !$acc loop seq
       DO JM=1,NCLV
+        !$acc loop seq
         DO JN=1,NCLV
           !----------------------------------------------
           ! diagonals: microphysical sink terms+transport
           !----------------------------------------------
           IF (JN == JM) THEN
             ZQLHS(JN, JM) = 1.0_JPRB + ZFALLSINK(JM)
+            !$acc loop seq
             DO JO=1,NCLV
               ZQLHS(JN, JM) = ZQLHS(JN, JM) + ZSOLQB(JO, JN)
             END DO
@@ -2432,11 +2462,13 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !------------------------
       ! set the RHS of equation
       !------------------------
+      !$acc loop seq
       DO JM=1,NCLV
         !---------------------------------
         ! sum the explicit source and sink
         !---------------------------------
         ZEXPLICIT = 0.0_JPRB
+        !$acc loop seq
         DO JN=1,NCLV
           ZEXPLICIT = ZEXPLICIT + ZSOLQA(JM, JN)              ! sum over middle index
         END DO
@@ -2455,11 +2487,14 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !       modifications.
       
       ! Non pivoting recursive factorization
+      !$acc loop seq
       DO JN=1,NCLV - 1
         ! number of steps
+        !$acc loop seq
         DO JM=JN + 1,NCLV
           ! row index
           ZQLHS(JM, JN) = ZQLHS(JM, JN) / ZQLHS(JN, JN)
+          !$acc loop seq
           DO IK=JN + 1,NCLV
             ! column index
             ZQLHS(JM, IK) = ZQLHS(JM, IK) - ZQLHS(JM, JN)*ZQLHS(JN, IK)
@@ -2469,14 +2504,18 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       
       ! Backsubstitution
       !  step 1
+      !$acc loop seq
       DO JN=2,NCLV
+        !$acc loop seq
         DO JM=1,JN - 1
           ZQXN(JN) = ZQXN(JN) - ZQLHS(JN, JM)*ZQXN(JM)
         END DO
       END DO
       !  step 2
       ZQXN(NCLV) = ZQXN(NCLV) / ZQLHS(NCLV, NCLV)
+      !$acc loop seq
       DO JN=NCLV - 1,1,-1
+        !$acc loop seq
         DO JM=JN + 1,NCLV
           ZQXN(JN) = ZQXN(JN) - ZQLHS(JN, JM)*ZQXN(JM)
         END DO
@@ -2486,6 +2525,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       ! Ensure no small values (including negatives) remain in cloud variables nor
       ! precipitation rates.
       ! Evaporate l,i,r,s to water vapour. Latent heating taken into account below
+      !$acc loop seq
       DO JN=1,NCLV - 1
         IF (ZQXN(JN) < ZEPSEC) THEN
           ZQXN(NCLDQV) = ZQXN(NCLDQV) + ZQXN(JN)
@@ -2496,6 +2536,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !--------------------------------
       ! variables needed for next level
       !--------------------------------
+      !$acc loop seq
       DO JM=1,NCLV
         ZQXNM1(JM) = ZQXN(JM)
         ZQXN2D(JM) = ZQXN(JM)
@@ -2507,6 +2548,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       !     It is this scaled flux that must be used for source to next layer
       !------------------------------------------------------------------------
       
+      !$acc loop seq
       DO JM=1,NCLV
         ZPFPLSX(JK_IP1, JM) = ZFALLSINK(JM)*ZQXN(JM)*ZRDTGDP
       END DO
@@ -2525,6 +2567,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
       ! 6.1 Temperature and CLV budgets
       !--------------------------------
       
+      !$acc loop seq
       DO JM=1,NCLV - 1
         
         ! calculate fluxes in and out of box for conservation of TL
