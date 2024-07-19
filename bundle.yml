@@ -105,7 +105,7 @@ options :
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
-            BUILD_field_api=ON
+            BUILD_field_api=OFF
 
     - with-hip :
         help: Enable GPU kernel variant based on HIP

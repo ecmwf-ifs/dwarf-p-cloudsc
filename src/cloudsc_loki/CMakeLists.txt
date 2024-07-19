@@ -612,7 +612,8 @@ if( HAVE_CUDA )
     # scc-cuf-parametrise
     loki_transform_convert(
         MODE cuf-parametrise FRONTEND ${LOKI_FRONTEND} CPP
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+	# CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+	CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
             ${COMMON_MODULE}/yomcst.F90
@@ -620,27 +621,27 @@ if( HAVE_CUDA )
             ${COMMON_MODULE}/yoethf.F90
             ${COMMON_MODULE}/yoecldp.F90
         INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING
+	DEFINITIONS CLOUDSC_GPU_TIMING CUF_IMPORTS
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
         OUTPUT
-            loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
-            loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
-        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+            loki-scc-cuf-parametrise/cloudsc_driver_loki_mod.cuf_parametrise.F90
+            loki-scc-cuf-parametrise/cloudsc.cuf_parametrise.F90
+        DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     set_source_files_properties(
-        loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
-        loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
+        loki-scc-cuf-parametrise/cloudsc_driver_loki_mod.cuf_parametrise.F90
+        loki-scc-cuf-parametrise/cloudsc.cuf_parametrise.F90
         PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-parametrise
         SOURCES
             dwarf_cloudsc.F90
-            loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
-            loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
+            loki-scc-cuf-parametrise/cloudsc_driver_loki_mod.cuf_parametrise.F90
+            loki-scc-cuf-parametrise/cloudsc.cuf_parametrise.F90
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
@@ -659,7 +660,8 @@ if( HAVE_CUDA )
     # scc-cuf-hoist
     loki_transform_convert(
         MODE cuf-hoist FRONTEND ${LOKI_FRONTEND} CPP
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+	# CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+	CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         PATH ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
             ${COMMON_MODULE}/yomcst.F90
@@ -667,27 +669,27 @@ if( HAVE_CUDA )
             ${COMMON_MODULE}/yoethf.F90
             ${COMMON_MODULE}/yoecldp.F90
         INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING
+	DEFINITIONS CLOUDSC_GPU_TIMING CUF_IMPORTS
         DATA_OFFLOAD REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
         OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
         OUTPUT
-            loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
-            loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
-    DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+            loki-scc-cuf-hoist/cloudsc_driver_loki_mod.cuf_hoist.F90
+            loki-scc-cuf-hoist/cloudsc.cuf_hoist.F90
+    DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     set_source_files_properties(
-        loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
-        loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
+        loki-scc-cuf-hoist/cloudsc_driver_loki_mod.cuf_hoist.F90
+        loki-scc-cuf-hoist/cloudsc.cuf_hoist.F90
         PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128"
     )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-hoist
         SOURCES
             dwarf_cloudsc.F90
-            loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
-            loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
+            loki-scc-cuf-hoist/cloudsc_driver_loki_mod.cuf_hoist.F90
+            loki-scc-cuf-hoist/cloudsc.cuf_hoist.F90
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF

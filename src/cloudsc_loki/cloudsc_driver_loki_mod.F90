@@ -14,6 +14,9 @@ MODULE CLOUDSC_DRIVER_LOKI_MOD
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
+  USE YOMCST_CUF,ONLY : YOMCST_UPDATE_DEVICE
+  USE YOETHF_CUF,ONLY : YOETHF_UPDATE_DEVICE
+
   USE CLOUDSC_MOD, ONLY : CLOUDSC
 
   IMPLICIT NONE
@@ -102,12 +105,15 @@ CONTAINS
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND
 
     ! Local copy of cloud parameters for offload
-    TYPE(TECLDP) :: LOCAL_YRECLDP
+    ! TYPE(TECLDP) :: LOCAL_YRECLDP
 
     TYPE(PERFORMANCE_TIMER) :: TIMER
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
     IBL = 1  ! Useless statement to show the compiler that the sepcification part is over!
+
+    !@cuf CALL YOMCST_UPDATE_DEVICE()
+    !@cuf CALL YOETHF_UPDATE_DEVICE()
 
     if (irank == 0) then
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -120,7 +126,7 @@ CONTAINS
     ! Workaround for PGI / OpenACC oddities:
     ! Create a local copy of the parameter struct to ensure they get
     ! moved to the device the in ``acc data`` clause below
-    LOCAL_YRECLDP = YRECLDP
+    ! LOCAL_YRECLDP = YRECLDP
 
     !$loki data
 
@@ -159,7 +165,8 @@ CONTAINS
        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-       & LOCAL_YRECLDP)
+       ! & LOCAL_YRECLDP)
+       & YRECLDP)
 
 #ifndef CLOUDSC_GPU_TIMING
       ! Log number of columns processed by this thread (OpenMP mode)
