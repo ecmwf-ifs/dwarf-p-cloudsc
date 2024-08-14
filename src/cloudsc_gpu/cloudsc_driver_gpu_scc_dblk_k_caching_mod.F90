@@ -229,8 +229,11 @@ CONTAINS
     LOCAL_YRECLDP = YRECLDP
 
     ! BLOCK SIZES
-    BLOCK_BUFFER_SIZE=MIN(1875, NGPBLKS)
+    BLOCK_BUFFER_SIZE=MIN(900, NGPBLKS)
     BLOCK_COUNT=(NGPBLKS+BLOCK_BUFFER_SIZE-1)/BLOCK_BUFFER_SIZE
+    
+    print *, 'BLOCK_BUFFER_SIZE=', BLOCK_BUFFER_SIZE
+    print *, 'BLOCK_COUNT=', BLOCK_COUNT
    
     ! buffer allocations
    !copyin
@@ -368,8 +371,7 @@ CONTAINS
     
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
-    ! CALL TIMER%THREAD_ACC_START(TID)
-    CALL TIMER%THREAD_START(TID)
+    CALL TIMER%THREAD_ACC_START(TID)
 
 
     !$acc parallel loop gang vector_length(NPROMA)
@@ -408,7 +410,7 @@ CONTAINS
     ENDDO
     !$acc end parallel loop
 
-    CALL TIMER%THREAD_END(TID)
+    CALL TIMER%THREAD_ACC_END(TID)
 
     ! data to host
    !$acc host_data &
