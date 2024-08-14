@@ -23,6 +23,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_DBLK
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout and OpenACC with blocked memory transfers" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_CUF
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout in CUDA" DEFAULT OFF
     CONDITION HAVE_CUDA AND ( Serialbox_FOUND OR HDF5_FOUND )
@@ -40,6 +45,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING
     DESCRIPTION "Build (further) optimized GPU version of CLOUDSC using SCC layout with OpenACC" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_DBLK_K_CACHING
+    DESCRIPTION "Build (further) optimized GPU version of CLOUDSC using SCC layout with OpenACC with blocked memory transfers" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
@@ -100,6 +110,29 @@ if( HAVE_CLOUDSC_GPU_SCC )
 endif()
 
 
+if( HAVE_CLOUDSC_GPU_SCC_DBLK )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-dblk
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_dblk_mod.F90
+            cloudsc_gpu_scc_mod.F90
+        LIBS
+            cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_DBLK
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-dblk-serial
+        COMMAND bin/dwarf-cloudsc-gpu-scc
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
+    )
+endif()
+
+
 if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-hoist
@@ -136,6 +169,27 @@ if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-k-caching-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-k-caching
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+endif()
+
+if( HAVE_CLOUDSC_GPU_SCC_DBLK_K_CACHING )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-dblk-k-caching
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_dblk_k_caching_mod.F90
+            cloudsc_gpu_scc_k_caching_mod.F90
+        LIBS
+            cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_DBLK_K_CACHING
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-dblk-k-caching-serial
+        COMMAND bin/dwarf-cloudsc-gpu-scc-dblk-k-caching
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
