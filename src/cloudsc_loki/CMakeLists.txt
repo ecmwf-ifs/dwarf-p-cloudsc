@@ -540,6 +540,66 @@ if( HAVE_CLOUDSC_LOKI )
         OMP 1
     )
 
+    ############################################################
+    ##  "Single Column Coalesced" (SCC) mode with "raw stack" ##
+    ##   * Removes horizontal vector loops                    ##
+    ##   * Invokes compute kernel as `!$acc vector`           ##
+    ##   * Allocates temporaries using pool allocator         ##
+    ##   * Injects "stack" variables instead of pointers      ##
+    ############################################################
+
+    loki_transform(
+        COMMAND convert
+        OUTPUT
+            loki-scc-raw-stack/cloudsc.scc_raw_stack.F90
+            loki-scc-raw-stack/cloudsc_driver_loki_mod.scc_raw_stack.F90
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-raw-stack
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE scc-raw-stack
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+        CPP
+        DATA_OFFLOAD
+        REMOVE_OPENMP
+        DEFINITIONS
+            CLOUDSC_GPU_TIMING
+            ${CLOUDSC_DEFINE_STMT_FUNC}
+        FRONTEND ${LOKI_FRONTEND}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
+    )
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-raw-stack
+        SOURCES
+            dwarf_cloudsc.F90
+            loki-scc-raw-stack/cloudsc_driver_loki_mod.scc_raw_stack.F90
+            loki-scc-raw-stack/cloudsc.scc_raw_stack.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+        target_compile_options( dwarf-cloudsc-loki-scc-raw-stack PRIVATE "-fcray-pointer" )
+    elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
+        target_compile_options( dwarf-cloudsc-loki-scc-raw-stack PRIVATE "-Mcray=pointer" )
+    endif()
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-scc-raw-stack-serial
+        COMMAND bin/dwarf-cloudsc-loki-scc-raw-stack
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
 
     ####################################################
     ##  SCC-hoist mode                                ##
