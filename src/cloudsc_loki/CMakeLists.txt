@@ -445,8 +445,6 @@ if( HAVE_CLOUDSC_LOKI )
         MODE scc
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
-        DATA_OFFLOAD
-        REMOVE_OPENMP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
             ${CLOUDSC_DEFINE_STMT_FUNC}
@@ -500,8 +498,6 @@ if( HAVE_CLOUDSC_LOKI )
         MODE scc-stack
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
-        DATA_OFFLOAD
-        REMOVE_OPENMP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
             ${CLOUDSC_DEFINE_STMT_FUNC}
@@ -561,8 +557,6 @@ if( HAVE_CLOUDSC_LOKI )
         MODE scc-hoist
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
-        DATA_OFFLOAD
-        REMOVE_OPENMP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
             ${CLOUDSC_DEFINE_STMT_FUNC}
