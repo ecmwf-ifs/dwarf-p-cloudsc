@@ -468,6 +468,11 @@ if( HAVE_CLOUDSC_LOKI )
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
+    # Set specific module directory to avoid aliasing of .mod files
+    set_target_properties(  dwarf-cloudsc-loki-scc
+    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
+    )
+
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-serial
@@ -521,6 +526,11 @@ if( HAVE_CLOUDSC_LOKI )
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
+    # Set specific module directory to avoid aliasing of .mod files
+    set_target_properties(  dwarf-cloudsc-loki-scc-stack
+    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
+    )
+
 
     if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
         target_compile_options( dwarf-cloudsc-loki-scc-stack PRIVATE "-fcray-pointer" )
@@ -579,6 +589,10 @@ if( HAVE_CLOUDSC_LOKI )
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+    # Set specific module directory to avoid aliasing of .mod files
+    set_target_properties(  dwarf-cloudsc-loki-scc-hoist
+    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
     )
 
     ecbuild_add_test(
