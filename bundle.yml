@@ -5,6 +5,7 @@ name    : cloudsc-bundle
 version : 1.0.0-develop
 cmake : >
         CMAKE_LINK_DEPENDS_NO_SHARED=ON
+        CMAKE_EXPORT_COMPILE_COMMANDS=ON
         BUILD_serialbox=OFF
         BUILD_field_api=OFF
         BUILD_eckit=OFF
@@ -116,6 +117,14 @@ options :
         help: Enable GPU kernel variant based on SYCL
         cmake: >
             ENABLE_SYCL=ON
+
+    - sycl-sub-group-size :
+         help  : SYCL subgroup size
+         cmake : SYCL_SUB_GROUP_SIZE={{value}}
+    
+    - cloudsc-cpp-math :
+         help  : [C|STD|SYCL]
+         cmake : CLOUDSC_CPP_MATH={{value}}
 
     - with-mpi :
         help  : Enable MPI-parallel kernel
