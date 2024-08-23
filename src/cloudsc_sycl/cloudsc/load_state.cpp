@@ -119,7 +119,7 @@ void expand_3d(dtype *buffer_in, dtype *field_in, int nlon, int nlev, int nclv, 
 {
   int b, l, c, i, buf_start_idx, buf_idx;
 
-#pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i)
+#pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i, c)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
@@ -151,7 +151,7 @@ void load_and_expand_1d(serialboxSerializer_t *serializer, serialboxSavepoint_t*
 void load_and_expand_1d_int(serialboxSerializer_t *serializer, serialboxSavepoint_t* savepoint,
     const char *name, int nlon, int nproma, int ngptot, int nblocks, int *field)
 {
-  int buffer[nlon]; // TODO: double?
+  int buffer[nlon];
   int strides[1] = {1};
 
   serialboxSerializerRead(serializer, name, savepoint, buffer, strides, 1);

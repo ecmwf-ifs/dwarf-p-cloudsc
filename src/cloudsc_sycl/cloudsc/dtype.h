@@ -22,13 +22,6 @@ typedef double dtype;
 // MATH FUNCTIONS
 #ifdef SINGLE
 
-// #define MYMAX(x,y) fmaxf(x,y)
-// #define MYMIN(x,y) fminf(x,y)
-// #define MYEXP(x) exp(x)
-// #define MYPOW(x,y) pow(x,y)
-// #define MYPOWN(x,y) pow(x,y)
-// #define MYABS(x) fabs(x)
-
 #if GPU_MATH == C_MATH
 
 #define MYMAX(x,y) fmax(x,y)
@@ -59,13 +52,6 @@ typedef double dtype;
 #endif // GPU_MATH
 
 #else
-
-// #define MYMAX(x,y) fmax(x,y)
-// #define MYMIN(x,y) fmin(x,y)
-// #define MYEXP(x) exp(x)
-// #define MYPOW(x,y) pow(x,y)
-// #define MYPOWN(x,y) pow(x,y)
-// #define MYABS(x) fabs(x)
 
 #if GPU_MATH == C_MATH
 
