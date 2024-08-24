@@ -672,6 +672,10 @@ if( HAVE_CUDA )
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
     )
+    # Set specific module directory to avoid aliasing of .mod files
+    set_target_properties(  dwarf-cloudsc-loki-scc-cuf-parametrise
+    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
+    )
 
     target_link_options(dwarf-cloudsc-loki-scc-cuf-parametrise PUBLIC "-cuda")
 
@@ -718,6 +722,10 @@ if( HAVE_CUDA )
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
+    )
+    # Set specific module directory to avoid aliasing of .mod files
+    set_target_properties(  dwarf-cloudsc-loki-scc-cuf-hoist
+    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
     )
 
     target_link_options(dwarf-cloudsc-loki-scc-cuf-hoist PUBLIC "-cuda")
