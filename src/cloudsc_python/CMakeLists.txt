@@ -19,7 +19,8 @@ if( HAVE_CLOUDSC_PYTHON_F2PY )
 
     # Set up a custom venv for this variant and install the necessary dependencies
     set( cloudsc_VENV_PATH ${CMAKE_BINARY_DIR}/venv_cloudsc )
-    setup_python_venv( ${cloudsc_VENV_PATH} )
+    set( PYTHON_VERSION 3.8...<3.12 )
+    setup_python_venv( ${cloudsc_VENV_PATH} ${PYTHON_VERSION} )
 
     if( NOT Python3_EXECUTABLE )
         ecbuild_error("[PyIface] Could not find Python3 executable in virtualenv")
