@@ -241,12 +241,6 @@ CONTAINS
     ! Number of streams
     NUM_STREAMS = 5
     
-    print *, 'BLOCK_BUFFER_SIZE=', BLOCK_BUFFER_SIZE
-    print *, 'BLOCK_COUNT=', BLOCK_COUNT
-    print *, 'NUM_STREAMS=', NUM_STREAMS
-    
-
-
     DO BLOCK_IDX=0, BLOCK_COUNT-1
       BLOCK_START=BLOCK_IDX*BLOCK_BUFFER_SIZE+1
       BLOCK_END=MIN((BLOCK_IDX+1)*BLOCK_BUFFER_SIZE, NGPBLKS)
@@ -256,151 +250,151 @@ CONTAINS
       STREAM = MODULO(BLOCK_IDX, NUM_STREAMS) + 1
     ! NEW FIELDS FOR EACH BLOCK
       !copyin
-        CALL FIELD_NEW(pt_field_block, DATA=pt(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pq_field_block, DATA=pq(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(buffer_tmp_field_block, DATA=buffer_tmp(:,:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pvfa_field_block, DATA=pvfa(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pvfl_field_block, DATA=pvfl(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pvfi_field_block, DATA=pvfi(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pdyna_field_block, DATA=pdyna(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pdynl_field_block, DATA=pdynl(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pdyni_field_block, DATA=pdyni(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(phrsw_field_block, DATA=phrsw(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(phrlw_field_block, DATA=phrlw(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pvervel_field_block, DATA=pvervel(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pap_field_block, DATA=pap(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(paph_field_block, DATA=paph(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(plsm_field_block, DATA=plsm(:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(ldcum_field_block, DATA=ldcum(:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(ktype_field_block, DATA=ktype(:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(plu_field_block, DATA=plu(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(psnde_field_block, DATA=psnde(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pmfu_field_block, DATA=pmfu(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pmfd_field_block, DATA=pmfd(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pa_field_block, DATA=pa(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pclv_field_block, DATA=pclv(:,:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(psupsat_field_block, DATA=psupsat(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(plcrit_aer_field_block, DATA=plcrit_aer(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(picrit_aer_field_block, DATA=picrit_aer(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pre_ice_field_block, DATA=pre_ice(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pccn_field_block, DATA=pccn(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pnice_field_block, DATA=pnice(:,:,BLOCK_START:BLOCK_END))
-        ! copy
-        CALL FIELD_NEW(buffer_loc_field_block, DATA=buffer_loc(:,:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(plude_field_block, DATA=plude(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pcovptot_field_block, DATA=pcovptot(:,:,BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(prainfrac_toprfz_field_block, DATA=prainfrac_toprfz(:,BLOCK_START:BLOCK_END))
-        ! copyout
-        CALL FIELD_NEW(pfsqlf_field_block, DATA=pfsqlf(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfsqif_field_block, DATA=pfsqif(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfcqnng_field_block, DATA=pfcqnng(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfcqlng_field_block, DATA=pfcqlng(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfsqrf_field_block, DATA=pfsqrf(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfsqsf_field_block, DATA=pfsqsf(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfcqrng_field_block, DATA=pfcqrng(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfcqsng_field_block, DATA=pfcqsng(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfsqltur_field_block, DATA=pfsqltur(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfsqitur_field_block, DATA=pfsqitur(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfplsl_field_block, DATA=pfplsl(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfplsn_field_block, DATA=pfplsn(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfhpsl_field_block, DATA=pfhpsl(:, :, BLOCK_START:BLOCK_END))
-        CALL FIELD_NEW(pfhpsn_field_block, DATA=pfhpsn(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pt_field_block, DATA=pt(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pq_field_block, DATA=pq(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(buffer_tmp_field_block, DATA=buffer_tmp(:,:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvfa_field_block, DATA=pvfa(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvfl_field_block, DATA=pvfl(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvfi_field_block, DATA=pvfi(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pdyna_field_block, DATA=pdyna(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pdynl_field_block, DATA=pdynl(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pdyni_field_block, DATA=pdyni(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(phrsw_field_block, DATA=phrsw(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(phrlw_field_block, DATA=phrlw(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvervel_field_block, DATA=pvervel(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pap_field_block, DATA=pap(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(paph_field_block, DATA=paph(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plsm_field_block, DATA=plsm(:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(ldcum_field_block, DATA=ldcum(:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(ktype_field_block, DATA=ktype(:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plu_field_block, DATA=plu(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(psnde_field_block, DATA=psnde(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pmfu_field_block, DATA=pmfu(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pmfd_field_block, DATA=pmfd(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pa_field_block, DATA=pa(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pclv_field_block, DATA=pclv(:,:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(psupsat_field_block, DATA=psupsat(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plcrit_aer_field_block, DATA=plcrit_aer(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(picrit_aer_field_block, DATA=picrit_aer(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pre_ice_field_block, DATA=pre_ice(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pccn_field_block, DATA=pccn(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pnice_field_block, DATA=pnice(:,:,BLOCK_START:BLOCK_END))
+      ! copy
+      CALL FIELD_NEW(buffer_loc_field_block, DATA=buffer_loc(:,:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plude_field_block, DATA=plude(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pcovptot_field_block, DATA=pcovptot(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(prainfrac_toprfz_field_block, DATA=prainfrac_toprfz(:,BLOCK_START:BLOCK_END))
+      ! copyout
+      CALL FIELD_NEW(pfsqlf_field_block, DATA=pfsqlf(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqif_field_block, DATA=pfsqif(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqnng_field_block, DATA=pfcqnng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqlng_field_block, DATA=pfcqlng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqrf_field_block, DATA=pfsqrf(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqsf_field_block, DATA=pfsqsf(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqrng_field_block, DATA=pfcqrng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqsng_field_block, DATA=pfcqsng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqltur_field_block, DATA=pfsqltur(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqitur_field_block, DATA=pfsqitur(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfplsl_field_block, DATA=pfplsl(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfplsn_field_block, DATA=pfplsn(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfhpsl_field_block, DATA=pfhpsl(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfhpsn_field_block, DATA=pfhpsn(:, :, BLOCK_START:BLOCK_END))
 
     
 
     ! copy data to device
         !copyin
-        CALL pt_field_block%GET_DEVICE_DATA_RDONLY(pt_block)
-        CALL pq_field_block%GET_DEVICE_DATA_RDONLY(pq_block)
-        CALL buffer_tmp_field_block%GET_DEVICE_DATA_RDONLY(buffer_tmp_block)
-        CALL pvfa_field_block%GET_DEVICE_DATA_RDONLY(pvfa_block)
-        CALL pvfl_field_block%GET_DEVICE_DATA_RDONLY(pvfl_block)
-        CALL pvfi_field_block%GET_DEVICE_DATA_RDONLY(pvfi_block)
-        CALL pdyna_field_block%GET_DEVICE_DATA_RDONLY(pdyna_block)
-        CALL pdynl_field_block%GET_DEVICE_DATA_RDONLY(pdynl_block)
-        CALL pdyni_field_block%GET_DEVICE_DATA_RDONLY(pdyni_block)
-        CALL phrsw_field_block%GET_DEVICE_DATA_RDONLY(phrsw_block)
-        CALL phrlw_field_block%GET_DEVICE_DATA_RDONLY(phrlw_block)
-        CALL pvervel_field_block%GET_DEVICE_DATA_RDONLY(pvervel_block)
-        CALL pap_field_block%GET_DEVICE_DATA_RDONLY(pap_block)
-        CALL paph_field_block%GET_DEVICE_DATA_RDONLY(paph_block)
-        CALL plsm_field_block%GET_DEVICE_DATA_RDONLY(plsm_block)
-        CALL ldcum_field_block%GET_DEVICE_DATA_RDONLY(ldcum_block)
-        CALL ktype_field_block%GET_DEVICE_DATA_RDONLY(ktype_block)
-        CALL plu_field_block%GET_DEVICE_DATA_RDONLY(plu_block)
-        CALL psnde_field_block%GET_DEVICE_DATA_RDONLY(psnde_block)
-        CALL pmfu_field_block%GET_DEVICE_DATA_RDONLY(pmfu_block)
-        CALL pmfd_field_block%GET_DEVICE_DATA_RDONLY(pmfd_block)
-        CALL pa_field_block%GET_DEVICE_DATA_RDONLY(pa_block)
-        CALL pclv_field_block%GET_DEVICE_DATA_RDONLY(pclv_block)
-        CALL psupsat_field_block%GET_DEVICE_DATA_RDONLY(psupsat_block)
-        CALL plcrit_aer_field_block%GET_DEVICE_DATA_RDONLY(plcrit_aer_block)
-        CALL picrit_aer_field_block%GET_DEVICE_DATA_RDONLY(picrit_aer_block)
-        CALL pre_ice_field_block%GET_DEVICE_DATA_RDONLY(pre_ice_block)
-        CALL pccn_field_block%GET_DEVICE_DATA_RDONLY(pccn_block)
-        CALL pnice_field_block%GET_DEVICE_DATA_RDONLY(pnice_block)
-        ! copy
-        CALL buffer_loc_field_block%GET_DEVICE_DATA_RDWR(buffer_loc_block)
-        CALL plude_field_block%GET_DEVICE_DATA_RDWR(plude_block)
-        CALL pcovptot_field_block%GET_DEVICE_DATA_RDWR(pcovptot_block)
-        CALL prainfrac_toprfz_field_block%GET_DEVICE_DATA_RDWR(prainfrac_toprfz_block)
-        ! copyout
-        CALL pfsqlf_field_block%GET_DEVICE_DATA_WRONLY(pfsqlf_block)
-        CALL pfsqif_field_block%GET_DEVICE_DATA_WRONLY(pfsqif_block)
-        CALL pfcqnng_field_block%GET_DEVICE_DATA_WRONLY(pfcqnng_block)
-        CALL pfcqlng_field_block%GET_DEVICE_DATA_WRONLY(pfcqlng_block)
-        CALL pfsqrf_field_block%GET_DEVICE_DATA_WRONLY(pfsqrf_block)
-        CALL pfsqsf_field_block%GET_DEVICE_DATA_WRONLY(pfsqsf_block)
-        CALL pfcqrng_field_block%GET_DEVICE_DATA_WRONLY(pfcqrng_block)
-        CALL pfcqsng_field_block%GET_DEVICE_DATA_WRONLY(pfcqsng_block)
-        CALL pfsqltur_field_block%GET_DEVICE_DATA_WRONLY(pfsqltur_block)
-        CALL pfsqitur_field_block%GET_DEVICE_DATA_WRONLY(pfsqitur_block)
-        CALL pfplsl_field_block%GET_DEVICE_DATA_WRONLY(pfplsl_block)
-        CALL pfplsn_field_block%GET_DEVICE_DATA_WRONLY(pfplsn_block)
-        CALL pfhpsl_field_block%GET_DEVICE_DATA_WRONLY(pfhpsl_block)
-        CALL pfhpsn_field_block%GET_DEVICE_DATA_WRONLY(pfhpsn_block)
-
-
-
-        !$acc data copyin(yrecldp), present(pt_block, &
-     	!$acc pq_block, &
-     	!$acc buffer_tmp_block, &
-    !  	!$acc BUFFER_CML_block, &
-     	!$acc pvfa_block, &
-     	!$acc pvfl_block, &
-     	!$acc pvfi_block, &
-     	!$acc pdyna_block, &
-     	!$acc pdynl_block, &
-     	!$acc pdyni_block, &
-     	!$acc phrsw_block, &
-     	!$acc phrlw_block, &
-     	!$acc pvervel_block, &
-     	!$acc pap_block, &
-     	!$acc paph_block, &
-     	!$acc plsm_block, &
-     	!$acc ldcum_block, &
-     	!$acc ktype_block, &
-     	!$acc plu_block, &
-     	!$acc psnde_block, &
-     	!$acc pmfu_block, &
-     	!$acc pmfd_block, &
-     	!$acc pa_block, &
-     	!$acc pclv_block, &
-     	!$acc psupsat_block, &
-     	!$acc plcrit_aer_block, &
-     	!$acc picrit_aer_block, &
-     	!$acc pre_ice_block, &
-     	!$acc pccn_block, &
-     	!$acc pnice_block, &
+      CALL pt_field_block%GET_DEVICE_DATA_RDONLY(pt_block)
+      CALL pq_field_block%GET_DEVICE_DATA_RDONLY(pq_block)
+      CALL buffer_tmp_field_block%GET_DEVICE_DATA_RDONLY(buffer_tmp_block)
+      CALL pvfa_field_block%GET_DEVICE_DATA_RDONLY(pvfa_block)
+      CALL pvfl_field_block%GET_DEVICE_DATA_RDONLY(pvfl_block)
+      CALL pvfi_field_block%GET_DEVICE_DATA_RDONLY(pvfi_block)
+      CALL pdyna_field_block%GET_DEVICE_DATA_RDONLY(pdyna_block)
+      CALL pdynl_field_block%GET_DEVICE_DATA_RDONLY(pdynl_block)
+      CALL pdyni_field_block%GET_DEVICE_DATA_RDONLY(pdyni_block)
+      CALL phrsw_field_block%GET_DEVICE_DATA_RDONLY(phrsw_block)
+      CALL phrlw_field_block%GET_DEVICE_DATA_RDONLY(phrlw_block)
+      CALL pvervel_field_block%GET_DEVICE_DATA_RDONLY(pvervel_block)
+      CALL pap_field_block%GET_DEVICE_DATA_RDONLY(pap_block)
+      CALL paph_field_block%GET_DEVICE_DATA_RDONLY(paph_block)
+      CALL plsm_field_block%GET_DEVICE_DATA_RDONLY(plsm_block)
+      CALL ldcum_field_block%GET_DEVICE_DATA_RDONLY(ldcum_block)
+      CALL ktype_field_block%GET_DEVICE_DATA_RDONLY(ktype_block)
+      CALL plu_field_block%GET_DEVICE_DATA_RDONLY(plu_block)
+      CALL psnde_field_block%GET_DEVICE_DATA_RDONLY(psnde_block)
+      CALL pmfu_field_block%GET_DEVICE_DATA_RDONLY(pmfu_block)
+      CALL pmfd_field_block%GET_DEVICE_DATA_RDONLY(pmfd_block)
+      CALL pa_field_block%GET_DEVICE_DATA_RDONLY(pa_block)
+      CALL pclv_field_block%GET_DEVICE_DATA_RDONLY(pclv_block)
+      CALL psupsat_field_block%GET_DEVICE_DATA_RDONLY(psupsat_block)
+      CALL plcrit_aer_field_block%GET_DEVICE_DATA_RDONLY(plcrit_aer_block)
+      CALL picrit_aer_field_block%GET_DEVICE_DATA_RDONLY(picrit_aer_block)
+      CALL pre_ice_field_block%GET_DEVICE_DATA_RDONLY(pre_ice_block)
+      CALL pccn_field_block%GET_DEVICE_DATA_RDONLY(pccn_block)
+      CALL pnice_field_block%GET_DEVICE_DATA_RDONLY(pnice_block)
       ! copy
-     	!$acc buffer_loc_block, &
-     	!$acc plude_block, &
-     	!$acc pcovptot_block, &
-     	!$acc prainfrac_toprfz_block)
+      CALL buffer_loc_field_block%GET_DEVICE_DATA_RDWR(buffer_loc_block)
+      CALL plude_field_block%GET_DEVICE_DATA_RDWR(plude_block)
+      CALL pcovptot_field_block%GET_DEVICE_DATA_RDWR(pcovptot_block)
+      CALL prainfrac_toprfz_field_block%GET_DEVICE_DATA_RDWR(prainfrac_toprfz_block)
+      ! copyout
+      CALL pfsqlf_field_block%GET_DEVICE_DATA_WRONLY(pfsqlf_block)
+      CALL pfsqif_field_block%GET_DEVICE_DATA_WRONLY(pfsqif_block)
+      CALL pfcqnng_field_block%GET_DEVICE_DATA_WRONLY(pfcqnng_block)
+      CALL pfcqlng_field_block%GET_DEVICE_DATA_WRONLY(pfcqlng_block)
+      CALL pfsqrf_field_block%GET_DEVICE_DATA_WRONLY(pfsqrf_block)
+      CALL pfsqsf_field_block%GET_DEVICE_DATA_WRONLY(pfsqsf_block)
+      CALL pfcqrng_field_block%GET_DEVICE_DATA_WRONLY(pfcqrng_block)
+      CALL pfcqsng_field_block%GET_DEVICE_DATA_WRONLY(pfcqsng_block)
+      CALL pfsqltur_field_block%GET_DEVICE_DATA_WRONLY(pfsqltur_block)
+      CALL pfsqitur_field_block%GET_DEVICE_DATA_WRONLY(pfsqitur_block)
+      CALL pfplsl_field_block%GET_DEVICE_DATA_WRONLY(pfplsl_block)
+      CALL pfplsn_field_block%GET_DEVICE_DATA_WRONLY(pfplsn_block)
+      CALL pfhpsl_field_block%GET_DEVICE_DATA_WRONLY(pfhpsl_block)
+      CALL pfhpsn_field_block%GET_DEVICE_DATA_WRONLY(pfhpsn_block)
 
-        ! Local timer for each thread
-        TID = GET_THREAD_NUM()
-        CALL TIMER%THREAD_ACC_START(TID)
+
+
+      !$acc data copyin(yrecldp), present(pt_block, &
+      !$acc pq_block, &
+      !$acc buffer_tmp_block, &
+      ! !$acc BUFFER_CML_block, &
+      !$acc pvfa_block, &
+      !$acc pvfl_block, &
+      !$acc pvfi_block, &
+      !$acc pdyna_block, &
+      !$acc pdynl_block, &
+      !$acc pdyni_block, &
+      !$acc phrsw_block, &
+      !$acc phrlw_block, &
+      !$acc pvervel_block, &
+      !$acc pap_block, &
+      !$acc paph_block, &
+      !$acc plsm_block, &
+      !$acc ldcum_block, &
+      !$acc ktype_block, &
+      !$acc plu_block, &
+      !$acc psnde_block, &
+      !$acc pmfu_block, &
+      !$acc pmfd_block, &
+      !$acc pa_block, &
+      !$acc pclv_block, &
+      !$acc psupsat_block, &
+      !$acc plcrit_aer_block, &
+      !$acc picrit_aer_block, &
+      !$acc pre_ice_block, &
+      !$acc pccn_block, &
+      !$acc pnice_block, &
+      ! copy
+      !$acc buffer_loc_block, &
+      !$acc plude_block, &
+      !$acc pcovptot_block, &
+      !$acc prainfrac_toprfz_block)
+
+      ! Local timer for each thread
+      TID = GET_THREAD_NUM()
+      CALL TIMER%THREAD_ACC_START(TID)
       
         
         !$acc parallel loop gang vector_length(NPROMA) copy(LOCAL_YRECLDP)
@@ -461,54 +455,54 @@ CONTAINS
       CALL pfhpsn_field_block%SYNC_HOST_RDWR()
         
       CALL FIELD_DELETE(pt_field_block)
-        CALL FIELD_DELETE(pq_field_block)
-        CALL FIELD_DELETE(buffer_tmp_field_block)
-        CALL FIELD_DELETE(pvfa_field_block)
-        CALL FIELD_DELETE(pvfl_field_block)
-        CALL FIELD_DELETE(pvfi_field_block)
-        CALL FIELD_DELETE(pdyna_field_block)
-        CALL FIELD_DELETE(pdynl_field_block)
-        CALL FIELD_DELETE(pdyni_field_block)
-        CALL FIELD_DELETE(phrsw_field_block)
-        CALL FIELD_DELETE(phrlw_field_block)
-        CALL FIELD_DELETE(pvervel_field_block)
-        CALL FIELD_DELETE(pap_field_block)
-        CALL FIELD_DELETE(paph_field_block)
-        CALL FIELD_DELETE(plsm_field_block)
-        CALL FIELD_DELETE(ldcum_field_block)
-        CALL FIELD_DELETE(ktype_field_block)
-        CALL FIELD_DELETE(plu_field_block)
-        CALL FIELD_DELETE(psnde_field_block)
-        CALL FIELD_DELETE(pmfu_field_block)
-        CALL FIELD_DELETE(pmfd_field_block)
-        CALL FIELD_DELETE(pa_field_block)
-        CALL FIELD_DELETE(pclv_field_block)
-        CALL FIELD_DELETE(psupsat_field_block)
-        CALL FIELD_DELETE(plcrit_aer_field_block)
-        CALL FIELD_DELETE(picrit_aer_field_block)
-        CALL FIELD_DELETE(pre_ice_field_block)
-        CALL FIELD_DELETE(pccn_field_block)
-        CALL FIELD_DELETE(pnice_field_block)
-        ! copy)
-        CALL FIELD_DELETE(buffer_loc_field_block)
-        CALL FIELD_DELETE(plude_field_block)
-        CALL FIELD_DELETE(pcovptot_field_block)
-        CALL FIELD_DELETE(prainfrac_toprfz_field_block)
-        ! copyout)
-        CALL FIELD_DELETE(pfsqlf_field_block)
-        CALL FIELD_DELETE(pfsqif_field_block)
-        CALL FIELD_DELETE(pfcqnng_field_block)
-        CALL FIELD_DELETE(pfcqlng_field_block)
-        CALL FIELD_DELETE(pfsqrf_field_block)
-        CALL FIELD_DELETE(pfsqsf_field_block)
-        CALL FIELD_DELETE(pfcqrng_field_block)
-        CALL FIELD_DELETE(pfcqsng_field_block)
-        CALL FIELD_DELETE(pfsqltur_field_block)
-        CALL FIELD_DELETE(pfsqitur_field_block)
-        CALL FIELD_DELETE(pfplsl_field_block)
-        CALL FIELD_DELETE(pfplsn_field_block)
-        CALL FIELD_DELETE(pfhpsl_field_block)
-        CALL FIELD_DELETE(pfhpsn_field_block)
+      CALL FIELD_DELETE(pq_field_block)
+      CALL FIELD_DELETE(buffer_tmp_field_block)
+      CALL FIELD_DELETE(pvfa_field_block)
+      CALL FIELD_DELETE(pvfl_field_block)
+      CALL FIELD_DELETE(pvfi_field_block)
+      CALL FIELD_DELETE(pdyna_field_block)
+      CALL FIELD_DELETE(pdynl_field_block)
+      CALL FIELD_DELETE(pdyni_field_block)
+      CALL FIELD_DELETE(phrsw_field_block)
+      CALL FIELD_DELETE(phrlw_field_block)
+      CALL FIELD_DELETE(pvervel_field_block)
+      CALL FIELD_DELETE(pap_field_block)
+      CALL FIELD_DELETE(paph_field_block)
+      CALL FIELD_DELETE(plsm_field_block)
+      CALL FIELD_DELETE(ldcum_field_block)
+      CALL FIELD_DELETE(ktype_field_block)
+      CALL FIELD_DELETE(plu_field_block)
+      CALL FIELD_DELETE(psnde_field_block)
+      CALL FIELD_DELETE(pmfu_field_block)
+      CALL FIELD_DELETE(pmfd_field_block)
+      CALL FIELD_DELETE(pa_field_block)
+      CALL FIELD_DELETE(pclv_field_block)
+      CALL FIELD_DELETE(psupsat_field_block)
+      CALL FIELD_DELETE(plcrit_aer_field_block)
+      CALL FIELD_DELETE(picrit_aer_field_block)
+      CALL FIELD_DELETE(pre_ice_field_block)
+      CALL FIELD_DELETE(pccn_field_block)
+      CALL FIELD_DELETE(pnice_field_block)
+      ! copy)
+      CALL FIELD_DELETE(buffer_loc_field_block)
+      CALL FIELD_DELETE(plude_field_block)
+      CALL FIELD_DELETE(pcovptot_field_block)
+      CALL FIELD_DELETE(prainfrac_toprfz_field_block)
+      ! copyout)
+      CALL FIELD_DELETE(pfsqlf_field_block)
+      CALL FIELD_DELETE(pfsqif_field_block)
+      CALL FIELD_DELETE(pfcqnng_field_block)
+      CALL FIELD_DELETE(pfcqlng_field_block)
+      CALL FIELD_DELETE(pfsqrf_field_block)
+      CALL FIELD_DELETE(pfsqsf_field_block)
+      CALL FIELD_DELETE(pfcqrng_field_block)
+      CALL FIELD_DELETE(pfcqsng_field_block)
+      CALL FIELD_DELETE(pfsqltur_field_block)
+      CALL FIELD_DELETE(pfsqitur_field_block)
+      CALL FIELD_DELETE(pfplsl_field_block)
+      CALL FIELD_DELETE(pfplsn_field_block)
+      CALL FIELD_DELETE(pfhpsl_field_block)
+      CALL FIELD_DELETE(pfhpsn_field_block)
 
   
     ENDDO ! end of outer block loop
