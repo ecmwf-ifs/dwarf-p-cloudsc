@@ -16,7 +16,9 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_DBLK_K_CACHING_MOD
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
   USE CLOUDSC_GPU_SCC_K_CACHING_MOD, ONLY: CLOUDSC_SCC_K_CACHING
-  USE OPENACC
+ 
+  USE FIELD_MODULE, ONLY: FIELD_2RB, FIELD_3RB, FIELD_4RB, FIELD_2IM, FIELD_2LM
+  USE FIELD_FACTORY_MODULE, ONLY: FIELD_NEW, FIELD_DELETE 
   
   IMPLICIT NONE
 
@@ -98,104 +100,110 @@ CONTAINS
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSL(NPROMA, NLEV+1, NGPBLKS)    ! Enthalpy flux for liq
     REAL(KIND=JPRB), INTENT(OUT) :: PFHPSN(NPROMA, NLEV+1, NGPBLKS)    ! ice number concentration (cf. CCN)
 
-    ! Temporary buffers used for double blocked loop
+    ! Device pointers for kernel data for FIELD API device offload
     ! copyin
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pt_block
-	!$acc declare device_resident(pt_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pq_block
-	!$acc declare device_resident(pq_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:,:) :: buffer_tmp_block
-	!$acc declare device_resident(buffer_tmp_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pvfa_block
-	!$acc declare device_resident(pvfa_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pvfl_block
-	!$acc declare device_resident(pvfl_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pvfi_block
-	!$acc declare device_resident(pvfi_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pdyna_block
-	!$acc declare device_resident(pdyna_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pdynl_block
-	!$acc declare device_resident(pdynl_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pdyni_block
-	!$acc declare device_resident(pdyni_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: phrsw_block
-	!$acc declare device_resident(phrsw_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: phrlw_block
-	!$acc declare device_resident(phrlw_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pvervel_block
-	!$acc declare device_resident(pvervel_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pap_block
-	!$acc declare device_resident(pap_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: paph_block
-	!$acc declare device_resident(paph_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:) :: plsm_block
-	!$acc declare device_resident(plsm_block)
-    LOGICAL, ALLOCATABLE, DIMENSION(:,:) :: ldcum_block
-	!$acc declare device_resident(ldcum_block)
-    INTEGER(KIND=JPIM), ALLOCATABLE, DIMENSION(:,:) :: ktype_block
-	!$acc declare device_resident(ktype_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: plu_block
-	!$acc declare device_resident(plu_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: psnde_block
-	!$acc declare device_resident(psnde_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pmfu_block
-	!$acc declare device_resident(pmfu_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pmfd_block
-	!$acc declare device_resident(pmfd_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pa_block
-	!$acc declare device_resident(pa_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:,:) :: pclv_block
-	!$acc declare device_resident(pclv_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: psupsat_block
-	!$acc declare device_resident(psupsat_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: plcrit_aer_block
-	!$acc declare device_resident(plcrit_aer_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: picrit_aer_block
-	!$acc declare device_resident(picrit_aer_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pre_ice_block
-	!$acc declare device_resident(pre_ice_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pccn_block
-	!$acc declare device_resident(pccn_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pnice_block
-	!$acc declare device_resident(pnice_block)
+    CLASS(FIELD_3RB), POINTER :: pt_field_block
+    CLASS(FIELD_3RB), POINTER :: pq_field_block
+    CLASS(FIELD_4RB), POINTER :: buffer_tmp_field_block
+    CLASS(FIELD_3RB), POINTER :: pvfa_field_block
+    CLASS(FIELD_3RB), POINTER :: pvfl_field_block
+    CLASS(FIELD_3RB), POINTER :: pvfi_field_block
+    CLASS(FIELD_3RB), POINTER :: pdyna_field_block
+    CLASS(FIELD_3RB), POINTER :: pdynl_field_block
+    CLASS(FIELD_3RB), POINTER :: pdyni_field_block
+    CLASS(FIELD_3RB), POINTER :: phrsw_field_block
+    CLASS(FIELD_3RB), POINTER :: phrlw_field_block
+    CLASS(FIELD_3RB), POINTER :: pvervel_field_block
+    CLASS(FIELD_3RB), POINTER :: pap_field_block
+    CLASS(FIELD_3RB), POINTER :: paph_field_block
+    CLASS(FIELD_2RB), POINTER :: plsm_field_block
+    CLASS(FIELD_2LM), POINTER :: ldcum_field_block
+    CLASS(FIELD_2IM), POINTER :: ktype_field_block
+    CLASS(FIELD_3RB), POINTER :: plu_field_block
+    CLASS(FIELD_3RB), POINTER :: psnde_field_block
+    CLASS(FIELD_3RB), POINTER :: pmfu_field_block
+    CLASS(FIELD_3RB), POINTER :: pmfd_field_block
+    CLASS(FIELD_3RB), POINTER :: pa_field_block
+    CLASS(FIELD_4RB), POINTER :: pclv_field_block
+    CLASS(FIELD_3RB), POINTER :: psupsat_field_block
+    CLASS(FIELD_3RB), POINTER :: plcrit_aer_field_block
+    CLASS(FIELD_3RB), POINTER :: picrit_aer_field_block
+    CLASS(FIELD_3RB), POINTER :: pre_ice_field_block
+    CLASS(FIELD_3RB), POINTER :: pccn_field_block
+    CLASS(FIELD_3RB), POINTER :: pnice_field_block
     ! copy
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:,:) :: buffer_loc_block
-	!$acc declare device_resident(buffer_loc_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: plude_block
-	!$acc declare device_resident(plude_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pcovptot_block
-	!$acc declare device_resident(pcovptot_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:) :: prainfrac_toprfz_block
-	!$acc declare device_resident(prainfrac_toprfz_block)
+    CLASS(FIELD_4RB), POINTER :: buffer_loc_field_block
+    CLASS(FIELD_3RB), POINTER :: plude_field_block
+    CLASS(FIELD_3RB), POINTER :: pcovptot_field_block
+    CLASS(FIELD_2RB), POINTER :: prainfrac_toprfz_field_block
     ! copyout
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfsqlf_block
-	!$acc declare device_resident(pfsqlf_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfsqif_block
-	!$acc declare device_resident(pfsqif_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfcqnng_block
-	!$acc declare device_resident(pfcqnng_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfcqlng_block
-	!$acc declare device_resident(pfcqlng_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfsqrf_block
-	!$acc declare device_resident(pfsqrf_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfsqsf_block
-	!$acc declare device_resident(pfsqsf_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfcqrng_block
-	!$acc declare device_resident(pfcqrng_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfcqsng_block
-	!$acc declare device_resident(pfcqsng_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfsqltur_block
-	!$acc declare device_resident(pfsqltur_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfsqitur_block
-	!$acc declare device_resident(pfsqitur_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfplsl_block
-	!$acc declare device_resident(pfplsl_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfplsn_block
-	!$acc declare device_resident(pfplsn_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfhpsl_block
-	!$acc declare device_resident(pfhpsl_block)
-    REAL(KIND=JPRB), ALLOCATABLE, DIMENSION(:,:,:) :: pfhpsn_block
-	!$acc declare device_resident(pfhpsn_block)
+    CLASS(FIELD_3RB), POINTER :: pfsqlf_field_block
+    CLASS(FIELD_3RB), POINTER :: pfsqif_field_block
+    CLASS(FIELD_3RB), POINTER :: pfcqnng_field_block
+    CLASS(FIELD_3RB), POINTER :: pfcqlng_field_block
+    CLASS(FIELD_3RB), POINTER :: pfsqrf_field_block
+    CLASS(FIELD_3RB), POINTER :: pfsqsf_field_block
+    CLASS(FIELD_3RB), POINTER :: pfcqrng_field_block
+    CLASS(FIELD_3RB), POINTER :: pfcqsng_field_block
+    CLASS(FIELD_3RB), POINTER :: pfsqltur_field_block
+    CLASS(FIELD_3RB), POINTER :: pfsqitur_field_block
+    CLASS(FIELD_3RB), POINTER :: pfplsl_field_block
+    CLASS(FIELD_3RB), POINTER :: pfplsn_field_block
+    CLASS(FIELD_3RB), POINTER :: pfhpsl_field_block
+    CLASS(FIELD_3RB), POINTER :: pfhpsn_field_block
+
+    ! Field API VIEWS for the DEVICE pr
+    ! copyin
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pt_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pq_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:,:) :: buffer_tmp_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pvfa_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pvfl_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pvfi_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pdyna_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pdynl_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pdyni_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: phrsw_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: phrlw_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pvervel_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pap_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: paph_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:) :: plsm_block
+    LOGICAL, POINTER, CONTIGUOUS, DIMENSION(:,:) :: ldcum_block
+    INTEGER(KIND=JPIM), POINTER, CONTIGUOUS, DIMENSION(:,:) :: ktype_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: plu_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: psnde_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pmfu_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pmfd_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pa_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:,:) :: pclv_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: psupsat_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: plcrit_aer_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: picrit_aer_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pre_ice_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pccn_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pnice_block
+    ! copy
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:,:) :: buffer_loc_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: plude_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pcovptot_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:) :: prainfrac_toprfz_block
+    ! copyout
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfsqlf_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfsqif_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfcqnng_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfcqlng_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfsqrf_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfsqsf_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfcqrng_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfcqsng_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfsqltur_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfsqitur_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfplsl_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfplsn_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfhpsl_block
+    REAL(KIND=JPRB), POINTER, CONTIGUOUS, DIMENSION(:,:,:) :: pfhpsn_block
+
     
     
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND
@@ -206,12 +214,15 @@ CONTAINS
     TYPE(TECLDP) :: LOCAL_YRECLDP
 
     ! double blocking variables
-    INTEGER(KIND=JPIM) :: BLOCK_BUFFER_SIZE     ! block size for blocks in outer loop
+    INTEGER(KIND=JPIM) :: BLOCK_BUFFER_SIZE     ! block size for buffer of blocks in outer loop
+    INTEGER(KIND=JPIM) :: BLOCK_SIZE            ! size of a block (BLOCK_END-BLOCK_START+1)
     INTEGER(KIND=JPIM) :: BLOCK_COUNT           ! number of blocks
     INTEGER(KIND=JPIM) :: BLOCK_IDX             ! idx of current block in [1,BLOCK_COUNT]
     INTEGER(KIND=JPIM) :: BLOCK_START           ! start of current block in [1,NGPBLKS]
     INTEGER(KIND=JPIM) :: BLOCK_END             ! end of current block in [1,NGPBLKS]
     INTEGER(KIND=JPIM) :: IBLLOC                ! local loop idx inside inner block loop
+    INTEGER(KIND=JPIM) :: NUM_STREAMS           ! number of stream for async copy/execution
+    INTEGER(KIND=JPIM) :: STREAM                ! number of stream for async copy/execution
  
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
@@ -234,285 +245,270 @@ CONTAINS
     
     print *, 'BLOCK_BUFFER_SIZE=', BLOCK_BUFFER_SIZE
     print *, 'BLOCK_COUNT=', BLOCK_COUNT
-   
-    ! buffer allocations
-   !copyin
-    ALLOCATE(pt_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pq_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(buffer_tmp_block(NPROMA,NLEV,3+NCLV,BLOCK_BUFFER_SIZE))
-    ALLOCATE(pvfa_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pvfl_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pvfi_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pdyna_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pdynl_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pdyni_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(phrsw_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(phrlw_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pvervel_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pap_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(paph_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(plsm_block(NPROMA, BLOCK_BUFFER_SIZE))
-    ALLOCATE(ldcum_block(NPROMA, BLOCK_BUFFER_SIZE))
-    ALLOCATE(ktype_block(NPROMA, BLOCK_BUFFER_SIZE))
-    ALLOCATE(plu_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(psnde_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pmfu_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pmfd_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pa_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pclv_block(NPROMA, NLEV, NCLV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(psupsat_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(plcrit_aer_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(picrit_aer_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pre_ice_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pccn_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pnice_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ! copy
-    ALLOCATE(buffer_loc_block(NPROMA,NLEV,3+NCLV,BLOCK_BUFFER_SIZE))
-    ALLOCATE(plude_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pcovptot_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    ALLOCATE(prainfrac_toprfz_block(NPROMA, BLOCK_BUFFER_SIZE))
-    !copyout
-    ALLOCATE(pfsqlf_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfsqif_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfcqnng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfcqlng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfsqrf_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfsqsf_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfcqrng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfcqsng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfsqltur_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfsqitur_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfplsl_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfplsn_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfhpsl_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    ALLOCATE(pfhpsn_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    
-    
     
     DO BLOCK_IDX=0, BLOCK_COUNT-1
       BLOCK_START=BLOCK_IDX*BLOCK_BUFFER_SIZE+1
       BLOCK_END=MIN((BLOCK_IDX+1)*BLOCK_BUFFER_SIZE, NGPBLKS)
+      BLOCK_SIZE = BLOCK_END-BLOCK_START+1
     
-      ! data to device
-      !$acc host_data &
-        !$acc use_device(pt_block, &
-     	!$acc pq_block, &
-     	!$acc buffer_tmp_block, &
-    !  	!$acc BUFFER_CML_block, &
-     	!$acc pvfa_block, &
-     	!$acc pvfl_block, &
-     	!$acc pvfi_block, &
-     	!$acc pdyna_block, &
-     	!$acc pdynl_block, &
-     	!$acc pdyni_block, &
-     	!$acc phrsw_block, &
-     	!$acc phrlw_block, &
-     	!$acc pvervel_block, &
-     	!$acc pap_block, &
-     	!$acc paph_block, &
-     	!$acc plsm_block, &
-     	!$acc ldcum_block, &
-     	!$acc ktype_block, &
-     	!$acc plu_block, &
-     	!$acc psnde_block, &
-     	!$acc pmfu_block, &
-     	!$acc pmfd_block, &
-     	!$acc pa_block, &
-     	!$acc pclv_block, &
-     	!$acc psupsat_block, &
-     	!$acc plcrit_aer_block, &
-     	!$acc picrit_aer_block, &
-     	!$acc pre_ice_block, &
-     	!$acc pccn_block, &
-     	!$acc pnice_block, &
-      ! copy
-     	!$acc buffer_loc_block, &
-     	!$acc plude_block, &
-     	!$acc pcovptot_block, &
-     	!$acc prainfrac_toprfz_block)
+      STREAM = MODULO(BLOCK_IDX, NUM_STREAMS) + 1
 
+      ! NEW FIELDS FOR EACH BLOCK
       !copyin
-        call acc_memcpy_to_device(pt_block, pt(:,:, BLOCK_START:BLOCK_END), SIZEOF(pt(:,:, BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pq_block, pq(:,:,BLOCK_START:BLOCK_END), SIZEOF(pq(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(buffer_tmp_block, buffer_tmp(:,:,:,BLOCK_START:BLOCK_END), SIZEOF(buffer_tmp(:,:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pvfa_block, pvfa(:,:,BLOCK_START:BLOCK_END), SIZEOF(pvfa(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pvfl_block, pvfl(:,:,BLOCK_START:BLOCK_END), SIZEOF(pvfl(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pvfi_block, pvfi(:,:,BLOCK_START:BLOCK_END), SIZEOF(pvfi(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pdyna_block, pdyna(:,:,BLOCK_START:BLOCK_END), SIZEOF(pdyna(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pdynl_block, pdynl(:,:,BLOCK_START:BLOCK_END), SIZEOF(pdynl(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pdyni_block, pdyni(:,:,BLOCK_START:BLOCK_END), SIZEOF(pdyni(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(phrsw_block, phrsw(:,:,BLOCK_START:BLOCK_END), SIZEOF(phrsw(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(phrlw_block, phrlw(:,:,BLOCK_START:BLOCK_END), SIZEOF(phrlw(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pvervel_block, pvervel(:,:,BLOCK_START:BLOCK_END), SIZEOF(pvervel(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pap_block, pap(:,:,BLOCK_START:BLOCK_END), SIZEOF(pap(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(paph_block, paph(:,:,BLOCK_START:BLOCK_END), SIZEOF(paph(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(plsm_block, plsm(:,BLOCK_START:BLOCK_END), SIZEOF(plsm(:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(ldcum_block, ldcum(:,BLOCK_START:BLOCK_END), SIZEOF(ldcum(:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(ktype_block, ktype(:,BLOCK_START:BLOCK_END), SIZEOF(ktype(:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(plu_block, plu(:,:,BLOCK_START:BLOCK_END), SIZEOF(plu(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(psnde_block, psnde(:,:,BLOCK_START:BLOCK_END), SIZEOF(psnde(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pmfu_block, pmfu(:,:,BLOCK_START:BLOCK_END), SIZEOF(pmfu(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pmfd_block, pmfd(:,:,BLOCK_START:BLOCK_END), SIZEOF(pmfd(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pa_block, pa(:,:,BLOCK_START:BLOCK_END), SIZEOF(pa(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pclv_block, pclv(:,:,:,BLOCK_START:BLOCK_END), SIZEOF(pclv(:,:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(psupsat_block, psupsat(:,:,BLOCK_START:BLOCK_END), SIZEOF(psupsat(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(plcrit_aer_block, plcrit_aer(:,:,BLOCK_START:BLOCK_END), SIZEOF(plcrit_aer(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(picrit_aer_block, picrit_aer(:,:,BLOCK_START:BLOCK_END), SIZEOF(picrit_aer(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pre_ice_block, pre_ice(:,:,BLOCK_START:BLOCK_END), SIZEOF(pre_ice(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pccn_block, pccn(:,:,BLOCK_START:BLOCK_END), SIZEOF(pccn(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pnice_block, pnice(:,:,BLOCK_START:BLOCK_END), SIZEOF(pnice(:,:,BLOCK_START:BLOCK_END)))
-    !   copy)
-        call acc_memcpy_to_device(buffer_loc_block, buffer_loc(:,:,:,BLOCK_START:BLOCK_END), SIZEOF(buffer_loc(:,:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(plude_block, plude(:,:,BLOCK_START:BLOCK_END), SIZEOF(plude(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(pcovptot_block, pcovptot(:,:,BLOCK_START:BLOCK_END), SIZEOF(pcovptot(:,:,BLOCK_START:BLOCK_END)))
-        call acc_memcpy_to_device(prainfrac_toprfz_block, prainfrac_toprfz(:,BLOCK_START:BLOCK_END), SIZEOF(prainfrac_toprfz(:,BLOCK_START:BLOCK_END)))
-      !$acc end host_data
+      CALL FIELD_NEW(pt_field_block, DATA=pt(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pq_field_block, DATA=pq(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(buffer_tmp_field_block, DATA=buffer_tmp(:,:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvfa_field_block, DATA=pvfa(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvfl_field_block, DATA=pvfl(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvfi_field_block, DATA=pvfi(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pdyna_field_block, DATA=pdyna(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pdynl_field_block, DATA=pdynl(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pdyni_field_block, DATA=pdyni(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(phrsw_field_block, DATA=phrsw(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(phrlw_field_block, DATA=phrlw(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pvervel_field_block, DATA=pvervel(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pap_field_block, DATA=pap(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(paph_field_block, DATA=paph(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plsm_field_block, DATA=plsm(:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(ldcum_field_block, DATA=ldcum(:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(ktype_field_block, DATA=ktype(:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plu_field_block, DATA=plu(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(psnde_field_block, DATA=psnde(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pmfu_field_block, DATA=pmfu(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pmfd_field_block, DATA=pmfd(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pa_field_block, DATA=pa(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pclv_field_block, DATA=pclv(:,:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(psupsat_field_block, DATA=psupsat(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plcrit_aer_field_block, DATA=plcrit_aer(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(picrit_aer_field_block, DATA=picrit_aer(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pre_ice_field_block, DATA=pre_ice(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pccn_field_block, DATA=pccn(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pnice_field_block, DATA=pnice(:,:,BLOCK_START:BLOCK_END))
+      ! copy
+      CALL FIELD_NEW(buffer_loc_field_block, DATA=buffer_loc(:,:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(plude_field_block, DATA=plude(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pcovptot_field_block, DATA=pcovptot(:,:,BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(prainfrac_toprfz_field_block, DATA=prainfrac_toprfz(:,BLOCK_START:BLOCK_END))
+      ! copyout
+      CALL FIELD_NEW(pfsqlf_field_block, DATA=pfsqlf(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqif_field_block, DATA=pfsqif(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqnng_field_block, DATA=pfcqnng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqlng_field_block, DATA=pfcqlng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqrf_field_block, DATA=pfsqrf(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqsf_field_block, DATA=pfsqsf(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqrng_field_block, DATA=pfcqrng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfcqsng_field_block, DATA=pfcqsng(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqltur_field_block, DATA=pfsqltur(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfsqitur_field_block, DATA=pfsqitur(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfplsl_field_block, DATA=pfplsl(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfplsn_field_block, DATA=pfplsn(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfhpsl_field_block, DATA=pfhpsl(:, :, BLOCK_START:BLOCK_END))
+      CALL FIELD_NEW(pfhpsn_field_block, DATA=pfhpsn(:, :, BLOCK_START:BLOCK_END))
     
+      ! copy data to device
+      ! copyin
+      CALL pt_field_block%GET_DEVICE_DATA_RDONLY(pt_block)
+      CALL pq_field_block%GET_DEVICE_DATA_RDONLY(pq_block)
+      CALL buffer_tmp_field_block%GET_DEVICE_DATA_RDONLY(buffer_tmp_block)
+      CALL pvfa_field_block%GET_DEVICE_DATA_RDONLY(pvfa_block)
+      CALL pvfl_field_block%GET_DEVICE_DATA_RDONLY(pvfl_block)
+      CALL pvfi_field_block%GET_DEVICE_DATA_RDONLY(pvfi_block)
+      CALL pdyna_field_block%GET_DEVICE_DATA_RDONLY(pdyna_block)
+      CALL pdynl_field_block%GET_DEVICE_DATA_RDONLY(pdynl_block)
+      CALL pdyni_field_block%GET_DEVICE_DATA_RDONLY(pdyni_block)
+      CALL phrsw_field_block%GET_DEVICE_DATA_RDONLY(phrsw_block)
+      CALL phrlw_field_block%GET_DEVICE_DATA_RDONLY(phrlw_block)
+      CALL pvervel_field_block%GET_DEVICE_DATA_RDONLY(pvervel_block)
+      CALL pap_field_block%GET_DEVICE_DATA_RDONLY(pap_block)
+      CALL paph_field_block%GET_DEVICE_DATA_RDONLY(paph_block)
+      CALL plsm_field_block%GET_DEVICE_DATA_RDONLY(plsm_block)
+      CALL ldcum_field_block%GET_DEVICE_DATA_RDONLY(ldcum_block)
+      CALL ktype_field_block%GET_DEVICE_DATA_RDONLY(ktype_block)
+      CALL plu_field_block%GET_DEVICE_DATA_RDONLY(plu_block)
+      CALL psnde_field_block%GET_DEVICE_DATA_RDONLY(psnde_block)
+      CALL pmfu_field_block%GET_DEVICE_DATA_RDONLY(pmfu_block)
+      CALL pmfd_field_block%GET_DEVICE_DATA_RDONLY(pmfd_block)
+      CALL pa_field_block%GET_DEVICE_DATA_RDONLY(pa_block)
+      CALL pclv_field_block%GET_DEVICE_DATA_RDONLY(pclv_block)
+      CALL psupsat_field_block%GET_DEVICE_DATA_RDONLY(psupsat_block)
+      CALL plcrit_aer_field_block%GET_DEVICE_DATA_RDONLY(plcrit_aer_block)
+      CALL picrit_aer_field_block%GET_DEVICE_DATA_RDONLY(picrit_aer_block)
+      CALL pre_ice_field_block%GET_DEVICE_DATA_RDONLY(pre_ice_block)
+      CALL pccn_field_block%GET_DEVICE_DATA_RDONLY(pccn_block)
+      CALL pnice_field_block%GET_DEVICE_DATA_RDONLY(pnice_block)
+      ! copy
+      CALL buffer_loc_field_block%GET_DEVICE_DATA_RDWR(buffer_loc_block)
+      CALL plude_field_block%GET_DEVICE_DATA_RDWR(plude_block)
+      CALL pcovptot_field_block%GET_DEVICE_DATA_RDWR(pcovptot_block)
+      CALL prainfrac_toprfz_field_block%GET_DEVICE_DATA_RDWR(prainfrac_toprfz_block)
+      ! copyout
+      CALL pfsqlf_field_block%GET_DEVICE_DATA_WRONLY(pfsqlf_block)
+      CALL pfsqif_field_block%GET_DEVICE_DATA_WRONLY(pfsqif_block)
+      CALL pfcqnng_field_block%GET_DEVICE_DATA_WRONLY(pfcqnng_block)
+      CALL pfcqlng_field_block%GET_DEVICE_DATA_WRONLY(pfcqlng_block)
+      CALL pfsqrf_field_block%GET_DEVICE_DATA_WRONLY(pfsqrf_block)
+      CALL pfsqsf_field_block%GET_DEVICE_DATA_WRONLY(pfsqsf_block)
+      CALL pfcqrng_field_block%GET_DEVICE_DATA_WRONLY(pfcqrng_block)
+      CALL pfcqsng_field_block%GET_DEVICE_DATA_WRONLY(pfcqsng_block)
+      CALL pfsqltur_field_block%GET_DEVICE_DATA_WRONLY(pfsqltur_block)
+      CALL pfsqitur_field_block%GET_DEVICE_DATA_WRONLY(pfsqitur_block)
+      CALL pfplsl_field_block%GET_DEVICE_DATA_WRONLY(pfplsl_block)
+      CALL pfplsn_field_block%GET_DEVICE_DATA_WRONLY(pfplsn_block)
+      CALL pfhpsl_field_block%GET_DEVICE_DATA_WRONLY(pfhpsl_block)
+      CALL pfhpsn_field_block%GET_DEVICE_DATA_WRONLY(pfhpsn_block)
     
-    ! Local timer for each thread
-    TID = GET_THREAD_NUM()
-    CALL TIMER%THREAD_ACC_START(TID)
-
-
-    !$acc parallel loop gang vector_length(NPROMA)
-    DO IBLLOC=1, BLOCK_BUFFER_SIZE ! just a way to loop over NGPBLKS
-        IBL= BLOCK_BUFFER_SIZE*BLOCK_IDX +IBLLOC
-        JKGLO=(IBL-1)*NPROMA+1
-        ICEND=MIN(NPROMA, NGPTOT-JKGLO+1)
-
-      !$acc loop vector
-      DO JL=1,ICEND
-       CALL CLOUDSC_SCC_K_CACHING &
-        & (1, ICEND, NPROMA, NLEV, PTSPHY,&
-        & PT_BLOCK(:,:,IBLLOC), PQ_BLOCK(:,:,IBLLOC), &
-        & BUFFER_TMP_BLOCK(:,:,1,IBLLOC), BUFFER_TMP_BLOCK(:,:,3,IBLLOC), BUFFER_TMP_BLOCK(:,:,2,IBLLOC), BUFFER_TMP_BLOCK(:,:,4:8,IBLLOC), &
-        & BUFFER_LOC_BLOCK(:,:,1,IBLLOC), BUFFER_LOC_BLOCK(:,:,3,IBLLOC), BUFFER_LOC_BLOCK(:,:,2,IBLLOC), BUFFER_LOC_BLOCK(:,:,4:8,IBLLOC), &
-        & PVFA_BLOCK(:,:,IBLLOC), PVFL_BLOCK(:,:,IBLLOC), PVFI_BLOCK(:,:,IBLLOC), PDYNA_BLOCK(:,:,IBLLOC), PDYNL_BLOCK(:,:,IBLLOC), PDYNI_BLOCK(:,:,IBLLOC), &
-        & PHRSW_BLOCK(:,:,IBLLOC),    PHRLW_BLOCK(:,:,IBLLOC),&
-        & PVERVEL_BLOCK(:,:,IBLLOC),  PAP_BLOCK(:,:,IBLLOC),      PAPH_BLOCK(:,:,IBLLOC),&
-        & PLSM_BLOCK(:,IBLLOC),       LDCUM_BLOCK(:,IBLLOC),      KTYPE_BLOCK(:,IBLLOC), &
-        & PLU_BLOCK(:,:,IBLLOC),      PLUDE_BLOCK(:,:,IBLLOC),    PSNDE_BLOCK(:,:,IBLLOC),    PMFU_BLOCK(:,:,IBLLOC),     PMFD_BLOCK(:,:,IBLLOC),&
-        !---prognostic fields
-        & PA_BLOCK(:,:,IBLLOC),       PCLV_BLOCK(:,:,:,IBLLOC),   PSUPSAT_BLOCK(:,:,IBLLOC),&
-        !-- arrays for aerosol-cloud interactions
-        & PLCRIT_AER_BLOCK(:,:,IBLLOC),PICRIT_AER_BLOCK(:,:,IBLLOC),&
-        & PRE_ICE_BLOCK(:,:,IBLLOC),&
-        & PCCN_BLOCK(:,:,IBLLOC),     PNICE_BLOCK(:,:,IBLLOC),&
-        !---diagnostic output
-        & PCOVPTOT_BLOCK(:,:,IBLLOC), PRAINFRAC_TOPRFZ_BLOCK(:,IBLLOC),&
-        !---resulting fluxes
-        & PFSQLF_BLOCK(:,:,IBLLOC),   PFSQIF_BLOCK(:,:,IBLLOC),  PFCQNNG_BLOCK(:,:,IBLLOC),  PFCQLNG_BLOCK(:,:,IBLLOC),&
-        & PFSQRF_BLOCK(:,:,IBLLOC),   PFSQSF_BLOCK(:,:,IBLLOC),  PFCQRNG_BLOCK(:,:,IBLLOC),  PFCQSNG_BLOCK(:,:,IBLLOC),&
-        & PFSQLTUR_BLOCK(:,:,IBLLOC), PFSQITUR_BLOCK(:,:,IBLLOC), &
-        & PFPLSL_BLOCK(:,:,IBLLOC),   PFPLSN_BLOCK(:,:,IBLLOC),   PFHPSL_BLOCK(:,:,IBLLOC),   PFHPSN_BLOCK(:,:,IBLLOC),&
-        & YRECLDP=LOCAL_YRECLDP, JL=JL)
-      ENDDO
-    ENDDO
-    !$acc end parallel loop
-
-    CALL TIMER%THREAD_ACC_END(TID)
-
-    ! data to host
-   !$acc host_data &
-      !$acc use_device( &
+      !$acc data copyin(yrecldp), present(pt_block, &
+      !$acc pq_block, &
+      !$acc buffer_tmp_block, &
+      ! !$acc BUFFER_CML_block, &
+      !$acc pvfa_block, &
+      !$acc pvfl_block, &
+      !$acc pvfi_block, &
+      !$acc pdyna_block, &
+      !$acc pdynl_block, &
+      !$acc pdyni_block, &
+      !$acc phrsw_block, &
+      !$acc phrlw_block, &
+      !$acc pvervel_block, &
+      !$acc pap_block, &
+      !$acc paph_block, &
+      !$acc plsm_block, &
+      !$acc ldcum_block, &
+      !$acc ktype_block, &
+      !$acc plu_block, &
+      !$acc psnde_block, &
+      !$acc pmfu_block, &
+      !$acc pmfd_block, &
+      !$acc pa_block, &
+      !$acc pclv_block, &
+      !$acc psupsat_block, &
+      !$acc plcrit_aer_block, &
+      !$acc picrit_aer_block, &
+      !$acc pre_ice_block, &
+      !$acc pccn_block, &
+      !$acc pnice_block, &
+      ! copy
       !$acc buffer_loc_block, &
       !$acc plude_block, &
       !$acc pcovptot_block, &
-      !$acc prainfrac_toprfz_block, &
-      !$acc pfsqlf_block, &
-      !$acc pfsqif_block, &
-      !$acc pfcqnng_block, &
-      !$acc pfcqlng_block, &
-      !$acc pfsqrf_block, &
-      !$acc pfsqsf_block, &
-      !$acc pfcqrng_block, &
-      !$acc pfcqsng_block, &
-      !$acc pfsqltur_block, &
-      !$acc pfsqitur_block, &
-      !$acc pfplsl_block, &
-      !$acc pfplsn_block, &
-      !$acc pfhpsl_block, &
-      !$acc pfhpsn_block)
-    ! copy
-      call acc_memcpy_from_device(buffer_loc(:,:,:, BLOCK_START:BLOCK_END), buffer_loc_block, SIZEOF(buffer_loc(:,:,:,BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(plude(:, :, BLOCK_START:BLOCK_END), plude_block, SIZEOF(plude(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pcovptot(:, :, BLOCK_START:BLOCK_END), pcovptot_block, SIZEOF(pcovptot(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(prainfrac_toprfz(:, BLOCK_START:BLOCK_END), prainfrac_toprfz_block, SIZEOF(prainfrac_toprfz(:, BLOCK_START:BLOCK_END)))
-    !copyout
-      call acc_memcpy_from_device(pfsqlf(:, :, BLOCK_START:BLOCK_END), pfsqlf_block, SIZEOF(pfsqlf(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfsqif(:, :, BLOCK_START:BLOCK_END), pfsqif_block, SIZEOF(pfsqif(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfcqnng(:, :, BLOCK_START:BLOCK_END), pfcqnng_block, SIZEOF(pfcqnng(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfcqlng(:, :, BLOCK_START:BLOCK_END), pfcqlng_block, SIZEOF(pfcqlng(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfsqrf(:, :, BLOCK_START:BLOCK_END), pfsqrf_block, SIZEOF(pfsqrf(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfsqsf(:, :, BLOCK_START:BLOCK_END), pfsqsf_block, SIZEOF(pfsqsf(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfcqrng(:, :, BLOCK_START:BLOCK_END), pfcqrng_block, SIZEOF(pfcqrng(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfcqsng(:, :, BLOCK_START:BLOCK_END), pfcqsng_block, SIZEOF(pfcqsng(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfsqltur(:, :, BLOCK_START:BLOCK_END), pfsqltur_block, SIZEOF(pfsqltur(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfsqitur(:, :, BLOCK_START:BLOCK_END), pfsqitur_block, SIZEOF(pfsqitur(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfplsl(:, :, BLOCK_START:BLOCK_END), pfplsl_block, SIZEOF(pfplsl(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfplsn(:, :, BLOCK_START:BLOCK_END), pfplsn_block, SIZEOF(pfplsn(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfhpsl(:, :, BLOCK_START:BLOCK_END), pfhpsl_block, SIZEOF(pfhpsl(:, :, BLOCK_START:BLOCK_END)))
-      call acc_memcpy_from_device(pfhpsn(:, :, BLOCK_START:BLOCK_END), pfhpsn_block, SIZEOF(pfhpsn(:, :, BLOCK_START:BLOCK_END)))
-    !$acc end host_data
-!
+      !$acc prainfrac_toprfz_block)
+    
+      ! Local timer for each thread
+      TID = GET_THREAD_NUM()
+      CALL TIMER%THREAD_ACC_START(TID)
+
+
+      !$acc parallel loop gang vector_length(NPROMA)
+      DO IBLLOC=1, BLOCK_BUFFER_SIZE ! just a way to loop over NGPBLKS
+          IBL= BLOCK_BUFFER_SIZE*BLOCK_IDX +IBLLOC
+          JKGLO=(IBL-1)*NPROMA+1
+          ICEND=MIN(NPROMA, NGPTOT-JKGLO+1)
+
+        !$acc loop vector
+        DO JL=1,ICEND
+         CALL CLOUDSC_SCC_K_CACHING &
+          & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+          & PT_BLOCK(:,:,IBLLOC), PQ_BLOCK(:,:,IBLLOC), &
+          & BUFFER_TMP_BLOCK(:,:,1,IBLLOC), BUFFER_TMP_BLOCK(:,:,3,IBLLOC), BUFFER_TMP_BLOCK(:,:,2,IBLLOC), BUFFER_TMP_BLOCK(:,:,4:8,IBLLOC), &
+          & BUFFER_LOC_BLOCK(:,:,1,IBLLOC), BUFFER_LOC_BLOCK(:,:,3,IBLLOC), BUFFER_LOC_BLOCK(:,:,2,IBLLOC), BUFFER_LOC_BLOCK(:,:,4:8,IBLLOC), &
+          & PVFA_BLOCK(:,:,IBLLOC), PVFL_BLOCK(:,:,IBLLOC), PVFI_BLOCK(:,:,IBLLOC), PDYNA_BLOCK(:,:,IBLLOC), PDYNL_BLOCK(:,:,IBLLOC), PDYNI_BLOCK(:,:,IBLLOC), &
+          & PHRSW_BLOCK(:,:,IBLLOC),    PHRLW_BLOCK(:,:,IBLLOC),&
+          & PVERVEL_BLOCK(:,:,IBLLOC),  PAP_BLOCK(:,:,IBLLOC),      PAPH_BLOCK(:,:,IBLLOC),&
+          & PLSM_BLOCK(:,IBLLOC),       LDCUM_BLOCK(:,IBLLOC),      KTYPE_BLOCK(:,IBLLOC), &
+          & PLU_BLOCK(:,:,IBLLOC),      PLUDE_BLOCK(:,:,IBLLOC),    PSNDE_BLOCK(:,:,IBLLOC),    PMFU_BLOCK(:,:,IBLLOC),     PMFD_BLOCK(:,:,IBLLOC),&
+          !---prognostic fields
+          & PA_BLOCK(:,:,IBLLOC),       PCLV_BLOCK(:,:,:,IBLLOC),   PSUPSAT_BLOCK(:,:,IBLLOC),&
+          !-- arrays for aerosol-cloud interactions
+          & PLCRIT_AER_BLOCK(:,:,IBLLOC),PICRIT_AER_BLOCK(:,:,IBLLOC),&
+          & PRE_ICE_BLOCK(:,:,IBLLOC),&
+          & PCCN_BLOCK(:,:,IBLLOC),     PNICE_BLOCK(:,:,IBLLOC),&
+          !---diagnostic output
+          & PCOVPTOT_BLOCK(:,:,IBLLOC), PRAINFRAC_TOPRFZ_BLOCK(:,IBLLOC),&
+          !---resulting fluxes
+          & PFSQLF_BLOCK(:,:,IBLLOC),   PFSQIF_BLOCK(:,:,IBLLOC),  PFCQNNG_BLOCK(:,:,IBLLOC),  PFCQLNG_BLOCK(:,:,IBLLOC),&
+          & PFSQRF_BLOCK(:,:,IBLLOC),   PFSQSF_BLOCK(:,:,IBLLOC),  PFCQRNG_BLOCK(:,:,IBLLOC),  PFCQSNG_BLOCK(:,:,IBLLOC),&
+          & PFSQLTUR_BLOCK(:,:,IBLLOC), PFSQITUR_BLOCK(:,:,IBLLOC), &
+          & PFPLSL_BLOCK(:,:,IBLLOC),   PFPLSN_BLOCK(:,:,IBLLOC),   PFHPSL_BLOCK(:,:,IBLLOC),   PFHPSN_BLOCK(:,:,IBLLOC),&
+          & YRECLDP=LOCAL_YRECLDP, JL=JL)
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+      !$acc end data
+
+      CALL TIMER%THREAD_ACC_END(TID)
+      
+      CALL buffer_loc_field_block%SYNC_HOST_RDWR()
+      CALL plude_field_block%SYNC_HOST_RDWR()
+      CALL pcovptot_field_block%SYNC_HOST_RDWR()
+      CALL prainfrac_toprfz_field_block%SYNC_HOST_RDWR()
+      ! copyout
+      CALL pfsqlf_field_block%SYNC_HOST_RDWR()
+      CALL pfsqif_field_block%SYNC_HOST_RDWR()
+      CALL pfcqnng_field_block%SYNC_HOST_RDWR()
+      CALL pfcqlng_field_block%SYNC_HOST_RDWR()
+      CALL pfsqrf_field_block%SYNC_HOST_RDWR()
+      CALL pfsqsf_field_block%SYNC_HOST_RDWR()
+      CALL pfcqrng_field_block%SYNC_HOST_RDWR()
+      CALL pfcqsng_field_block%SYNC_HOST_RDWR()
+      CALL pfsqltur_field_block%SYNC_HOST_RDWR()
+      CALL pfsqitur_field_block%SYNC_HOST_RDWR()
+      CALL pfplsl_field_block%SYNC_HOST_RDWR()
+      CALL pfplsn_field_block%SYNC_HOST_RDWR()
+      CALL pfhpsl_field_block%SYNC_HOST_RDWR()
+      CALL pfhpsn_field_block%SYNC_HOST_RDWR()
+        
+      CALL FIELD_DELETE(pt_field_block)
+      CALL FIELD_DELETE(pq_field_block)
+      CALL FIELD_DELETE(buffer_tmp_field_block)
+      CALL FIELD_DELETE(pvfa_field_block)
+      CALL FIELD_DELETE(pvfl_field_block)
+      CALL FIELD_DELETE(pvfi_field_block)
+      CALL FIELD_DELETE(pdyna_field_block)
+      CALL FIELD_DELETE(pdynl_field_block)
+      CALL FIELD_DELETE(pdyni_field_block)
+      CALL FIELD_DELETE(phrsw_field_block)
+      CALL FIELD_DELETE(phrlw_field_block)
+      CALL FIELD_DELETE(pvervel_field_block)
+      CALL FIELD_DELETE(pap_field_block)
+      CALL FIELD_DELETE(paph_field_block)
+      CALL FIELD_DELETE(plsm_field_block)
+      CALL FIELD_DELETE(ldcum_field_block)
+      CALL FIELD_DELETE(ktype_field_block)
+      CALL FIELD_DELETE(plu_field_block)
+      CALL FIELD_DELETE(psnde_field_block)
+      CALL FIELD_DELETE(pmfu_field_block)
+      CALL FIELD_DELETE(pmfd_field_block)
+      CALL FIELD_DELETE(pa_field_block)
+      CALL FIELD_DELETE(pclv_field_block)
+      CALL FIELD_DELETE(psupsat_field_block)
+      CALL FIELD_DELETE(plcrit_aer_field_block)
+      CALL FIELD_DELETE(picrit_aer_field_block)
+      CALL FIELD_DELETE(pre_ice_field_block)
+      CALL FIELD_DELETE(pccn_field_block)
+      CALL FIELD_DELETE(pnice_field_block)
+      ! copy)
+      CALL FIELD_DELETE(buffer_loc_field_block)
+      CALL FIELD_DELETE(plude_field_block)
+      CALL FIELD_DELETE(pcovptot_field_block)
+      CALL FIELD_DELETE(prainfrac_toprfz_field_block)
+      ! copyout)
+      CALL FIELD_DELETE(pfsqlf_field_block)
+      CALL FIELD_DELETE(pfsqif_field_block)
+      CALL FIELD_DELETE(pfcqnng_field_block)
+      CALL FIELD_DELETE(pfcqlng_field_block)
+      CALL FIELD_DELETE(pfsqrf_field_block)
+      CALL FIELD_DELETE(pfsqsf_field_block)
+      CALL FIELD_DELETE(pfcqrng_field_block)
+      CALL FIELD_DELETE(pfcqsng_field_block)
+      CALL FIELD_DELETE(pfsqltur_field_block)
+      CALL FIELD_DELETE(pfsqitur_field_block)
+      CALL FIELD_DELETE(pfplsl_field_block)
+      CALL FIELD_DELETE(pfplsn_field_block)
+      CALL FIELD_DELETE(pfhpsl_field_block)
+      CALL FIELD_DELETE(pfhpsn_field_block)
+
   
   ENDDO ! end of outer block loop
-
-
-   ! buffer allocations
-   !copyin
-    DEALLOCATE(pt_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pq_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(buffer_tmp_block(NPROMA,NLEV,3+NCLV,BLOCK_BUFFER_SIZE))
-    ! DEALLOCATE(BUFFER_CML_block(NPROMA,NLEV,3+NCLV,BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pvfa_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pvfl_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pvfi_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pdyna_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pdynl_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pdyni_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(phrsw_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(phrlw_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pvervel_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pap_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(paph_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(plsm_block(NPROMA, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(ldcum_block(NPROMA, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(ktype_block(NPROMA, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(plu_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(psnde_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pmfu_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pmfd_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pa_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pclv_block(NPROMA, NLEV, NCLV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(psupsat_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(plcrit_aer_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(picrit_aer_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pre_ice_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pccn_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pnice_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-
-    ! copy
-    DEALLOCATE(buffer_loc_block(NPROMA,NLEV,3+NCLV,BLOCK_BUFFER_SIZE))
-    DEALLOCATE(plude_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pcovptot_block(NPROMA, NLEV, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(prainfrac_toprfz_block(NPROMA, BLOCK_BUFFER_SIZE))
-
-    !copyout
-    DEALLOCATE(pfsqlf_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfsqif_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfcqnng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfcqlng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfsqrf_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfsqsf_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfcqrng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfcqsng_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfsqltur_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfsqitur_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfplsl_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfplsn_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfhpsl_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
-    DEALLOCATE(pfhpsn_block(NPROMA, NLEV+1, BLOCK_BUFFER_SIZE))
 
 
     CALL TIMER%END()

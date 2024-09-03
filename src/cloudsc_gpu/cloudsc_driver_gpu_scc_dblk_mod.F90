@@ -16,6 +16,7 @@ MODULE CLOUDSC_DRIVER_GPU_SCC_DBLK_MOD
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
   USE CLOUDSC_GPU_SCC_MOD, ONLY: CLOUDSC_SCC
+
   USE FIELD_MODULE, ONLY: FIELD_2RB, FIELD_3RB, FIELD_4RB, FIELD_2IM, FIELD_2LM
   USE FIELD_FACTORY_MODULE, ONLY: FIELD_NEW, FIELD_DELETE 
 
@@ -240,15 +241,17 @@ CONTAINS
     BLOCK_COUNT=(NGPBLKS+BLOCK_BUFFER_SIZE-1)/BLOCK_BUFFER_SIZE
     ! Number of streams
     NUM_STREAMS = 5
+    print *, 'BLOCK_BUFFER_SIZE=', BLOCK_BUFFER_SIZE
+    print *, 'BLOCK_COUNT=', BLOCK_COUNT
     
     DO BLOCK_IDX=0, BLOCK_COUNT-1
       BLOCK_START=BLOCK_IDX*BLOCK_BUFFER_SIZE+1
       BLOCK_END=MIN((BLOCK_IDX+1)*BLOCK_BUFFER_SIZE, NGPBLKS)
       BLOCK_SIZE = BLOCK_END-BLOCK_START+1
       
-      
       STREAM = MODULO(BLOCK_IDX, NUM_STREAMS) + 1
-    ! NEW FIELDS FOR EACH BLOCK
+    
+      ! NEW FIELDS FOR EACH BLOCK
       !copyin
       CALL FIELD_NEW(pt_field_block, DATA=pt(:,:,BLOCK_START:BLOCK_END))
       CALL FIELD_NEW(pq_field_block, DATA=pq(:,:,BLOCK_START:BLOCK_END))
@@ -300,10 +303,8 @@ CONTAINS
       CALL FIELD_NEW(pfhpsl_field_block, DATA=pfhpsl(:, :, BLOCK_START:BLOCK_END))
       CALL FIELD_NEW(pfhpsn_field_block, DATA=pfhpsn(:, :, BLOCK_START:BLOCK_END))
 
-    
-
-    ! copy data to device
-        !copyin
+      ! copy data to device
+      ! copyin
       CALL pt_field_block%GET_DEVICE_DATA_RDONLY(pt_block)
       CALL pq_field_block%GET_DEVICE_DATA_RDONLY(pq_block)
       CALL buffer_tmp_field_block%GET_DEVICE_DATA_RDONLY(buffer_tmp_block)
