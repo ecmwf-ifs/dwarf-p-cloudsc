@@ -23,7 +23,8 @@ if( HAVE_CLOUDSC_FORTRAN_PYIFACE )
 
     # Set up a custom venv for this variant and install the necessary dependencies
     set( pyiface_VENV_PATH ${CMAKE_BINARY_DIR}/venv_pyiface )
-    setup_python_venv( ${pyiface_VENV_PATH} )
+    set( PYTHON_VERSION 3.8...<3.12 )
+    setup_python_venv( ${pyiface_VENV_PATH} ${PYTHON_VERSION} )
 
     if( NOT Python3_EXECUTABLE )
         ecbuild_error("[PyIface] Could not find Python3 executable in virtualenv")
