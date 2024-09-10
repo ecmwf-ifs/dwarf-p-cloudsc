@@ -660,10 +660,13 @@ LLFALL(NCLDQI)=.FALSE.
 !             1.  *** INITIAL VALUES FOR VARIABLES ***
 !######################################################################
 
-
 ! ----------------------
 ! non CLV initialization 
 ! ----------------------
+
+! ! $loki k-caching ignore(ZQX, ZQX0)
+
+!$loki loop-fusion group(1-init)
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
     ZTP1(JL,JK)        = PT(JL,JK)+PTSPHY*TENDENCY_TMP_T(JL,JK)
@@ -677,6 +680,9 @@ ENDDO
 ! -------------------------------------
 ! initialization for CLV family
 ! -------------------------------------
+
+!$loki loop-fusion group(1)
+!$loki loop-interchange
 DO JM=1,NCLV-1
   DO JK=1,KLEV
     DO JL=KIDIA,KFDIA
@@ -689,6 +695,7 @@ ENDDO
 !-------------
 ! zero arrays
 !-------------
+
 DO JM=1,NCLV
   DO JK=1,KLEV+1
     DO JL=KIDIA,KFDIA
@@ -697,6 +704,9 @@ DO JM=1,NCLV
   ENDDO
 ENDDO
 
+
+!$loki loop-fusion group(1)
+!$loki loop-interchange
 DO JM=1,NCLV
   DO JK=1,KLEV
     DO JL=KIDIA,KFDIA
@@ -714,6 +724,8 @@ LLRAINLIQ(:) = .TRUE.  ! Assume all raindrops are liquid initially
 ! ----------------------------------------------------
 ! Tidy up very small cloud cover or total cloud water
 ! ----------------------------------------------------
+
+!$loki loop-fusion group(1)
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
     IF (ZQX(JL,JK,NCLDQL)+ZQX(JL,JK,NCLDQI)<RLMIN.OR.ZA(JL,JK)<RAMIN) THEN
@@ -745,10 +757,12 @@ ENDDO
 ! Tidy up small CLV variables
 ! ---------------------------------
 !DIR$ IVDEP
+!DIR$ IVDEP
+
+!$loki loop-fusion group(1)
+!$loki loop-interchange
 DO JM=1,NCLV-1
-!DIR$ IVDEP
   DO JK=1,KLEV
-!DIR$ IVDEP
     DO JL=KIDIA,KFDIA
       IF (ZQX(JL,JK,JM)<RLMIN) THEN
         ZLNEG(JL,JK,JM) = ZLNEG(JL,JK,JM)+ZQX(JL,JK,JM)
@@ -767,6 +781,8 @@ ENDDO
 ! ------------------------------
 ! Define saturation values
 ! ------------------------------
+
+!$loki loop-fusion group(1)
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
     !----------------------------------------
@@ -804,6 +820,7 @@ DO JK=1,KLEV
 
 ENDDO
 
+!$loki loop-fusion group(1)
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
 
@@ -843,6 +860,8 @@ DO JL=KIDIA,KFDIA
   ZTRPAUS(JL)=0.1_JPRB
   ZPAPHD(JL)=1.0_JPRB/PAPH(JL,KLEV+1)
 ENDDO
+
+!$loki loop-fusion group(1)
 DO JK=1,KLEV-1
   DO JL=KIDIA,KFDIA
     ZSIG=PAP(JL,JK)*ZPAPHD(JL)
@@ -873,7 +892,7 @@ ENDDO
 !----------------------------------------------------------------------
 !                       START OF VERTICAL LOOP
 !----------------------------------------------------------------------
-
+!$loki loop-fusion group(1) insert
 DO JK=NCLDTOP,KLEV
 
 !----------------------------------------------------------------------
@@ -2798,6 +2817,8 @@ ENDDO ! on vertical level JK
 ! Copy general precip arrays back into PFP arrays for GRIB archiving
 ! Add rain and liquid fluxes, ice and snow fluxes
 !--------------------------------------------------------------------
+
+!$loki loop-fusion group(1)
 DO JK=1,KLEV+1
   DO JL=KIDIA,KFDIA
     PFPLSL(JL,JK) = ZPFPLSX(JL,JK,NCLDQR)+ZPFPLSX(JL,JK,NCLDQL)
@@ -2822,6 +2843,7 @@ DO JL=KIDIA,KFDIA
   PFSQITUR(JL,1) = 0.0_JPRB
 ENDDO
 
+!$loki loop-fusion group(1)
 DO JK=1,KLEV
   DO JL=KIDIA,KFDIA
 
@@ -2872,6 +2894,7 @@ ENDDO
 !-----------------------------------
 ! enthalpy flux due to precipitation
 !-----------------------------------
+!$loki loop-fusion group(1)
 DO JK=1,KLEV+1
   DO JL=KIDIA,KFDIA
     PFHPSL(JL,JK) = -RLVTT*PFPLSL(JL,JK)
