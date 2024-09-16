@@ -14,6 +14,11 @@ MODULE CLOUDSC_DRIVER_LOKI_MOD
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
 
+  #ifdef CUF_IMPORTS
+   USE YOMCST_CUF,ONLY : YOMCST_UPDATE_DEVICE
+   USE YOETHF_CUF,ONLY : YOETHF_UPDATE_DEVICE
+  #endif
+ 
   USE CLOUDSC_MOD, ONLY : CLOUDSC
 
   IMPLICIT NONE
@@ -108,6 +113,9 @@ CONTAINS
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
     IBL = 1  ! Useless statement to show the compiler that the sepcification part is over!
+
+    !@cuf CALL YOMCST_UPDATE_DEVICE()
+    !@cuf CALL YOETHF_UPDATE_DEVICE()
 
     if (irank == 0) then
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
