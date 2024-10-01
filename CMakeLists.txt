@@ -111,11 +111,21 @@ endif()
 ecbuild_add_option( FEATURE FIELD_API
     DESCRIPTION "Use field_api to manage GPU data offload and copyback"
     REQUIRED_PACKAGES "field_api"
-    CONDITION HAVE_CUDA
     DEFAULT ON )
 
 ecbuild_find_package( NAME loki )
 ecbuild_find_package( NAME atlas )
+
+ecbuild_add_option( FEATURE FIELD_API_MAPPED_MEMORY
+    DESCRIPTION "Use device mapped memory by default in Field API objects"
+    CONDITION field_api_HAVE_ACC AND field_api_HAVE_CUDA
+    DEFAULT OFF )
+
+ecbuild_add_option( FEATURE FIELD_API_PINNED_MEMORY
+    DESCRIPTION "Use pinned memory by default in Field API objects"
+    CONDITION field_api_HAVE_ACC AND field_api_HAVE_CUDA
+    DEFAULT OFF )
+
 
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION

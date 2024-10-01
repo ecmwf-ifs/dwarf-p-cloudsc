@@ -324,8 +324,9 @@ CONTAINS
   END SUBROUTINE FIELD_INIT_STATE
 
   SUBROUTINE CLOUDSC_FIELD_STATE_LOAD(SELF, NPROMA, NGPTOT, NGPTOTG, USE_PACKED)
-    USE FIELD_DEFAULTS_MODULE, ONLY: INIT_PINNED_VALUE, INIT_MAP_DEVPTR
-    ! Load reference input data via serialbox
+#ifdef HAVE_CUDA
+    USE FIELD_DEFAULTS_MODULE, ONLY: INIT_MAP_DEVPTR, INIT_PINNED_VALUE
+#endif
     CLASS(CLOUDSC_FIELD_STATE) :: SELF
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA, NGPTOT
     INTEGER(KIND=JPIM), INTENT(IN), OPTIONAL :: NGPTOTG
@@ -337,13 +338,24 @@ CONTAINS
 
     LOGICAL :: LLPACKED
 
+    ! Set this flag to disable host-mapped device pointers
+#ifdef HAVE_CUDA
+#ifdef HAVE_FIELD_API_MAPPED_MEMORY
+    INIT_MAP_DEVPTR = .TRUE.
+#else
+    INIT_MAP_DEVPTR = .FALSE.
+#endif
+    ! Set this flag to enable pinning of fields in page-locked memory
+#ifdef HAVE_FIELD_API_PINNED_MEMORY
+    INIT_PINNED_VALUE = .TRUE.
+#elif defined(HAVE_CUDA)
+    INIT_PINNED_VALUE = .FALSE.
+#endif
+#endif
+
     LLPACKED = .FALSE.
     IF (PRESENT(USE_PACKED)) LLPACKED = USE_PACKED
 
-    ! Set this flag to enable pinning of fields in page-locked memory
-    ! INIT_PINNED_VALUE = .TRUE.
-    ! Set this flag to disable host-mapped device pointers
-    INIT_MAP_DEVPTR = .FALSE.
 
     CALL INPUT_INITIALIZE(NAME='input')
 

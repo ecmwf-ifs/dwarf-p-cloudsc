@@ -15,7 +15,7 @@ ecbuild_add_option( FEATURE CLOUDSC_FORTRAN
 # Define the cloudsc CPU variant
 ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_FIELD
     DESCRIPTION "Build the field API Fortran version of CLOUDSC using Serialbox" DEFAULT ON
-    CONDITION Serialbox_FOUND OR HDF5_FOUND
+    CONDITION HAVE_FIELD_API AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
 if( HAVE_CLOUDSC_FORTRAN )

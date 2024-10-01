@@ -169,7 +169,13 @@ CONTAINS
     CALL FIELD_STATE%TENDENCY_LOC%F_A%GET_DEVICE_DATA_RDWR(TEND_LOC_A)
     CALL FIELD_STATE%TENDENCY_LOC%F_CLD%GET_DEVICE_DATA_RDWR(TEND_LOC_CLD)
 
-!$acc data copyin(yrecldp) deviceptr(PT, PQ,TEND_TMP_T,TEND_TMP_Q,&
+!$acc data copyin(yrecldp) &
+#ifdef HAVE_FIELD_API_MAPPED_MEMORY
+!$acc & deviceptr( &
+#else
+!$acc & present( &
+#endif
+!$acc & PT, PQ,TEND_TMP_T,TEND_TMP_Q,&
 !$acc & TEND_TMP_A, TEND_TMP_CLD, TEND_LOC_T, TEND_LOC_Q, &
 !$acc & TEND_LOC_A, TEND_LOC_CLD, PVFA, PVFL, PVFI, &
 !$acc & PDYNA, PDYNL, PDYNI, PHRSW,    PHRLW,&
