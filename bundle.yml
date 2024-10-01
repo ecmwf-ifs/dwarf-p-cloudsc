@@ -12,8 +12,6 @@ cmake : >
         BUILD_atlas=OFF
         BUILD_field_api=OFF
         ENABLE_OMP=ON
-        ENABLE_CUDA=OFF
-        ENABLE_ACC=OFF
         ENABLE_SINGLE_PRECISION=OFF
 
 projects :
@@ -113,7 +111,6 @@ options :
     - with-gpu :
         help  : Enable GPU kernels
         cmake : >
-            ENABLE_ACC=ON
             FIELD_API_ENABLE_ACC=ON
             ENABLE_CLOUDSC_GPU_SCC=ON
             ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
