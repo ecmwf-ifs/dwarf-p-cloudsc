@@ -7,7 +7,6 @@ cmake : >
         CMAKE_LINK_DEPENDS_NO_SHARED=ON
         CMAKE_EXPORT_COMPILE_COMMANDS=ON
         BUILD_serialbox=OFF
-        BUILD_field_api=OFF
         BUILD_eckit=OFF
         BUILD_fckit=OFF
         BUILD_atlas=OFF

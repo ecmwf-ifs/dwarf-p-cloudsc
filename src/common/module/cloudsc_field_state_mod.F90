@@ -341,7 +341,7 @@ CONTAINS
     IF (PRESENT(USE_PACKED)) LLPACKED = USE_PACKED
 
     ! Set this flag to enable pinning of fields in page-locked memory
-    INIT_PINNED_VALUE = .TRUE.
+    ! INIT_PINNED_VALUE = .TRUE.
     ! Set this flag to disable host-mapped device pointers
     INIT_MAP_DEVPTR = .FALSE.
 
