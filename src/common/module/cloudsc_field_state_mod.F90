@@ -251,7 +251,6 @@ CONTAINS
     CALL LOAD_SCALAR('KLEV', SELF%KLEV)
     CALL LOAD_SCALAR('KFLDX', SELF%KFLDX)
 
-    ! Note, why is this call here?
     CALL GET_OFFSETS(START, END, SIZE, KLON, SELF%KLEV, NCLV, NGPTOT, NGPTOTG)
     
     ! Initialize and load aux types

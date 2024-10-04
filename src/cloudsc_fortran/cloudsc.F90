@@ -677,7 +677,7 @@ DO JK=1,KLEV
 ENDDO
 
 ! -------------------------------------
-! INITIALIZATION FOR CLV FAMILY
+! initialization for CLV family
 ! -------------------------------------
 DO JM=1,NCLV-1
   DO JK=1,KLEV
@@ -712,7 +712,7 @@ DO JK=1,KLEV
       ZQX(JL,JK,NCLDQV)   = ZQX(JL,JK,NCLDQV)+ZQX(JL,JK,NCLDQL)
       ZQX(JL,JK,NCLDQL)   = 0.0_JPRB
 
-      ! EVAPORATE SMALL CLOUD ICE WATER AMOUNTS
+      ! Evaporate small cloud ice water amounts
       ZLNEG(JL,JK,NCLDQI) = ZLNEG(JL,JK,NCLDQI)+ZQX(JL,JK,NCLDQI)
       ZQADJ               = ZQX(JL,JK,NCLDQI)*ZQTMST
       PTENDENCY_LOC_Q(JL,JK)        = PTENDENCY_LOC_Q(JL,JK)+ZQADJ
