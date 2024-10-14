@@ -33,7 +33,13 @@ int main( int argc, char *argv[] ) {
     omp_threads = atoi( argv[1] );
     ngptot      = atoi( argv[2] );
     nproma      = atoi( argv[3] );
-    cloudsc_driver(omp_threads, ngptot, nproma);
+    if (ngptot % nproma != 0) {
+    	printf("Calling the SYCL variant(s) of cloudsc with non-matching ngptot and nproma won't work!\nMake ngptot a multiple of nproma!\n",argc);
+    	return_code = EXIT_FAILURE;
+    }
+    else{
+    	cloudsc_driver(omp_threads, ngptot, nproma);
+    }
   }
   else {
     printf("Calling c-cloudsc with the right number of arguments will work better ;-) \n",argc);

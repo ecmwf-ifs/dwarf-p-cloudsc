@@ -24,6 +24,7 @@ if( HAVE_CLOUDSC_C_CUDA )
         SOURCES
         cloudsc/yoecldp_c.h
         cloudsc/load_state.h
+	    cloudsc/dtype.h
             cloudsc/load_state.cu
             cloudsc/cloudsc_c.h
             cloudsc/cloudsc_c.cu
@@ -53,7 +54,7 @@ if( HAVE_CLOUDSC_C_CUDA )
         target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
     else()
         target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-            -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+            --ptxas-options=-O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>) 
     endif()
 
     set_target_properties( dwarf-cloudsc-c-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -111,7 +112,7 @@ if( HAVE_CLOUDSC_C_CUDA )
       target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
     else()
       target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-                       -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+          --ptxas-options=-O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
     endif()
 
     set_target_properties( dwarf-cloudsc-c-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -169,7 +170,7 @@ if( HAVE_CLOUDSC_C_CUDA )
       target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
     else()
       target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-                       -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+          --ptxas-options=-O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
     endif()
     set_target_properties( dwarf-cloudsc-c-cuda-k-caching-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
@@ -190,7 +191,6 @@ if( HAVE_CLOUDSC_C_CUDA )
     )
     ###
 
-
  # Create symlink for the input data
  if( HAVE_SERIALBOX )
    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
@@ -205,5 +205,5 @@ if( HAVE_CLOUDSC_C_CUDA )
  endif()
 
 else()
-    ecbuild_info( "Serialbox and/or CUDA not found, disabling CUDA prototype(s)" )
+    ecbuild_info( "CUDA not found, disabling CUDA prototype(s)" )
 endif()
