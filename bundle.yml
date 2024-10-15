@@ -67,7 +67,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : feature/gpu_discontiguous_data
+        version : feature/pluto
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
@@ -107,6 +107,7 @@ options :
     - with-cuda :
         help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran
         cmake : >
+            ATLAS_ENABLE_CUDA=ON
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
