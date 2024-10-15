@@ -18,7 +18,7 @@ projects :
 
     - ecbuild :
         git     : https://github.com/ecmwf/ecbuild
-        version : 3.8.0
+        version : master
         bundle  : false
 
     - serialbox :
@@ -43,7 +43,7 @@ projects :
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : 1.24.4
+        version : master
         require : ecbuild
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
@@ -60,7 +60,7 @@ projects :
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
-        version : 0.11.0
+        version : master
         require : ecbuild eckit
         cmake   : >
             FCKIT_ENABLE_TESTS=OFF
