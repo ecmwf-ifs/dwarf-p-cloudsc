@@ -38,6 +38,8 @@ INTEGER(KIND=JPIM) :: IARGS, LENARG, JARG, I
 INTEGER(KIND=JPIM) :: NUMOMP   = 1     ! Number of OpenMP threads for this run
 INTEGER(KIND=JPIM) :: NGPTOTG  = 16384 ! Number of grid points (as read from command line)
 INTEGER(KIND=JPIM) :: NPROMA   = 32    ! NPROMA blocking factor (currently active)
+INTEGER(KIND=JPIM) :: NITER    = 1     ! Call CLOUDSC driver multiple times, but deactivates validation when > 1
+INTEGER(KIND=JPIM) :: JITER
 
 TYPE(ATLAS_FIELDSET) :: FSET
 TYPE(ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS) :: FSPACE
@@ -76,11 +78,16 @@ FSET = ATLAS_FIELDSET()
 ! TODO: Create a global memory state from serialized input data
 CALL GLOBAL_ATLAS_STATE%LOAD(FSET, FSPACE, NPROMA, NGPTOTG)
 
-! Call the driver to perform the parallel loop over our kernel
-CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, GLOBAL_ATLAS_STATE%KFLDX, GLOBAL_ATLAS_STATE%PTSPHY)
+CALL GET_ENV_INT("NITER",NITER)
+
+DO  JITER=1,NITER
+  write(0,'(A,I0,A,I0)') "### ITERATION ",JITER,'/',NITER
+  ! Call the driver to perform the parallel loop over our kernel
+  CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, GLOBAL_ATLAS_STATE%KFLDX, GLOBAL_ATLAS_STATE%PTSPHY)
+ENDDO
 
 ! Validate the output against serialized reference data
-CALL GLOBAL_ATLAS_STATE%VALIDATE(FSET, FSPACE, NGPTOTG)
+IF (NITER == 1) CALL GLOBAL_ATLAS_STATE%VALIDATE(FSET, FSPACE, NGPTOTG)
 
 CALL FSET%FINAL()
 CALL FSPACE%FINAL()
@@ -90,5 +97,18 @@ CALL TRACE%FINAL()
 ! Tear down MPI environment
 CALL ATLAS_LIBRARY%FINALISE()
 CALL CLOUDSC_MPI_END()
+
+CONTAINS
+
+SUBROUTINE GET_ENV_INT(name,value)
+    character(len=*), intent(in):: name
+    INTEGER, intent(inout) :: value
+    character(len=32) :: value_str
+    integer :: value_str_length
+    CALL GET_ENVIRONMENT_VARIABLE(NAME=trim(name), VALUE=value_str, LENGTH=value_str_length)
+    IF (value_str_length > 0 ) THEN
+      READ(value_str(1:value_str_length), *) value
+    ENDIF
+END SUBROUTINE
 
 END PROGRAM DWARF_CLOUDSC
