@@ -9,13 +9,13 @@
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
     DESCRIPTION "Build optimized GPU version of CLOUDSC based on Atlas + OpenACC" DEFAULT OFF
-    CONDITION atlas_FOUND AND HAVE_CUDA AND (Serialbox_FOUND OR HDF5_FOUND)
+    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays (based on Atlas + OpenACC)" DEFAULT OFF
-    CONDITION atlas_FOUND AND HAVE_CUDA AND (Serialbox_FOUND OR HDF5_FOUND)
+    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
 
@@ -47,7 +47,7 @@ if( HAVE_CLOUDSC_GPU_SCC )
 endif()
 
 
-if( HAVE_CLOUDSC_GPU_SCC_HOIST )
+if( HAVE_CLOUDSC_GPU_SCC_HOIST AND FALSE)
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
         SOURCES
