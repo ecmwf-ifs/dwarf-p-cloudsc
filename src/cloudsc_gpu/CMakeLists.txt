@@ -249,9 +249,9 @@ if ( HAVE_CLOUDSC_GPU_OMP_SCC_STACK )
     )
 
     if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-        target_compile_options( dwarf-cloudsc-gpu-scc-stack PRIVATE "-fcray-pointer" )
+        target_compile_options( dwarf-cloudsc-gpu-omp-scc-stack PRIVATE "-fcray-pointer" )
     elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
-        target_compile_options( dwarf-cloudsc-gpu-scc-stack PRIVATE "-Mcray=pointer" )
+        target_compile_options( dwarf-cloudsc-gpu-omp-scc-stack PRIVATE "-Mcray=pointer" )
     endif()
 
     ecbuild_add_test(
