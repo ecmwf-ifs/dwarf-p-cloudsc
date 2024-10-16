@@ -216,7 +216,7 @@ if( HAVE_CLOUDSC_GPU_OMP_SCC )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-omp-scc-serial
-        COMMAND bin/dwarf-cloudsc-gpu-scc-omp
+        COMMAND bin/dwarf-cloudsc-gpu-omp-scc
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
