@@ -22,6 +22,7 @@ if( HAVE_CLOUDSC_HIP )
         TARGET dwarf-cloudsc-hip-lib
     	INSTALL_HEADERS LISTED
         SOURCES
+	    cloudsc/dtype.h
     	    cloudsc/yoecldp_c.h
     	    cloudsc/load_state.h
             cloudsc/load_state.cpp
@@ -74,6 +75,7 @@ if( HAVE_CLOUDSC_HIP )
         TARGET dwarf-cloudsc-hip-hoist-lib
     	INSTALL_HEADERS LISTED
         SOURCES
+	    cloudsc/dtype.h
     	    cloudsc/yoecldp_c.h
     	    cloudsc/load_state.h
             cloudsc/load_state.cpp
@@ -126,6 +128,7 @@ if( HAVE_CLOUDSC_HIP )
         TARGET dwarf-cloudsc-hip-k-caching-lib
     	INSTALL_HEADERS LISTED
         SOURCES
+	    cloudsc/dtype.h
     	    cloudsc/yoecldp_c.h
     	    cloudsc/load_state.h
             cloudsc/load_state.cpp
