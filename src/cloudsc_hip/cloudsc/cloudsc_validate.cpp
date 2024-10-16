@@ -10,11 +10,8 @@
 
 #include "cloudsc_validate.h"
 
-#include <dtype.h>
 #include <math.h>
 #include <limits>
-//#include <limits.h>
-
 
 #define min(a,b) (((a)<(b))?(a):(b))
 
@@ -51,8 +48,6 @@ void validate_1d(const char *name, dtype * v_ref, dtype * v_field, int nlon, int
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-  //dtype (*field)[nlon] = (dtype (*)[nlon]) v_field;
-  //dtype (*reference)[nlon] = (dtype (*)[nlon]) v_ref;
   double field_val, ref_val; 
   zminval = +std::numeric_limits<double>::max();
   zmaxval = -std::numeric_limits<double>::max();
@@ -60,8 +55,8 @@ void validate_1d(const char *name, dtype * v_ref, dtype * v_field, int nlon, int
   zerrsum = 0.0;
   zsum = 0.0;
 
-//  #pragma omp parallel for default(shared) private(b, bsize, jk)		\
-//    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+#pragma omp parallel for default(shared) private(b, bsize, jk)		\
+  reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jk = 0; jk < bsize; jk++) {
@@ -88,8 +83,6 @@ void validate_2d(const char *name, dtype *v_ref, dtype *v_field, int nlon, int n
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-//  dtype (*field)[nlev][nlon] = (dtype (*)[nlev][nlon]) v_field;
-//  dtype (*reference)[nlev][nlon] = (dtype (*)[nlev][nlon]) v_ref;
   double field_val, ref_val;
 
   zminval = +std::numeric_limits<double>::max();
@@ -98,9 +91,8 @@ void validate_2d(const char *name, dtype *v_ref, dtype *v_field, int nlon, int n
   zerrsum = 0.0;
   zsum = 0.0;
 
-//  #pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
-//    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
-
+#pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
+  reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jl = 0; jl < nlev; jl++) {
@@ -130,8 +122,6 @@ void validate_3d(const char *name, dtype *v_ref, dtype *v_field, int nlon,
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk, jm;
   dtype zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-//  dtype (*field)[nclv][nlev][nlon] = (dtype (*)[nclv][nlev][nlon]) v_field;
-//  dtype (*reference)[nclv][nlev][nlon] = (dtype (*)[nclv][nlev][nlon]) v_ref;
 
   zminval = +std::numeric_limits<dtype>::max();
   zmaxval = -std::numeric_limits<dtype>::max();
@@ -139,8 +129,8 @@ void validate_3d(const char *name, dtype *v_ref, dtype *v_field, int nlon,
   zerrsum = 0.0;
   zsum = 0.0;
 
-//  #pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
-//    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+#pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
+  reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jm = 0; jm < nclv; jm++) {
