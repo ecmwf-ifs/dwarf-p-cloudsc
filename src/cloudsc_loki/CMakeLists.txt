@@ -595,6 +595,76 @@ if( HAVE_CLOUDSC_LOKI )
         OMP 1
     )
 
+    ####################################################
+    ##  "Single Column Coalesced Field" (SCC-FIELD)   ##
+    ##   * Removes horizontal vector loops            ##
+    ##   * Invokes compute kernel as `!$acc vector`   ##
+    ##   * Uses Field API for device data offloading  ##
+    ####################################################
+
+if ( HAVE_FIELD AND field_api_HAVE_ACC )
+    set( CLOUDSC_FORTRAN_SRC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cloudsc_fortran/cloudsc.F90 )
+    loki_transform(
+        COMMAND convert
+        OUTPUT
+            loki-scc-field/cloudsc.field_offload.F90
+            loki-scc-field/cloudsc_driver_field_mod.field_offload.F90
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-field
+        DEPENDS
+        ${CLOUDSC_FORTRAN_SRC_PATH}cloudsc_fortran/cloudsc.F90
+        ${CLOUDSC_FORTRAN_SRC_PATH}cloudsc_fortran/cloudsc_driver_field_mod.F90
+            ${_OMNI_DEPENDENCIES}
+        MODE scc-field
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki_field_offload.config
+        CPP
+        DEFINITIONS
+            CLOUDSC_GPU_TIMING
+            ${CLOUDSC_DEFINE_STMT_FUNC}
+        FRONTEND ${LOKI_FRONTEND}
+        HEADERS
+            ${COMMON_MODULE}/yomcst.F90
+            ${COMMON_MODULE}/yomphyder.F90
+            ${COMMON_MODULE}/yoethf.F90
+            ${COMMON_MODULE}/yoecldp.F90
+            ${COMMON_MODULE}/cloudsc_field_state_mod.F90
+            ${COMMON_MODULE}/cloudsc_flux_type_mod.F90
+            ${COMMON_MODULE}/cloudsc_aux_type_mod.F90
+            ${COMMON_MODULE}/cloudsc_state_type_mod.F90
+        SOURCES
+            ${CLOUDSC_FORTRAN_SRC_PATH}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD
+            ${_TARGET_XMOD_DIR}
+            ${XMOD_DIR}
+    )
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-field
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}../cloudsc_gpu/dwarf_cloudsc_gpu.F90
+            loki-scc/cloudsc_driver_loki_mod.scc.F90
+            loki-scc/cloudsc.scc.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    )
+    # Set specific module directory to avoid aliasing of .mod files
+    set_target_properties(  dwarf-cloudsc-loki-scc-field
+    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-field
+    )
+
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-scc-field
+        COMMAND bin/dwarf-cloudsc-loki-scc-field
+        ARGS 1 1280 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
+    )
+
+endif()
 
     ####################################################
     ##  SCC CUF (CUDA Fortran)                        ##
