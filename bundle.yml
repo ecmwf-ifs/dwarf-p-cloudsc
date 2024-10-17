@@ -12,6 +12,7 @@ cmake : >
         BUILD_atlas=OFF
         BUILD_field_api=OFF
         ENABLE_OMP=ON
+        ENABLE_CUDA=OFF
         ENABLE_SINGLE_PRECISION=OFF
 
 projects :
@@ -104,7 +105,7 @@ options :
             ENABLE_FIELD_API_MAPPED_MEMORY=ON
     
     - with-pinned-fields :
-        help : Enable Field API to use mapped memory by default
+        help : Enable Field API to use pinned memory allocations by default
         cmake : >
             ENABLE_FIELD_API_PINNED_MEMORY=ON
 
@@ -121,7 +122,6 @@ options :
         help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran
         cmake : >
             ENABLE_CUDA=ON
-            FIELD_API_ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
 

@@ -118,12 +118,12 @@ ecbuild_find_package( NAME atlas )
 
 ecbuild_add_option( FEATURE FIELD_API_MAPPED_MEMORY
     DESCRIPTION "Use device mapped memory by default in Field API objects"
-    CONDITION field_api_HAVE_ACC AND field_api_HAVE_CUDA
+    CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
     DEFAULT OFF )
 
 ecbuild_add_option( FEATURE FIELD_API_PINNED_MEMORY
     DESCRIPTION "Use pinned memory by default in Field API objects"
-    CONDITION field_api_HAVE_ACC AND field_api_HAVE_CUDA
+    CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
     DEFAULT OFF )
 
 
