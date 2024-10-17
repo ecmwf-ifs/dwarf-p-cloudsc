@@ -91,7 +91,7 @@ if( HAVE_CLOUDSC_FORTRAN_FIELD )
             cloudsc.F90
         LIBS
             cloudsc-common-lib
-            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_FIELD
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_FIELD
     )
 
     # Create symlink for the input data
