@@ -127,8 +127,10 @@ CONTAINS
           END IF
         END IF
 
-        ! Log number of columns processed by this thread
-        CALL TIMER%THREAD_LOG(TID, IGPC=ICEND)
+#ifndef CLOUDSC_GPU_TIMING
+      ! Log number of columns processed by this thread (OpenMP mode)
+      CALL TIMER%THREAD_LOG(TID, IGPC=ICEND)
+#endif
       ENDDO
 
       !-- The "nowait" is here to get correct local timings (tloc) per thread

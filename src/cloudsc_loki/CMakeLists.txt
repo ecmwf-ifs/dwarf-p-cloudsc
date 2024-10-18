@@ -179,8 +179,8 @@ if( HAVE_CLOUDSC_LOKI )
     loki_transform(
         COMMAND convert
         OUTPUT
-            loki-scc-field/cloudsc.field_offload.F90
-            loki-scc-field/cloudsc_driver_field_mod.field_offload.F90
+            loki-scc-field/cloudsc.scc_field.F90
+            loki-scc-field/cloudsc_driver_field_mod.scc_field.F90
         BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-field
         DEPENDS
             cloudsc.F90
@@ -215,8 +215,8 @@ if( HAVE_CLOUDSC_LOKI )
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-field
         SOURCES
             ${PROJECT_SOURCE_DIR}/src/cloudsc_gpu/dwarf_cloudsc_gpu.F90
-            loki-scc-field/cloudsc.field_offload.F90
-            loki-scc-field/cloudsc_driver_field_mod.field_offload.F90
+            loki-scc-field/cloudsc.scc_field.F90
+            loki-scc-field/cloudsc_driver_field_mod.scc_field.F90
         LIBS
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
