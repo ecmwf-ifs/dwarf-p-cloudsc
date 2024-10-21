@@ -15,6 +15,7 @@ MODULE CLOUDSC_DRIVER_FIELD_MOD
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE EC_PMON_MOD, ONLY: EC_PMON
   USE CLOUDSC_FIELD_STATE_MOD, ONLY: CLOUDSC_AUX_TYPE, CLOUDSC_FLUX_TYPE, CLOUDSC_STATE_TYPE
+  USE CLOUDSC_MOD, ONLY : CLOUDSC
 
   IMPLICIT NONE
 
@@ -64,6 +65,8 @@ CONTAINS
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
 
+    !$loki data
+
     !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID,energy,power) &
     !$omp& num_threads(NUMOMP) firstprivate(PAUX, FLUX, TENDENCY_TMP, TENDENCY_LOC)
 
@@ -112,21 +115,13 @@ CONTAINS
               & FLUX%PFSQLF,   FLUX%PFSQIF ,  FLUX%PFCQNNG,  FLUX%PFCQLNG,&
               & FLUX%PFSQRF,   FLUX%PFSQSF ,  FLUX%PFCQRNG,  FLUX%PFCQSNG,&
               & FLUX%PFSQLTUR, FLUX%PFSQITUR , &
-              & FLUX%PFPLSL,   FLUX%PFPLSN,   FLUX%PFHPSL,   FLUX%PFHPSN, KFLDX, &
-              & YDOMCST, YDOETHF, YDECLDP)
+              & FLUX%PFPLSL,   FLUX%PFPLSN,   FLUX%PFHPSL,   FLUX%PFHPSN, YDECLDP)
 
-        IF (LEC_PMON) THEN
-          ! Sample power consuption
-          IF (MOD(IBL, 100) == 0) THEN
-            CALL EC_PMON(ENERGY, POWER)
-            POWER_MAX = MAX(POWER_MAX, POWER)
-            POWER_TOTAL = POWER_TOTAL + POWER
-            POWER_COUNT = POWER_COUNT + 1
-          END IF
-        END IF
 
-        ! Log number of columns processed by this thread
-        CALL TIMER%THREAD_LOG(TID, IGPC=ICEND)
+#ifndef CLOUDSC_GPU_TIMING
+      ! Log number of columns processed by this thread (OpenMP mode)
+      CALL TIMER%THREAD_LOG(TID, IGPC=ICEND)
+#endif
       ENDDO
 
       !-- The "nowait" is here to get correct local timings (tloc) per thread
@@ -137,15 +132,11 @@ CONTAINS
 
       !$omp end parallel
 
+      !$loki end data
+
       CALL TIMER%END()
 
       CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
-
-      IF (LEC_PMON) THEN
-        print *, "Power usage (sampled):: max: ", POWER_MAX, "avg:", &
-         & (REAL(POWER_TOTAL, KIND=JPRD) / REAL(POWER_COUNT, KIND=JPRD)), &
-         & "count:", POWER_COUNT
-      END IF
     
   END SUBROUTINE CLOUDSC_DRIVER_FIELD
 

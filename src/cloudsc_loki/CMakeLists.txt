@@ -118,54 +118,54 @@ if( HAVE_CLOUDSC_LOKI )
     ##   * Invokes compute kernel as `!$acc vector`   ##
     ####################################################
 
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-scc/cloudsc.scc.F90
-            loki-scc/cloudsc_driver_loki_mod.scc.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE scc
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        CPP
-        DATA_OFFLOAD
-        REMOVE_OPENMP
-        DEFINITIONS
-            CLOUDSC_GPU_TIMING
-            ${CLOUDSC_DEFINE_STMT_FUNC}
-        FRONTEND ${LOKI_FRONTEND}
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-scc/cloudsc_driver_loki_mod.scc.F90
-            loki-scc/cloudsc.scc.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
-    )
-
+    #     loki_transform(
+    #         COMMAND convert
+    #         OUTPUT
+    #             loki-scc/cloudsc.scc.F90
+    #             loki-scc/cloudsc_driver_loki_mod.scc.F90
+    #         BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
+    #         DEPENDS
+    #             cloudsc.F90
+    #             cloudsc_driver_loki_mod.F90
+    #             ${_OMNI_DEPENDENCIES}
+    #         MODE scc
+    #         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+    #         CPP
+    #         DATA_OFFLOAD
+    #         REMOVE_OPENMP
+    #         DEFINITIONS
+    #             CLOUDSC_GPU_TIMING
+    #             ${CLOUDSC_DEFINE_STMT_FUNC}
+    #         FRONTEND ${LOKI_FRONTEND}
+    #         SOURCES
+    #             ${CMAKE_CURRENT_SOURCE_DIR}
+    #             ${COMMON_MODULE}
+    #         INCLUDES
+    #             ${COMMON_INCLUDE}
+    #         XMOD
+    #             ${_TARGET_XMOD_DIR}
+    #             ${XMOD_DIR}
+    #     )
+    # 
+    #     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
+    #         SOURCES
+    #             dwarf_cloudsc.F90
+    #             loki-scc/cloudsc_driver_loki_mod.scc.F90
+    #             loki-scc/cloudsc.scc.F90
+    #         LIBS
+    #             cloudsc-common-lib
+    #         DEFINITIONS ${CLOUDSC_DEFINITIONS}
+    #     )
+    # 
+    #     ecbuild_add_test(
+    #         TARGET dwarf-cloudsc-loki-scc-serial
+    #         COMMAND bin/dwarf-cloudsc-loki-scc
+    #         ARGS 1 1280 128
+    #         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    #         OMP 1
+    #         ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
+    #     )
+    # 
 
     ####################################################
     ##  "Single Column Coalesced Field" (SCC-FIELD)   ##
@@ -184,7 +184,7 @@ if( HAVE_CLOUDSC_LOKI )
         BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-field
         DEPENDS
             cloudsc.F90
-            ${CLOUDSC_FORTRAN_SRC_PATH}/cloudsc_driver_field_mod.F90
+            cloudsc_driver_field_mod.F90
             ${_OMNI_DEPENDENCIES}
         MODE scc-field
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki_field_offload.config
@@ -203,7 +203,7 @@ if( HAVE_CLOUDSC_LOKI )
             ${COMMON_MODULE}/cloudsc_aux_type_mod.F90
             ${COMMON_MODULE}/cloudsc_state_type_mod.F90
         SOURCES
-            ${CLOUDSC_FORTRAN_SRC_PATH}
+        ${CMAKE_CURRENT_SOURCE_DIR}
             ${COMMON_MODULE}
         INCLUDES
             ${COMMON_INCLUDE}
@@ -214,7 +214,7 @@ if( HAVE_CLOUDSC_LOKI )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-field
         SOURCES
-            ${PROJECT_SOURCE_DIR}/src/cloudsc_gpu/dwarf_cloudsc_gpu.F90
+            dwarf_cloudsc_field.F90
             loki-scc-field/cloudsc.scc_field.F90
             loki-scc-field/cloudsc_driver_field_mod.scc_field.F90
         LIBS
