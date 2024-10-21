@@ -104,11 +104,6 @@ options :
         cmake : >
             ENABLE_FIELD_API_MAPPED_MEMORY=ON
     
-    - with-pinned-fields :
-        help : Enable Field API to use pinned memory allocations by default
-        cmake : >
-            ENABLE_FIELD_API_PINNED_MEMORY=ON
-
     - with-gpu :
         help  : Enable GPU kernels
         cmake : >

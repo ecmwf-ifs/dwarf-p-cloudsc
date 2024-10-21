@@ -121,12 +121,6 @@ ecbuild_add_option( FEATURE FIELD_API_MAPPED_MEMORY
     CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
     DEFAULT OFF )
 
-ecbuild_add_option( FEATURE FIELD_API_PINNED_MEMORY
-    DESCRIPTION "Use pinned memory by default in Field API objects"
-    CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
-    DEFAULT OFF )
-
-
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION
     DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
