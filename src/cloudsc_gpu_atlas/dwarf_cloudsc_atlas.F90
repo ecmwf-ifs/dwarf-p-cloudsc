@@ -74,9 +74,14 @@ IF (IARGS >= 3) THEN
 ENDIF
 
 FSET = ATLAS_FIELDSET()
+CALL GLOBAL_ATLAS_STATE%LOAD(FSET, FSPACE, NPROMA, NGPTOTG)
+write(0,*) "Ignore above timer!!!"
 
 ! TODO: Create a global memory state from serialized input data
+
+FSET = ATLAS_FIELDSET()
 CALL GLOBAL_ATLAS_STATE%LOAD(FSET, FSPACE, NPROMA, NGPTOTG)
+write(0,*) "Above timer is host allocation"
 
 CALL GET_ENV_INT("NITER",NITER)
 
