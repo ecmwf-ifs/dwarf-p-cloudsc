@@ -81,13 +81,18 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
 - **dwarf-cloudsc-gpu-scc-field**: GPU-enabled and optimized version of
   CLOUDSC that uses the SCC loop layout, and uses [FIELD API](https://github.com/ecmwf-ifs/field_api) (a Fortran library purpose-built for IFS data-structures that facilitates the
   creation and management of field objects in scientific code) to perform device offload 
-  and copyback. The intent is to demonstrate the explicit use of pinned host memory to speed-up 
-  data transfers, as provided by the shipped prototype implmentation, and 
-  investigate the effect of different data storage allocation layouts. 
+  and copyback.
+  The field api variant supports modern features of the FIELD API such as *field gangs* that group
+  multiple fields and allocates them in one larger field, in order to reduce allocations and
+  data transfers. Field gang support can be enabled at runtime by setting the environment
+  variable `CLOUDSC_PACKED_STORAGE=ON`. If CUDA is available, then the field api variant also supports
+  the use of allocating fields in pinned memory. This is enabled by setting the
+  environemnt variable `CLOUDSC_FIELD_API_PINNED=ON` and will speed up data transfers between host and device.
   To enable this variant, a suitable CUDA installation is required and the
   `--with-cuda` flag needs to be passed at the build stage. This variant lets the CUDA runtime 
-  manage temporary arrays and needs a large `NV_ACC_CUDA_HEAPSIZE` 
-  (eg. `NV_ACC_CUDA_HEAPSIZE=8GB` for 160K columns.)
+  manage temporary arrays and needs a large `NV_ACC_CUDA_HEAPSIZE` (eg. `NV_ACC_CUDA_HEAPSIZE=8GB` for 160K columns.).
+  It is possible to enable Field API to use mapped memory by default, by passing the
+  `--with-mapped-fields` flag at build stage.
 - **cloudsc-pyiface.py**: a combination of the cloudsc/cloudsc-driver routines
   of cloudsc-fortran with the uppermost `dwarf` program replaced with a
   corresponding Python script capable of HDF5 data load and 
@@ -320,8 +325,9 @@ transfer overheads will dominate timings, and that most supported GPU
 variants aim to optimise compute kernel timings only. However, a
 dedicated variant `dwarf-cloudsc-gpu-scc-field` has been added to
 explore host-side memory pinning, which improves data transfer times
-and alternative data layout strategies. By default, this will allocate
-each array variable individually in pinned memory. A runtime flag
+and alternative data layout strategies. By default, pinned memory is turned off
+but can be turned on by setting the environment variable `CLOUDSC_FIELD_API_PINNED=ON`.
+This will allocate each array variable individually in pinned memory. A runtime flag
 `CLOUDSC_PACKED_STORAGE=ON` can be used to enable "packed" storage,
 where multiple arrays are stored in a single base allocation, eg.
 

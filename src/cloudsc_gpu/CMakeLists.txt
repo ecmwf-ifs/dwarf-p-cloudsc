@@ -249,6 +249,20 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
     )
 
     ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-field-packed
+        COMMAND bin/dwarf-cloudsc-gpu-scc-field
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" "CLOUDSC_PACKED_STORAGE=ON"
+    )
+    
+    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
+    if( (CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC") AND field_api_HAVE_CUDA )
+        target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
+    endif()
+
+    ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-field
         COMMAND bin/dwarf-cloudsc-gpu-scc-field
         ARGS 1 1000 128
@@ -257,10 +271,17 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
         ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
     )
 
-    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
-    if( (CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC") AND field_api_HAVE_CUDA )
-        target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
+    if ( field_api_HAVE_CUDA )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-field-pinned
+        COMMAND bin/dwarf-cloudsc-gpu-scc-field
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" "CLOUDSC_FIELD_API_PINNED=ON"
+    )
     endif()
+
 endif()
 
 
