@@ -11,6 +11,7 @@
 ####################################################################
 
 set( ECBUILD_FIND_MPI ON )
+set( CMAKE_CUDA_COMPILER "nvcc" CACHE STRING "" )
 
 ####################################################################
 # OpenMP FLAGS
@@ -24,8 +25,8 @@ set( OpenMP_Fortran_FLAGS   "-mp -mp=gpu,bind,allcores,numa" CACHE STRING "" )
 # keep FindOpenMP from overwriting the FLAGS variable (the cache entry alone
 # doesn't have any effect here as the module uses FORCE to overwrite the
 # existing value)
-set( OpenMP_C_FLAGS         "-mp -mp=bind,allcores,numa" CACHE STRING "" )
-set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
+#set( OpenMP_C_FLAGS         "-mp -mp=bind,allcores,numa" CACHE STRING "" )
+#set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 
 ####################################################################
 # OpenAcc FLAGS
@@ -33,11 +34,7 @@ set( OpenMP_C_LIB_NAMES     "acchost" CACHE STRING "")
 
 # Importantly, enable `gvmode` to remove the limit of 32 vector threads
 # per thread block
-# NB: We have to add `-mp` again to avoid undefined symbols during linking
-# (smells like an Nvidia bug)
-set( OpenACC_Fortran_FLAGS "-acc=gpu -mp=gpu -gpu=cc80,lineinfo,fastmath,gvmode" CACHE STRING "" )
-set( OpenACC_C_FLAGS "${OpenACC_Fortran_FLAGS}")
-
+set( OpenACC_Fortran_FLAGS "-acc=gpu -gpu=cc90,lineinfo,fastmath,gvmode" CACHE STRING "" )
 # Enable this to get more detailed compiler output
 # set( OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -Minfo" )
 
@@ -45,8 +42,10 @@ set( OpenACC_C_FLAGS "${OpenACC_Fortran_FLAGS}")
 # CUDA FLAGS
 ####################################################################
 
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -allow-unsupported-compiler" CACHE STRING "")
+
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES 80)
+  set(CMAKE_CUDA_ARCHITECTURES 90)
 endif()
 
 ####################################################################
