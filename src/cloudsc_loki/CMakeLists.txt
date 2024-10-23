@@ -641,12 +641,12 @@ if ( HAVE_FIELD_API AND field_api_HAVE_ACC )
 
     ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-field
         SOURCES
-            dwarf_cloudsc_field.F90
+            dwarf_cloudsc.F90
             loki-scc-field/cloudsc.scc_field.F90
-            loki-scc-field/cloudsc_driver_field_mod.scc_field.F90
+            loki-scc-field/cloudsc_driver_field_loki_mod.scc_field.F90
         LIBS
             cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_FIELD
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-scc-field

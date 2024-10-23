@@ -10,19 +10,21 @@
 MODULE CLOUDSC_DRIVER_FIELD_LOKI_MOD
   USE PARKIND1, ONLY: JPIM, JPIB, JPRB, JPRD
   USE YOMPHYDER, ONLY: STATE_TYPE
-  USE YOECLDP, ONLY : NCLV
+  USE YOECLDP, ONLY : NCLV, YRECLDP
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE EC_PMON_MOD, ONLY: EC_PMON
   USE CLOUDSC_FIELD_STATE_MOD, ONLY: CLOUDSC_AUX_TYPE, CLOUDSC_FLUX_TYPE, CLOUDSC_STATE_TYPE
 
+  USE CLOUDSC_MOD, ONLY : CLOUDSC
+  
   IMPLICIT NONE
 
 CONTAINS
 
   SUBROUTINE CLOUDSC_DRIVER_FIELD( &
      & NUMOMP, NPROMA, NLEV, NGPTOT, NGPTOTG, KFLDX, PTSPHY, PAUX, FLUX, &
-     & TENDENCY_TMP, TENDENCY_LOC, YDOMCST, YDOETHF, YDECLDP)
+     & TENDENCY_TMP, TENDENCY_LOC)
     ! Driver routine that invokes the optimized CLAW-based CLOUDSC GPU kernel
     
     USE YOECLDP  , ONLY : TECLDP
@@ -36,24 +38,13 @@ CONTAINS
     TYPE(CLOUDSC_FLUX_TYPE)   ,INTENT(IN) :: FLUX
     TYPE(CLOUDSC_STATE_TYPE)  ,INTENT(IN) :: TENDENCY_TMP
     TYPE(CLOUDSC_STATE_TYPE)  ,INTENT(INOUT) :: TENDENCY_LOC
-    TYPE(TOMCST)              , INTENT(INOUT) :: YDOMCST
-    TYPE(TOETHF)              , INTENT(INOUT) :: YDOETHF
-    TYPE(TECLDP)              , INTENT(INOUT) :: YDECLDP
 
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND, NGPBLKS
     
+    TYPE(TECLDP) :: LOCAL_YRECLDP
+    
     TYPE(PERFORMANCE_TIMER) :: TIMER
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
-    INTEGER(KIND=JPIB) :: ENERGY, POWER, POWER_TOTAL, POWER_MAX, POWER_COUNT
-    LOGICAL            :: LEC_PMON = .FALSE.
-    CHARACTER(LEN=1)   :: CLEC_PMON
-
-    CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
-    IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
-
-    POWER_MAX = 0_JPIB
-    POWER_TOTAL = 0_JPIB
-    POWER_COUNT = 0_JPIB
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -63,17 +54,22 @@ CONTAINS
 
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
+    
+    ! Workaround for PGI / OpenACC oddities:
+    ! Create a local copy of the parameter struct to ensure they get
+    ! moved to the device the in ``acc data`` clause below
+    LOCAL_YRECLDP = YRECLDP
 
     !$loki data
 
-    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID,energy,power) &
+    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID) &
     !$omp& num_threads(NUMOMP) firstprivate(PAUX, FLUX, TENDENCY_TMP, TENDENCY_LOC)
 
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-    !$omp do schedule(runtime) reduction(+:power_total,power_count) reduction(max:power_max)
+    !$omp do schedule(runtime) reduction(+:power_total,power_count)
     DO JKGLO=1,NGPTOT,NPROMA
         IBL=(JKGLO-1)/NPROMA+1
         ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -114,18 +110,8 @@ CONTAINS
               & FLUX%PFSQLF,   FLUX%PFSQIF ,  FLUX%PFCQNNG,  FLUX%PFCQLNG,&
               & FLUX%PFSQRF,   FLUX%PFSQSF ,  FLUX%PFCQRNG,  FLUX%PFCQSNG,&
               & FLUX%PFSQLTUR, FLUX%PFSQITUR , &
-              & FLUX%PFPLSL,   FLUX%PFPLSN,   FLUX%PFHPSL,   FLUX%PFHPSN, KFLDX, &
-              & YDOMCST, YDOETHF, YDECLDP)
-
-        IF (LEC_PMON) THEN
-          ! Sample power consuption
-          IF (MOD(IBL, 100) == 0) THEN
-            CALL EC_PMON(ENERGY, POWER)
-            POWER_MAX = MAX(POWER_MAX, POWER)
-            POWER_TOTAL = POWER_TOTAL + POWER
-            POWER_COUNT = POWER_COUNT + 1
-          END IF
-        END IF
+              & FLUX%PFPLSL,   FLUX%PFPLSN,   FLUX%PFHPSL,   FLUX%PFHPSN, &
+              & LOCAL_YRECLDP)
         
 #ifndef CLOUDSC_GPU_TIMING
         ! Log number of columns processed by this thread
@@ -147,11 +133,6 @@ CONTAINS
 
       CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
 
-      IF (LEC_PMON) THEN
-        print *, "Power usage (sampled):: max: ", POWER_MAX, "avg:", &
-         & (REAL(POWER_TOTAL, KIND=JPRD) / REAL(POWER_COUNT, KIND=JPRD)), &
-         & "count:", POWER_COUNT
-      END IF
     
   END SUBROUTINE CLOUDSC_DRIVER_FIELD
 
