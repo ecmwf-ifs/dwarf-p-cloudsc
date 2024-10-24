@@ -36,9 +36,9 @@ jobs:
           - '--with-gpu --with-loki --with-atlas' # Enable Loki, Atlas, and GPU variants
           - '--with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, Atlas, and GPU variants with MPI
           - '--single-precision --with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, and GPU variants with MPI in a single-precision build
-          - '--with-gpu --with-loki --with-field --cmake="ENABLE_ACC=OFF"' # Enable Loki, Field, and GPU variants
-          - '--with-gpu --with-loki --with-field --with-mpi --cmake="ENABLE_ACC=OFF"' # Enable Loki, Field, and GPU variants with MPI
-          - '--single-precision --with-gpu --with-loki --with-field --with-mpi --cmake="ENABLE_ACC=OFF"' # Enable Loki, Field and GPU variants with MPI in a single-precision build
+          - '--with-gpu --with-loki --with-field --cmake="FIELD_API_ENABLE_ACC=OFF"' # Enable Loki, Field, and GPU variants
+          - '--with-gpu --with-loki --with-field --with-mpi --cmake="FIELD_API_ENABLE_ACC=OFF"' # Enable Loki, Field, and GPU variants with MPI
+          - '--single-precision --with-gpu --with-loki --with-field --with-mpi --cmake="FIELD_API_ENABLE_ACC=OFF"' # Enable Loki, Field and GPU variants with MPI in a single-precision build
 
         pyiface_flag: ['']  # Enable the pyiface variant
 
