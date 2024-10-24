@@ -9,6 +9,10 @@ exit_code=0
 #
 
 targets=(dwarf-P-cloudMicrophysics-IFSScheme dwarf-cloudsc-fortran dwarf-cloudsc-c)
+if [[ "$build_flags" == *"--with-field"* ]]
+then
+  targets+=(dwarf-cloudsc-fortran-field)
+fi
 
 if [[ "$build_flags" == *"--with-gpu"* ]]
 then
@@ -17,6 +21,10 @@ then
   if [[ "$build_flags" == *"--with-claw"* ]]
   then
     targets+=(dwarf-cloudsc-gpu-claw)
+  fi
+  if [[ "$build_flags" == *"--with-field"* ]]
+  then
+    targets+=(dwarf-cloudsc-gpu-scc-field)
   fi
   if [[ "$build_flags" == *"--with-cuda"* ]]
   then
