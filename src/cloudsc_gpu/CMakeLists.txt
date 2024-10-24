@@ -249,7 +249,16 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
     )
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-scc-field-packed
+        TARGET dwarf-cloudsc-gpu-scc-field-serial
+        COMMAND bin/dwarf-cloudsc-gpu-scc-field
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
+    )
+    
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-field-packed-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-field
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
@@ -262,18 +271,9 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
         target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
     endif()
 
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-scc-field
-        COMMAND bin/dwarf-cloudsc-gpu-scc-field
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
-    )
-
     if ( field_api_HAVE_CUDA )
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-scc-field-pinned
+        TARGET dwarf-cloudsc-gpu-scc-field-pinned-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-field
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
