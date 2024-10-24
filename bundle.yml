@@ -102,7 +102,7 @@ options :
     - without-mapped-fields :
         help : Disables automatic registering of Field API fields in ACC map.
         cmake : >
-            FIELD_API_DISABLE_MAPPED_MEMORY=ON
+            ENABLE_FIELD_API_DISABLE_MAPPED_MEMORY=ON
     
     - with-gpu :
         help  : Enable GPU kernels
