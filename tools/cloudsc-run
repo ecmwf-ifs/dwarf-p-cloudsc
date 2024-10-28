@@ -1,0 +1,3 @@
+#!/bin/bash
+PGI_ACC_CUDA_HEAPSIZE=8GB srun ---mem=60G -gpus-per-task=1 -n 1 "$@"
+

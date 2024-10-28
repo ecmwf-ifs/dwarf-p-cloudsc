@@ -26,6 +26,7 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 endif()
 
 include( cloudsc_compile_options )
+include( features/CLOUDSC_RUN )
 
 ### OpenACC
 if( ${CMAKE_VERSION} VERSION_LESS "3.25" AND (NOT DEFINED ENABLE_ACC OR ENABLE_ACC ) )
