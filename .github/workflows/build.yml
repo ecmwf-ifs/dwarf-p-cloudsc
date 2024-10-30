@@ -174,3 +174,24 @@ jobs:
         run: |
           source env.sh
           ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
+
+  test-generic-job:
+    runs-on: [self-hosted, linux, hpc]
+    steps:
+      - uses: ecmwf-actions/reusable-workflows/ci-hpc-generic@v2
+        with:
+          site: ac-batch
+          troika_user: ${{ secrets.HPC_CI_SSH_USER }}
+          template: |
+            echo "Hello {{ name }}!"
+            echo "{{ foo.bar }}"
+            pwd
+            ls -l
+          template_data: |
+            name: world
+            foo:
+              bar: foobar
+          sbatch_options: |
+            #SBATCH --job-name=sample_job
+            #SBATCH --time=00:05:00
+            #SBATCH --qos=dg
