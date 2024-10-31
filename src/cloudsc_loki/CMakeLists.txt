@@ -83,14 +83,14 @@ if( HAVE_CLOUDSC_LOKI )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-serial
-        COMMAND bin/dwarf-cloudsc-loki-idem
+        COMMAND dwarf-cloudsc-loki-idem
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem
+        COMMAND dwarf-cloudsc-loki-idem
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 4
@@ -98,7 +98,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-mpi
-        COMMAND bin/dwarf-cloudsc-loki-idem
+        COMMAND dwarf-cloudsc-loki-idem
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -107,7 +107,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-mpi-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem
+        COMMAND dwarf-cloudsc-loki-idem
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -169,14 +169,14 @@ if( HAVE_CLOUDSC_LOKI )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-stack-serial
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        COMMAND dwarf-cloudsc-loki-idem-stack
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-stack-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        COMMAND dwarf-cloudsc-loki-idem-stack
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 4
@@ -184,7 +184,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-stack-mpi
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        COMMAND dwarf-cloudsc-loki-idem-stack
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -193,7 +193,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-idem-stack-mpi-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
+        COMMAND dwarf-cloudsc-loki-idem-stack
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -249,14 +249,14 @@ if( HAVE_CLOUDSC_LOKI )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-sca-serial
-        COMMAND bin/dwarf-cloudsc-loki-sca
+        COMMAND dwarf-cloudsc-loki-sca
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-sca-mpi
-        COMMAND bin/dwarf-cloudsc-loki-sca
+        COMMAND dwarf-cloudsc-loki-sca
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -333,14 +333,14 @@ if( HAVE_CLOUDSC_LOKI )
 
         ecbuild_add_test(
             TARGET dwarf-cloudsc-loki-claw-cpu-serial
-            COMMAND bin/dwarf-cloudsc-loki-claw-cpu
+            COMMAND dwarf-cloudsc-loki-claw-cpu
             ARGS 1 100 16
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             OMP 1
         )
         ecbuild_add_test(
             TARGET dwarf-cloudsc-loki-claw-cpu-omp
-            COMMAND bin/dwarf-cloudsc-loki-claw-cpu
+            COMMAND dwarf-cloudsc-loki-claw-cpu
             ARGS 4 100 16
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             OMP 4
@@ -348,7 +348,7 @@ if( HAVE_CLOUDSC_LOKI )
         )
         ecbuild_add_test(
             TARGET dwarf-cloudsc-loki-claw-cpu-mpi
-            COMMAND bin/dwarf-cloudsc-loki-claw-cpu
+            COMMAND dwarf-cloudsc-loki-claw-cpu
             ARGS 1 100 16
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             MPI 2
@@ -357,7 +357,7 @@ if( HAVE_CLOUDSC_LOKI )
         )
         ecbuild_add_test(
             TARGET dwarf-cloudsc-loki-claw-cpu-mpi-omp
-            COMMAND bin/dwarf-cloudsc-loki-claw-cpu
+            COMMAND dwarf-cloudsc-loki-claw-cpu
             ARGS 4 100 16
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             MPI 2
@@ -437,7 +437,7 @@ if( HAVE_CLOUDSC_LOKI )
 
         ecbuild_add_test(
             TARGET dwarf-cloudsc-loki-claw-gpu-serial
-            COMMAND bin/dwarf-cloudsc-loki-claw-gpu
+            COMMAND dwarf-cloudsc-loki-claw-gpu
             ARGS 1 1280 128
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             OMP 1
@@ -495,7 +495,7 @@ if( HAVE_CLOUDSC_LOKI )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc
+        COMMAND dwarf-cloudsc-loki-scc
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -559,7 +559,7 @@ if( HAVE_CLOUDSC_LOKI )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-stack-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-stack
+        COMMAND dwarf-cloudsc-loki-scc-stack
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -616,7 +616,7 @@ if( HAVE_CLOUDSC_LOKI )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-hoist-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-hoist
+        COMMAND dwarf-cloudsc-loki-scc-hoist
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -685,7 +685,7 @@ if( HAVE_CUDA )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-cuf-parametrise-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-parametrise
+        COMMAND dwarf-cloudsc-loki-scc-cuf-parametrise
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -740,7 +740,7 @@ if( HAVE_CUDA )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-loki-scc-cuf-hoist-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-hoist
+        COMMAND dwarf-cloudsc-loki-scc-cuf-hoist
         ARGS 1 1280 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -795,14 +795,14 @@ endif()
 
         ecbuild_add_test(
             TARGET dwarf-cloudsc-loki-c-serial
-            COMMAND bin/dwarf-cloudsc-loki-c
+            COMMAND dwarf-cloudsc-loki-c
             ARGS 1 100 16
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             OMP 1
         )
         ecbuild_add_test(
             TARGET dwarf-cloudsc-loki-c-omp
-            COMMAND bin/dwarf-cloudsc-loki-c
+            COMMAND dwarf-cloudsc-loki-c
             ARGS 4 100 16
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
             OMP 4

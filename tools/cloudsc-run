@@ -1,4 +1,4 @@
 #!/bin/bash
-echo + srun -gpus-per-task=1 -n 1 "$@"
-srun -gpus-per-task=1 -n 1 "$@"
+echo + srun --gpus-per-task=1 -n 1 "$@"
+srun --gpus-per-task=1 -n 1 "$@"
 

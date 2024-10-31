@@ -94,7 +94,7 @@ if( HAVE_CLOUDSC_SYCL )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-sycl-serial
-        COMMAND bin/dwarf-cloudsc-scc-sycl
+        COMMAND dwarf-cloudsc-scc-sycl
         ARGS 1 1024 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -156,7 +156,7 @@ if( HAVE_CLOUDSC_SYCL )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-sycl-hoist-serial
-        COMMAND bin/dwarf-cloudsc-scc-hoist-sycl
+        COMMAND dwarf-cloudsc-scc-hoist-sycl
         ARGS 1 1024 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -218,7 +218,7 @@ if( HAVE_CLOUDSC_SYCL )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-sycl-k-caching-serial
-        COMMAND bin/dwarf-cloudsc-scc-k-caching-sycl
+        COMMAND dwarf-cloudsc-scc-k-caching-sycl
         ARGS 1 1024 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1

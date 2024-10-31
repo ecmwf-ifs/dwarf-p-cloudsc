@@ -47,14 +47,14 @@ if( HAVE_CLOUDSC_FORTRAN )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-serial
-        COMMAND bin/dwarf-cloudsc-fortran
+        COMMAND dwarf-cloudsc-fortran
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-omp
-        COMMAND bin/dwarf-cloudsc-fortran
+        COMMAND dwarf-cloudsc-fortran
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 4
@@ -62,7 +62,7 @@ if( HAVE_CLOUDSC_FORTRAN )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-mpi
-        COMMAND bin/dwarf-cloudsc-fortran
+        COMMAND dwarf-cloudsc-fortran
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -71,7 +71,7 @@ if( HAVE_CLOUDSC_FORTRAN )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-mpi-omp
-        COMMAND bin/dwarf-cloudsc-fortran
+        COMMAND dwarf-cloudsc-fortran
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -109,14 +109,14 @@ if( HAVE_CLOUDSC_FORTRAN_FIELD )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-field-serial
-        COMMAND bin/dwarf-cloudsc-fortran-field
+        COMMAND dwarf-cloudsc-fortran-field
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-field-omp
-        COMMAND bin/dwarf-cloudsc-fortran-field
+        COMMAND dwarf-cloudsc-fortran-field
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 4
@@ -124,7 +124,7 @@ if( HAVE_CLOUDSC_FORTRAN_FIELD )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-field-mpi
-        COMMAND bin/dwarf-cloudsc-fortran-field
+        COMMAND dwarf-cloudsc-fortran-field
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -133,7 +133,7 @@ if( HAVE_CLOUDSC_FORTRAN_FIELD )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-field-mpi-omp
-        COMMAND bin/dwarf-cloudsc-fortran-field
+        COMMAND dwarf-cloudsc-fortran-field
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2

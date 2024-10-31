@@ -69,7 +69,7 @@ if( HAVE_CLOUDSC_C_CUDA )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-c-cuda-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda
+        COMMAND dwarf-cloudsc-c-cuda
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -127,7 +127,7 @@ if( HAVE_CLOUDSC_C_CUDA )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-c-cuda-hoist-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda-hoist
+        COMMAND dwarf-cloudsc-c-cuda-hoist
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -184,7 +184,7 @@ if( HAVE_CLOUDSC_C_CUDA )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-c-cuda-k-caching-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda-k-caching
+        COMMAND dwarf-cloudsc-c-cuda-k-caching
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1

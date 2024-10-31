@@ -60,14 +60,14 @@ if( HAVE_CLOUDSC_C )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-c-serial
-        COMMAND bin/dwarf-cloudsc-c
+        COMMAND dwarf-cloudsc-c
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-c-omp
-        COMMAND bin/dwarf-cloudsc-c
+        COMMAND dwarf-cloudsc-c
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         # The OpenMP C runtime for some reason doesn't appreciate setting the number of threads

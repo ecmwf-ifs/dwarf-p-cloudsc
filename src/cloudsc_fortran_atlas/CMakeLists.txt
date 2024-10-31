@@ -43,14 +43,14 @@ if( HAVE_CLOUDSC_FORTRAN_ATLAS )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-atlas-serial
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
+        COMMAND dwarf-cloudsc-fortran-atlas
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-atlas-omp
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
+        COMMAND dwarf-cloudsc-fortran-atlas
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 4
@@ -58,7 +58,7 @@ if( HAVE_CLOUDSC_FORTRAN_ATLAS )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-atlas-mpi
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
+        COMMAND dwarf-cloudsc-fortran-atlas
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2
@@ -67,7 +67,7 @@ if( HAVE_CLOUDSC_FORTRAN_ATLAS )
     )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-mpi-atlas-omp
-        COMMAND bin/dwarf-cloudsc-fortran-atlas
+        COMMAND dwarf-cloudsc-fortran-atlas
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         MPI 2

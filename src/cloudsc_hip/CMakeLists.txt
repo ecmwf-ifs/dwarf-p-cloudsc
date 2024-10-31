@@ -14,8 +14,8 @@ ecbuild_add_option( FEATURE CLOUDSC_HIP
 
 if( HAVE_CLOUDSC_HIP )
 
-    set(CMAKE_C_COMPILER "${ROCM_PATH}/bin/hipcc")
-    set(CMAKE_CXX_COMPILER "${ROCM_PATH}/bin/hipcc")
+    set(CMAKE_C_COMPILER "${ROCM_PATH}/hipcc")
+    set(CMAKE_CXX_COMPILER "${ROCM_PATH}/hipcc")
 
     ###### SCC-HIP ####
     ecbuild_add_library(
@@ -63,7 +63,7 @@ if( HAVE_CLOUDSC_HIP )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-hip-serial
-        COMMAND bin/dwarf-cloudsc-hip
+        COMMAND dwarf-cloudsc-hip
         ARGS 1 1000 64
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -116,7 +116,7 @@ if( HAVE_CLOUDSC_HIP )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-hip-hoist-serial
-        COMMAND bin/dwarf-cloudsc-hip-hoist
+        COMMAND dwarf-cloudsc-hip-hoist
         ARGS 1 1000 64
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -169,7 +169,7 @@ if( HAVE_CLOUDSC_HIP )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-hip-k-caching-serial
-        COMMAND bin/dwarf-cloudsc-hip-k-caching
+        COMMAND dwarf-cloudsc-hip-k-caching
         ARGS 1 1000 64
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
