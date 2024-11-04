@@ -619,10 +619,6 @@ if( HAVE_CUDA )
             ${COMMON_MODULE}/yomphyder.F90
             ${COMMON_MODULE}/yoethf.F90
             ${COMMON_MODULE}/yoecldp.F90
-            ${COMMON_MODULE}/cloudsc_field_state_mod.F90
-            ${COMMON_MODULE}/cloudsc_flux_type_mod.F90
-            ${COMMON_MODULE}/cloudsc_aux_type_mod.F90
-            ${COMMON_MODULE}/cloudsc_state_type_mod.F90
         INCLUDES ${COMMON_INCLUDE}
         DEFINITIONS CLOUDSC_GPU_TIMING
         DATA_OFFLOAD REMOVE_OPENMP

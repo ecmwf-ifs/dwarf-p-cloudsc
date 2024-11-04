@@ -117,7 +117,7 @@ ecbuild_find_package( NAME loki )
 ecbuild_find_package( NAME atlas )
 
 ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
-  DESCRIPTION "Use ACC mapped memory by default in Field API objects"
+  DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
   CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
   DEFAULT OFF )
 if( HAVE_FIELD_API_DISABLE_MAPPED_MEMORY )
