@@ -35,7 +35,7 @@ projects :
 
     - loki :
         git     : https://github.com/ecmwf-ifs/loki
-        version : v0.2.1
+        version : v0.2.7
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
@@ -123,7 +123,7 @@ options :
          cmake : SYCL_SUB_GROUP_SIZE={{value}}
     
     - cloudsc-cpp-math :
-         help  : [C|STD|SYCL]
+         help  : "Specify the math function interfaces to use in C++ (device) kernels. Available options: C, STD, SYCL"
          cmake : CLOUDSC_CPP_MATH={{value}}
 
     - with-mpi :
