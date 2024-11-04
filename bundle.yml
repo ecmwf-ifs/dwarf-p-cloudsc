@@ -123,7 +123,7 @@ options :
          cmake : SYCL_SUB_GROUP_SIZE={{value}}
     
     - cloudsc-cpp-math :
-         help  : [C|STD|SYCL]
+         help  : "Specify the math function interfaces to use in C++ (device) kernels. Available options: C, STD, SYCL"
          cmake : CLOUDSC_CPP_MATH={{value}}
 
     - with-mpi :
