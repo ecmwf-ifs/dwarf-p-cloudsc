@@ -145,7 +145,9 @@ CONTAINS
          CALL CLOUDSC &
               & (    1,    ICEND,    NPROMA,  NLEV,&
               & PTSPHY,&
-              & PT(:,:,IBL), PQ(:,:,IBL), TENDENCY_CML(IBL), TENDENCY_TMP(IBL), TENDENCY_LOC(IBL), &
+              & PT(:,:,IBL), PQ(:,:,IBL), &
+              & TENDENCY_TMP(IBL)%T, TENDENCY_TMP(IBL)%Q, TENDENCY_TMP(IBL)%A, TENDENCY_TMP(IBL)%CLD, &
+              & TENDENCY_LOC(IBL)%T, TENDENCY_LOC(IBL)%Q, TENDENCY_LOC(IBL)%A, TENDENCY_LOC(IBL)%CLD, &
               & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
               & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
               & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&

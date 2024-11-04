@@ -7,11 +7,12 @@ cmake : >
         CMAKE_LINK_DEPENDS_NO_SHARED=ON
         CMAKE_EXPORT_COMPILE_COMMANDS=ON
         BUILD_serialbox=OFF
-        BUILD_field_api=OFF
         BUILD_eckit=OFF
         BUILD_fckit=OFF
         BUILD_atlas=OFF
+        BUILD_field_api=OFF
         ENABLE_OMP=ON
+        ENABLE_CUDA=OFF
         ENABLE_SINGLE_PRECISION=OFF
 
 projects :
@@ -52,10 +53,11 @@ projects :
 
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
-        version : v0.3.0
+        version : v0.3.3
         require : ecbuild
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+            FIELD_API_ENABLE_ACC=OFF
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
@@ -79,7 +81,6 @@ projects :
         require : ecbuild serialbox loki field_api
 
 options :
-
     - toolchain :
         help  : Specify compiler options via supplied toolchain file
         cmake : CMAKE_TOOLCHAIN_FILE={{value}}
@@ -92,9 +93,21 @@ options :
             ENABLE_DOUBLE_PRECISION=OFF
             FIELD_API_DEFINITIONS=SINGLE
 
+    - with-field-api :
+        help : Enable Field API variants to be built
+        cmake : >
+            BUILD_field_api=ON
+            ENABLE_CLOUDSC_FORTRAN_FIELD=ON
+
+    - without-mapped-fields :
+        help : Disables automatic registering of Field API fields in ACC map.
+        cmake : >
+            ENABLE_FIELD_API_DISABLE_MAPPED_MEMORY=ON
+    
     - with-gpu :
         help  : Enable GPU kernels
         cmake : >
+            FIELD_API_ENABLE_ACC=ON
             ENABLE_CLOUDSC_GPU_SCC=ON
             ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
             ENABLE_CLOUDSC_GPU_SCC_K_CACHING=ON
@@ -106,7 +119,6 @@ options :
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
-            BUILD_field_api=ON
 
     - with-hip :
         help: Enable GPU kernel variant based on HIP

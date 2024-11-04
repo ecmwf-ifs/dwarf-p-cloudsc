@@ -4,6 +4,7 @@
 - P. Bechtold (ECMWF)
 - S. Brdar (ECMWF)
 - W. Deconinck (ECMWF)
+- J. Ericsson (ECMWF)
 - R. Forbes (ECMWF)
 - C. Jakob (ECMWF)
 - J. Hague (ECMWF)
