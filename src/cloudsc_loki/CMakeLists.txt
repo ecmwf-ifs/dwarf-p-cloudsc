@@ -78,7 +78,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-idem
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
     )
 
     ecbuild_add_test(
@@ -157,7 +157,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-idem-stack
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-stack
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-stack
     )
 
 
@@ -244,7 +244,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-sca
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
     )
 
     ecbuild_add_test(
@@ -489,7 +489,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-scc
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
     )
 
 
@@ -547,7 +547,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-scc-stack
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
     )
 
 
@@ -611,7 +611,7 @@ if( HAVE_CLOUDSC_LOKI )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-scc-hoist
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
     )
 
     ecbuild_add_test(
@@ -637,10 +637,13 @@ if( HAVE_CLOUDSC_LOKI )
 if( HAVE_CUDA )
 
     # scc-cuf-parametrise
-    loki_transform_convert(
-        MODE cuf-parametrise FRONTEND ${LOKI_FRONTEND} CPP
+    loki_transform(
+        COMMAND convert
+        MODE cuf-parametrise
+        FRONTEND ${LOKI_FRONTEND}
+        CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
             ${COMMON_MODULE}/yomcst.F90
             ${COMMON_MODULE}/yomphyder.F90
@@ -648,9 +651,10 @@ if( HAVE_CUDA )
             ${COMMON_MODULE}/yoecldp.F90
         INCLUDES ${COMMON_INCLUDE}
         DEFINITIONS CLOUDSC_GPU_TIMING
-        DATA_OFFLOAD REMOVE_OPENMP
+        DATA_OFFLOAD
+        REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
         OUTPUT
             loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
             loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
@@ -674,7 +678,7 @@ if( HAVE_CUDA )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-scc-cuf-parametrise
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
     )
 
     target_link_options(dwarf-cloudsc-loki-scc-cuf-parametrise PUBLIC "-cuda")
@@ -688,10 +692,13 @@ if( HAVE_CUDA )
     )
 
     # scc-cuf-hoist
-    loki_transform_convert(
-        MODE cuf-hoist FRONTEND ${LOKI_FRONTEND} CPP
+    loki_transform(
+        COMMAND convert
+        MODE cuf-hoist
+        FRONTEND ${LOKI_FRONTEND}
+        CPP
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
-        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
             ${COMMON_MODULE}/yomcst.F90
             ${COMMON_MODULE}/yomphyder.F90
@@ -699,13 +706,14 @@ if( HAVE_CUDA )
             ${COMMON_MODULE}/yoecldp.F90
         INCLUDES ${COMMON_INCLUDE}
         DEFINITIONS CLOUDSC_GPU_TIMING
-        DATA_OFFLOAD REMOVE_OPENMP
+        DATA_OFFLOAD
+        REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
+        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
         OUTPUT
             loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
             loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
-    DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
     )
 
     set_source_files_properties(
@@ -725,7 +733,7 @@ if( HAVE_CUDA )
     )
     # Set specific module directory to avoid aliasing of .mod files
     set_target_properties(  dwarf-cloudsc-loki-scc-cuf-hoist
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
+        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
     )
 
     target_link_options(dwarf-cloudsc-loki-scc-cuf-hoist PUBLIC "-cuda")
