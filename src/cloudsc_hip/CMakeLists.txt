@@ -14,8 +14,8 @@ ecbuild_add_option( FEATURE CLOUDSC_HIP
 
 if( HAVE_CLOUDSC_HIP )
 
-    set(CMAKE_C_COMPILER "${ROCM_PATH}/hipcc")
-    set(CMAKE_CXX_COMPILER "${ROCM_PATH}/hipcc")
+    set(CMAKE_C_COMPILER "${ROCM_PATH}/bin/hipcc")
+    set(CMAKE_CXX_COMPILER "${ROCM_PATH}/bin/hipcc")
 
     ###### SCC-HIP ####
     ecbuild_add_library(

@@ -139,7 +139,7 @@ if ( HAVE_CLOUDSC_GPU_SCC_STACK )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-stack-serial
-        COMMAND bin/dwarf-cloudsc-gpu-scc-stack
+        COMMAND dwarf-cloudsc-gpu-scc-stack
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -216,7 +216,7 @@ if( HAVE_CLOUDSC_GPU_OMP_SCC )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-omp-scc-serial
-        COMMAND bin/dwarf-cloudsc-gpu-omp-scc
+        COMMAND dwarf-cloudsc-gpu-omp-scc
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -256,7 +256,7 @@ if ( HAVE_CLOUDSC_GPU_OMP_SCC_STACK )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-omp-scc-stack-serial
-        COMMAND bin/dwarf-cloudsc-gpu-omp-scc-stack
+        COMMAND dwarf-cloudsc-gpu-omp-scc-stack
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -327,7 +327,7 @@ if ( HAVE_CLOUDSC_GPU_OMP_SCC_K_CACHING )
 
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-omp-scc-k-caching-serial
-        COMMAND bin/dwarf-cloudsc-gpu-omp-scc-k-caching
+        COMMAND dwarf-cloudsc-gpu-omp-scc-k-caching
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1

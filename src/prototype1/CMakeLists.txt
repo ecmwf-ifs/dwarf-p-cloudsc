@@ -74,7 +74,7 @@ if( HAVE_CLOUDSC_PROTOTYPE1 )
 
     ecbuild_add_test(
         TARGET dwarf-P-cloudMicrophysics-IFSScheme-serial
-        COMMAND bin/dwarf-P-cloudMicrophysics-IFSScheme
+        COMMAND dwarf-P-cloudMicrophysics-IFSScheme
         ARGS 1 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
@@ -82,7 +82,7 @@ if( HAVE_CLOUDSC_PROTOTYPE1 )
 
     ecbuild_add_test(
         TARGET dwarf-P-cloudMicrophysics-IFSScheme-omp
-        COMMAND bin/dwarf-P-cloudMicrophysics-IFSScheme
+        COMMAND dwarf-P-cloudMicrophysics-IFSScheme
         ARGS 4 100 16
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 4
