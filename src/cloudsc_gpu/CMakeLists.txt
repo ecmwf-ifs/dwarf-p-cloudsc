@@ -33,6 +33,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_CUF_K_CACHING
     CONDITION HAVE_CUDA AND ( Serialbox_FOUND OR HDF5_FOUND )
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_STACK
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with pool allocator for temporary arrays and OpenACC" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenACC" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
@@ -43,8 +48,23 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout and OpenMP" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_STACK
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with pool allocator for temporary arrays and OpenMP" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
 ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_HOIST
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays and OpenMP offload" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_K_CACHING
+    DESCRIPTION "Build (further) optimized GPU version of CLOUDSC using SCC layout with OpenMP" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
@@ -99,6 +119,33 @@ if( HAVE_CLOUDSC_GPU_SCC )
     )
 endif()
 
+if ( HAVE_CLOUDSC_GPU_SCC_STACK )
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-gpu-scc-stack
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_stack_mod.F90
+            cloudsc_gpu_scc_stack_mod.F90
+        LIBS
+            cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_STACK
+    )
+
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+        target_compile_options( dwarf-cloudsc-gpu-scc-stack PRIVATE "-fcray-pointer" )
+    elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
+        target_compile_options( dwarf-cloudsc-gpu-scc-stack PRIVATE "-Mcray=pointer" )
+    endif()
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-stack-serial
+        COMMAND bin/dwarf-cloudsc-gpu-scc-stack
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+endif()
 
 if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     ecbuild_add_executable(
@@ -130,7 +177,7 @@ if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
             cloudsc_gpu_scc_k_caching_mod.F90
         LIBS
             cloudsc-common-lib
-	DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
     )
 
     ecbuild_add_test(
@@ -142,7 +189,83 @@ if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
     )
 endif()
 
+
+if( HAVE_CLOUDSC_GPU_OMP_SCC )
+    
+    list( APPEND CLOUDSC_GPU_OMP_SCC_DEFINITIONS CLOUDSC_GPU_OMP_SCC )
+    if( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
+            list( APPEND CLOUDSC_GPU_OMP_SCC_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT )
+        if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL )
+                list( APPEND CLOUDSC_GPU_OMP_SCC_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL )
+        endif()
+        if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
+                list( APPEND CLOUDSC_GPU_OMP_SCC_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
+        endif()
+    endif()
+
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-omp-scc
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_mod.F90
+            cloudsc_gpu_omp_scc_mod.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_DEFINITIONS}
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-omp-scc-serial
+        COMMAND bin/dwarf-cloudsc-gpu-omp-scc
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=8G"
+    )
+endif()
+
+
+if ( HAVE_CLOUDSC_GPU_OMP_SCC_STACK )
+
+    list( APPEND CLOUDSC_GPU_OMP_SCC_STACK_DEFINITIONS CLOUDSC_GPU_OMP_SCC_STACK )
+    if( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
+	    list( APPEND CLOUDSC_GPU_OMP_SCC_STACK_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT )
+        if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL )
+		list( APPEND CLOUDSC_GPU_OMP_SCC_STACK_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL )
+        endif()
+        if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
+		list( APPEND CLOUDSC_GPU_OMP_SCC_STACK_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
+        endif()
+    endif()
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-gpu-omp-scc-stack
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_stack_mod.F90
+            cloudsc_gpu_omp_scc_stack_mod.F90
+        LIBS
+            cloudsc-common-lib
+	    DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_STACK_DEFINITIONS}
+    )
+
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+        target_compile_options( dwarf-cloudsc-gpu-omp-scc-stack PRIVATE "-fcray-pointer" )
+    elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
+        target_compile_options( dwarf-cloudsc-gpu-omp-scc-stack PRIVATE "-Mcray=pointer" )
+    endif()
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-omp-scc-stack-serial
+        COMMAND bin/dwarf-cloudsc-gpu-omp-scc-stack
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+endif()
+
 if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
+
     list( APPEND CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS CLOUDSC_GPU_OMP_SCC_HOIST )
     if( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
         list( APPEND CLOUDSC_GPU_OMP_SCC_HOIST_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT )
@@ -176,8 +299,41 @@ if( HAVE_CLOUDSC_GPU_OMP_SCC_HOIST )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
+
 endif()
 
+if ( HAVE_CLOUDSC_GPU_OMP_SCC_K_CACHING )
+
+    list( APPEND CLOUDSC_GPU_OMP_SCC_K_CACHING_DEFINITIONS CLOUDSC_GPU_OMP_SCC_K_CACHING )
+    if( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
+	    list( APPEND CLOUDSC_GPU_OMP_SCC_K_CACHING_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT )
+        if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL )
+		list( APPEND CLOUDSC_GPU_OMP_SCC_K_CACHING_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL )
+        endif()
+        if( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
+		list( APPEND CLOUDSC_GPU_OMP_SCC_K_CACHING_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD )
+        endif()
+    endif()
+
+    ecbuild_add_executable( TARGET dwarf-cloudsc-gpu-omp-scc-k-caching
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_k_caching_mod.F90
+            cloudsc_gpu_omp_scc_k_caching_mod.F90
+        LIBS
+            cloudsc-common-lib
+	    DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_K_CACHING_DEFINITIONS}
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-omp-scc-k-caching-serial
+        COMMAND bin/dwarf-cloudsc-gpu-omp-scc-k-caching
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+
+endif()
 
 if( HAVE_CLOUDSC_GPU_SCC_CUF )
     # Compile CUDA fortran files with -cuda.
