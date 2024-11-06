@@ -61,8 +61,13 @@ jobs:
           - arch: nvhpc/21.9
             nvhpc_version: 21.9
             io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --with-cuda --with-mix --cloudsc-gpu-offload ACC --cloudsc-gpu-lang CUDA'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-|-mix'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+            build_flags: '--with-gpu --with-loki --with-cuda'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - arch: nvhpc/21.9
+            nvhpc_version: 21.9
+            io_library_flag: ''
+            build_flags: '--with-mix --cloudsc-gpu-offload ACC --cloudsc-gpu-lang CUDA'
+            ctest_exclude_pattern: '-mix'  # GPU variants don't work on CPU runners
           - arch: nvhpc/21.9
             nvhpc_version: 21.9
             io_library_flag: ''
@@ -102,8 +107,13 @@ jobs:
           - arch: nvhpc/23.5
             nvhpc_version: 23.5
             io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --with-cuda --cloudsc-gpu-offload ACC --cloudsc-gpu-lang CUDA'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-|-mix'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+            build_flags: '--with-gpu --with-loki --with-cuda'
+            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+          - arch: nvhpc/23.5
+            nvhpc_version: 23.5
+            io_library_flag: ''
+            build_flags: '--with-mix --cloudsc-gpu-offload ACC --cloudsc-gpu-lang CUDA'
+            ctest_exclude_pattern: '-mix'  # GPU variants don't work on CPU runners
           - arch: nvhpc/23.5
             nvhpc_version: 23.5
             io_library_flag: ''
