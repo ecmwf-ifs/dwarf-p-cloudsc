@@ -123,11 +123,11 @@ options :
             ENABLE_CLOUDSC_MIX=ON
 
     - cloudsc-gpu-offload :
-        help  : [OMP|ACC]
+        help  : "Data offload model for GPU variants. Available options: OMP, ACC"
         cmake : CLOUDSC_GPU_OFFLOAD={{value}}
 
     - cloudsc-gpu-lang :
-        help  : [CUDA|HIP|SYCL]
+        help  : "Kernel language for low-level GPU kernel implementations. Available options: CUDA, HIP, SYCL"
         cmake : CLOUDSC_GPU_LANG={{value}}
 
     - with-cuda :

@@ -43,15 +43,13 @@ list(APPEND CLOUDSC_CUDA_SOURCES
 )
 
 if ( ENABLE_CLOUDSC_MIX )
-  # if (CLOUDSC_GPU_OFFLOAD STREQUAL "ACC")
   # HACK: seems like nordc only necessary for NVIDIA machines but not AMD machines
-  if (CLOUDSC_GPU_LANG STREQUAL "CUDA" OR CLOUDSC_GPU_LANG STREQUAL "SYCL")
+  if (CMAKE_Fortran_COMPILER_ID MATCHES "PGI|NVHPC")
     cloudsc_add_compile_options(
      SOURCES ${CLOUDSC_COMMON_SOURCES}
      FLAGS "-gpu=nordc"
     )
   endif()
-  # endif()
 endif()
 
 if( HAVE_CUDA )

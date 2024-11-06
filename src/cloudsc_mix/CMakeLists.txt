@@ -13,29 +13,40 @@ ecbuild_add_option( FEATURE CLOUDSC_MIX
 )
 
 if( HAVE_CLOUDSC_MIX )
-   
-    # GPU data offload (default: ACC = 1)
-    ## ACC: 1
-    ## OMP: 2    
-    if (CLOUDSC_GPU_OFFLOAD STREQUAL "ACC")
-	set(GPU_OFFLOAD "1")
-	# set(OpenACC_Fortran_FLAGS "${OpenACC_Fortran_FLAGS} -gpu=nordc" CACHE STRING "" )
-    elseif (CLOUDSC_GPU_OFFLOAD STREQUAL "OMP")
-	set(GPU_OFFLOAD "2")
-    else ()
-	set(GPU_OFFLOAD "1")
+
+    # Define integer IDs corresponding to every language choice
+    ## kernel language
+    set(CUDA_LANG "1")
+    set(HIP_LANG "2")
+    set(SYCL_LANG "3")
+    ## offload model
+    set(ACC_OFFLOAD "1")
+    set(OMP_OFFLOAD "2")
+
+    # Select offload model
+    if( NOT DEFINED CLOUDSC_GPU_OFFLOAD )
+      set(CLOUDSC_GPU_OFFLOAD "ACC")
+    endif()
+    if( NOT ${CLOUDSC_GPU_OFFLOAD} MATCHES "ACC|OMP" )
+      message(FATAL_ERROR "CLOUDSC_GPU_OFFLOAD: '${CLOUDSC_GPU_OFFLOAD}' is not a valid option! (Allowed: 'ACC' and 'OMP')")
     endif()
 
-    # GPU kernel language (default: CUDA = 1)
-    ## CUDA: 1
-    ## HIP : 2
-    ## SYCL: 3
+    set(GPU_OFFLOAD ${${CLOUDSC_GPU_OFFLOAD}_OFFLOAD})
+
+    # Select kernel language
+    if( NOT DEFINED CLOUDSC_GPU_LANG )
+      set(CLOUDSC_GPU_LANG "CUDA")
+    endif()
+    if( NOT ${CLOUDSC_GPU_LANG} MATCHES "CUDA|HIP|SYCL" )
+      message(FATAL_ERROR "CLOUDSC_GPU_LANG: '${CLOUDSC_GPU_LANG}' is not a valid option! (Allowed: 'CUDA', 'HIP' and 'SYCL')")
+    endif()
+
+    set(GPU_LANG ${${CLOUDSC_GPU_LANG}_LANG})
+
     if (CLOUDSC_GPU_LANG STREQUAL "CUDA")
-        set(GPU_LANG "1")
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "-O3 -ffast-math")
     elseif (CLOUDSC_GPU_LANG STREQUAL "HIP")
-	set(GPU_LANG "2")
 	if(NOT DEFINED ROCM_PATH)
           if(DEFINED ENV{ROCM_PATH})
             set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
@@ -47,11 +58,8 @@ if( HAVE_CLOUDSC_MIX )
         find_package(hip REQUIRED)
 	set(CMAKE_HIP_FLAGS "${CMAKE_HIP_FLAGS} -O3 -ffast-math")
     elseif (CLOUDSC_GPU_LANG STREQUAL "SYCL")
-        set(GPU_LANG "3")
 	enable_language(CXX)
         set(CMAKE_CXX_STANDARD 17)
-    else ()
-        set(GPU_LANG "1")
     endif()
     
     ecbuild_add_library(
@@ -68,13 +76,10 @@ if( HAVE_CLOUDSC_MIX )
     	        cloudsc-common-lib
     )
 
-    target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC CUDA_LANG=1)
-    target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC HIP_LANG=2)
-    target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC SYCL_LANG=3)
-    target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC ACC_OFFLOAD=1)
-    target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC OMP_OFFLOAD=2)
-    target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC GPU_OFFLOAD=${GPU_OFFLOAD})
-    target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC GPU_LANG=${GPU_LANG})
+    # Provide definitions to target
+    foreach(_def CUDA_LANG HIP_LANG SYCL_LANG ACC_OFFLOAD OMP_OFFLOAD GPU_LANG GPU_OFFLOAD)
+      target_compile_definitions(dwarf-cloudsc-gpu-lib PUBLIC ${_def}=${${_def}})
+    endforeach()
 
     target_include_directories(dwarf-cloudsc-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
@@ -90,7 +95,7 @@ if( HAVE_CLOUDSC_MIX )
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
       )
       if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-        target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
+        target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE $<COMPILE_LANGUAGE:CUDA>)
       else()
         target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
               -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
