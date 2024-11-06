@@ -108,9 +108,11 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
         $<${HAVE_FIELD_API}:field_api_${prec}>
-    DEFINITIONS
-        ENABLE_CLOUDSC_MIX
 )
+
+if(ENABLE_CLOUDSC_MIX)
+    target_compile_definitions(cloudsc-common-lib PRIVATE ENABLE_CLOUDSC_MIX)
+endif()
 
 if( HAVE_CUDA )
     target_link_options( cloudsc-common-lib PUBLIC "-cuda" )
