@@ -12,14 +12,7 @@ PROGRAM DWARF_CLOUDSC
 USE PARKIND1, ONLY: JPIM
 USE CLOUDSC_MPI_MOD, ONLY: CLOUDSC_MPI_INIT, CLOUDSC_MPI_END, NUMPROC, IRANK
 USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: CLOUDSC_GLOBAL_ATLAS_STATE
-
-#if defined(CLOUDSC_GPU_SCC)
 USE CLOUDSC_DRIVER_SCC_MOD, ONLY: CLOUDSC_DRIVER
-#endif
-
-#if defined(CLOUDSC_GPU_SCC_HOIST)
-USE CLOUDSC_DRIVER_SCC_HOIST_MOD, ONLY: CLOUDSC_DRIVER
-#endif
 
 USE ATLAS_MODULE
 USE, INTRINSIC :: ISO_C_BINDING
@@ -52,8 +45,16 @@ IARGS = COMMAND_ARGUMENT_COUNT()
 
 ! Get the number of OpenMP threads to use for the benchmark
 if (IARGS >= 1) then
-   CALL GET_COMMAND_ARGUMENT(1, CLARG, LENARG)
-   READ(CLARG(1:LENARG),*) NUMOMP
+  CALL GET_COMMAND_ARGUMENT(1, CLARG, LENARG)
+  READ(CLARG(1:LENARG),*) NUMOMP
+  if (NUMOMP <= 0) then
+#ifdef _OPENMP
+    NUMOMP = OMP_GET_MAX_THREADS()
+#else
+    ! if arg is 0 or negative, and OpenMP disabled; defaults to 1
+    NUMOMP = 1
+#endif
+  end if
 end if
 
 ! Initialize MPI environment
@@ -73,30 +74,28 @@ IF (IARGS >= 3) THEN
   READ(CLARG(1:LENARG),*) NPROMA
 ENDIF
 
+! timing of memory pool allocations
 FSET = ATLAS_FIELDSET()
 CALL GLOBAL_ATLAS_STATE%LOAD(FSET, FSPACE, NPROMA, NGPTOTG)
-write(0,*) "Ignore above timer!!!"
-
-! TODO: Create a global memory state from serialized input data
+write(0,*) " ### Ignore the above timer, it is timing the one-time memory pool allocation"
 
 FSET = ATLAS_FIELDSET()
 CALL GLOBAL_ATLAS_STATE%LOAD(FSET, FSPACE, NPROMA, NGPTOTG)
-write(0,*) "Above timer is host allocation"
+write(0,*) " ### Above timer is host allocation"
 
 CALL GET_ENV_INT("NITER",NITER)
 
-DO  JITER=1,NITER
-  write(0,'(A,I0,A,I0)') "### ITERATION ",JITER,'/',NITER
-  ! Call the driver to perform the parallel loop over our kernel
+! Call the driver to perform the parallel loop over our kernel
+DO  JITER = 1, NITER
+  write(0,'(A,I0,A,I0)') "### ITERATION ", JITER, '/', NITER
   CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, GLOBAL_ATLAS_STATE%KFLDX, GLOBAL_ATLAS_STATE%PTSPHY)
-ENDDO
 
-! Validate the output against serialized reference data
-IF (NITER == 1) CALL GLOBAL_ATLAS_STATE%VALIDATE(FSET, FSPACE, NGPTOTG)
+  ! Validate the output against serialized reference data
+  IF (JITER == NITER) CALL GLOBAL_ATLAS_STATE%VALIDATE(FSET, FSPACE, NGPTOTG)
+ENDDO
 
 CALL FSET%FINAL()
 CALL FSPACE%FINAL()
-
 CALL TRACE%FINAL()
 
 ! Tear down MPI environment

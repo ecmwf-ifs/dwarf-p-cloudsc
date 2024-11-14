@@ -10,10 +10,19 @@
 MODULE CLOUDSC_DRIVER_SCC_MOD
   USE PARKIND1, ONLY: JPIM, JPRB, JPRD
   USE YOMPHYDER, ONLY: STATE_TYPE
-  USE YOECLDP, ONLY : NCLV, YRECLDP
+  USE YOECLDP, ONLY : NCLV, YRECLDP, TECLDP
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM, FTIMER
+
+#ifdef CLOUDSC_GPU_SCC
   USE CLOUDSC_GPU_SCC_MOD, ONLY: CLOUDSC_SCC
+#endif
+#ifdef CLOUDSC_GPU_SCC_HOIST
+  USE CLOUDSC_GPU_SCC_HOIST_MOD, ONLY: CLOUDSC_SCC_HOIST
+#endif
+#ifdef CLOUDSC_GPU_SCC_K_CACHING
+  USE CLOUDSC_GPU_SCC_K_CACHING_MOD, ONLY: CLOUDSC_SCC_K_CACHING
+#endif
 
   USE ATLAS_MODULE
   USE, INTRINSIC :: ISO_C_BINDING
@@ -23,7 +32,7 @@ MODULE CLOUDSC_DRIVER_SCC_MOD
 
 CONTAINS
 
-  SUBROUTINE CLOUDSC_KERNEL( NGPTOT, NLEV, NPROMA, PTSPHY, &
+  SUBROUTINE CLOUDSC_KERNEL( TIMER, NGPTOT, NGPBLKS, NLEV, NPROMA, PTSPHY, &
       & PLCRIT_AER, PICRIT_AER, PRE_ICE,    PCCN,       PNICE, &
       & PT,         PQ,         PVFA,       PVFL,       PVFI,  & 
       & PDYNA,      PDYNL,      PDYNI,      PHRSW,      PHRLW, &
@@ -38,7 +47,10 @@ CONTAINS
       & PFPLSL,     PFPLSN,     PFHPSL,     PFHPSN,     PCOVPTOT, &
       & TENDENCY_LOC_T, TENDENCY_LOC_A, TENDENCY_LOC_Q, &
       & PRAINFRAC_TOPRFZ, TENDENCY_LOC_CLD )
+
+    TYPE(PERFORMANCE_TIMER), INTENT(INOUT) :: TIMER
     INTEGER(KIND=JPIM), INTENT(IN) :: NGPTOT
+    INTEGER(KIND=JPIM), INTENT(IN) :: NGPBLKS
     INTEGER(KIND=JPIM), INTENT(IN) :: NLEV
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA
     REAL(KIND=JPRB), INTENT(IN)   :: PTSPHY       ! Physics timestep
@@ -104,8 +116,50 @@ CONTAINS
     REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_LOC_CLD(:,:,:,:)
 
     INTEGER :: JKGLO, IBL, ICEND
+    INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
-!$acc data copyin(YRECLDP) deviceptr(&
+#ifdef CLOUDSC_GPU_SCC_HOIST
+    ! Local declarations of promoted temporaries
+    REAL(KIND=JPRB) :: ZFOEALFA(NPROMA, NLEV+1, NGPBLKS)
+    REAL(KIND=JPRB) :: ZTP1(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZLI(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZA(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZAORIG(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZLIQFRAC(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZICEFRAC(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZQX(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZQX0(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZPFPLSX(NPROMA, NLEV+1, NCLV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZLNEG(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZQXN2D(NPROMA, NLEV, NCLV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZQSMIX(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZQSLIQ(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZQSICE(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZFOEEWMT(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZFOEEW(NPROMA, NLEV, NGPBLKS)
+    REAL(KIND=JPRB) :: ZFOEELIQT(NPROMA, NLEV, NGPBLKS)
+#endif
+
+#if (defined CLOUDSC_GPU_SCC_HOIST) || (defined CLOUDSC_GPU_SCC_K_CACHING)
+    INTEGER(KIND=JPIM) :: JL
+    ! Local copy of cloud parameters for offload
+    TYPE(TECLDP) :: LOCAL_YRECLDP
+
+    ! Workaround for PGI / OpenACC oddities:
+    ! Create a local copy of the parameter struct to ensure they get
+    ! moved to the device the in ``acc data`` clause below
+    LOCAL_YRECLDP = YRECLDP
+#else
+!$acc data copyin(YRECLDP)
+#endif
+
+#ifdef CLOUDSC_GPU_SCC_HOIST
+!$acc enter data create(ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0,  &
+!$acc &   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT,  &
+!$acc &   ZFOEEW, ZFOEELIQT)
+#endif
+
+!$acc data deviceptr(&
 !$acc & PLCRIT_AER, PICRIT_AER, PRE_ICE,    PCCN,       PNICE, &
 !$acc & PT,         PQ,         PVFA,       PVFL,       PVFI,  &
 !$acc & PDYNA,      PDYNL,      PDYNI,      PHRSW,      PHRLW, &
@@ -121,11 +175,16 @@ CONTAINS
 !$acc & TENDENCY_LOC_T, TENDENCY_LOC_A, TENDENCY_LOC_Q, &
 !$acc & PRAINFRAC_TOPRFZ, TENDENCY_LOC_CLD )
 
+    ! Local timer for each thread
+    TID = GET_THREAD_NUM()
+    CALL TIMER%THREAD_START(TID)
+
 !$acc parallel loop gang vector_length(NPROMA)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
+#ifdef CLOUDSC_GPU_SCC
        CALL CLOUDSC_SCC &
         & (1, ICEND, NPROMA, NLEV, PTSPHY,&
         & PT(:,:,IBL), PQ(:,:,IBL), &
@@ -150,12 +209,78 @@ CONTAINS
         & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
         & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
         & YRECLDP=YRECLDP)
-
+#elif CLOUDSC_GPU_SCC_HOIST
+!$acc loop vector
+      DO JL=1,ICEND
+        CALL CLOUDSC_SCC_HOIST &
+        & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+        & PT(:,:,IBL), PQ(:,:,IBL), &
+        & TENDENCY_TMP_T(:,:,IBL), TENDENCY_TMP_Q(:,:,IBL), TENDENCY_TMP_A(:,:,IBL), TENDENCY_TMP_CLD(:,:,:,IBL), &
+        & TENDENCY_LOC_T(:,:,IBL), TENDENCY_LOC_Q(:,:,IBL), TENDENCY_LOC_A(:,:,IBL), TENDENCY_LOC_CLD(:,:,:,IBL), &
+        & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
+        & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
+        & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
+        & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
+        & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
+                               !---prognostic fields
+        & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
+                               !-- arrays for aerosol-cloud interactions
+        & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
+        & PRE_ICE(:,:,IBL),&
+        & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
+                               !---diagnostic output
+        & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
+                               !---resulting fluxes
+        & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
+        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
+        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
+        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+        & LOCAL_YRECLDP, &
+        & ZFOEALFA(:,:,IBL), ZTP1(:,:,IBL), ZLI(:,:,IBL), ZA(:,:,IBL), ZAORIG(:,:,IBL), &
+        & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), ZPFPLSX(:,:,:,IBL), &
+        & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
+        & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), JL=JL)
       ENDDO
+#elif CLOUDSC_GPU_SCC_K_CACHING
+!$acc loop vector
+      DO JL=1,ICEND
+       CALL CLOUDSC_SCC_K_CACHING &
+        & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+        & PT(:,:,IBL), PQ(:,:,IBL), &
+        & TENDENCY_TMP_T(:,:,IBL), TENDENCY_TMP_Q(:,:,IBL), TENDENCY_TMP_A(:,:,IBL), TENDENCY_TMP_CLD(:,:,:,IBL), &
+        & TENDENCY_LOC_T(:,:,IBL), TENDENCY_LOC_Q(:,:,IBL), TENDENCY_LOC_A(:,:,IBL), TENDENCY_LOC_CLD(:,:,:,IBL), &
+        & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
+        & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
+        & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
+        & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
+        & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
+        !---prognostic fields
+        & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
+        !-- arrays for aerosol-cloud interactions
+        & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
+        & PRE_ICE(:,:,IBL),&
+        & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
+        !---diagnostic output
+        & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
+        !---resulting fluxes
+        & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
+        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
+        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
+        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+        & YRECLDP=LOCAL_YRECLDP, JL=JL)
+      ENDDO
+#endif
+
+  ENDDO
 !$acc end parallel loop
+
+    CALL TIMER%THREAD_END(TID)
 !$acc end data
-  
+#ifdef CLOUDSC_GPU_SCC
+!$acc end data
+#endif
   END SUBROUTINE CLOUDSC_KERNEL
+
 
   SUBROUTINE CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, KFLDX, PTSPHY)
     ! Driver routine that performans the parallel NPROMA-blocking and
@@ -170,7 +295,7 @@ CONTAINS
     TYPE(ATLAS_FIELD) :: FIELD
     INTEGER(KIND=JPIM)    :: NPROMA, NLEV, NGPTOT
 
-    INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND,NGPBLKS
+    INTEGER(KIND=JPIM) :: JKGLO, IBL, ICEND, NGPBLKS
 
     TYPE(PERFORMANCE_TIMER) :: TIMER, TIMER_DEVICE_ALLOC
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
@@ -326,11 +451,7 @@ CONTAINS
     CALL FSET%DEVICE_DATA(56, PRAINFRAC_TOPRFZ)
     CALL FSET%DEVICE_DATA(57, TENDENCY_LOC_CLD)
 
-    ! Local timer for each thread
-    TID = GET_THREAD_NUM()
-    CALL TIMER%THREAD_START(TID)
-
-    CALL CLOUDSC_KERNEL( NGPTOT, NLEV, NPROMA, PTSPHY, &
+    CALL CLOUDSC_KERNEL( TIMER, NGPTOT, NGPBLKS, NLEV, NPROMA, PTSPHY, &
       & PLCRIT_AER, PICRIT_AER, PRE_ICE,    PCCN,       PNICE, &
       & PT,         PQ,         PVFA,       PVFL,       PVFI,  & 
       & PDYNA,      PDYNL,      PDYNI,      PHRSW,      PHRLW, &
@@ -347,24 +468,22 @@ CONTAINS
       & PRAINFRAC_TOPRFZ, TENDENCY_LOC_CLD &
     )
 
-      CALL TIMER%THREAD_END(TID)
+    CALL FSET%UPDATE_HOST([character(64) :: "PLUDE", "PCOVPTOT", "PRAINFRAC_TOPRFZ", "TENDENCY_LOC_T", &
+      & "TENDENCY_LOC_A", "TENDENCY_LOC_Q", "TENDENCY_LOC_CLD", "PFSQLF", "PFSQIF", "PFCQLNG", "PFCQNNG", &
+      & "PFSQRF", "PFSQSF", "PFCQRNG", "PFCQSNG", "PFSQLTUR", "PFSQITUR", "PFPLSL", "PFPLSN", "PFHPSL", "PFHPSN"])
+    CALL FSET%DEALLOCATE_DEVICE()
 
-      CALL FSET%UPDATE_HOST([character(64) :: "PLUDE", "PCOVPTOT", "PRAINFRAC_TOPRFZ", "TENDENCY_LOC_T", &
-        & "TENDENCY_LOC_A", "TENDENCY_LOC_Q", "TENDENCY_LOC_CLD", "PFSQLF", "PFSQIF", "PFCQLNG", "PFCQNNG", &
-        & "PFSQRF", "PFSQSF", "PFCQRNG", "PFCQSNG", "PFSQLTUR", "PFSQITUR", "PFPLSL", "PFPLSN", "PFHPSL", "PFHPSN"])
-      CALL FSET%DEALLOCATE_DEVICE()
+    CALL TIMER%END()
+    ! On GPUs, adding block-level column totals is cumbersome and
+    ! error prone, and of little value due to the large number of
+    ! processing "thread teams". Instead we register the total here.
+    CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
 
-      CALL TIMER%END()
-      ! On GPUs, adding block-level column totals is cumbersome and
-      ! error prone, and of little value due to the large number of
-      ! processing "thread teams". Instead we register the total here.
-      CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
+    CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
 
-      CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
-
-      CALL FIELD%FINAL()
-      CALL FSPACE%FINAL()
-      CALL TRACE%FINAL()
+    CALL FIELD%FINAL()
+    CALL FSPACE%FINAL()
+    CALL TRACE%FINAL()
 
   END SUBROUTINE CLOUDSC_DRIVER
 

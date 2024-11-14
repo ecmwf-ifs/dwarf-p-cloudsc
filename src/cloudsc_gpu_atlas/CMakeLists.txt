@@ -8,13 +8,18 @@
 
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
-    DESCRIPTION "Build optimized GPU version of CLOUDSC based on Atlas + OpenACC" DEFAULT OFF
+    DESCRIPTION "Build optimized GPU version of CLOUDSC based on Atlas + OpenACC" DEFAULT ON
     CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays (based on Atlas + OpenACC)" DEFAULT OFF
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays (based on Atlas + OpenACC)" DEFAULT ON
+    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with k-caching of local array in the kernel (based on Atlas + OpenACC)" DEFAULT ON
     CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
@@ -47,7 +52,7 @@ if( HAVE_CLOUDSC_GPU_SCC )
 endif()
 
 
-if( HAVE_CLOUDSC_GPU_SCC_HOIST AND FALSE)
+if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
         SOURCES
@@ -56,7 +61,7 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST AND FALSE)
             expand_atlas_mod.F90
             validate_atlas_mod.F90
             ../cloudsc_gpu/cloudsc_gpu_scc_hoist_mod.F90
-            cloudsc_driver_scc_hoist_mod.F90
+            cloudsc_driver_scc_mod.F90
             dwarf_cloudsc_atlas.F90
         LIBS
             atlas_f
@@ -67,6 +72,33 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST AND FALSE)
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
         COMMAND bin/dwarf-cloudsc-gpu-scc-hoist-atlas
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+endif()
+
+
+if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas
+        SOURCES
+            nlev_mod.F90
+            cloudsc_global_atlas_state_mod.F90
+            expand_atlas_mod.F90
+            validate_atlas_mod.F90
+            ../cloudsc_gpu/cloudsc_gpu_scc_k_caching_mod.F90
+            cloudsc_driver_scc_mod.F90
+            dwarf_cloudsc_atlas.F90
+        LIBS
+            atlas_f
+            cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas
+        COMMAND bin/dwarf-cloudsc-gpu-scc-k-caching-atlas
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
