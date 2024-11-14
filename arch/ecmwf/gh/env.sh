@@ -34,11 +34,9 @@ module_load NVHPC/24.1-CUDA-12.3.0
 module_load HDF5/1.14.3-NVHPC-24.1-CUDA-12.3.0
 module_load Boost/1.82.0-GCC-12.3.0
 
-export PATH=$PERM/software/gh/cmake/3.30.3/bin:$PATH
+export PATH=/perm/nawd/software/gh/cmake/3.30.3/bin:$PATH
 
 # module_load CMake/3.27.6-GCCcore-13.2.0
-# module_load NVHPC/24.1-CUDA-12.3.0
-# module_load HDF5/1.14.3-NVHPC-24.1-CUDA-12.3.0
 # module_load GCC/12.3.0 
 export CC=nvc
 export CXX=nvc++
