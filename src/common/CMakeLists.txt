@@ -42,6 +42,10 @@ list(APPEND CLOUDSC_CUDA_SOURCES
     module/yomcst.cuf.F90
 )
 
+if (HAVE_MPI)
+	message("WTF HAVE_MPI")
+endif()
+
 if( HAVE_CUDA )
     # ========================================================================
     # Compile CUDA fortran files with -cuda.
@@ -60,7 +64,7 @@ if( HAVE_CUDA )
 endif()
 
 
-if( HAVE_ACC )
+# if( HAVE_ACC )
     # ========================================================================
     # For OpenACC runs we can ensure global module variables from our utility
     # modules are copied to devices via `!$acc declare copyin(<module_vars>)`
@@ -68,9 +72,9 @@ if( HAVE_ACC )
     # https://www.pgroup.com/userforum/viewtopic.php?t=7296
     # ========================================================================
     set( LIBRARY_TYPE STATIC )
-else()
-    set( LIBRARY_TYPE SHARED )
-endif()
+    # else()
+    # set( LIBRARY_TYPE SHARED )
+# endif()
 
 ecbuild_add_library( TARGET cloudsc-common-lib
     TYPE ${LIBRARY_TYPE}
@@ -79,7 +83,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
 	    $<${HAVE_FIELD_API}:USE_FIELD_API>
     SOURCES
         ${CLOUDSC_COMMON_SOURCES}
-        $<${HAVE_MPI}:module/cloudsc_mpif.F90>
+	# $<${HAVE_MPI}:module/cloudsc_mpif.F90>
         $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
         $<${HAVE_FIELD_API}:module/cloudsc_field_state_mod.F90>
     PRIVATE_INCLUDES
@@ -91,7 +95,7 @@ ecbuild_add_library( TARGET cloudsc-common-lib
     PUBLIC_LIBS
         $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
         $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
-        $<${HAVE_MPI}:MPI::MPI_Fortran>
+	# $<${HAVE_MPI}:MPI::MPI_Fortran>
         $<${HAVE_HDF5}:hdf5::hdf5_fortran>
         $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
         $<${HAVE_FIELD_API}:field_api_${prec}>

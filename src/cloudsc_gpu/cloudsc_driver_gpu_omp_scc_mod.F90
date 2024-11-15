@@ -117,6 +117,7 @@ CONTAINS
     ! moved to the device the in ``acc data`` clause below
     LOCAL_YRECLDP = YRECLDP
 
+
 !$omp target data &
 !$omp map(to: &
 !$omp   pt,pq,buffer_cml,buffer_tmp,pvfa, &
@@ -135,61 +136,68 @@ CONTAINS
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp target teams loop bind(teams) thread_limit(nproma)
-#else
-!$omp target teams distribute thread_limit(nproma)
-#endif
-    DO JKGLO=1,NGPTOT,NPROMA
-       IBL=(JKGLO-1)/NPROMA+1
-       ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
+! !$omp target teams loop bind(teams) thread_limit(nproma)
+! #else
+! !$omp target teams distribute thread_limit(nproma)
+! #endif
+     ! ! $omp target teams distribute
 
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
+     !$omp teams distribute
+     DO JKGLO=1,NGPTOT,NPROMA
+        IBL=(JKGLO-1)/NPROMA+1
+        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
+ 
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
 !$omp loop bind(parallel)
-#elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
-!$omp loop bind(thread)
-#else
-!$omp parallel do
-#endif
-      DO JL=1,ICEND
+! #elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
+! !$omp loop bind(thread)
+! #else
+! !$omp parallel do
+! #endif
 
-       CALL CLOUDSC_SCC &
-        & (1, ICEND, NPROMA, NLEV, PTSPHY,&
-        & PT(:,:,IBL), PQ(:,:,IBL), &
-        & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
-        & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
-        & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
-        & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
-        & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
-        & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
-        & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
-        !---prognostic fields
-        & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
-        !-- arrays for aerosol-cloud interactions
-        & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
-        & PRE_ICE(:,:,IBL),&
-        & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
-        !---diagnostic output
-        & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
-        !---resulting fluxes
-        & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
-        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
-        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
-        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-        & YRECLDP=LOCAL_YRECLDP, JL=JL)
-      ENDDO
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
+       DO JL=1,ICEND
+ 
+         CALL CLOUDSC_SCC &
+          & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+          & PT(:,:,IBL), PQ(:,:,IBL), &
+          & BUFFER_TMP(:,:,1,IBL), BUFFER_TMP(:,:,3,IBL), BUFFER_TMP(:,:,2,IBL), BUFFER_TMP(:,:,4:8,IBL), &
+          & BUFFER_LOC(:,:,1,IBL), BUFFER_LOC(:,:,3,IBL), BUFFER_LOC(:,:,2,IBL), BUFFER_LOC(:,:,4:8,IBL), &
+          & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
+          & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
+          & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
+          & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
+          & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
+          !---prognostic fields
+          & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
+          !-- arrays for aerosol-cloud interactions
+          & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
+          & PRE_ICE(:,:,IBL),&
+          & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
+          !---diagnostic output
+          & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
+          !---resulting fluxes
+          & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
+          & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
+          & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
+          & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+          & YRECLDP=LOCAL_YRECLDP, JL=JL)
+       ENDDO
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
 !$omp end loop
-#else
-!$omp end parallel do
-#endif
+! #else
+! !$omp end parallel do
+! #endif
+! 
+     ENDDO
+     !$omp end teams distribute
+     ! ! $omp end target teams distribute
 
-    ENDDO
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp end target teams loop
-#else
-!$omp end target teams distribute
-#endif
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
+! !$omp end target teams loop
+! #else
+! !$omp end target teams distribute
+! #endif
 
     CALL TIMER%THREAD_END(TID)
 

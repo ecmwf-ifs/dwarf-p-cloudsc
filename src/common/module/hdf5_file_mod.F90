@@ -11,7 +11,7 @@ MODULE hdf5_file_mod
 
   USE PARKIND1 , ONLY : JPIM, JPRB, JPRD
 
-  USE hdf5
+  USE HDF5
 
   implicit none
 

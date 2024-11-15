@@ -136,22 +136,22 @@ CONTAINS
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp target teams loop bind(teams) thread_limit(nproma)
-#else
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
+! !$omp target teams loop bind(teams) thread_limit(nproma)
+! #else
 !$omp target teams distribute thread_limit(nproma)
-#endif
+! #endif
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
-!$omp loop bind(parallel)
-#elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
-!$omp loop bind(thread)
-#else
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL
+! !$omp loop bind(parallel)
+! #elif defined(HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD)
+! !$omp loop bind(thread)
+! #else
 !$omp parallel do
-#endif
+! #endif
       DO JL=1,ICEND
        CALL CLOUDSC_SCC_K_CACHING &
         & (1, ICEND, NPROMA, NLEV, PTSPHY,&
@@ -178,17 +178,17 @@ CONTAINS
         & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
         & YRECLDP=LOCAL_YRECLDP, JL=JL)
       ENDDO
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp end loop
-#else
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
+! !$omp end loop
+! #else
 !$omp end parallel do
-#endif
+! #endif
     ENDDO
-#ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
-!$omp end target teams loop
-#else
+! #ifdef HAVE_OMP_TARGET_LOOP_CONSTRUCT
+! !$omp end target teams loop
+! #else
 !$omp end target teams distribute
-#endif
+! #endif
 
     CALL TIMER%THREAD_END(TID)
 

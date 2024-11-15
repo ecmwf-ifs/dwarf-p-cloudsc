@@ -493,9 +493,147 @@ CONTAINS
     INTEGER(KIND=JPIM) :: JK_I, JK_IP1, JK_IM1
     
     
-#include "fcttre.func.h"
-#include "fccld.func.h"
-    
+! #include "fcttre.func.h"
+! #include "fccld.func.h"
+REAL(KIND=JPRB) :: FOEDELTA
+REAL(KIND=JPRB) :: PTARE
+FOEDELTA (PTARE) = MAX (0.0_JPRB,SIGN(1.0_JPRB,PTARE-RTT))
+
+!                  FOEDELTA = 1    water
+!                  FOEDELTA = 0    ice
+
+!     THERMODYNAMICAL FUNCTIONS .
+
+!     Pressure of water vapour at saturation
+!        INPUT : PTARE = TEMPERATURE
+REAL(KIND=JPRB) :: FOEEW,FOEDE,FOEDESU,FOELH,FOELDCP
+FOEEW ( PTARE ) = R2ES*EXP (&
+  &(R3LES*FOEDELTA(PTARE)+R3IES*(1.0_JPRB-FOEDELTA(PTARE)))*(PTARE-RTT)&
+&/ (PTARE-(R4LES*FOEDELTA(PTARE)+R4IES*(1.0_JPRB-FOEDELTA(PTARE)))))
+
+FOEDE ( PTARE ) = &
+  &(FOEDELTA(PTARE)*R5ALVCP+(1.0_JPRB-FOEDELTA(PTARE))*R5ALSCP)&
+&/ (PTARE-(R4LES*FOEDELTA(PTARE)+R4IES*(1.0_JPRB-FOEDELTA(PTARE))))**2
+
+FOEDESU ( PTARE ) = &
+  &(FOEDELTA(PTARE)*R5LES+(1.0_JPRB-FOEDELTA(PTARE))*R5IES)&
+&/ (PTARE-(R4LES*FOEDELTA(PTARE)+R4IES*(1.0_JPRB-FOEDELTA(PTARE))))**2
+
+FOELH ( PTARE ) =&
+         &FOEDELTA(PTARE)*RLVTT + (1.0_JPRB-FOEDELTA(PTARE))*RLSTT
+
+FOELDCP ( PTARE ) = &
+         &FOEDELTA(PTARE)*RALVDCP + (1.0_JPRB-FOEDELTA(PTARE))*RALSDCP
+
+!     *****************************************************************
+
+!           CONSIDERATION OF MIXED PHASES
+
+!     *****************************************************************
+
+!     FOEALFA is calculated to distinguish the three cases:
+
+!                       FOEALFA=1            water phase
+!                       FOEALFA=0            ice phase
+!                       0 < FOEALFA < 1      mixed phase
+
+!               INPUT : PTARE = TEMPERATURE
+REAL(KIND=JPRB) :: FOEALFA
+FOEALFA (PTARE) = MIN(1.0_JPRB,((MAX(RTICE,MIN(RTWAT,PTARE))-RTICE)&
+ &*RTWAT_RTICE_R)**2) 
+
+
+!     Pressure of water vapour at saturation
+!        INPUT : PTARE = TEMPERATURE
+REAL(KIND=JPRB) :: FOEEWM,FOEDEM,FOELDCPM,FOELHM,FOE_DEWM_DT
+FOEEWM ( PTARE ) = R2ES *&
+     &(FOEALFA(PTARE)*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES))+&
+  &(1.0_JPRB-FOEALFA(PTARE))*EXP(R3IES*(PTARE-RTT)/(PTARE-R4IES)))
+
+FOE_DEWM_DT( PTARE ) = R2ES * ( &
+     & R3LES*FOEALFA(PTARE)*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES)) &
+     &    *(RTT-R4LES)/(PTARE-R4LES)**2 + &
+     & R3IES*(1.0-FOEALFA(PTARE))*EXP(R3IES*(PTARE-RTT)/(PTARE-R4IES)) &
+     &    *(RTT-R4IES)/(PTARE-R4IES)**2)
+
+FOEDEM ( PTARE ) = FOEALFA(PTARE)*R5ALVCP*(1.0_JPRB/(PTARE-R4LES)**2)+&
+             &(1.0_JPRB-FOEALFA(PTARE))*R5ALSCP*(1.0_JPRB/(PTARE-R4IES)**2)
+
+FOELDCPM ( PTARE ) = FOEALFA(PTARE)*RALVDCP+&
+            &(1.0_JPRB-FOEALFA(PTARE))*RALSDCP
+
+FOELHM ( PTARE ) =&
+         &FOEALFA(PTARE)*RLVTT+(1.0_JPRB-FOEALFA(PTARE))*RLSTT
+
+
+!     Temperature normalization for humidity background change of variable
+!        INPUT : PTARE = TEMPERATURE
+REAL(KIND=JPRB) :: FOETB
+FOETB ( PTARE )=FOEALFA(PTARE)*R3LES*(RTT-R4LES)*(1.0_JPRB/(PTARE-R4LES)**2)+&
+             &(1.0_JPRB-FOEALFA(PTARE))*R3IES*(RTT-R4IES)*(1.0_JPRB/(PTARE-R4IES)**2)
+
+!     ------------------------------------------------------------------
+!     *****************************************************************
+
+!           CONSIDERATION OF DIFFERENT MIXED PHASE FOR CONV
+
+!     *****************************************************************
+
+!     FOEALFCU is calculated to distinguish the three cases:
+
+!                       FOEALFCU=1            water phase
+!                       FOEALFCU=0            ice phase
+!                       0 < FOEALFCU < 1      mixed phase
+
+!               INPUT : PTARE = TEMPERATURE
+REAL(KIND=JPRB) :: FOEALFCU 
+FOEALFCU (PTARE) = MIN(1.0_JPRB,((MAX(RTICECU,MIN(RTWAT,PTARE))&
+&-RTICECU)*RTWAT_RTICECU_R)**2) 
+
+
+!     Pressure of water vapour at saturation
+!        INPUT : PTARE = TEMPERATURE
+REAL(KIND=JPRB) :: FOEEWMCU,FOEDEMCU,FOELDCPMCU,FOELHMCU
+FOEEWMCU ( PTARE ) = R2ES *&
+     &(FOEALFCU(PTARE)*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES))+&
+  &(1.0_JPRB-FOEALFCU(PTARE))*EXP(R3IES*(PTARE-RTT)/(PTARE-R4IES)))
+
+FOEDEMCU ( PTARE )=FOEALFCU(PTARE)*R5ALVCP*(1.0_JPRB/(PTARE-R4LES)**2)+&
+             &(1.0_JPRB-FOEALFCU(PTARE))*R5ALSCP*(1.0_JPRB/(PTARE-R4IES)**2)
+
+FOELDCPMCU ( PTARE ) = FOEALFCU(PTARE)*RALVDCP+&
+            &(1.0_JPRB-FOEALFCU(PTARE))*RALSDCP
+
+FOELHMCU ( PTARE ) =&
+         &FOEALFCU(PTARE)*RLVTT+(1.0_JPRB-FOEALFCU(PTARE))*RLSTT
+!     ------------------------------------------------------------------
+
+!     Pressure of water vapour at saturation
+!     This one is for the WMO definition of saturation, i.e. always
+!     with respect to water.
+!     
+!     Duplicate to FOEELIQ and FOEEICE for separate ice variable
+!     FOEELIQ always respect to water 
+!     FOEEICE always respect to ice 
+!     (could use FOEEW and FOEEWMO, but naming convention unclear)
+
+REAL(KIND=JPRB) :: FOEEWMO, FOEELIQ, FOEEICE 
+FOEEWMO( PTARE ) = R2ES*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES))
+FOEELIQ( PTARE ) = R2ES*EXP(R3LES*(PTARE-RTT)/(PTARE-R4LES))
+FOEEICE( PTARE ) = R2ES*EXP(R3IES*(PTARE-RTT)/(PTARE-R4IES))
+
+REAL(KIND=JPRB) :: FOEEWM_V,FOEEWMCU_V,FOELES_V,FOEIES_V
+REAL(KIND=JPRB) :: EXP1,EXP2
+      FOELES_V(PTARE)=R3LES*(PTARE-RTT)/(PTARE-R4LES)
+      FOEIES_V(PTARE)=R3IES*(PTARE-RTT)/(PTARE-R4IES)
+      FOEEWM_V( PTARE,EXP1,EXP2 )=R2ES*(FOEALFA(PTARE)*EXP1+ &
+          & (1.0_JPRB-FOEALFA(PTARE))*EXP2)
+      FOEEWMCU_V ( PTARE,EXP1,EXP2 ) = R2ES*(FOEALFCU(PTARE)*EXP1+&
+          &(1.0_JPRB-FOEALFCU(PTARE))*EXP2)
+
+REAL(KIND=JPRB) :: FOKOOP
+FOKOOP (PTARE) = MIN(RKOOP1-RKOOP2*PTARE,FOEELIQ(PTARE)/FOEEICE(PTARE))
+
     
     !===============================================================================
     !IF (LHOOK) CALL DR_HOOK('CLOUDSC',0,ZHOOK_HANDLE)
