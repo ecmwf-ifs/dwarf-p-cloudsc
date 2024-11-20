@@ -71,6 +71,17 @@ MODULE CLOUDSC_GLOBAL_ATLAS_STATE_MOD
 
 CONTAINS
 
+  SUBROUTINE GET_ENV_INT(name, value)
+    character(len=*), intent(in):: name
+    INTEGER, intent(inout) :: value
+    character(len=32) :: value_str
+    integer :: value_str_length
+    CALL GET_ENVIRONMENT_VARIABLE(NAME=trim(name), VALUE=value_str, LENGTH=value_str_length)
+    IF (value_str_length > 0 ) THEN
+      READ(value_str(1:value_str_length), *) value
+    ENDIF
+  END SUBROUTINE
+
 
   SUBROUTINE CLOUDSC_GLOBAL_ATLAS_STATE_LOAD(SELF, FSET, FSPACE, NPROMA, NGPTOTG)
     ! Load reference input data via serialbox

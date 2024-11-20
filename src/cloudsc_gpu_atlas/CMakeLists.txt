@@ -28,7 +28,6 @@ if( HAVE_CLOUDSC_GPU_SCC )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-atlas
         SOURCES
-            nlev_mod.F90
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
             validate_atlas_mod.F90
@@ -56,7 +55,6 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
         SOURCES
-            nlev_mod.F90
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
             validate_atlas_mod.F90
@@ -83,7 +81,6 @@ if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas
         SOURCES
-            nlev_mod.F90
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
             validate_atlas_mod.F90
