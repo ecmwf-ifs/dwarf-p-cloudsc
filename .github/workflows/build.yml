@@ -194,4 +194,8 @@ jobs:
           sbatch_options: |
             #SBATCH --job-name=sample_job
             #SBATCH --time=00:05:00
+            #SBATCH --nodes=1
+            #SBATCH --ntasks=32
+            #SBATCH --gpus=1
+            #SBATCH --mem=0
             #SBATCH --qos=dg
