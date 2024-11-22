@@ -469,12 +469,13 @@ CONTAINS
       & PRAINFRAC_TOPRFZ, TENDENCY_LOC_CLD &
     )
 
+    CALL TIMER%END()
+
     CALL FSET%UPDATE_HOST(["PLUDE"])
     CALL FSET%UPDATE_HOST(OUT_VAR_NAMES)
 
     CALL FSET%DEALLOCATE_DEVICE()
 
-    CALL TIMER%END()
     ! On GPUs, adding block-level column totals is cumbersome and
     ! error prone, and of little value due to the large number of
     ! processing "thread teams". Instead we register the total here.
