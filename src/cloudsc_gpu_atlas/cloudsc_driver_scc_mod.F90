@@ -170,7 +170,7 @@ CONTAINS
 !$acc &   ZFOEEW, ZFOEELIQT)
 #else
 CALL GET_ENV_INT("HOIST_POOL", HOIST_POOL)
-if (HOIST_POOL) then
+if (HOIST_POOL == 1) then
     device_allocator = pluto%make_allocator(pluto%device_pool_resource())
 else
     device_allocator = pluto%make_allocator(pluto%device_resource())
