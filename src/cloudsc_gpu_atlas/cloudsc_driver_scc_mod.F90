@@ -11,7 +11,7 @@ MODULE CLOUDSC_DRIVER_SCC_MOD
   USE PARKIND1, ONLY: JPIM, JPRB, JPRD
   USE YOMPHYDER, ONLY: STATE_TYPE
   USE YOECLDP, ONLY : NCLV, YRECLDP, TECLDP
-  USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: OUT_VAR_NAMES
+  USE CLOUDSC_GLOBAL_ATLAS_STATE_MOD, ONLY: OUT_VAR_NAMES, GET_ENV_INT
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM, FTIMER
 
@@ -26,6 +26,7 @@ MODULE CLOUDSC_DRIVER_SCC_MOD
 #endif
 
   USE ATLAS_MODULE
+  USE PLUTO_MODULE, ONLY: PLUTO, PLUTO_ALLOCATOR
   USE, INTRINSIC :: ISO_C_BINDING
   USE ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS_MODULE
 
@@ -120,7 +121,7 @@ CONTAINS
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
 #ifdef CLOUDSC_GPU_SCC_HOIST
-    ! Local declarations of promoted temporaries
+#if 0
     REAL(KIND=JPRB) :: ZFOEALFA(NPROMA, NLEV+1, NGPBLKS)
     REAL(KIND=JPRB) :: ZTP1(NPROMA, NLEV, NGPBLKS)
     REAL(KIND=JPRB) :: ZLI(NPROMA, NLEV, NGPBLKS)
@@ -139,10 +140,18 @@ CONTAINS
     REAL(KIND=JPRB) :: ZFOEEWMT(NPROMA, NLEV, NGPBLKS)
     REAL(KIND=JPRB) :: ZFOEEW(NPROMA, NLEV, NGPBLKS)
     REAL(KIND=JPRB) :: ZFOEELIQT(NPROMA, NLEV, NGPBLKS)
+#else
+    TYPE(pluto_allocator) :: device_allocator
+    ! Local declarations of promoted temporaries
+    REAL(KIND=JPRB), POINTER :: ZFOEALFA(:,:,:), ZTP1(:,:,:), ZLI(:,:,:), ZA(:,:,:), ZAORIG(:,:,:), ZLIQFRAC(:,:,:), &
+        & ZICEFRAC(:,:,:), ZQSMIX(:,:,:), ZQSLIQ(:,:,:), ZQSICE(:,:,:), ZFOEEWMT(:,:,:), ZFOEEW(:,:,:), ZFOEELIQT(:,:,:)
+    REAL(KIND=JPRB), POINTER :: ZQX(:,:,:,:), ZQX0(:,:,:,:), ZPFPLSX(:,:,:,:), &
+        & ZLNEG(:,:,:,:), ZQXN2D(:,:,:,:)
+#endif
 #endif
 
 #if (defined CLOUDSC_GPU_SCC_HOIST) || (defined CLOUDSC_GPU_SCC_K_CACHING)
-    INTEGER(KIND=JPIM) :: JL
+    INTEGER(KIND=JPIM) :: JL, HOIST_POOL
     ! Local copy of cloud parameters for offload
     TYPE(TECLDP) :: LOCAL_YRECLDP
 
@@ -155,9 +164,36 @@ CONTAINS
 #endif
 
 #ifdef CLOUDSC_GPU_SCC_HOIST
+#if 0
 !$acc enter data create(ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0,  &
 !$acc &   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT,  &
 !$acc &   ZFOEEW, ZFOEELIQT)
+#else
+CALL GET_ENV_INT("HOIST_POOL", HOIST_POOL)
+if (HOIST_POOL) then
+    device_allocator = pluto%make_allocator(pluto%device_pool_resource())
+else
+    device_allocator = pluto%make_allocator(pluto%device_resource())
+endif
+call device_allocator%allocate(ZFOEALFA, [NPROMA, NLEV+1, NGPBLKS])
+call device_allocator%allocate(ZTP1, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZLI, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZA, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZAORIG, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZLIQFRAC, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZICEFRAC, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZQX, [NPROMA, NLEV, NCLV, NGPBLKS])
+call device_allocator%allocate(ZQX0, [NPROMA, NLEV, NCLV, NGPBLKS])
+call device_allocator%allocate(ZPFPLSX, [NPROMA, NLEV+1, NCLV, NGPBLKS])
+call device_allocator%allocate(ZLNEG, [NPROMA, NLEV, NCLV, NGPBLKS])
+call device_allocator%allocate(ZQXN2D, [NPROMA, NLEV, NCLV, NGPBLKS])
+call device_allocator%allocate(ZQSMIX, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZQSLIQ, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZQSICE, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZFOEEWMT, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZFOEEW, [NPROMA, NLEV, NGPBLKS])
+call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
+#endif
 #endif
 
 !$acc data deviceptr(&
@@ -291,7 +327,6 @@ CONTAINS
     INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NGPTOTG, KFLDX
     REAL(KIND=JPRB), INTENT(IN)   :: PTSPHY       ! Physics timestep
 
-    !TYPE(CLOUDSC_GLOBAL_ATLAS_STATE_BLOCK_VIEW) :: FBLOCK
     TYPE(ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS) :: FSPACE
     TYPE(ATLAS_FIELD) :: FIELD
     INTEGER(KIND=JPIM)    :: NPROMA, NLEV, NGPTOT

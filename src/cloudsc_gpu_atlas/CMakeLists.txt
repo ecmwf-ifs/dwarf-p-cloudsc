@@ -23,7 +23,6 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING
     CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
-
 if( HAVE_CLOUDSC_GPU_SCC )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-atlas
@@ -36,6 +35,7 @@ if( HAVE_CLOUDSC_GPU_SCC )
             dwarf_cloudsc_atlas.F90
         LIBS
             atlas_f
+            pluto_f
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
     )
@@ -50,7 +50,6 @@ if( HAVE_CLOUDSC_GPU_SCC )
     )
 endif()
 
-
 if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
@@ -63,6 +62,7 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
             dwarf_cloudsc_atlas.F90
         LIBS
             atlas_f
+            pluto_f
             cloudsc-common-lib
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
     )
@@ -76,7 +76,6 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     )
 endif()
 
-
 if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas
@@ -89,6 +88,7 @@ if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
             dwarf_cloudsc_atlas.F90
         LIBS
             atlas_f
+            pluto_f
             cloudsc-common-lib
             DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
     )
