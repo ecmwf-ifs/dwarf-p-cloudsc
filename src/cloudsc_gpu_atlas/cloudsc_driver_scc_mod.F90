@@ -121,39 +121,27 @@ CONTAINS
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
 #ifdef CLOUDSC_GPU_SCC_HOIST
-#if 0
-    REAL(KIND=JPRB) :: ZFOEALFA(NPROMA, NLEV+1, NGPBLKS)
-    REAL(KIND=JPRB) :: ZTP1(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZLI(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZA(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZAORIG(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZLIQFRAC(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZICEFRAC(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQX(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQX0(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZPFPLSX(NPROMA, NLEV+1, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZLNEG(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQXN2D(NPROMA, NLEV, NCLV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQSMIX(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQSLIQ(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZQSICE(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZFOEEWMT(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZFOEEW(NPROMA, NLEV, NGPBLKS)
-    REAL(KIND=JPRB) :: ZFOEELIQT(NPROMA, NLEV, NGPBLKS)
-#else
+    ! Local declarations of promoted temporaries via atlas::pluto
     TYPE(pluto_allocator) :: device_allocator
-    ! Local declarations of promoted temporaries
-    REAL(KIND=JPRB), POINTER :: ZFOEALFA(:,:,:), ZTP1(:,:,:), ZLI(:,:,:), ZA(:,:,:), ZAORIG(:,:,:), ZLIQFRAC(:,:,:), &
-        & ZICEFRAC(:,:,:), ZQSMIX(:,:,:), ZQSLIQ(:,:,:), ZQSICE(:,:,:), ZFOEEWMT(:,:,:), ZFOEEW(:,:,:), ZFOEELIQT(:,:,:)
-    REAL(KIND=JPRB), POINTER :: ZQX(:,:,:,:), ZQX0(:,:,:,:), ZPFPLSX(:,:,:,:), &
-        & ZLNEG(:,:,:,:), ZQXN2D(:,:,:,:)
-#endif
+    REAL(KIND=JPRB), POINTER :: ZFOEALFA(:,:,:), ZTP1(:,:,:), &
+        & ZLI(:,:,:), ZA(:,:,:), ZAORIG(:,:,:), ZLIQFRAC(:,:,:), &
+        & ZICEFRAC(:,:,:), ZQSMIX(:,:,:), ZQSLIQ(:,:,:), &
+        & ZQSICE(:,:,:), ZFOEEWMT(:,:,:), ZFOEEW(:,:,:), ZFOEELIQT(:,:,:)
+    REAL(KIND=JPRB), POINTER :: ZQX(:,:,:,:), ZQX0(:,:,:,:), &
+        & ZPFPLSX(:,:,:,:), ZLNEG(:,:,:,:), ZQXN2D(:,:,:,:)
 #endif
 
 #if (defined CLOUDSC_GPU_SCC_HOIST) || (defined CLOUDSC_GPU_SCC_K_CACHING)
     INTEGER(KIND=JPIM) :: JL, HOIST_POOL
     ! Local copy of cloud parameters for offload
     TYPE(TECLDP) :: LOCAL_YRECLDP
+
+    HOIST_POOL = 0
+    CALL GET_ENV_INT("HOIST_POOL", HOIST_POOL)
+    IF (ALL(HOIST_POOL/=[-1,0,1])) THEN
+        PRINT *, "HOIST_POOL must be -1, 0, or 1. Exiting."
+        STOP
+    END IF
 
     ! Workaround for PGI / OpenACC oddities:
     ! Create a local copy of the parameter struct to ensure they get
@@ -164,36 +152,51 @@ CONTAINS
 #endif
 
 #ifdef CLOUDSC_GPU_SCC_HOIST
-#if 0
-!$acc enter data create(ZFOEALFA, ZTP1, ZLI, ZA, ZAORIG, ZLIQFRAC, ZICEFRAC, ZQX, ZQX0,  &
-!$acc &   ZPFPLSX, ZLNEG, ZQXN2D, ZQSMIX, ZQSLIQ, ZQSICE, ZFOEEWMT,  &
-!$acc &   ZFOEEW, ZFOEELIQT)
-#else
-CALL GET_ENV_INT("HOIST_POOL", HOIST_POOL)
-if (HOIST_POOL == 1) then
-    device_allocator = pluto%make_allocator(pluto%device_pool_resource())
+if (HOIST_POOL == -1) then
+!$acc enter data create( &
+!$acc & ZFOEALFA(NPROMA, NLEV+1, NGPBLKS), &
+!$acc & ZTP1(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZLI(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZA(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZAORIG(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZLIQFRAC(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZICEFRAC(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZQX(NPROMA, NLEV, NCLV, NGPBLKS), &
+!$acc & ZQX0(NPROMA, NLEV, NCLV, NGPBLKS), &
+!$acc & ZPFPLSX(NPROMA, NLEV+1, NCLV, NGPBLKS), &
+!$acc & ZLNEG(NPROMA, NLEV, NCLV, NGPBLKS), &
+!$acc & ZQXN2D(NPROMA, NLEV, NCLV, NGPBLKS), &
+!$acc & ZQSMIX(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZQSLIQ(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZQSICE(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZFOEEWMT(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZFOEEW(NPROMA, NLEV, NGPBLKS), &
+!$acc & ZFOEELIQT(NPROMA, NLEV, NGPBLKS) )
 else
-    device_allocator = pluto%make_allocator(pluto%device_resource())
-endif
-call device_allocator%allocate(ZFOEALFA, [NPROMA, NLEV+1, NGPBLKS])
-call device_allocator%allocate(ZTP1, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZLI, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZA, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZAORIG, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZLIQFRAC, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZICEFRAC, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZQX, [NPROMA, NLEV, NCLV, NGPBLKS])
-call device_allocator%allocate(ZQX0, [NPROMA, NLEV, NCLV, NGPBLKS])
-call device_allocator%allocate(ZPFPLSX, [NPROMA, NLEV+1, NCLV, NGPBLKS])
-call device_allocator%allocate(ZLNEG, [NPROMA, NLEV, NCLV, NGPBLKS])
-call device_allocator%allocate(ZQXN2D, [NPROMA, NLEV, NCLV, NGPBLKS])
-call device_allocator%allocate(ZQSMIX, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZQSLIQ, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZQSICE, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZFOEEWMT, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZFOEEW, [NPROMA, NLEV, NGPBLKS])
-call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
-#endif
+    if (HOIST_POOL == 1) then
+        device_allocator = pluto%make_allocator(pluto%device_pool_resource())
+    else if (HOIST_POOL == 0) then
+        device_allocator = pluto%make_allocator(pluto%device_resource())
+    endif
+    call device_allocator%allocate(ZFOEALFA, [NPROMA, NLEV+1, NGPBLKS])
+    call device_allocator%allocate(ZTP1, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZLI, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZA, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZAORIG, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZLIQFRAC, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZICEFRAC, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZQX, [NPROMA, NLEV, NCLV, NGPBLKS])
+    call device_allocator%allocate(ZQX0, [NPROMA, NLEV, NCLV, NGPBLKS])
+    call device_allocator%allocate(ZPFPLSX, [NPROMA, NLEV+1, NCLV, NGPBLKS])
+    call device_allocator%allocate(ZLNEG, [NPROMA, NLEV, NCLV, NGPBLKS])
+    call device_allocator%allocate(ZQXN2D, [NPROMA, NLEV, NCLV, NGPBLKS])
+    call device_allocator%allocate(ZQSMIX, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZQSLIQ, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZQSICE, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZFOEEWMT, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZFOEEW, [NPROMA, NLEV, NGPBLKS])
+    call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
+end if
 #endif
 
 !$acc data deviceptr(&
@@ -310,11 +313,35 @@ call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
 
   ENDDO
 !$acc end parallel loop
+!$acc end data
 
     CALL TIMER%THREAD_END(TID)
-!$acc end data
+
 #ifdef CLOUDSC_GPU_SCC
 !$acc end data
+#endif
+
+#ifdef CLOUDSC_GPU_SCC_HOIST
+if (HOIST_POOL /= -1) then
+    call device_allocator%deallocate(ZFOEALFA)
+    call device_allocator%deallocate(ZTP1)
+    call device_allocator%deallocate(ZLI)
+    call device_allocator%deallocate(ZA)
+    call device_allocator%deallocate(ZAORIG)
+    call device_allocator%deallocate(ZLIQFRAC)
+    call device_allocator%deallocate(ZICEFRAC)
+    call device_allocator%deallocate(ZQX)
+    call device_allocator%deallocate(ZQX0)
+    call device_allocator%deallocate(ZPFPLSX)
+    call device_allocator%deallocate(ZLNEG)
+    call device_allocator%deallocate(ZQXN2D)
+    call device_allocator%deallocate(ZQSMIX)
+    call device_allocator%deallocate(ZQSLIQ)
+    call device_allocator%deallocate(ZQSICE)
+    call device_allocator%deallocate(ZFOEEWMT)
+    call device_allocator%deallocate(ZFOEEW)
+    call device_allocator%deallocate(ZFOEELIQT)
+end if
 #endif
   END SUBROUTINE CLOUDSC_KERNEL
 
