@@ -7,7 +7,7 @@
 ! granted to it by virtue of its status as an intergovernmental organisation
 ! nor does it submit to any jurisdiction.
 
-MODULE CLOUDSC_GPU_SCC_K_CACHING_MOD
+MODULE CLOUDSC_GPU_OMP_SCC_K_CACHING_MOD
 
 !$omp declare target(cloudsc_scc_k_caching)
 
@@ -2639,4 +2639,4 @@ CONTAINS
     !===============================================================================
     !IF (LHOOK) CALL DR_HOOK('CLOUDSC',1,ZHOOK_HANDLE)
   END SUBROUTINE CLOUDSC_SCC_K_CACHING
-END MODULE CLOUDSC_GPU_SCC_K_CACHING_MOD
+END MODULE CLOUDSC_GPU_OMP_SCC_K_CACHING_MOD
