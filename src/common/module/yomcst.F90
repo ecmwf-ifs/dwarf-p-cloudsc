@@ -320,6 +320,7 @@ CONTAINS
     CALL LOAD_SCALAR('RV', RV)
     CALL YRCST_COPY_PARAMETERS()
 !$acc update device(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
+!$omp target update to(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
   END SUBROUTINE YOMCST_LOAD_PARAMETERS
 
   SUBROUTINE YRCST_COPY_PARAMETERS()
