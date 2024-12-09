@@ -16,207 +16,207 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
-    name: ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
+  # build:
+  #   name: ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
 
-    # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+  #   # The type of runner that the job will run on
+  #   runs-on: ubuntu-20.04
 
-    strategy:
-      fail-fast: false  # false: try to complete all jobs
+  #   strategy:
+  #     fail-fast: false  # false: try to complete all jobs
 
-      matrix:
+  #     matrix:
 
-        arch: ['gnu/9.4.0']  # Default arch on Github is GNU 9.4.0 for now
+  #       arch: ['gnu/9.4.0']  # Default arch on Github is GNU 9.4.0 for now
 
-        io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
+  #       io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
 
-        build_flags:
-          - ''  # Plain build without any options
-          - '--with-gpu --with-loki --with-atlas' # Enable Loki, Atlas, and GPU variants
-          - '--with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, Atlas, and GPU variants with MPI
-          - '--single-precision --with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, and GPU variants with MPI in a single-precision build
-          - '--with-field' # Enable Field API CPU variant
-          - '--with-field --with-mpi' # Enable Field API CPU variant with mpi
-          - '--single-precision --with-field --with-mpi' # Enable Field API CPU variant with mpi and single-precision
+  #       build_flags:
+  #         - ''  # Plain build without any options
+  #         - '--with-gpu --with-loki --with-atlas' # Enable Loki, Atlas, and GPU variants
+  #         - '--with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, Atlas, and GPU variants with MPI
+  #         - '--single-precision --with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, and GPU variants with MPI in a single-precision build
+  #         - '--with-field' # Enable Field API CPU variant
+  #         - '--with-field --with-mpi' # Enable Field API CPU variant with mpi
+  #         - '--single-precision --with-field --with-mpi' # Enable Field API CPU variant with mpi and single-precision
 
-        pyiface_flag: ['']  # Enable the pyiface variant
+  #       pyiface_flag: ['']  # Enable the pyiface variant
 
-        python_f2py_flag: ['']  # Enable the f2py variant
+  #       python_f2py_flag: ['']  # Enable the f2py variant
 
-        ctest_exclude_pattern: ['-scc-hoist-']  # Regex to disable CTest tests
+  #       ctest_exclude_pattern: ['-scc-hoist-']  # Regex to disable CTest tests
 
-        include:
-          # Add pyiface build configuration for double precision, non-MPI, HDF5 only
-          - arch: gnu/9.4.0
-            io_library_flag: ''
-            build_flags: '--cloudsc-fortran-pyiface=ON --cloudsc-python-f2py=ON'
+  #       include:
+  #         # Add pyiface build configuration for double precision, non-MPI, HDF5 only
+  #         - arch: gnu/9.4.0
+  #           io_library_flag: ''
+  #           build_flags: '--cloudsc-fortran-pyiface=ON --cloudsc-python-f2py=ON'
 
-          # Add nvhpc build configurations with serialbox and HDF5
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --cmake="ENABLE_ACC=OFF"'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --with-cuda'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         # Add nvhpc build configurations with serialbox and HDF5
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: ''
+  #           build_flags: '--with-gpu --with-loki --cmake="ENABLE_ACC=OFF"'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: ''
+  #           build_flags: '--with-gpu --with-loki --with-cuda'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: ''
+  #           build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-atlas'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: '--with-serialbox'
+  #           build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: ''
+  #           build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: '--with-serialbox'
+  #           build_flags: '--with-gpu --with-loki --with-cuda --with-field'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: ''
+  #           build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+  #         - arch: nvhpc/21.9
+  #           nvhpc_version: 21.9
+  #           io_library_flag: '--with-serialbox'
+  #           build_flags: '--with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
 
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --cmake="ENABLE_ACC=OFF"'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --with-cuda'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: ''
+  #           build_flags: '--with-gpu --with-loki --cmake="ENABLE_ACC=OFF"'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: ''
+  #           build_flags: '--with-gpu --with-loki --with-cuda'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: ''
+  #           build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-atlas'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: '--with-serialbox'
+  #           build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: ''
+  #           build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: '--with-serialbox'
+  #           build_flags: '--with-gpu --with-loki --with-cuda --with-field'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: ''
+  #           build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+  #         - arch: nvhpc/23.5
+  #           nvhpc_version: 23.5
+  #           io_library_flag: '--with-serialbox'
+  #           build_flags: '--with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
+  #           ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+  #   # Steps represent a sequence of tasks that will be executed as part of the job
+  #   steps:
+  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+  #     - uses: actions/checkout@v4
 
-      # Installs required packages
-      - name: Package installation
-        run: |
-          sudo apt-get install libc-dev-bin gfortran-9 gcc-9 g++-9
+  #     # Installs required packages
+  #     - name: Package installation
+  #       run: |
+  #         sudo apt-get install libc-dev-bin gfortran-9 gcc-9 g++-9
 
-      # Install MPI
-      - name: Install MPI via Apt
-        if: contains( matrix.build_flags, 'with-mpi' )
-        run: sudo apt-get install libopenmpi-dev
+  #     # Install MPI
+  #     - name: Install MPI via Apt
+  #       if: contains( matrix.build_flags, 'with-mpi' )
+  #       run: sudo apt-get install libopenmpi-dev
 
-      # Free up disk space for nvhpc
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        if: contains( matrix.arch, 'nvhpc' )
-        continue-on-error: true
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
+  #     # Free up disk space for nvhpc
+  #     - name: Free Disk Space (Ubuntu)
+  #       uses: jlumbroso/free-disk-space@main
+  #       if: contains( matrix.arch, 'nvhpc' )
+  #       continue-on-error: true
+  #       with:
+  #         # this might remove tools that are actually needed,
+  #         # if set to "true" but frees about 6 GB
+  #         tool-cache: false
 
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
+  #         # all of these default to true, but feel free to set to
+  #         # "false" if necessary for your workflow
+  #         android: true
+  #         dotnet: true
+  #         haskell: true
+  #         large-packages: true
+  #         docker-images: true
+  #         swap-storage: true
 
-      # Install Compiler
-      - name: Install nvhpc
-        if: contains( matrix.arch, 'nvhpc' )
-        env:
-          nvhpc_version: ${{ matrix.nvhpc_version }}
-        run: .github/scripts/bootstrap-nvhpc.sh
+  #     # Install Compiler
+  #     - name: Install nvhpc
+  #       if: contains( matrix.arch, 'nvhpc' )
+  #       env:
+  #         nvhpc_version: ${{ matrix.nvhpc_version }}
+  #       run: .github/scripts/bootstrap-nvhpc.sh
 
-      # Install HDF5
-      - name: Install HDF5 via Apt
-        if: ${{ ! contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' ) }}
-        run: sudo apt-get install libhdf5-dev
+  #     # Install HDF5
+  #     - name: Install HDF5 via Apt
+  #       if: ${{ ! contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' ) }}
+  #       run: sudo apt-get install libhdf5-dev
 
-      - name: Install HDF5 from source
-        if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
-        run: |
-          source arch/github/ubuntu/${{ matrix.arch }}/env.sh
-          FC=pgf90 .github/scripts/install-hdf5.sh
+  #     - name: Install HDF5 from source
+  #       if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
+  #       run: |
+  #         source arch/github/ubuntu/${{ matrix.arch }}/env.sh
+  #         FC=pgf90 .github/scripts/install-hdf5.sh
 
-      # Install Boost
-      - name: Install Boost libraries
-        if: contains( matrix.io_library_flag, 'with-serialbox' )
-        run: sudo apt install libboost-filesystem-dev libboost-system-dev
+  #     # Install Boost
+  #     - name: Install Boost libraries
+  #       if: contains( matrix.io_library_flag, 'with-serialbox' )
+  #       run: sudo apt install libboost-filesystem-dev libboost-system-dev
 
-      # Check-out dependencies as part of the bundle creation
-      - name: Bundle create
-        run: ./cloudsc-bundle create
+  #     # Check-out dependencies as part of the bundle creation
+  #     - name: Bundle create
+  #       run: ./cloudsc-bundle create
 
-      # Build the targets
-      - name: Bundle build
-        run: |
-          ./cloudsc-bundle build --verbose --retry-verbose \
-          --arch=arch/github/ubuntu/${{ matrix.arch }} \
-          ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
+  #     # Build the targets
+  #     - name: Bundle build
+  #       run: |
+  #         ./cloudsc-bundle build --verbose --retry-verbose \
+  #         --arch=arch/github/ubuntu/${{ matrix.arch }} \
+  #         ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
 
-      # Verify targets exist
-      - name: Verify targets
-        env:
-          io_library_flag: ${{ matrix.io_library_flag }}
-          build_flags: ${{ matrix.build_flags }}
-        run: .github/scripts/verify-targets.sh
+  #     # Verify targets exist
+  #     - name: Verify targets
+  #       env:
+  #         io_library_flag: ${{ matrix.io_library_flag }}
+  #         build_flags: ${{ matrix.build_flags }}
+  #       run: .github/scripts/verify-targets.sh
 
-      # Run ctest
-      - name: Run CTest
-        if: ${{ !( contains(matrix.build_flags, '--single-precision') || (contains(matrix.build_flags, '--with-cuda') && contains(matrix.arch, 'nvhpc')) ) }}
-        working-directory: ./build
-        run: |
-          source env.sh
-          ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
+  #     # Run ctest
+  #     - name: Run CTest
+  #       if: ${{ !( contains(matrix.build_flags, '--single-precision') || (contains(matrix.build_flags, '--with-cuda') && contains(matrix.arch, 'nvhpc')) ) }}
+  #       working-directory: ./build
+  #       run: |
+  #         source env.sh
+  #         ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
 
   ci-hpc:
     name: ci-hpc
@@ -230,7 +230,7 @@ jobs:
 
         include:
           - name: ac-gpu nvhpc
-            site: ac-batch
+            site: hpc-batch
             sbatch_options: |
               #SBATCH --time=00:20:00
               #SBATCH --nodes=1
