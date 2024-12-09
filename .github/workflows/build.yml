@@ -217,3 +217,123 @@ jobs:
         run: |
           source env.sh
           ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
+
+  ci-hpc:
+    name: ci-hpc
+
+    strategy:
+      fail-fast: false    # false: try to complete all jobs
+
+      matrix:
+        name:
+          - ac-gpu nvhpc
+
+        include:
+          - name: ac-gpu nvhpc
+            site: ac-batch
+            sbatch_options: |
+              #SBATCH --time=00:20:00
+              #SBATCH --nodes=1
+              #SBATCH --ntasks=1
+              #SBATCH --cpus-per-task=32
+              #SBATCH --gpus-per-task=1
+              #SBATCH --mem=100G
+              #SBATCH --qos=dg
+            acc: True
+            cuda: True
+            hip: False
+            sycl: False
+
+    runs-on: [self-hosted, linux, hpc]
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: ecmwf-actions/reusable-workflows/ci-hpc-generic@v2
+        with:
+          site: ${{ matrix.site }}
+          troika_user: ${{ secrets.HPC_CI_SSH_USER }}
+          sbatch_options: ${{ matrix.sbatch_options }}
+          template_data: |
+            modules:
+              - cmake
+              - ninja
+              - ecbuild
+              - prgenv/nvidia
+              - hdf5
+              - python3
+            cmake_options:
+              - -DENABLE_ACC=${{ matrix.acc }}
+              - -DFIELD_API_ENABLE_ACC=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_SCC=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_SCC_HOIST=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_SCC_STACK=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_SCC_K_CACHING=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_OMP_SCC=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_OMP_SCC_STACK=${{ matrix.acc }}
+              - -DENABLE_CLOUDSC_GPU_OMP_SCC_K_CACHING=${{ matrix.acc }}
+              - -DENABLE_CUDA=${{ matrix.cuda }}
+              - -DENABLE_CLOUDSC_GPU_SCC_CUF=${{ matrix.cuda }}
+              - -DENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=${{ matrix.cuda }}
+              - -DENABLE_HIP=${{ matrix.hip }}
+              - -DENABLE_SYCL=${{ matrix.sycl }}
+              - -DENABLE_CLOUDSC_LOKI=ON
+              - -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }}
+              - -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}
+            dependencies:
+              ecmwf-ifs/loki:
+                version: v0.2.9
+                cmake_options:
+                  - -DENABLE_TESTS=OFF
+                  - -DENABLE_FCKIT_VENV=ON
+              ecmwf-ifs/fiat:
+                version: 1.4.1
+                cmake_options:
+                  - -DENABLE_TESTS=OFF
+                  - -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }}
+                  - -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}
+              ecmwf-ifs/field_api:
+                version: v0.3.3
+                cmake_options:
+                  - -DENABLE_TESTS=OFF
+                  - -DENABLE_ACC=${{ matrix.acc }}
+                  - -DENABLE_CUDA=${{ matrix.cuda }}
+                  - -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }}
+                  - -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}
+          template: |
+            {% for module in modules %}
+              module load {{module}}
+            {% endfor %}
+            BASEDIR=$PWD
+            {% for name, options in dependencies.items() %}
+                mkdir -p {{name}}
+                pushd {{name}}
+                git init
+                git remote add origin ${{ github.server_url }}/{{name}}
+                git fetch origin {{options['version']}}
+                git reset --hard FETCH_HEAD
+                cmake -G Ninja -S . -B build \
+                  {% for name in dependencies %}
+                    {% set org, proj = name.split('/') %}
+                    -D{{proj}}_ROOT=$BASEDIR/{{name}}/installation \
+                  {% endfor %}
+                  {{ options['cmake_options']|join(' ') }}
+                cmake --build build
+                cmake --install build --prefix installation
+                popd
+            {% endfor %}
+            mkdir -p ${{ github.repository }}
+            pushd ${{ github.repository }}
+            git init
+            git remote add origin ${{ github.server_url }}/${{ github.repository }}
+            git fetch origin ${{ github.sha }}
+            git reset --hard FETCH_HEAD
+            popd
+            cmake -G Ninja -S ${{ github.repository }} -B build \
+              {% for name in dependencies %}
+                {% set org, proj = name.split('/') %}
+                -D{{proj}}_ROOT=$BASEDIR/{{name}}/installation \
+              {% endfor %}
+              {{ cmake_options|join(' ') }}
+            cmake --build build
+            ctest --test-dir build
