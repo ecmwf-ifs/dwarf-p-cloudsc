@@ -243,6 +243,7 @@ jobs:
             cuda: True
             hip: False
             sycl: False
+            cuda_arch: 80
 
     runs-on: [self-hosted, linux, hpc]
     env:
@@ -263,7 +264,6 @@ jobs:
               - python3
             cmake_options:
               - -DENABLE_ACC=${{ matrix.acc }}
-              - -DFIELD_API_ENABLE_ACC=${{ matrix.acc }}
               - -DENABLE_CLOUDSC_GPU_SCC=${{ matrix.acc }}
               - -DENABLE_CLOUDSC_GPU_SCC_HOIST=${{ matrix.acc }}
               - -DENABLE_CLOUDSC_GPU_SCC_STACK=${{ matrix.acc }}
@@ -280,26 +280,12 @@ jobs:
               - -DENABLE_CLOUDSC_LOKI=ON
               - -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }}
               - -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}
+              - -DCMAKE_CUDA_ARCHITECTURES=${{ matrix.cuda_arch }}
             dependencies:
               ecmwf-ifs/loki:
                 version: v0.2.9
                 cmake_options:
                   - -DENABLE_TESTS=OFF
-                  - -DENABLE_FCKIT_VENV=ON
-              ecmwf-ifs/fiat:
-                version: 1.4.1
-                cmake_options:
-                  - -DENABLE_TESTS=OFF
-                  - -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }}
-                  - -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}
-              ecmwf-ifs/field_api:
-                version: v0.3.3
-                cmake_options:
-                  - -DENABLE_TESTS=OFF
-                  - -DENABLE_ACC=${{ matrix.acc }}
-                  - -DENABLE_CUDA=${{ matrix.cuda }}
-                  - -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }}
-                  - -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}
           template: |
             {% for module in modules %}
               module load {{module}}
@@ -312,7 +298,7 @@ jobs:
                 git remote add origin ${{ github.server_url }}/{{name}}
                 git fetch origin {{options['version']}}
                 git reset --hard FETCH_HEAD
-                cmake -G Ninja -S . -B build \
+                cmake -S . -B build \
                   {% for name in dependencies %}
                     {% set org, proj = name.split('/') %}
                     -D{{proj}}_ROOT=$BASEDIR/{{name}}/installation \
@@ -329,7 +315,7 @@ jobs:
             git fetch origin ${{ github.sha }}
             git reset --hard FETCH_HEAD
             popd
-            cmake -G Ninja -S ${{ github.repository }} -B build \
+            cmake -S ${{ github.repository }} -B build \
               {% for name in dependencies %}
                 {% set org, proj = name.split('/') %}
                 -D{{proj}}_ROOT=$BASEDIR/{{name}}/installation \
