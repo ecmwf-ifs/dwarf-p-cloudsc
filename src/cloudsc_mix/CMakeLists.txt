@@ -71,7 +71,7 @@ if( HAVE_CLOUDSC_MIX )
             cloudsc_c_k_caching_mod.F90
     	    PUBLIC_INCLUDES
     	    	$<INSTALL_INTERFACE:include>
-            	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+            	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     	    PUBLIC_LIBS
     	        cloudsc-common-lib
     )
@@ -98,7 +98,7 @@ if( HAVE_CLOUDSC_MIX )
         target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE $<COMPILE_LANGUAGE:CUDA>)
       else()
         target_compile_options(dwarf-cloudsc-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-              -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
+	  -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
       endif()
       set_target_properties( dwarf-cloudsc-gpu-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON) 
     # HIP specific
@@ -123,7 +123,6 @@ if( HAVE_CLOUDSC_MIX )
     # CUDA specific
     if (CLOUDSC_GPU_LANG STREQUAL "CUDA")
       set_target_properties( dwarf-cloudsc-mix PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-      target_link_libraries(dwarf-cloudsc-mix dwarf-cloudsc-gpu-lib cudadevrt cudart)
       target_link_options(dwarf-cloudsc-mix PRIVATE "-cuda")
     # HIP specific 
     elseif (CLOUDSC_GPU_LANG STREQUAL "HIP")
