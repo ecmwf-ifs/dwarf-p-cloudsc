@@ -30,12 +30,6 @@ if( HAVE_CLOUDSC_LOKI )
 
     set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
 
-    # OFP frontend cannot deal with statement functions, so we toggle them here
-    set( CLOUDSC_DEFINE_STMT_FUNC "" )
-    if(NOT "${LOKI_FRONTEND}" STREQUAL "ofp")
-    set( CLOUDSC_DEFINE_STMT_FUNC CLOUDSC_STMT_FUNC )
-    endif()
-
     ####################################################
     ##  Idempotence mode:                             ##
     ##   * Internal "do-nothing" mode for Loki debug  ##
@@ -54,8 +48,6 @@ if( HAVE_CLOUDSC_LOKI )
         MODE idem
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
-        DEFINITIONS
-            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -133,8 +125,6 @@ if( HAVE_CLOUDSC_LOKI )
         MODE idem-stack
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
-        DEFINITIONS
-            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -220,8 +210,6 @@ if( HAVE_CLOUDSC_LOKI )
         MODE sca
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
         CPP
-        DEFINITIONS
-            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -284,8 +272,6 @@ if( HAVE_CLOUDSC_LOKI )
             MODE claw-cpu
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
             CPP
-            DEFINITIONS
-                ${CLOUDSC_DEFINE_STMT_FUNC}
             FRONTEND ${LOKI_FRONTEND}
             SOURCES
                 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -391,7 +377,6 @@ if( HAVE_CLOUDSC_LOKI )
             CPP
             DEFINITIONS
                 CLOUDSC_GPU_TIMING
-                ${CLOUDSC_DEFINE_STMT_FUNC}
             FRONTEND ${LOKI_FRONTEND}
             SOURCES
                 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -466,7 +451,6 @@ if( HAVE_CLOUDSC_LOKI )
         CPP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
-            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -524,7 +508,6 @@ if( HAVE_CLOUDSC_LOKI )
         CPP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
-            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -588,7 +571,6 @@ if( HAVE_CLOUDSC_LOKI )
         CPP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
-            ${CLOUDSC_DEFINE_STMT_FUNC}
         FRONTEND ${LOKI_FRONTEND}
         SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -835,8 +817,6 @@ endif()
                 ${COMMON_MODULE}/yomcst.F90
                 ${COMMON_MODULE}/yoethf.F90
                 ${COMMON_MODULE}/yoecldp.F90
-                ${COMMON_MODULE}/fcttre_mod.F90
-                ${COMMON_MODULE}/fccld_mod.F90
             INCLUDES ${COMMON_INCLUDE}
             XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
             BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-c
