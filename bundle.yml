@@ -36,7 +36,7 @@ projects :
 
     - loki :
         git     : https://github.com/ecmwf-ifs/loki
-        version : v0.2.9
+        version : main
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
