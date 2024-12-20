@@ -29,7 +29,7 @@ if( HAVE_CLOUDSC_LOKI )
     set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
 
     set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
-
+    
     ####################################################
     ##  Idempotence mode:                             ##
     ##   * Internal "do-nothing" mode for Loki debug  ##
@@ -674,7 +674,6 @@ if ( HAVE_FIELD_API AND field_api_HAVE_ACC )
 
 endif()
 
-
     ####################################################
     ##  SCC CUF (CUDA Fortran)                        ##
     ##   * SCC with CUDA Fortran (CUF)                ##
@@ -697,12 +696,13 @@ if( HAVE_CUDA )
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
         SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
+	    ${COMMON_MODULE}/parkind1.F90
             ${COMMON_MODULE}/yomcst.F90
             ${COMMON_MODULE}/yomphyder.F90
             ${COMMON_MODULE}/yoethf.F90
             ${COMMON_MODULE}/yoecldp.F90
         INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING
+        DEFINITIONS CLOUDSC_GPU_TIMING CUF_IMPORTS
         DATA_OFFLOAD
         REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
@@ -752,12 +752,13 @@ if( HAVE_CUDA )
         CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
         SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
         HEADERS
+	    ${COMMON_MODULE}/parkind1.F90
             ${COMMON_MODULE}/yomcst.F90
             ${COMMON_MODULE}/yomphyder.F90
             ${COMMON_MODULE}/yoethf.F90
             ${COMMON_MODULE}/yoecldp.F90
         INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING
+        DEFINITIONS CLOUDSC_GPU_TIMING CUF_IMPORTS
         DATA_OFFLOAD
         REMOVE_OPENMP
         XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
@@ -798,6 +799,151 @@ if( HAVE_CUDA )
         OMP 1
     )
 
+ #### CUDA PARAMETRISE #####
+    # cloudsc_xmod( loki-c-scc-hoist )
+
+    loki_transform_convert(
+        MODE cuda-parametrise FRONTEND ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+        # CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS
+		${COMMON_MODULE}/parkind1.F90
+                ${COMMON_MODULE}/yomphyder.F90
+                ${COMMON_MODULE}/yomcst.F90
+                ${COMMON_MODULE}/yoethf.F90
+                ${COMMON_MODULE}/yoecldp.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING
+        DATA_OFFLOAD REMOVE_OPENMP
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c-scc-parametrise
+        OUTPUT
+            loki-c-scc-parametrise/cuf_cloudsc_driver_loki_mod.cuda_parametrise.F90
+            loki-c-scc-parametrise/cloudsc_cuf_fc.F90 loki-c-scc-parametrise/cloudsc_cuf_c.c
+            loki-c-scc-parametrise/yoethf_fc.F90 loki-c-scc-parametrise/yomcst_fc.F90
+            loki-c-scc-parametrise/yoecldp_fc.F90
+        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+
+      ecbuild_add_library(
+        TARGET dwarf-cloudsc-scc-parametrise-gpu-lib
+        INSTALL_HEADERS LISTED
+        SOURCES
+            # yoecldp_c.h
+            loki-c-scc-parametrise/cloudsc_cuf_c.c
+            loki-c-scc-parametrise/cloudsc_cuf_fc.F90
+            PUBLIC_INCLUDES
+                $<INSTALL_INTERFACE:include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+            PUBLIC_LIBS
+                cloudsc-common-lib
+    )
+
+    target_include_directories(dwarf-cloudsc-scc-parametrise-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+    set_source_files_properties(loki-c-scc-parametrise/cloudsc_cuf_c.c PROPERTIES LANGUAGE CUDA)
+
+   target_compile_options(dwarf-cloudsc-scc-parametrise-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+           --generate-line-info
+           >)
+
+
+      cloudsc_add_compile_options(
+         SOURCES dwarf_cloudsc.F90
+         FLAGS   "-cuda") # -gpu=maxrregcount ...
+    target_include_directories(
+        dwarf-cloudsc-scc-parametrise-gpu-lib
+        PUBLIC
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
+
+    ecbuild_add_executable(
+        TARGET  dwarf-cloudsc-loki-scc-parametrise-cuda
+        SOURCES dwarf_cloudsc.F90 loki-c-scc-parametrise/cuf_cloudsc_driver_loki_mod.cuda_parametrise.F90
+        LIBS dwarf-cloudsc-scc-parametrise-gpu-lib
+    )
+
+    target_compile_definitions(dwarf-cloudsc-loki-scc-parametrise-cuda PUBLIC CUF_DRIVER=1)
+
+    set_target_properties(dwarf-cloudsc-loki-scc-parametrise-cuda PROPERTIES LINKER_LANGUAGE Fortran)
+
+    set_target_properties( dwarf-cloudsc-loki-scc-parametrise-cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_link_libraries(dwarf-cloudsc-loki-scc-parametrise-cuda dwarf-cloudsc-scc-parametrise-gpu-lib cudadevrt cudart)
+
+   #### CUDA HOIST #####
+    # cloudsc_xmod( loki-c-scc-hoist )
+
+    loki_transform_convert(
+        MODE cuda-hoist FRONTEND ${LOKI_FRONTEND} CPP
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
+        PATH ${CMAKE_CURRENT_SOURCE_DIR}
+        HEADERS
+		${COMMON_MODULE}/parkind1.F90
+                ${COMMON_MODULE}/yomphyder.F90
+                ${COMMON_MODULE}/yomcst.F90
+                ${COMMON_MODULE}/yoethf.F90
+                ${COMMON_MODULE}/yoecldp.F90
+        INCLUDES ${COMMON_INCLUDE}
+        DEFINITIONS CLOUDSC_GPU_TIMING
+        DATA_OFFLOAD REMOVE_OPENMP
+        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
+        OUTPATH ${CMAKE_CURRENT_BINARY_DIR}/loki-c-scc-hoist
+        OUTPUT
+            loki-c-scc-hoist/cuf_cloudsc_driver_loki_mod.cuda_hoist.F90
+            loki-c-scc-hoist/cloudsc_cuf_fc.F90 loki-c-scc-hoist/cloudsc_cuf_c.c
+            loki-c-scc-hoist/yoethf_fc.F90 loki-c-scc-hoist/yomcst_fc.F90
+            loki-c-scc-hoist/yoecldp_fc.F90
+        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
+    )
+
+
+      ecbuild_add_library(
+        TARGET dwarf-cloudsc-scc-hoist-gpu-lib
+        INSTALL_HEADERS LISTED
+        SOURCES
+            # yoecldp_c.h
+            loki-c-scc-hoist/cloudsc_cuf_c.c
+            loki-c-scc-hoist/cloudsc_cuf_fc.F90
+            PUBLIC_INCLUDES
+                $<INSTALL_INTERFACE:include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+            PUBLIC_LIBS
+                cloudsc-common-lib
+    )
+
+    target_include_directories(dwarf-cloudsc-scc-hoist-gpu-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+    set_source_files_properties(loki-c-scc-hoist/cloudsc_cuf_c.c PROPERTIES LANGUAGE CUDA)
+
+   target_compile_options(dwarf-cloudsc-scc-hoist-gpu-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+           --generate-line-info
+           >)
+
+
+      cloudsc_add_compile_options(
+         SOURCES dwarf_cloudsc.F90
+         FLAGS   "-cuda") # -gpu=maxrregcount ...
+    target_include_directories(
+        dwarf-cloudsc-scc-hoist-gpu-lib
+        PUBLIC
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
+
+    ecbuild_add_executable(
+        TARGET  dwarf-cloudsc-loki-scc-hoist-cuda
+        SOURCES dwarf_cloudsc.F90 loki-c-scc-hoist/cuf_cloudsc_driver_loki_mod.cuda_hoist.F90
+        LIBS dwarf-cloudsc-scc-hoist-gpu-lib
+    )
+
+    target_compile_definitions(dwarf-cloudsc-loki-scc-hoist-cuda PUBLIC CUF_DRIVER=1)
+
+    set_target_properties(dwarf-cloudsc-loki-scc-hoist-cuda PROPERTIES LINKER_LANGUAGE Fortran)
+
+    set_target_properties( dwarf-cloudsc-loki-scc-hoist-cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_link_libraries(dwarf-cloudsc-loki-scc-hoist-cuda dwarf-cloudsc-scc-hoist-gpu-lib cudadevrt cudart)
+
 endif()
 
     #############################################################################
@@ -812,7 +958,7 @@ endif()
             CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
             SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
             HEADERS
-                ${COMMON_MODULE}/parkind1.F90
+	    	${COMMON_MODULE}/parkind1.F90
                 ${COMMON_MODULE}/yomphyder.F90
                 ${COMMON_MODULE}/yomcst.F90
                 ${COMMON_MODULE}/yoethf.F90
@@ -860,7 +1006,6 @@ endif()
         )
 
     endif()
-
     # Create symlink for the input data
     if( HAVE_SERIALBOX )
       execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
