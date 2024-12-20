@@ -80,7 +80,11 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
     of CLOUDSC including host side hoisted temporary local variables.
   - **dwarf-cloudsc-cuda-k-caching**: GPU-enabled, further optimized CUDA
     C version of CLOUDSC including loop fusion and temporary local 
-    array demotion.  
+    array demotion. 
+  - **dwarf-cloudsc-cuda-opt**: GPU-enabled, further optimized beyond
+    k-caching CUDA C version that buffers some variables and
+    uses pipelined global-to-shared memory copies that are overlapped
+    with compute (TMA loads). 
 - **dwarf-cloudsc-gpu-scc-field**: GPU-enabled and optimized version of
   CLOUDSC that uses the SCC loop layout, and uses [FIELD API](https://github.com/ecmwf-ifs/field_api) (a Fortran library purpose-built for IFS data-structures that facilitates the
   creation and management of field objects in scientific code) to perform device offload 

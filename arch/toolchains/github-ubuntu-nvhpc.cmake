@@ -32,6 +32,10 @@ set( OpenACC_Fortran_FLAGS "-acc=gpu -mp" CACHE STRING "" )
 # COMMON FLAGS
 ####################################################################
 
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+  set(CMAKE_CUDA_ARCHITECTURES 80)
+endif()
+
 set(ECBUILD_Fortran_FLAGS "-fpic")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mframe")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Mbyteswapio")
