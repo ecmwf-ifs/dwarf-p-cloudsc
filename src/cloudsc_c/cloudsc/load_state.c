@@ -57,7 +57,7 @@ void query_state(int *klon, int *klev)
 #ifdef HAVE_HDF5
   hid_t file_id, dataset_id;
   herr_t  status;
-  file_id = H5Fopen(INPUT_FILE, H5F_ACC_RDWR, H5P_DEFAULT);
+  file_id = H5Fopen(INPUT_FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
   
   read_hdf5_int(file_id, "/KLEV", klev);
   read_hdf5_int(file_id, "/KLON", klon);
@@ -496,7 +496,7 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
 
   hid_t file_id, dataset_id;
   herr_t  status;
-  file_id = H5Fopen(INPUT_FILE, H5F_ACC_RDWR, H5P_DEFAULT);
+  file_id = H5Fopen(INPUT_FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
 
   load_and_expand_2d(file_id, "PLCRIT_AER", nlon, nlev, nproma, ngptot, nblocks, plcrit_aer);
   load_and_expand_2d(file_id, "PICRIT_AER", nlon, nlev, nproma, ngptot, nblocks, picrit_aer);
@@ -743,7 +743,7 @@ void load_reference(const int nlon, const int nlev, const int nclv, const int ng
 
   hid_t file_id, dataset_id;
   herr_t  status;
-  file_id = H5Fopen(REFERENCE_FILE, H5F_ACC_RDWR, H5P_DEFAULT);
+  file_id = H5Fopen(REFERENCE_FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
 
   load_and_expand_2d(file_id, "PLUDE", nlon, nlev, nproma, ngptot, nblocks, plude);
   load_and_expand_2d(file_id, "PCOVPTOT", nlon, nlev, nproma, ngptot, nblocks, pcovptot);
