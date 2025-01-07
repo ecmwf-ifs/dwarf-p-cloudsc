@@ -16,6 +16,9 @@ MODULE CLOUDSC_DRIVER_LOKI_MOD
 
   USE CLOUDSC_MOD, ONLY : CLOUDSC
 
+  !@cuf USE YOMCST_CUF,ONLY : YOMCST_UPDATE_DEVICE
+  !@cuf USE YOETHF_CUF,ONLY : YOETHF_UPDATE_DEVICE
+
   IMPLICIT NONE
 
 CONTAINS
@@ -108,6 +111,9 @@ CONTAINS
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
 
     IBL = 1  ! Useless statement to show the compiler that the sepcification part is over!
+    
+    !@cuf CALL YOMCST_UPDATE_DEVICE()
+    !@cuf CALL YOETHF_UPDATE_DEVICE()
 
     if (irank == 0) then
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -121,6 +127,7 @@ CONTAINS
     ! Create a local copy of the parameter struct to ensure they get
     ! moved to the device the in ``acc data`` clause below
     LOCAL_YRECLDP = YRECLDP
+    !@cuf LOCAL_YRECLDP_d = YRECLDP_d
 
     !$loki data
 
