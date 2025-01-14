@@ -60,8 +60,10 @@ if( HAVE_ACC )
     # However, this requries static linking as per this thread:
     # https://www.pgroup.com/userforum/viewtopic.php?t=7296
     # ========================================================================
-    set( LIBRARY_TYPE STATIC )
-else()
+
+# TODO: This requires a CMake restructuring!
+#     set( LIBRARY_TYPE STATIC )
+# else()
     set( LIBRARY_TYPE SHARED )
 endif()
 

@@ -32,6 +32,7 @@ dependencies = [
 
 [project.scripts]
 "cloudsc_f2py.py" = "drivers.cloudsc_f2py:main"
+"cloudsc_jit.py" = "drivers.cloudsc_jit:main"
 
 [project.urls]
 repository = "https://github.com/ecmwf-ifs/dwarf-p-cloudsc"
