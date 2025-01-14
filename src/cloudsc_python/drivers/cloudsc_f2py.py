@@ -15,7 +15,7 @@ import numpy as np
 
 def loki_generate_kernel(source_path, out_path, include_dir=None):
     from loki import Sourcefile, flatten
-    from loki.transform import FortranPythonTransformation
+    from loki.transformations import FortranPythonTransformation
 
     source_dir = source_path.parent
     headers = ['yoethf.F90', 'yoecldp.F90', 'yomcst.F90']
@@ -32,7 +32,7 @@ def loki_generate_kernel(source_path, out_path, include_dir=None):
         source_path, definitions=definitions,
         includes=source_dir/'include', preprocess=True
     )
-    f2py.apply(kernel, role='kernel', path=out_path)
+    f2py.apply(kernel['cloudsc'], role='kernel', path=out_path)
 
 
 def cloudsc_validate(fields, ref_fields, kidia, kfdia):
