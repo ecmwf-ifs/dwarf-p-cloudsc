@@ -13,9 +13,11 @@ from pathlib import Path
 import numpy as np
 
 
-def loki_generate_kernel(source_path, out_path, include_dir=None):
-    from loki import Sourcefile, flatten
+def loki_generate_kernel(source_path, out_path, include_dir=None, log_level='perf'):
+    from loki import Sourcefile, flatten, config as loki_config
     from loki.transformations import FortranPythonTransformation
+
+    loki_config['log-level'] = log_level
 
     source_dir = source_path.parent
     headers = ['yoethf.F90', 'yoecldp.F90', 'yomcst.F90']
@@ -104,7 +106,7 @@ def run_cloudsc_kernel(ngptot, nproma, input_path, reference_path):
 @click.command()
 @click.option(
     '--ngptot', default=100,
-    help='Total number of columns to use for benchamrking'
+    help='Total number of columns to use for benchmarking'
 )
 @click.option(
     '--nproma', default=32,
@@ -114,7 +116,11 @@ def run_cloudsc_kernel(ngptot, nproma, input_path, reference_path):
     '--generate/--no-generate', default=False,
     help='(Re)generate kernel via Loki-Fortran-Python transform'
 )
-def main(ngptot, nproma, generate):
+@click.option(
+    '--log-level', '-l', default='perf',
+    help='Log-level to set for Loki when regenerating kernel'
+)
+def main(ngptot, nproma, generate, log_level):
     """
     Run a Python version of CLOUDSC and validate against reference data
     """
@@ -127,8 +133,9 @@ def main(ngptot, nproma, generate):
 
     if generate:
         loki_generate_kernel(
-            source_path=cloudsc_f2py/'cloudsc.F90', out_path=cloudsc_f2py,
-            include_dir=cloudsc_root/'src/common/include'
+            source_path=cloudsc_f2py/'cloudsc.F90',
+            include_dir=cloudsc_root/'src/common/include',
+            out_path=cloudsc_f2py, log_level=log_level
         )
 
     run_cloudsc_kernel(
