@@ -32,7 +32,7 @@ def loki_generate_kernel(source_path, out_path, include_dir=None, log_level='per
     # Parse original driver and kernel routine, and enrich the driver
     kernel = Sourcefile.from_file(
         source_path, definitions=definitions,
-        includes=source_dir/'include', preprocess=True
+        includes=include_dir, preprocess=True
     )
     f2py.apply(kernel['cloudsc'], role='kernel', path=out_path)
 
@@ -127,14 +127,15 @@ def main(ngptot, nproma, generate, log_level):
 
     here = Path(__file__).parent.absolute()
     cloudsc_root = here.parent.parent.parent
+    cloudsc_python = here.parent
     cloudsc_f2py = here.parent/'src/cloudscf2py'
     input_path = cloudsc_root/'config-files/input.h5'
     reference_path = cloudsc_root/'config-files/reference.h5'
 
     if generate:
         loki_generate_kernel(
-            source_path=cloudsc_f2py/'cloudsc.F90',
-            include_dir=cloudsc_root/'src/common/include',
+            source_path=cloudsc_python/'src/fortran/cloudsc.F90',
+            include_dir=cloudsc_python/'src/include',
             out_path=cloudsc_f2py, log_level=log_level
         )
 
