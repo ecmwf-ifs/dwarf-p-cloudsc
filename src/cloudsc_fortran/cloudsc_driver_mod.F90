@@ -13,7 +13,6 @@ MODULE CLOUDSC_DRIVER_MOD
   USE YOECLDP, ONLY : NCLV
   USE CLOUDSC_MPI_MOD, ONLY: NUMPROC, IRANK
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
-  USE EC_PMON_MOD, ONLY: EC_PMON
 
   IMPLICIT NONE
 
@@ -102,20 +101,10 @@ CONTAINS
 
     TYPE(PERFORMANCE_TIMER) :: TIMER
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
-    INTEGER(KIND=JPIB) :: ENERGY, POWER, POWER_TOTAL, POWER_MAX, POWER_COUNT
-    LOGICAL            :: LEC_PMON = .FALSE.
-    CHARACTER(LEN=1)   :: CLEC_PMON
 
     TYPE(TOMCST)    :: YDOMCST
     TYPE(TOETHF)    :: YDOETHF
     TYPE(TECLDP)    :: YDECLDP
-
-    CALL GET_ENVIRONMENT_VARIABLE('EC_PMON', CLEC_PMON)
-    IF (CLEC_PMON == '1') LEC_PMON = .TRUE.
-
-    POWER_MAX = 0_JPIB
-    POWER_TOTAL = 0_JPIB
-    POWER_COUNT = 0_JPIB
 
     NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
@@ -126,14 +115,14 @@ CONTAINS
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
 
-    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID,energy,power) &
+    !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID) &
     !$omp& num_threads(NUMOMP)
 
     ! Local timer for each thread
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
 
-    !$omp do schedule(runtime) reduction(+:power_total,power_count) reduction(max:power_max)
+    !$omp do schedule(runtime)
     DO JKGLO=1,NGPTOT,NPROMA
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -169,16 +158,6 @@ CONTAINS
               & KFLDX, &
               & YDOMCST, YDOETHF, YDECLDP)
 
-         IF (LEC_PMON) THEN
-           ! Sample power consuption
-           IF (MOD(IBL, 100) == 0) THEN
-             CALL EC_PMON(ENERGY, POWER)
-             POWER_MAX = MAX(POWER_MAX, POWER)
-             POWER_TOTAL = POWER_TOTAL + POWER
-             POWER_COUNT = POWER_COUNT + 1
-           END IF
-         END IF
-
          ! Log number of columns processed by this thread
          CALL TIMER%THREAD_LOG(TID, IGPC=ICEND)
       ENDDO
@@ -194,12 +173,6 @@ CONTAINS
       CALL TIMER%END()
 
       CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
-
-      IF (LEC_PMON) THEN
-        print *, "Power usage (sampled):: max: ", POWER_MAX, "avg:", &
-         & (REAL(POWER_TOTAL, KIND=JPRD) / REAL(POWER_COUNT, KIND=JPRD)), &
-         & "count:", POWER_COUNT
-      END IF
     
   END SUBROUTINE CLOUDSC_DRIVER
 
