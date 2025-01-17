@@ -34,7 +34,7 @@ module_load gcc/11.2.0
 module_load hpcx-openmpi/2.10.0
 module_load boost/1.71.0
 module_load hdf5/1.10.6
-module_load cmake/3.20.2
+module_load cmake/3.25.2
 module_load python3/3.8.8-01
 module_load java/11.0.6
 
