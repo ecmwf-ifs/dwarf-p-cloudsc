@@ -187,67 +187,6 @@ if( HAVE_CLOUDSC_LOKI )
 
 
     ####################################################
-    ##  SCA mode (Single Column Abstraction):         ##
-    ##   * Extract de-vectorized SCA format code      ##
-    ####################################################
-
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-sca/cloudsc.sca.F90
-            loki-sca/cloudsc_driver_loki_mod.sca.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE sca
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        CPP
-        FRONTEND ${LOKI_FRONTEND}
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-sca
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-sca/cloudsc_driver_loki_mod.sca.F90
-            loki-sca/cloudsc.sca.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-sca
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-sca
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-sca-serial
-        COMMAND bin/dwarf-cloudsc-loki-sca
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-sca-mpi
-        COMMAND bin/dwarf-cloudsc-loki-sca
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 1
-        CONDITION HAVE_MPI
-    )
-
-
-    ####################################################
     ##  "Single Column Coalesced" (SCC) mode          ##
     ##   * Removes horizontal vector loops            ##
     ##   * Invokes compute kernel as `!$acc vector`   ##

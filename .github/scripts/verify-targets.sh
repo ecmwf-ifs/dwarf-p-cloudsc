@@ -31,7 +31,6 @@ fi
 
 if [[ "$build_flags" == *"--with-loki"* ]]
 then
-  targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
   targets+=(dwarf-cloudsc-loki-idem-stack dwarf-cloudsc-loki-scc-stack)
   if [[ "$build_flags" != *"--single-precision"* ]]
