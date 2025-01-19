@@ -18,10 +18,6 @@ if [[ "$build_flags" == *"--with-gpu"* ]]
 then
   targets+=(dwarf-cloudsc-gpu-scc dwarf-cloudsc-gpu-scc-hoist dwarf-cloudsc-gpu-scc-k-caching)
   targets+=(dwarf-cloudsc-gpu-omp-scc-hoist)
-  if [[ "$build_flags" == *"--with-claw"* ]]
-  then
-    targets+=(dwarf-cloudsc-gpu-claw)
-  fi
   if [[ "$build_flags" == *"--with-field"* ]]
   then
     targets+=(dwarf-cloudsc-gpu-scc-field)
@@ -35,16 +31,11 @@ fi
 
 if [[ "$build_flags" == *"--with-loki"* ]]
 then
-  targets+=(dwarf-cloudsc-loki-idem dwarf-cloudsc-loki-sca)
   targets+=(dwarf-cloudsc-loki-scc dwarf-cloudsc-loki-scc-hoist)
   targets+=(dwarf-cloudsc-loki-idem-stack dwarf-cloudsc-loki-scc-stack)
   if [[ "$build_flags" != *"--single-precision"* ]]
   then
     targets+=(dwarf-cloudsc-loki-c)
-  fi
-  if [[ "$build_flags" == *"--with-claw"* ]]
-  then
-    targets+=(dwarf-cloudsc-loki-claw-cpu dwarf-cloudsc-loki-claw-gpu)
   fi
   if [[ "$build_flags" == *"--with-cuda"* ]]
   then

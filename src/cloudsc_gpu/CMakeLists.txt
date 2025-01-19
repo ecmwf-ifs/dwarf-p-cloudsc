@@ -12,11 +12,6 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_KERNELS
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
 
-# Define the CLAW-based GPU dwarf variant as an ECBuild feature
-ecbuild_add_option( FEATURE CLOUDSC_GPU_CLAW
-    DESCRIPTION "Build optimized GPU version of CLOUDSC derived from CLAW using OpenACC" DEFAULT OFF
-    CONDITION Serialbox_FOUND OR HDF5_FOUND
-)
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC layout and OpenACC" DEFAULT OFF
@@ -72,29 +67,6 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API" DEFAULT ON
     CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND ( Serialbox_FOUND OR HDF5_FOUND )
 )
-
-
-if( HAVE_CLOUDSC_GPU_CLAW )
-    ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-claw
-        SOURCES
-            dwarf_cloudsc_gpu.F90
-            cloudsc_driver_gpu_claw_mod.F90
-            cloudsc.claw.gpu.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_CLAW
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-claw-serial
-        COMMAND bin/dwarf-cloudsc-gpu-claw
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-        ENABLED OFF  # CLAW variant is currently broken
-    )
-endif()
 
 
 if( HAVE_CLOUDSC_GPU_SCC )
