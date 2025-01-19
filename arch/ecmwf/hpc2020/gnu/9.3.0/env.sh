@@ -33,7 +33,7 @@ module_load gcc/9.3.0
 module_load openmpi/4.1.1.1
 module_load boost/1.71.0
 module_load hdf5/1.10.6
-module_load cmake/3.20.2
+module_load cmake/3.25.2
 module_load python3/3.8.8-01
 module_load java/11.0.6
 
