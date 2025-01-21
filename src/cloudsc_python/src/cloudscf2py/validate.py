@@ -11,7 +11,7 @@
 import numpy as np
 
 
-def validate(fields, ref_fields, kidia, kfdia):
+def validate(fields, ref_fields, kidia, kfdia, transpose=False):
     _field_names = [
         'plude', 'pcovptot', 'prainfrac_toprfz', 'pfsqlf', 'pfsqif',
         'pfcqlng', 'pfcqnng', 'pfsqrf', 'pfsqsf', 'pfcqrng', 'pfcqsng',
@@ -26,6 +26,10 @@ def validate(fields, ref_fields, kidia, kfdia):
         "            AbsMaxErr         AvgAbsErr/GP          MaxRelErr-%"
     )
     for name in _field_names:
+        if transpose:
+            # Transpose input Fortran arrays back to C-layout
+            fields[name] = fields[name].transpose()
+
         if len(fields[name].shape) == 1:
             f = fields[name][kidia-1:kfdia]
             ref = ref_fields[name][kidia-1:kfdia]

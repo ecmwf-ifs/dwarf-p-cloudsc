@@ -33,7 +33,7 @@ def expand_field(f, klon, ngptot):
     f_new[...] = np.tile(f, (1,)*(rank-1) + (m,))[...,:ngptot]
     return f_new
 
-def load_input_fields(path, transpose=False, ngptot=100):
+def load_input_fields(path, ngptot=100, transpose=False):
     """
     """
     fields = OrderedDict()
@@ -81,21 +81,15 @@ def load_input_fields(path, transpose=False, ngptot=100):
         fields['PFHPSL'] = np.ndarray(order="C", shape=(klev+1, ngptot))
         fields['PFHPSN'] = np.ndarray(order="C", shape=(klev+1, ngptot))
 
+    if transpose:
+        for k, f in fields.items():
+            if isinstance(f, np.ndarray):
+                fields[k] = f.transpose()
+
     return fields
 
 
-def load_input_parameters(path):
-    class TECLDP:
-        pass
-    yrecldp = TECLDP()
-
-    class TMCST:
-        pass
-    yrmcst = TMCST()
-
-    class TETHF:
-        pass
-    yrethf = TETHF()
+def load_input_parameters(path, yrecldp, yrmcst, yrethf):
 
     with h5py.File(path, 'r') as f:
         tecldp_keys = [k for k in f.keys() if 'YRECLDP' in k]
