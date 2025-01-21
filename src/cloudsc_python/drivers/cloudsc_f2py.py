@@ -42,15 +42,25 @@ def run_cloudsc_kernel(ngptot, nproma, input_path, reference_path):
         validate, cloudsc_py
     )
 
+    # Read input fields from file
     fields = load_input_fields(path=input_path, ngptot=ngptot)
 
-    yrecldp, yrmcst, yrethf = load_input_parameters(path=input_path)
+    # Create empty parameter objects and populate from file
+    class TECLDP:
+        pass
+    class TMCST:
+        pass
+    class TETHF:
+        pass
+    yrecldp, yrmcst, yrethf = TECLDP(), TMCST(), TETHF()
+    load_input_parameters(path=input_path, yrecldp=yrecldp, yrmcst=yrmcst, yrethf=yrethf)
 
     cloudsc_args = {k.lower(): v for k, v in fields.items()}
 
     # We process only one block for now, all in one go
     cloudsc_args['klon'] = ngptot
 
+    # Invoke the kernel on agglomerated arguments
     cloudsc_py(
         kidia=1, kfdia=ngptot, **cloudsc_args,
         yrecldp=yrecldp, ydcst=yrmcst, ydthf=yrethf,
