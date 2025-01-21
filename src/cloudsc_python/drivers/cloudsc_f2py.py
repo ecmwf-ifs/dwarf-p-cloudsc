@@ -44,7 +44,7 @@ def run_cloudsc_kernel(ngptot, nproma, input_path, reference_path):
 
     fields = load_input_fields(path=input_path, ngptot=ngptot)
 
-    yrecldp, yrmcst, yrethf, yrephli, yrecld = load_input_parameters(path=input_path)
+    yrecldp, yrmcst, yrethf = load_input_parameters(path=input_path)
 
     cloudsc_args = {k.lower(): v for k, v in fields.items()}
 
