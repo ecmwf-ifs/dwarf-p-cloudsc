@@ -89,10 +89,6 @@ def load_input_parameters(path):
         pass
     yrecldp = TECLDP()
 
-    class TEPHLI:
-        pass
-    yrephli = TEPHLI()
-
     class TMCST:
         pass
     yrmcst = TMCST()
@@ -101,19 +97,11 @@ def load_input_parameters(path):
         pass
     yrethf = TETHF()
 
-    class TECLD:
-        pass
-    yrecld = TECLD()
-
     with h5py.File(path, 'r') as f:
         tecldp_keys = [k for k in f.keys() if 'YRECLDP' in k]
         for k in tecldp_keys:
             attrkey = k.replace('YRECLDP_', '').lower()
             setattr(yrecldp, attrkey, f[k][0])
-        tephli_keys = [k for k in f.keys() if 'YREPHLI' in k]
-        for k in tephli_keys:
-            attrkey = k.replace('YREPHLI_', '').lower()
-            setattr(yrephli, attrkey, f[k][0])
 
         yrmcst.rg = f['RG'][0]
         yrmcst.rd = f['RD'][0]
@@ -150,12 +138,8 @@ def load_input_parameters(path):
         klev = f['KLEV'][0]
         pap = np.ascontiguousarray(f['PAP'])
         paph = np.ascontiguousarray(f['PAPH'])
-        yrecld.ceta = np.ndarray(order="C", shape=(klev, ))
-        yrecld.ceta[:] = pap[0:,0] / paph[klev,0]
 
-        yrephli.lphylin = True
-
-    return yrecldp, yrmcst, yrethf, yrephli, yrecld
+    return yrecldp, yrmcst, yrethf
 
 
 def load_reference_fields(path, ngptot=100):
