@@ -18,6 +18,9 @@ from loki import config as loki_config
 from loki.build import Builder, jit_compile_lib, Obj, Lib
 
 
+NCLV = 5      # number of microphysics variables
+
+
 @click.command()
 @click.option(
     '--ngptot', default=100,
@@ -76,4 +79,28 @@ def main(ngptot, nproma):
     )
     cloudsc = cloudsc_fc.cloudsc_mod.cloudsc
 
-    from IPython import embed; embed()
+    # Load input data and model configuration
+    from cloudscf2py import (
+        load_input_fields, load_input_parameters, load_reference_fields, validate
+    )
+    fields = load_input_fields(path=input_path, ngptot=ngptot, transpose=True)
+
+    # Create empty parameter objects and populate from file
+    yrecldp = cloudsc_fc.yoecldp.TECLDP()
+    yrmcst = cloudsc_fc.yomcst.TOMCST()
+    yrethf = cloudsc_fc.yoethf.TOETHF()
+    load_input_parameters(path=input_path, yrecldp=yrecldp, yrmcst=yrmcst, yrethf=yrethf)
+
+    cloudsc_args = {k.lower(): v for k, v in fields.items()}
+
+    # We process only one block for now, all in one go
+    cloudsc_args['klon'] = 100
+
+    cloudsc(
+        kidia=1, kfdia=100, **cloudsc_args,
+        yrecldp=yrecldp, ydcst=yrmcst, ydthf=yrethf,
+    )
+
+    # Validate the output fields against reference data
+    reference = load_reference_fields(path=reference_path, ngptot=ngptot)
+    validate(cloudsc_args, reference, kidia=1, kfdia=ngptot, transpose=True)
