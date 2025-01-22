@@ -12,6 +12,27 @@ import numpy as np
 
 
 def validate(fields, ref_fields, kidia, kfdia, transpose=False):
+    """
+    Compare norms for given output fields against reference fields.
+
+    By default, this assumes all data in row-major C layout. The
+    :data:`transpose` flag can be used to change result data arrays
+    into column-major Fortran layout.
+
+    Parameters
+    ----------
+    fields : dict
+        Dict of result fields from the run
+    ref_fields : dict
+        Dict of reference fields from file against which to compare
+    kidia : int
+        Start index for horizontal column dimension
+    kfdia : int
+        End index for horizontal column dimension
+    transpose : bool
+        Flag to apply a transpose step to Fortran-layout inputs
+    """
+
     _field_names = [
         'plude', 'pcovptot', 'prainfrac_toprfz', 'pfsqlf', 'pfsqif',
         'pfcqlng', 'pfcqnng', 'pfsqrf', 'pfsqsf', 'pfcqrng', 'pfcqsng',

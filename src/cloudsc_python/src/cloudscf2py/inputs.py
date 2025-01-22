@@ -35,6 +35,21 @@ def expand_field(f, klon, ngptot):
 
 def load_input_fields(path, ngptot=100, transpose=False):
     """
+    Reads the CLOUDSC input arrays from HFD5 file and expands them to
+    the requested size. It also adds empty arrays for output fields.
+
+    By default, this will read the data in row-major C layout. The
+    :data:`transpose` flag can be used to change all data arrays into
+    column-major Fortran layout.
+
+    Parameters
+    ----------
+    path : Path or str
+        Path to the input data file.
+    ngptot : int
+        Total number of horizontal points (columns) to generate
+    transpose : bool
+        Flag to transpose all arrays into column-major Fortran layout.
     """
     fields = OrderedDict()
 
@@ -90,6 +105,25 @@ def load_input_fields(path, ngptot=100, transpose=False):
 
 
 def load_input_parameters(path, yrecldp, yrmcst, yrethf):
+    """
+    Lods the CLOUDSC model configuration from HFD5 file and populates
+    three structs.
+
+    Note that the parameter object mimic the Fortran derived types and
+    may simply be empty Python objects if type compatibility is not
+    needed.
+
+    Parameters
+    ----------
+    path : Path or str
+        Path to the input data file.
+    yrecldp : object
+        Container object for struct of type ``TECLDP``
+    yrmcst : object
+        Container object for struct of type ``TOMCST``
+    yrethf : object
+        Container object for struct of type ``TOETHF``
+    """
 
     with h5py.File(path, 'r') as f:
         tecldp_keys = [k for k in f.keys() if 'YRECLDP' in k]
@@ -138,6 +172,15 @@ def load_input_parameters(path, yrecldp, yrmcst, yrethf):
 
 def load_reference_fields(path, ngptot=100):
     """
+    Reads the CLOUDSC reference result data from HFD5 file and
+    expands arrays to the requested size.
+
+    Parameters
+    ----------
+    path : Path or str
+        Path to the input data file.
+    ngptot : int
+        Total number of horizontal points (columns) to generate
     """
     fields = OrderedDict()
 
