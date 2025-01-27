@@ -203,7 +203,8 @@ if( HAVE_CLOUDSC_LOKI )
             cloudsc_driver_loki_mod.F90
             ${_OMNI_DEPENDENCIES}
         MODE scc
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+	CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+	# CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki_omp.config
         CPP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
@@ -260,7 +261,8 @@ if( HAVE_CLOUDSC_LOKI )
             cloudsc_driver_loki_mod.F90
             ${_OMNI_DEPENDENCIES}
         MODE scc-stack
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+	# CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+	CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki_omp.config
         CPP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
@@ -323,7 +325,8 @@ if( HAVE_CLOUDSC_LOKI )
             cloudsc_driver_loki_mod.F90
             ${_OMNI_DEPENDENCIES}
         MODE scc-hoist
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+	CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
+	# CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki_omp.config
         CPP
         DEFINITIONS
             CLOUDSC_GPU_TIMING
