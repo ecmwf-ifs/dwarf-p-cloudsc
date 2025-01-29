@@ -73,6 +73,11 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD
     CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND ( Serialbox_FOUND OR HDF5_FOUND )
 )
 
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_FIELD_ASYNC
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with FIELD API and asynchronous data transfers and kernel calls" DEFAULT ON
+    CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND ( Serialbox_FOUND OR HDF5_FOUND )
+)
+
 
 if( HAVE_CLOUDSC_GPU_CLAW )
     ecbuild_add_executable(
@@ -431,6 +436,46 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-field-pinned-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-field
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" "DEV_ALLOC_SIZE=1073741824" "CLOUDSC_FIELD_API_PINNED=ON"
+    )
+    endif()
+
+endif()
+
+
+if( HAVE_CLOUDSC_GPU_SCC_FIELD_ASYNC )
+    ecbuild_add_executable(
+        TARGET dwarf-cloudsc-gpu-scc-field-async
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_scc_field_async_mod.F90
+            cloudsc_gpu_scc_mod.F90
+        LIBS
+            cloudsc-common-lib
+            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_FIELD_ASYNC
+    )
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-field-async
+        COMMAND bin/dwarf-cloudsc-gpu-scc-field-async
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" "DEV_ALLOC_SIZE=1073741824"
+    )
+    
+    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
+    if( (CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC") AND field_api_HAVE_CUDA )
+        target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
+    endif()
+
+    if ( field_api_HAVE_CUDA )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-gpu-scc-field-async-pinned
+        COMMAND bin/dwarf-cloudsc-gpu-scc-field-async
         ARGS 1 1000 128
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
