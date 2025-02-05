@@ -28,19 +28,6 @@ if( HAVE_CLOUDSC_FORTRAN_ATLAS )
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
     )
 
-    # Create symlink for the input data
-    if( HAVE_SERIALBOX )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-    endif()
-
-    if( HAVE_HDF5 )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
-    endif()
-
     ecbuild_add_test(
         TARGET dwarf-cloudsc-fortran-atlas-serial
         COMMAND bin/dwarf-cloudsc-fortran-atlas

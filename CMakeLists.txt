@@ -136,6 +136,21 @@ if( HAVE_SINGLE_PRECISION )
     set(prec sp)
 endif()
 
+### Input data
+
+if( HAVE_HDF5 )
+  file( CREATE_LINK
+        "${PROJECT_SOURCE_DIR}/config-files/input.h5"
+        "${CMAKE_BINARY_DIR}/input.h5" )
+  file( CREATE_LINK
+        "${PROJECT_SOURCE_DIR}/config-files/reference.h5"
+        "${CMAKE_BINARY_DIR}/reference.h5" )
+elseif( HAVE_SERIALBOX )
+  file( CREATE_LINK
+        "${PROJECT_SOURCE_DIR}/data"
+        "${CMAKE_BINARY_DIR}/data" )
+endif()
+
 # build executables
 add_subdirectory(src)
 

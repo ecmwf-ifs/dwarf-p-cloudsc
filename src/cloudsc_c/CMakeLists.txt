@@ -54,10 +54,6 @@ if( HAVE_CLOUDSC_C )
         LIBS dwarf-cloudsc-c-lib
     )
 
-    # Create symlink for the input data
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-
     ecbuild_add_test(
         TARGET dwarf-cloudsc-c-serial
         COMMAND bin/dwarf-cloudsc-c
@@ -77,17 +73,4 @@ if( HAVE_CLOUDSC_C )
         CONDITION HAVE_OMP
     )
 
-endif()
-
-# Create symlink for the input data
-if( HAVE_SERIALBOX )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-endif()
-
-if( HAVE_HDF5 )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
 endif()

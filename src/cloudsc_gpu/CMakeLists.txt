@@ -163,7 +163,7 @@ endif()
 
 
 if( HAVE_CLOUDSC_GPU_OMP_SCC )
-    
+
     list( APPEND CLOUDSC_GPU_OMP_SCC_DEFINITIONS CLOUDSC_GPU_OMP_SCC )
     if( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
             list( APPEND CLOUDSC_GPU_OMP_SCC_DEFINITIONS HAVE_OMP_TARGET_LOOP_CONSTRUCT )
@@ -384,7 +384,7 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
         OMP 1
         ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" "DEV_ALLOC_SIZE=1073741824"
     )
-    
+
     ecbuild_add_test(
         TARGET dwarf-cloudsc-gpu-scc-field-packed-serial
         COMMAND bin/dwarf-cloudsc-gpu-scc-field
@@ -393,7 +393,7 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
         OMP 1
         ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" "DEV_ALLOC_SIZE=1073741824" "CLOUDSC_PACKED_STORAGE=ON"
     )
-    
+
     # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
     if( (CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC") AND field_api_HAVE_CUDA )
         target_link_options( dwarf-cloudsc-gpu-scc-field PUBLIC "-gpu=pinned" )
@@ -410,18 +410,4 @@ if( HAVE_CLOUDSC_GPU_SCC_FIELD )
     )
     endif()
 
-endif()
-
-
-# Create symlink for the input data
-if( HAVE_SERIALBOX )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-endif()
-
-if( HAVE_HDF5 )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
 endif()
