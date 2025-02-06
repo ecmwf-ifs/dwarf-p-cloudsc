@@ -6,431 +6,216 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-# Define this dwarf variant as an ECBuild feature
-ecbuild_add_option( FEATURE CLOUDSC_LOKI
-    DESCRIPTION "Use Loki source-to-source transformations with CLOUDSC " DEFAULT OFF
-    CONDITION Serialbox_FOUND OR HDF5_FOUND
+set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
+
+set( COMMON_MODULE "${PROJECT_SOURCE_DIR}/src/common/module" )
+set( COMMON_INCLUDE "${PROJECT_SOURCE_DIR}/src/common/include" )
+set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
+
+function( cloudsc_add_loki_exe )
+
+    set( options CPP_PLAN )
+    set( single_value_args TARGET MODE CONFIG COMMON_LIB DRIVER KERNEL )
+    set( multi_value_args DEFINITIONS TEST_ENV )
+
+    cmake_parse_arguments( _CL "${options}" "${single_value_args}" "${multi_value_args}" ${ARGN} )
+
+    if( _CL_UNPARSED_ARGUMENTS )
+        ecbuild_critical( "Unknown keywords given to cloudsc_add_loki_exe(): \"${_CL_UNPARSED_ARGUMENTS}\"")
+    endif()
+
+    if( NOT _CL_DRIVER )
+        set( _CL_DRIVER cloudsc_driver_loki_mod.F90 )
+    endif()
+    if( NOT _CL_KERNEL )
+        set( _CL_KERNEL cloudsc.F90 )
+    endif()
+
+    set( TRAFO_OPTIONS )
+    if( _CL_CPP_PLAN )
+        list( APPEND TRAFO_OPTIONS CPP_PLAN )
+    endif()
+
+    ecbuild_add_library(
+        TARGET      ${_CL_TARGET}-${prec}-lib
+        SOURCES
+            ${_CL_DRIVER}
+            ${_CL_KERNEL}
+        PUBLIC_DEFINITIONS
+            ${_CL_DEFINITIONS}
+        PUBLIC_INCLUDES
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module-${_CL_TARGET}>"
+        PUBLIC_LIBS
+            cloudsc-common-lib # cloudsc-common-${_CL_COMMON_LIB}-${prec}
+    )
+
+    set_target_properties( ${_CL_TARGET}-${prec}-lib
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${_CL_TARGET}"
+    )
+
+    loki_transform_target(
+        TARGET      ${_CL_TARGET}-${prec}-lib
+        COMMAND     convert
+        MODE        ${_CL_MODE}
+        FRONTEND    ${LOKI_FRONTEND}
+        CONFIG      "${CMAKE_CURRENT_SOURCE_DIR}/${_CL_CONFIG}"
+        PLAN        "${CMAKE_CURRENT_BINARY_DIR}/plan-${_CL_MODE}.cmake"
+        CPP
+        DEFINITIONS ${_CL_DEFINITIONS}
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        # XMOD
+        #     ${CMAKE_CURRENT_BINARY_DIR}
+        #     ${XMOD_DIR}
+        ${TRAFO_OPTIONS}
+    )
+
+    ecbuild_add_executable(
+        TARGET ${_CL_TARGET}-${prec}
+        SOURCES dwarf_cloudsc.F90
+        LIBS ${_CL_TARGET}-${prec}-lib
+    )
+
+    ecbuild_add_test(
+        TARGET ${_CL_TARGET}-${prec}-serial
+        COMMAND ${_CL_TARGET}-${prec}
+        ARGS 1 100 32
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        OMP 1
+        ENVIRONMENT "${_CL_TEST_ENV}"
+    )
+    ecbuild_add_test(
+        TARGET ${_CL_TARGET}-${prec}-mpi
+        COMMAND ${_CL_TARGET}-${prec}
+        ARGS 1 100 32
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        MPI 2
+        OMP 1
+        CONDITION HAVE_MPI
+        ENVIRONMENT "${_CL_TEST_ENV}"
+    )
+
+endfunction()
+
+
+####################################################
+##  Idempotence mode:                             ##
+##   * Internal "do-nothing" mode for Loki debug  ##
+####################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-idem
+    MODE idem
+    CONFIG cloudsc_loki.config
+    COMMON_LIB lib
+    DEFINITIONS ${CLOUDSC_DEFINITIONS}
 )
 
-if( HAVE_CLOUDSC_LOKI )
+############################################################
+##  Idempotence mode with pool-allocator for temporaries: ##
+##   * Internal "do-nothing" mode for Loki debug,         ##
+##     but with temporaries handling                      ##
+############################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-idem-stack
+    MODE idem-stack
+    CONFIG cloudsc_loki.config
+    COMMON_LIB lib
+    DEFINITIONS ${CLOUDSC_DEFINITIONS}
+)
 
-    ####################################################
-    ##  Define various pre-processing modes via Loki  ##
-    ####################################################
+if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    target_compile_options(
+        dwarf-cloudsc-loki-idem-stack-${prec}-lib
+        PRIVATE "-fcray-pointer" )
+elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+    target_compile_options(
+        dwarf-cloudsc-loki-idem-stack-${prec}-lib
+        PRIVATE "-Mcray=pointer" )
+endif()
 
-    set( COMMON_MODULE "${CMAKE_CURRENT_SOURCE_DIR}/../common/module" )
-    set( COMMON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/../common/include" )
-    set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
+####################################################
+##  "Single Column Coalesced" (SCC) mode          ##
+##   * Removes horizontal vector loops            ##
+##   * Invokes compute kernel as `!$acc vector`   ##
+####################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-scc
+    MODE scc
+    CONFIG cloudsc_loki.config
+    COMMON_LIB lib
+    DEFINITIONS
+        ${CLOUDSC_DEFINITIONS}
+        CLOUDSC_GPU_TIMING
+    TEST_ENV "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
+)
 
-    set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
+######################################################
+##  "Single Column Coalesced" (SCC) mode with stack ##
+##   * Removes horizontal vector loops              ##
+##   * Invokes compute kernel as `!$acc vector`     ##
+##   * Allocates temporaries using pool allocator   ##
+######################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-scc-stack
+    MODE scc-stack
+    CONFIG cloudsc_loki.config
+    COMMON_LIB lib
+    DEFINITIONS
+        ${CLOUDSC_DEFINITIONS}
+        CLOUDSC_GPU_TIMING
+)
 
-    ####################################################
-    ##  Idempotence mode:                             ##
-    ##   * Internal "do-nothing" mode for Loki debug  ##
-    ####################################################
+if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    target_compile_options(
+        dwarf-cloudsc-loki-scc-stack-${prec}-lib
+        PRIVATE "-fcray-pointer" )
+elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+    target_compile_options(
+        dwarf-cloudsc-loki-scc-stack-${prec}-lib
+        PRIVATE "-Mcray=pointer" )
+endif()
 
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-idem/cloudsc.idem.F90
-            loki-idem/cloudsc_driver_loki_mod.idem.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE idem
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        CPP
-        FRONTEND ${LOKI_FRONTEND}
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
+####################################################
+##  SCC-hoist mode                                ##
+##   * SCC with vector loop hoisted               ##
+##   * Kernel is "seq, but args are full blocks   ##
+##   * Temporary arrays hoisted to driver         ##
+####################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-scc-hoist
+    MODE scc-hoist
+    CONFIG cloudsc_loki.config
+    COMMON_LIB lib
+    DEFINITIONS
+        ${CLOUDSC_DEFINITIONS}
+        CLOUDSC_GPU_TIMING
+)
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-idem/cloudsc_driver_loki_mod.idem.F90
-            loki-idem/cloudsc.idem.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-idem
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-idem
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-serial
-        COMMAND bin/dwarf-cloudsc-loki-idem
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
-        CONDITION HAVE_OMP
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-mpi
-        COMMAND bin/dwarf-cloudsc-loki-idem
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 1
-        CONDITION HAVE_MPI
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-mpi-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 4
-        CONDITION HAVE_OMP AND HAVE_MPI
-    )
-
-    ############################################################
-    ##  Idempotence mode with pool-allocator for temporaries: ##
-    ##   * Internal "do-nothing" mode for Loki debug          ##
-    ############################################################
-
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-idem-stack/cloudsc.idem_stack.F90
-            loki-idem-stack/cloudsc_driver_loki_mod.idem_stack.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-stack
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE idem-stack
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        CPP
-        FRONTEND ${LOKI_FRONTEND}
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-idem-stack
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-idem-stack/cloudsc_driver_loki_mod.idem_stack.F90
-            loki-idem-stack/cloudsc.idem_stack.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-idem-stack
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-idem-stack
-    )
-
-
-    if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-        target_compile_options( dwarf-cloudsc-loki-idem-stack PRIVATE "-fcray-pointer" )
-    elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
-        target_compile_options( dwarf-cloudsc-loki-idem-stack PRIVATE "-Mcray=pointer" )
-    endif()
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-stack-serial
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-stack-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
-        CONDITION HAVE_OMP
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-stack-mpi
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 1
-        CONDITION HAVE_MPI
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-idem-stack-mpi-omp
-        COMMAND bin/dwarf-cloudsc-loki-idem-stack
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 4
-        CONDITION HAVE_OMP AND HAVE_MPI
-    )
-
-
-    ####################################################
-    ##  "Single Column Coalesced" (SCC) mode          ##
-    ##   * Removes horizontal vector loops            ##
-    ##   * Invokes compute kernel as `!$acc vector`   ##
-    ####################################################
-
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-scc/cloudsc.scc.F90
-            loki-scc/cloudsc_driver_loki_mod.scc.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE scc
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        CPP
-        DEFINITIONS
-            CLOUDSC_GPU_TIMING
-        FRONTEND ${LOKI_FRONTEND}
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-scc/cloudsc_driver_loki_mod.scc.F90
-            loki-scc/cloudsc.scc.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-scc
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc
-    )
-
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
-    )
-
-    ######################################################
-    ##  "Single Column Coalesced" (SCC) mode with stack ##
-    ##   * Removes horizontal vector loops              ##
-    ##   * Invokes compute kernel as `!$acc vector`     ##
-    ##   * Allocates temporaries using pool allocator   ##
-    ######################################################
-
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-scc-stack/cloudsc.scc_stack.F90
-            loki-scc-stack/cloudsc_driver_loki_mod.scc_stack.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE scc-stack
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        CPP
-        DEFINITIONS
-            CLOUDSC_GPU_TIMING
-        FRONTEND ${LOKI_FRONTEND}
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-stack
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-scc-stack/cloudsc_driver_loki_mod.scc_stack.F90
-            loki-scc-stack/cloudsc.scc_stack.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-scc-stack
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-stack
-    )
-
-
-    if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-        target_compile_options( dwarf-cloudsc-loki-scc-stack PRIVATE "-fcray-pointer" )
-    elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" OR CMAKE_Fortran_COMPILER_ID MATCHES "PGI" )
-        target_compile_options( dwarf-cloudsc-loki-scc-stack PRIVATE "-Mcray=pointer" )
-    endif()
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-stack-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-stack
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-
-
-    ####################################################
-    ##  SCC-hoist mode                                ##
-    ##   * SCC with vector loop hoisted               ##
-    ##   * Kernel is "seq, but args are full blocks   ##
-    ##   * Temporary arrays hoisted to driver         ##
-    ####################################################
-
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-scc-hoist/cloudsc.scc_hoist.F90
-            loki-scc-hoist/cloudsc_driver_loki_mod.scc_hoist.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE scc-hoist
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-        CPP
-        DEFINITIONS
-            CLOUDSC_GPU_TIMING
-        FRONTEND ${LOKI_FRONTEND}
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-hoist
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-scc-hoist/cloudsc_driver_loki_mod.scc_hoist.F90
-            loki-scc-hoist/cloudsc.scc_hoist.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-scc-hoist
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-hoist
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-hoist-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-hoist
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-
-
+if( HAVE_FIELD_API )
     ####################################################
     ##  "Single Column Coalesced Field" (SCC-FIELD)   ##
     ##   * Removes horizontal vector loops            ##
     ##   * Invokes compute kernel as `!$acc vector`   ##
     ##   * Uses Field API for device data offloading  ##
     ####################################################
-if ( HAVE_FIELD_API AND field_api_HAVE_ACC )
-    loki_transform(
-        COMMAND convert
-        OUTPUT
-            loki-scc-field/cloudsc.scc_field.F90
-            loki-scc-field/cloudsc_driver_field_loki_mod.scc_field.F90
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-field
-        DEPENDS
-            cloudsc.F90
-            cloudsc_driver_field_loki_mod.F90
-            ${_OMNI_DEPENDENCIES}
-        MODE scc-field
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki_field_offload.config
-        CPP
-        DEFINITIONS
-            CLOUDSC_GPU_TIMING
-            ${CLOUDSC_DEFINE_STMT_FUNC}
-        FRONTEND ${LOKI_FRONTEND}
-        HEADERS
-            ${COMMON_MODULE}/yomcst.F90
-            ${COMMON_MODULE}/yomphyder.F90
-            ${COMMON_MODULE}/yoethf.F90
-            ${COMMON_MODULE}/yoecldp.F90
-            ${COMMON_MODULE}/cloudsc_field_state_mod.F90
-            ${COMMON_MODULE}/cloudsc_flux_type_mod.F90
-            ${COMMON_MODULE}/cloudsc_aux_type_mod.F90
-            ${COMMON_MODULE}/cloudsc_state_type_mod.F90
-        SOURCES
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${COMMON_MODULE}
-        INCLUDES
-            ${COMMON_INCLUDE}
-        XMOD
-            ${_TARGET_XMOD_DIR}
-            ${XMOD_DIR}
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-field
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-scc-field/cloudsc.scc_field.F90
-            loki-scc-field/cloudsc_driver_field_loki_mod.scc_field.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_FIELD
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-scc-field
-    	PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-field
-    )
-
-
-    ecbuild_add_test(
+    cloudsc_add_loki_exe(
         TARGET dwarf-cloudsc-loki-scc-field
-        COMMAND bin/dwarf-cloudsc-loki-scc-field
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
+        MODE scc-field
+        CONFIG cloudsc_loki_field_offload.config
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
+            CLOUDSC_GPU_TIMING
+            CLOUDSC_GPU_SCC_FIELD
+        DRIVER cloudsc_driver_field_loki_mod.F90
+        TEST_ENV "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
     )
-
 endif()
 
-
+if( HAVE_CUDA )
     ####################################################
     ##  SCC CUF (CUDA Fortran)                        ##
     ##   * SCC with CUDA Fortran (CUF)                ##
@@ -439,178 +224,103 @@ endif()
     ##    * host side hoisted local arrays            ##
     ##    * dynamic memory allocation for local       ##
     ##      arrays (not recommended)                  ##
-    ####################################################
+    ####################################################)
 
+    foreach( variant cuf-parametrise cuf-hoist )
 
-if( HAVE_CUDA )
+        string( REPLACE "-" "_" variant_ ${variant} )
 
-    # scc-cuf-parametrise
-    loki_transform(
-        COMMAND convert
-        MODE cuf-parametrise
-        FRONTEND ${LOKI_FRONTEND}
-        CPP
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
-        SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS
-            ${COMMON_MODULE}/yomcst.F90
-            ${COMMON_MODULE}/yomphyder.F90
-            ${COMMON_MODULE}/yoethf.F90
-            ${COMMON_MODULE}/yoecldp.F90
-        INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
-        OUTPUT
-            loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
-            loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
-        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
-    )
+        cloudsc_add_loki_exe(
+            TARGET dwarf-cloudsc-loki-scc-${variant}
+            MODE ${variant}
+            CONFIG cloudsc_cuf_loki.config
+            DEFINITIONS
+                ${CLOUDSC_DEFINITIONS}
+                CLOUDSC_GPU_TIMING
+                CLOUDSC_GPU_SCC_CUF
+            DRIVER cuf_cloudsc_driver_loki_mod.F90
+            KERNEL cuf_cloudsc.F90
+        )
 
-    set_source_files_properties(
-        loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
-        loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
-        PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128"
-    )
+        target_link_options( dwarf-cloudsc-loki-scc-${variant}-${prec}-lib
+            PUBLIC "-cuda"
+        )
 
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-parametrise
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-scc-cuf-parametrise/cuf_cloudsc_driver_loki_mod.cuf_parametrise.F90
-            loki-scc-cuf-parametrise/cuf_cloudsc.cuf_parametrise.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-scc-cuf-parametrise
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-parametrise
-    )
+        set_source_files_properties(
+            cuf_cloudsc_driver_loki_mod.${variant_}.F90
+            cuf_cloudsc.${variant_}.F90
+            PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128"
+        )
 
-    target_link_options(dwarf-cloudsc-loki-scc-cuf-parametrise PUBLIC "-cuda")
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-cuf-parametrise-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-parametrise
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-
-    # scc-cuf-hoist
-    loki_transform(
-        COMMAND convert
-        MODE cuf-hoist
-        FRONTEND ${LOKI_FRONTEND}
-        CPP
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_cuf_loki.config
-        SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
-        HEADERS
-            ${COMMON_MODULE}/yomcst.F90
-            ${COMMON_MODULE}/yomphyder.F90
-            ${COMMON_MODULE}/yoethf.F90
-            ${COMMON_MODULE}/yoecldp.F90
-        INCLUDES ${COMMON_INCLUDE}
-        DEFINITIONS CLOUDSC_GPU_TIMING
-        XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-        BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
-        OUTPUT
-            loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
-            loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
-        DEPENDS cuf_cloudsc.F90 cuf_cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
-    )
-
-    set_source_files_properties(
-        loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
-        loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
-        PROPERTIES COMPILE_FLAGS "-cuda -gpu=maxregcount:128"
-    )
-
-    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-scc-cuf-hoist
-        SOURCES
-            dwarf_cloudsc.F90
-            loki-scc-cuf-hoist/cuf_cloudsc_driver_loki_mod.cuf_hoist.F90
-            loki-scc-cuf-hoist/cuf_cloudsc.cuf_hoist.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_CUF
-    )
-    # Set specific module directory to avoid aliasing of .mod files
-    set_target_properties(  dwarf-cloudsc-loki-scc-cuf-hoist
-        PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/loki-scc-cuf-hoist
-    )
-
-    target_link_options(dwarf-cloudsc-loki-scc-cuf-hoist PUBLIC "-cuda")
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-loki-scc-cuf-hoist-serial
-        COMMAND bin/dwarf-cloudsc-loki-scc-cuf-hoist
-        ARGS 1 1280 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
+    endforeach()
 
 endif()
 
-    #############################################################################
-    ## C-transpilation mode for generating vectorized C host code (experimental!)
-    #############################################################################
+if( NOT "${prec}" STREQUAL "sp" )
+    ####################################################
+    ## C-transpilation mode for generating vectorized ##
+    ## C host code (experimental!)                    ##
+    ####################################################
 
-    if ( NOT HAVE_SINGLE_PRECISION )
+    # TODO: This uses an outdated entry point to loki transformations
+    # because the C-transpilation is not yet fully compatible with
+    # Loki's planning functionality.
 
-        loki_transform(
-            COMMAND convert
-            MODE c FRONTEND ${LOKI_FRONTEND} CPP
-            CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config
-            SOURCES ${CMAKE_CURRENT_SOURCE_DIR}
-            HEADERS
-                ${COMMON_MODULE}/parkind1.F90
-                ${COMMON_MODULE}/yomphyder.F90
-                ${COMMON_MODULE}/yomcst.F90
-                ${COMMON_MODULE}/yoethf.F90
-                ${COMMON_MODULE}/yoecldp.F90
-            INCLUDES ${COMMON_INCLUDE}
-            XMOD ${_TARGET_XMOD_DIR} ${XMOD_DIR}
-            BUILDDIR ${CMAKE_CURRENT_BINARY_DIR}/loki-c
-            OUTPUT
-                loki-c/cloudsc_driver_loki_mod.c.F90
-                loki-c/cloudsc_fc.F90 loki-c/cloudsc_c.c
-                loki-c/yoethf_fc.F90 loki-c/yomcst_fc.F90
-                loki-c/yoecldp_fc.F90
-            DEPENDS cloudsc.F90 cloudsc_driver_loki_mod.F90 ${_OMNI_DEPENDENCIES}
-        )
+    loki_transform(
+        COMMAND     convert
+        MODE        c
+        FRONTEND    ${LOKI_FRONTEND}
+        CPP
+        CONFIG      "${CMAKE_CURRENT_SOURCE_DIR}/cloudsc_loki.config"
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${COMMON_MODULE}
+        INCLUDES
+            ${COMMON_INCLUDE}
+        XMOD        ${XMOD_DIR}
+        BUILDDIR    ${CMAKE_CURRENT_BINARY_DIR}
+        OUTPUT
+            cloudsc_driver_loki_mod.c.F90
+            cloudsc_fc.F90
+            cloudsc_c.c
+            yoethf_fc.F90
+            yomcst_fc.F90
+            yoecldp_fc.F90
+        DEPENDS
+            cloudsc.F90
+            cloudsc_driver_loki_mod.F90
+    )
 
-        # Define the build target for the Loki-C variant
-        ecbuild_add_executable( TARGET dwarf-cloudsc-loki-c
-            SOURCES
-                dwarf_cloudsc.F90
-                loki-c/cloudsc_driver_loki_mod.c.F90
-                loki-c/cloudsc_fc.F90
-                loki-c/cloudsc_c.c
-                loki-c/yoethf_fc.F90
-                loki-c/yomcst_fc.F90
-                loki-c/yoecldp_fc.F90
-            LIBS
-                cloudsc-common-lib
-            DEFINITIONS ${CLOUDSC_DEFINITIONS}
-        )
+    # Define the build target for the Loki-C variant
+    ecbuild_add_executable( TARGET dwarf-cloudsc-loki-c-${prec}
+        SOURCES
+            dwarf_cloudsc.F90
+            cloudsc_driver_loki_mod.c.F90
+            cloudsc_fc.F90
+            cloudsc_c.c
+            yoethf_fc.F90
+            yomcst_fc.F90
+            yoecldp_fc.F90
+        LIBS
+            cloudsc-common-lib
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
+    )
 
-        ecbuild_add_test(
-            TARGET dwarf-cloudsc-loki-c-serial
-            COMMAND bin/dwarf-cloudsc-loki-c
-            ARGS 1 100 16
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-            OMP 1
-        )
-        ecbuild_add_test(
-            TARGET dwarf-cloudsc-loki-c-omp
-            COMMAND bin/dwarf-cloudsc-loki-c
-            ARGS 4 100 16
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-            OMP 4
-            CONDITION HAVE_OMP
-        )
-
-    endif()
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-c-${prec}-serial
+        COMMAND dwarf-cloudsc-loki-c-${prec}
+        ARGS 1 100 32
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        OMP 1
+    )
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-loki-c-${prec}-omp
+        COMMAND dwarf-cloudsc-loki-c-${prec}
+        ARGS 4 100 32
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        OMP 4
+        CONDITION HAVE_OMP
+    )
 
 endif()
