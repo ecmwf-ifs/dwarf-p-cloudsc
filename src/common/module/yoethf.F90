@@ -96,13 +96,15 @@ TYPE(TOETHF), ALLOCATABLE :: YRTHF
 !     *RTWAT_RTICE_R*   REAL      *RTWAT_RTICE_R=1./(RTWAT-RTICE)
 !     *RTWAT_RTICECU_R* REAL      *RTWAT_RTICECU_R=1./(RTWAT-RTICECU)
 
+#ifdef _OPENACC
 !$acc declare copyin(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
 !$acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
 !$acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
-
+#else
 !$omp declare target(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies)
 !$omp declare target(  r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu)
 !$omp declare target(  rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+#endif
 
 !       ----------------------------------------------------------------
 
@@ -129,13 +131,15 @@ CONTAINS
     CALL LOAD_SCALAR('RKOOP1', RKOOP1)
     CALL LOAD_SCALAR('RKOOP2', RKOOP2)
     CALL YRTHF_COPY_PARAMETERS()
+#ifdef _OPENACC
 !$acc update device(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
 !$acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
 !$acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
-
+#else
 !$omp target update to(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
-!$omp   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
-!$omp   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+!$omp&   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+!$omp&   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+#endif
   END SUBROUTINE YOETHF_LOAD_PARAMETERS
 
   SUBROUTINE YRTHF_COPY_PARAMETERS()
