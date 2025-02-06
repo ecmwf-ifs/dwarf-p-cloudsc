@@ -85,14 +85,24 @@ if( HAVE_SERIALBOX )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
 
+# Add loki source-to-source translation toolchain to generate code variants
+ecbuild_add_option( FEATURE LOKI
+                    DESCRIPTION "Support for generating GPU variants with Loki"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "loki" )
+
 # Add field_api library to manage data fields
 ecbuild_add_option( FEATURE FIELD_API
-    DESCRIPTION "Use field_api to manage GPU data offload and copyback"
-    REQUIRED_PACKAGES "field_api"
-    DEFAULT ON )
+                    DESCRIPTION "Use field_api to manage GPU data offload and copyback"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "field_api" )
 
-ecbuild_find_package( NAME loki )
-ecbuild_find_package( NAME atlas )
+# Add atlas library to manage data fields
+ecbuild_add_option( FEATURE ATLAS
+                    DESCRIPTION "Use Atlas to manage GPU data offload and copyback"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "atlas" )
+
 
 ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
   DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
