@@ -14,80 +14,57 @@ find_package( ecbuild REQUIRED )
 # define the project
 project( dwarf-p-cloudsc LANGUAGES C Fortran )
 
-include( cmake/compat.cmake )
-if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  ecbuild_add_fortran_flags("-ffree-line-length-none")
-  if( CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
-    ecbuild_add_fortran_flags("-fallow-argument-mismatch")
-  endif()
-  if( CMAKE_Fortran_COMPILER_VERSION VERSION_LESS "11.0")
-    set( ENABLE_ACC OFF )
-  endif()
-endif()
+ecbuild_enable_fortran( REQUIRED NO_MODULE_DIRECTORY )
 
 include( cloudsc_compile_options )
 
-### OpenACC
-if( ${CMAKE_VERSION} VERSION_LESS "3.25" AND (NOT DEFINED ENABLE_ACC OR ENABLE_ACC ) )
-    # Incredibly inconvenient: FindOpenACC does _not_ set OpenACC_FOUND, only
-    # the language-specific components OpenACC_Fortran_FOUND and OpenACC_C_FOUND.
-    # This means, even internally CMake considers OpenACC as not found.
-    # (See eg get_property(... GLOBAL PROPERTY PACKAGES_NOT_FOUND))
-    # Therefore, we search for OpenACC, set OpenACC_FOUND ourselves according to
-    # the result, and then, trigger a second find_package via ecbuild_add_option.
-    # This then conveniently takes the previously set OpenACC_FOUND into account
-    # and rectifies CMake's internal bookkeeping in the process.
-    # This has been fixed in CMake 3.25
-    find_package( OpenACC )
-    if( OpenACC_Fortran_FOUND AND OpenACC_C_FOUND )
-        set( OpenACC_FOUND ON )
-    endif()
+### Programming models
+
+ecbuild_add_option( FEATURE OMP
+                    DESCRIPTION "Support for thread-level parallelism or GPUs using OpenMP"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "OpenMP COMPONENTS Fortran C" )
+include(features/OMP)
+
+ecbuild_add_option( FEATURE MPI
+                    DESCRIPTION "Support for task-level parallelism using MPI"
+                    DEFAULT OFF
+                    REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
+if( HAVE_MPI )
+  list( APPEND CLOUDSC_COMPILE_DEFINITIONS HAVE_MPI )
 endif()
+
+include(features/ACC)
 ecbuild_add_option( FEATURE ACC
-    DESCRIPTION "OpenACC" DEFAULT ON
-    REQUIRED_PACKAGES "OpenACC" )
+                    DEFAULT ON
+                    DESCRIPTION "Support for using GPUs with OpenACC"
+                    REQUIRED_PACKAGES "OpenACC COMPONENTS Fortran" )
 
 include(CheckLanguage)
 check_language( CUDA )
 ecbuild_add_option( FEATURE CUDA
-    DESCRIPTION "CUDA" DEFAULT OFF
-    CONDITION CMAKE_CUDA_COMPILER )
+                    DESCRIPTION "Support for using GPUs with CUDA"
+                    DEFAULT ON
+                    CONDITION CMAKE_CUDA_COMPILER
+                    REQUIRED_PACKAGES "CUDAToolkit" )
 if( HAVE_CUDA )
-    enable_language( CUDA )
-    find_package(CUDAToolkit)
+  enable_language( CUDA )
 endif()
 
+check_language( HIP )
 ecbuild_add_option( FEATURE HIP
-	DESCRIPTION "HIP" DEFAULT OFF
-	REQUIRED_PACKAGES "hip" )
-if ( HAVE_HIP )
-  if(NOT DEFINED ROCM_PATH)
-    if(DEFINED ENV{ROCM_PATH})
-      set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
-    else()
-      set(ROCM_PATH "/opt/rocm" CACHE PATH "Path to which ROCM has been installed")
-    endif()
-  endif()
-  find_package(hip REQUIRED)
+	                  DESCRIPTION "Support for using GPUs with HIP"
+                    DEFAULT ON
+                    CONDITION CMAKE_HIP_COMPILER
+                    REQUIRED_PACKAGES "hip" )
+if( HAVE_HIP )
+  enable_language( hip REQUIRED )
 endif()
 
 ecbuild_add_option( FEATURE SYCL
-	DESCRIPTION "SYCL" DEFAULT OFF
-	REQUIRED_PACKAGES "IntelSYCL")
-
-### OpenMP
-ecbuild_add_option( FEATURE OMP
-    DESCRIPTION "OpenMP" DEFAULT ON
-    REQUIRED_PACKAGES "OpenMP COMPONENTS Fortran C" )
-include(features/OMP)
-
-### MPI
-ecbuild_add_option( FEATURE MPI
-    DESCRIPTION "MPI" DEFAULT OFF
-    REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
-if( HAVE_MPI )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_MPI )
-endif()
+	                  DESCRIPTION "Support for using GPUs with SYCL"
+                    DEFAULT ON
+                  	REQUIRED_PACKAGES "IntelSYCL" )
 
 ### HDF5
 ecbuild_add_option( FEATURE HDF5
