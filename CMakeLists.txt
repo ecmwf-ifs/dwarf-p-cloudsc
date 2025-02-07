@@ -47,9 +47,7 @@ ecbuild_add_option( FEATURE CUDA
                     DEFAULT ON
                     CONDITION CMAKE_CUDA_COMPILER
                     REQUIRED_PACKAGES "CUDAToolkit" )
-if( HAVE_CUDA )
-  enable_language( CUDA )
-endif()
+include(features/CUDA)
 
 check_language( HIP )
 ecbuild_add_option( FEATURE HIP
