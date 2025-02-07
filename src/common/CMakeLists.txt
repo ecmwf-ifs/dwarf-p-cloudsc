@@ -129,7 +129,7 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
     )
 
     if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
-        target_compile_options( cloudsc-common-${PREC}-omp PUBLIC "-mp=gpu" )
+        target_compile_options( cloudsc-common-${prec}-omp PUBLIC "-mp=gpu" )
     endif()
 
 endif()
@@ -173,5 +173,8 @@ if( HAVE_CUDA )
             OpenACC::OpenACC_Fortran
             CUDA::cudart
     )
+
+    target_link_options( cloudsc-common-${prec}-cuda
+        PUBLIC "-cuda" )
 
 endif()

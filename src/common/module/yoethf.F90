@@ -44,6 +44,16 @@ REAL(KIND=JPRB) :: RTWAT_RTICECU_R
 REAL(KIND=JPRB) :: RKOOP1
 REAL(KIND=JPRB) :: RKOOP2
 
+#ifdef _OPENACC
+!$acc declare copyin(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
+!$acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+!$acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+#else
+!$omp declare target(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
+!$omp&  r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
+!$omp&  rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
+#endif
+
 TYPE :: TOETHF
 REAL(KIND=JPRB) :: R2ES
 REAL(KIND=JPRB) :: R3LES
@@ -95,16 +105,6 @@ TYPE(TOETHF), ALLOCATABLE :: YRTHF
 !     *RKOOP?   REAL      *CONSTANTS TO DESCRIBE KOOP FORM FOR NUCLEATION
 !     *RTWAT_RTICE_R*   REAL      *RTWAT_RTICE_R=1./(RTWAT-RTICE)
 !     *RTWAT_RTICECU_R* REAL      *RTWAT_RTICECU_R=1./(RTWAT-RTICECU)
-
-#ifdef _OPENACC
-!$acc declare copyin(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies, &
-!$acc   r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu, &
-!$acc   rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
-#else
-!$omp declare target(r2es, r3les, r3ies, r4les, r4ies, r5les, r5ies)
-!$omp declare target(  r5alvcp, r5alscp, ralvdcp, ralsdcp, ralfdcp, rtwat, rtice, rticecu)
-!$omp declare target(  rtwat_rtice_r, rtwat_rticecu_r, rkoop1, rkoop2)
-#endif
 
 !       ----------------------------------------------------------------
 
