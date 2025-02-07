@@ -83,6 +83,8 @@ if( HAVE_SERIALBOX )
     list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
 
+### Enable/disable specific variants
+
 # Add loki source-to-source translation toolchain to generate code variants
 ecbuild_add_option( FEATURE LOKI
                     DESCRIPTION "Support for generating GPU variants with Loki"

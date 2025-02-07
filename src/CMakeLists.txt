@@ -6,6 +6,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+set( COMMON_MODULE "${CMAKE_CURRENT_SOURCE_DIR}/common/module" )
+set( COMMON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/common/include" )
+
 add_subdirectory(prototype1)
 add_subdirectory(common)
 add_subdirectory(cloudsc_fortran)

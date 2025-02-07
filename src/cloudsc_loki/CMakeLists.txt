@@ -7,9 +7,6 @@
 # nor does it submit to any jurisdiction.
 
 set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
-
-set( COMMON_MODULE "${PROJECT_SOURCE_DIR}/src/common/module" )
-set( COMMON_INCLUDE "${PROJECT_SOURCE_DIR}/src/common/include" )
 set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
 
 function( cloudsc_add_loki_exe )
