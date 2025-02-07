@@ -64,23 +64,24 @@ ecbuild_add_option( FEATURE SYCL
                     DEFAULT ON
                   	REQUIRED_PACKAGES "IntelSYCL" )
 
-### HDF5
+### I/O libraries
+
 ecbuild_add_option( FEATURE HDF5
-    DESCRIPTION "Use HDF5 to read input and reference data"
-    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran C"
-    DEFAULT ON )
+                    DESCRIPTION "Use HDF5 to read input and reference data"
+                    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran C"
+                    DEFAULT ON )
 if( HAVE_HDF5 )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 )
+  list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 )
 endif()
 
 # Add Serialbox utility package for platform-agnostic file I/O
 ecbuild_add_option( FEATURE SERIALBOX
-    DESCRIPTION "Use Serialbox to read input and reference data"
-    REQUIRED_PACKAGES "Serialbox"
-    CONDITION NOT HAVE_HDF5
-    DEFAULT OFF )
+                    DESCRIPTION "Use Serialbox to read input and reference data"
+                    REQUIRED_PACKAGES "Serialbox"
+                    CONDITION NOT HAVE_HDF5
+                    DEFAULT OFF )
 if( HAVE_SERIALBOX )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
+  list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
 
 ### Enable/disable specific variants
@@ -125,6 +126,11 @@ ecbuild_add_option( FEATURE PYIFACE_BINARY
                     DEFAULT OFF
                     CONDITION HAVE_PYIFACE )
 
+# A pure Python variant, created from Loki transpilation
+ecbuild_add_option( FEATURE PYTHON_F2PY
+                    DESCRIPTION "Build the pure Python variant from Loki transpilation"
+                    DEFAULT OFF
+                    CONDITION HAVE_HDF5 AND Python3_FOUND AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU|Intel" )
 
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION
