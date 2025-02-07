@@ -12,11 +12,12 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 
   ecbuild_add_fortran_flags("-ffree-line-length-none")
   if( CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
+    # Non-matching MPI interfaces
     ecbuild_add_fortran_flags("-fallow-argument-mismatch")
   endif()
-  if( CMAKE_Fortran_COMPILER_VERSION VERSION_LESS "11.0")
-    set( ENABLE_ACC OFF )
-  endif()
+
+  # No stable OpenACC support in GNU
+  set( ${PNAME}_ENABLE_ACC OFF CACHE BOOL "" )
 
 ### NVHPC compiler options
 

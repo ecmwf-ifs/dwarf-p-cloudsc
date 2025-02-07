@@ -27,7 +27,7 @@ function( cloudsc_add_fortran_exe )
             ${_CL_DRIVER}
             cloudsc.F90
         LIBS
-            cloudsc-common-lib #cloudsc-common-${_CL_COMMON_LIB}-${prec}
+            cloudsc-common-${prec}-${_CL_COMMON_LIB}
         DEFINITIONS
             ${_CL_DEFINITIONS}
     )

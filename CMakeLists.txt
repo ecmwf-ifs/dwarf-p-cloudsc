@@ -64,6 +64,12 @@ ecbuild_add_option( FEATURE SYCL
                     DEFAULT ON
                   	REQUIRED_PACKAGES "IntelSYCL" )
 
+### Link options
+
+ecbuild_add_option( FEATURE GPU_STATIC
+                    DEFAULT ON
+                    DESCRIPTION "Compile GPU targets using static libraries" )
+
 ### I/O libraries
 
 ecbuild_add_option( FEATURE HDF5

@@ -9,6 +9,24 @@
 set( LOKI_FRONTEND "fp" CACHE STRING "Frontend parser for Loki transforms" )
 set( XMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xmod" )
 
+### Select appropriate common lib for GPU targets
+
+# Currently, directive-based GPU recipes in Loki generate only OpenACC code, therefore
+# we link to the acc-variety of the common lib if it is available. In the future, if
+# other backends are added to Loki (e.g., OpenMP target support), we can select the
+# common lib corresponding to the transformation mode
+
+if( HAVE_ACC )
+    set( GPU_COMMON_LIB acc )
+else()
+    set( GPU_COMMON_LIB lib )
+endif()
+
+### Helper macro to create Loki transformation variants
+
+# This defines a shared library with kernel and driver, applies loki_transform_target to that
+# library and links this into an executable with corresponding test definitions
+
 function( cloudsc_add_loki_exe )
 
     set( options CPP_PLAN )
@@ -35,6 +53,7 @@ function( cloudsc_add_loki_exe )
 
     ecbuild_add_library(
         TARGET      ${_CL_TARGET}-${prec}-lib
+        TYPE        STATIC
         SOURCES
             ${_CL_DRIVER}
             ${_CL_KERNEL}
@@ -43,7 +62,7 @@ function( cloudsc_add_loki_exe )
         PUBLIC_INCLUDES
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module-${_CL_TARGET}>"
         PUBLIC_LIBS
-            cloudsc-common-lib # cloudsc-common-${_CL_COMMON_LIB}-${prec}
+            cloudsc-common-${prec}-${_CL_COMMON_LIB}
     )
 
     set_target_properties( ${_CL_TARGET}-${prec}-lib
@@ -143,7 +162,7 @@ cloudsc_add_loki_exe(
     TARGET dwarf-cloudsc-loki-scc
     MODE scc
     CONFIG cloudsc_loki.config
-    COMMON_LIB lib
+    COMMON_LIB ${GPU_COMMON_LIB}
     DEFINITIONS
         ${CLOUDSC_DEFINITIONS}
         CLOUDSC_GPU_TIMING
@@ -160,7 +179,7 @@ cloudsc_add_loki_exe(
     TARGET dwarf-cloudsc-loki-scc-stack
     MODE scc-stack
     CONFIG cloudsc_loki.config
-    COMMON_LIB lib
+    COMMON_LIB ${GPU_COMMON_LIB}
     DEFINITIONS
         ${CLOUDSC_DEFINITIONS}
         CLOUDSC_GPU_TIMING
@@ -186,7 +205,7 @@ cloudsc_add_loki_exe(
     TARGET dwarf-cloudsc-loki-scc-hoist
     MODE scc-hoist
     CONFIG cloudsc_loki.config
-    COMMON_LIB lib
+    COMMON_LIB ${GPU_COMMON_LIB}
     DEFINITIONS
         ${CLOUDSC_DEFINITIONS}
         CLOUDSC_GPU_TIMING
@@ -203,6 +222,7 @@ if( HAVE_FIELD_API )
         TARGET dwarf-cloudsc-loki-scc-field
         MODE scc-field
         CONFIG cloudsc_loki_field_offload.config
+        COMMON_LIB field_api
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
             CLOUDSC_GPU_TIMING
@@ -231,6 +251,7 @@ if( HAVE_CUDA )
             TARGET dwarf-cloudsc-loki-scc-${variant}
             MODE ${variant}
             CONFIG cloudsc_cuf_loki.config
+            COMMON_LIB cuda
             DEFINITIONS
                 ${CLOUDSC_DEFINITIONS}
                 CLOUDSC_GPU_TIMING
@@ -253,7 +274,8 @@ if( HAVE_CUDA )
 
 endif()
 
-if( NOT "${prec}" STREQUAL "sp" )
+if( "${prec}" STREQUAL "dp" )
+
     ####################################################
     ## C-transpilation mode for generating vectorized ##
     ## C host code (experimental!)                    ##
@@ -299,7 +321,7 @@ if( NOT "${prec}" STREQUAL "sp" )
             yomcst_fc.F90
             yoecldp_fc.F90
         LIBS
-            cloudsc-common-lib
+            cloudsc-common-${prec}-lib
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
     )

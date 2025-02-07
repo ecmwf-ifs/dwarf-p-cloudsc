@@ -28,7 +28,7 @@ ecbuild_info("Module directory set to: ${CMAKE_Fortran_MODULE_DIRECTORY}")
 
 # Set names and lists to abstract the f90wrap/f2py process
 set( DWARF_CLOUDSC_LIB  dwarf-cloudsc-lib)
-set( DWARF_COMMON_LIB  cloudsc-common-lib)
+set( DWARF_COMMON_LIB  cloudsc-common-${prec}-lib)
 set( PYTHON_MODN cloudsc)
 set( FORTRAN_PYTHON_COMMON_SOURCES
     yomphyder yoecldp yoethf yomcst yoephli expand_mod
