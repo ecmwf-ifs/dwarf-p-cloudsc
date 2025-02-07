@@ -97,20 +97,33 @@ ecbuild_add_option( FEATURE FIELD_API
                     DEFAULT ON
                     REQUIRED_PACKAGES "field_api" )
 
+ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
+                    DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
+                    CONDITION HAVE_FIELD_API
+                    DEFAULT OFF )
+if( HAVE_FIELD_API_DISABLE_MAPPED_MEMORY )
+  list(APPEND CLOUDSC_DEFINITIONS FIELD_API_DISABLE_MAPPED_MEMORY)
+endif()
+
 # Add atlas library to manage data fields
 ecbuild_add_option( FEATURE ATLAS
                     DESCRIPTION "Use Atlas to manage GPU data offload and copyback"
                     DEFAULT ON
                     REQUIRED_PACKAGES "atlas" )
 
+# A variant driven by Python
+# NB: This requires Python3 to install f90wrap and its dependencies, and has only been
+#     tested successfully with GNU and Intel compilers
+find_package( Python3 COMPONENTS Interpreter QUIET )
+ecbuild_add_option( FEATURE PYIFACE
+                    DESCRIPTION "Build a (slightly customized) cloudsc-fortran variant with Python interface"
+                    DEFAULT OFF
+                    CONDITION HAVE_HDF5 AND Python3_FOUND AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU|Intel" )
 
-ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
-  DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
-  CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
-  DEFAULT OFF )
-if( HAVE_FIELD_API_DISABLE_MAPPED_MEMORY )
-  list(APPEND CLOUDSC_DEFINITIONS FIELD_API_DISABLE_MAPPED_MEMORY)
-endif()
+ecbuild_add_option( FEATURE PYIFACE_BINARY
+                    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran"
+                    DEFAULT OFF
+                    CONDITION HAVE_PYIFACE )
 
 
 # Add option for single-precision builds
