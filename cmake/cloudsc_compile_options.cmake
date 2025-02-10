@@ -19,6 +19,10 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   # No stable OpenACC support in GNU
   set( ${PNAME}_ENABLE_ACC OFF CACHE BOOL "" )
 
+  # No stable OpenMP Target LOOP support in GNU
+  set( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL OFF CACHE BOOL "" )
+  set( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD OFF CACHE BOOL "" )
+
 ### NVHPC compiler options
 
 elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
