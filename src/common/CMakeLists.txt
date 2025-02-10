@@ -117,6 +117,20 @@ if( HAVE_FIELD_API )
     )
 endif()
 
+### Common lib for Atlas-managed data structures
+
+if( HAVE_ATLAS )
+    # NB: This does not contain the global state and expand
+    #     modules at the moment
+    cloudsc_add_common_lib(
+        SUFFIX atlas
+        TYPE ${GPU_LINK_TYPE}
+        LIBS
+            $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
+            $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
+    )
+endif()
+
 ### Common lib for OpenMP-target offload
 
 if( HAVE_OMP AND HAVE_OMP_TARGET )
