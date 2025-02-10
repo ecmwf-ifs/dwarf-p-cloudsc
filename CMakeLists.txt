@@ -18,6 +18,18 @@ ecbuild_enable_fortran( REQUIRED NO_MODULE_DIRECTORY )
 
 include( cloudsc_compile_options )
 
+### Precision selection
+
+set( CLOUDSC_PRECISIONS )
+
+ecbuild_add_option( FEATURE DOUBLE_PRECISION
+                    DEFAULT ON
+                    DESCRIPTION "Build double precision CLOUDSC binaries" )
+
+ecbuild_add_option( FEATURE SINGLE_PRECISION
+                    DEFAULT ON
+                    DESCRIPTION "Build single precision CLOUDSC binaries" )
+
 ### Programming models
 
 ecbuild_add_option( FEATURE OMP
@@ -137,16 +149,6 @@ ecbuild_add_option( FEATURE PYTHON_F2PY
                     DESCRIPTION "Build the pure Python variant from Loki transpilation"
                     DEFAULT OFF
                     CONDITION HAVE_HDF5 AND Python3_FOUND AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU|Intel" )
-
-# Add option for single-precision builds
-ecbuild_add_option( FEATURE SINGLE_PRECISION
-    DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
-)
-set(prec dp)
-if( HAVE_SINGLE_PRECISION )
-    list(APPEND CLOUDSC_DEFINITIONS SINGLE)
-    set(prec sp)
-endif()
 
 ### Input data
 
