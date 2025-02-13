@@ -9,7 +9,6 @@
 if( HAVE_CUDA )
 
   enable_language( CUDA )
-  enable_language( CXX )
 
   if( NOT DEFINED CMAKE_CUDA_ARCHITECTURES )
     set( CLOUDSC_CUDA_FLAGS "-lineinfo -maxrregcount=128" )

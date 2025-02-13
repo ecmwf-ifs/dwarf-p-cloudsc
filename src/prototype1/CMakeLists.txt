@@ -6,8 +6,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-set( CMake_Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module" )
-
 # Define this dwarf variant as an ECBuild feature
 ecbuild_add_option(
     FEATURE PROTOTYPE1
@@ -61,8 +59,14 @@ if( HAVE_PROTOTYPE1 )
         DEFINITIONS ${CLOUDSC_DEFINITIONS}
         PUBLIC_INCLUDES
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module>
         PUBLIC_LIBS
             $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
+    )
+
+    set_target_properties( dwarf-P-cloudMicrophysics-IFSScheme-libs
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module"
     )
 
     ecbuild_add_executable(

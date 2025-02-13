@@ -48,8 +48,6 @@ macro( cloudsc_add_common_lib )
         ecbuild_critical( "Unknown arguments given to add_cloudsc_common_lib(): \"${COMMON_LIB_UNPARSED_ARGUMENTS}\"")
     endif()
 
-    set( CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/module-${COMMON_LIB_SUFFIX} )
-
     ecbuild_add_library(
         TARGET cloudsc-common-${prec}-${COMMON_LIB_SUFFIX}
         TYPE ${COMMON_LIB_TYPE}
@@ -70,7 +68,12 @@ macro( cloudsc_add_common_lib )
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module-${COMMON_LIB_SUFFIX}>
+    )
+
+    set_target_properties( cloudsc-common-${prec}-${COMMON_LIB_SUFFIX}
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${COMMON_LIB_SUFFIX}"
     )
 
 endmacro()

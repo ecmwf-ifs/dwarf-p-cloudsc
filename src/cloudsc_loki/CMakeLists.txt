@@ -93,7 +93,9 @@ function( cloudsc_add_loki_exe )
     ecbuild_add_executable(
         TARGET ${_CL_TARGET}-${prec}
         SOURCES dwarf_cloudsc.F90
-        LIBS ${_CL_TARGET}-${prec}-lib
+        LIBS
+            ${_CL_TARGET}-${prec}-lib
+            cloudsc-common-${prec}-${_CL_COMMON_LIB}
     )
 
     ecbuild_add_test(
@@ -151,6 +153,10 @@ elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
     target_compile_options(
         dwarf-cloudsc-loki-idem-stack-${prec}-lib
         PRIVATE "-Mcray=pointer" )
+elseif( CMAKE_FORTRAN_COMPILER_ID MATCHES "Intel" )
+    target_compile_options(
+        dwarf-cloudsc-loki-idem-stack-${prec}-lib
+        PRIVATE "-safe-cray-ptr" )
 endif()
 
 ####################################################
@@ -324,6 +330,11 @@ if( "${prec}" STREQUAL "dp" )
             cloudsc-common-${prec}-lib
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
+    )
+
+    set_target_properties( dwarf-cloudsc-loki-c-${prec}
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-dwarf-cloudsc-loki-c"
     )
 
     ecbuild_add_test(

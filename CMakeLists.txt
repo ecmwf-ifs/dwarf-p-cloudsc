@@ -12,7 +12,7 @@ cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
 find_package( ecbuild REQUIRED )
 
 # define the project
-project( dwarf-p-cloudsc LANGUAGES C Fortran )
+project( dwarf-p-cloudsc LANGUAGES C CXX Fortran )
 
 ecbuild_enable_fortran( REQUIRED NO_MODULE_DIRECTORY )
 
