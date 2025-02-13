@@ -98,6 +98,9 @@ CONTAINS
     INTEGER(KIND=JPIM) :: JKGLO,IBL,ICEND
     TYPE(PERFORMANCE_TIMER) :: TIMER
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
+    
+    ! Local copy of cloud parameters for offload
+    TYPE(TECLDP) :: LOCAL_YRECLDP
 
      ! double blocking variables
     INTEGER(KIND=JPIM) :: BLOCK_BUFFER_SIZE     ! block size for blocks in outer loop
@@ -116,8 +119,13 @@ CONTAINS
 
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
+    
+    ! Workaround for PGI / OpenACC oddities:
+    ! Create a local copy of the parameter struct to ensure they get
+    ! moved to the device the in ``acc data`` clause below
+    LOCAL_YRECLDP = YRECLDP
 
-    BLOCK_BUFFER_SIZE= MIN(900,NGPBLKS)
+    BLOCK_BUFFER_SIZE = MIN(900,NGPBLKS)
     BLOCK_COUNT=(NGPBLKS+BLOCK_BUFFER_SIZE-1)/BLOCK_BUFFER_SIZE
     
     print *, 'BLOCK_BUFFER_SIZE=', BLOCK_BUFFER_SIZE
@@ -127,11 +135,13 @@ CONTAINS
       BLOCK_START=BLOCK_IDX*BLOCK_BUFFER_SIZE+1
       BLOCK_END=MIN((BLOCK_IDX+1)*BLOCK_BUFFER_SIZE, NGPBLKS)
       BLK_BOUNDS=[BLOCK_START, BLOCK_END]
+      print *, "BLK_BOUNDS = ", BLK_BOUNDS
+      
       IF(USE_PACKED)THEN
-        CALL AUX%DATA_RDONLY%SYNC_DEVICE_RDONLY()
-        CALL FLUX%DATA_WRONLY%SYNC_DEVICE_RDWR()
-        CALL TENDENCY_TMP%FIELD_GANG%SYNC_DEVICE_RDONLY()
-        CALL TENDENCY_LOC%FIELD_GANG%SYNC_DEVICE_RDWR()
+        CALL AUX%DATA_RDONLY%SYNC_DEVICE_RDONLY(BLK_BOUNDS=BLK_BOUNDS)
+        CALL FLUX%DATA_WRONLY%SYNC_DEVICE_RDWR(BLK_BOUNDS=BLK_BOUNDS)
+        CALL TENDENCY_TMP%FIELD_GANG%SYNC_DEVICE_RDONLY(BLK_BOUNDS=BLK_BOUNDS)
+        CALL TENDENCY_LOC%FIELD_GANG%SYNC_DEVICE_RDWR(BLK_BOUNDS=BLK_BOUNDS)
          ! If this is called then the subsequent FIELDS_RDONLY/RWONLY%PTR%GET_DEVICE_DATA()
          ! calls don't trigger any data movement, they just return an updated device pointer
       ENDIF
@@ -195,7 +205,7 @@ CONTAINS
       CALL TENDENCY_LOC%F_A%GET_DEVICE_DATA_RDWR(TEND_LOC_A, BLK_BOUNDS=BLK_BOUNDS)
       CALL TENDENCY_LOC%F_CLD%GET_DEVICE_DATA_RDWR(TEND_LOC_CLD, BLK_BOUNDS=BLK_BOUNDS)
 
-!$acc data copyin(yrecldp) &
+!$acc data &
 #ifndef FIELD_API_DISABLE_MAPPED_MEMORY 
 !$acc & present( &
 #else
@@ -221,11 +231,21 @@ CONTAINS
       TID = GET_THREAD_NUM()
       CALL TIMER%THREAD_START(TID)
 
+      DO IBL=BLOCK_START,BLOCK_END ! just a way to loop over NGPBLKS
+        JKGLO=(IBL-1)*NPROMA+1
+        ICEND=MIN(NPROMA, NGPTOT-JKGLO+1)
+         IF ( ICEND /= NPROMA ) THEN
+           print *, "BLOCK_IDX:    ", BLOCK_IDX
+           print *, "IBL:          ", IBL
+           print *, "JKGLO:        ", JKGLO
+           print *, "ICEND:        ", ICEND
+         END IF
+      END DO
+
 !$acc parallel loop gang vector_length(NPROMA)
-      DO IBLLOC=1, BLOCK_BUFFER_SIZE ! just a way to loop over NGPBLKS
-            IBL= BLOCK_BUFFER_SIZE*BLOCK_IDX +IBLLOC
-            JKGLO=(IBL-1)*NPROMA+1
-            ICEND=MIN(NPROMA, NGPTOT-JKGLO+1)
+    DO IBL=BLOCK_START,BLOCK_END ! just a way to loop over NGPBLKS
+        JKGLO=(IBL-1)*NPROMA+1
+        ICEND=MIN(NPROMA, NGPTOT-JKGLO+1)
       ! DO JKGLO=1,NGPTOT,NPROMA
       !    IBL=(JKGLO-1)/NPROMA+1
       !    ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -253,7 +273,7 @@ CONTAINS
           & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
           & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
           & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-          & YRECLDP=YRECLDP)
+          & YRECLDP=LOCAL_YRECLDP)
 
       ENDDO
 !$acc end parallel loop
@@ -262,8 +282,8 @@ CONTAINS
       CALL TIMER%THREAD_END(TID)
 
       IF(USE_PACKED)THEN
-         CALL FLUX%DATA_WRONLY%SYNC_HOST_RDWR()
-         CALL TENDENCY_LOC%FIELD_GANG%SYNC_HOST_RDWR()
+         CALL FLUX%DATA_WRONLY%SYNC_HOST_RDWR(BLK_BOUNDS=BLK_BOUNDS)
+         CALL TENDENCY_LOC%FIELD_GANG%SYNC_HOST_RDWR(BLK_BOUNDS=BLK_BOUNDS)
          ! If this is called then the subsequent ...%F_PTR%SYNC_HOST_RDWR() calls
          ! don't trigger any data movement
       ENDIF
