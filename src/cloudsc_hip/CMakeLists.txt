@@ -6,174 +6,82 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-# Define this dwarf variant as an ECBuild feature
-ecbuild_add_option( FEATURE CLOUDSC_HIP
-	DESCRIPTION "Build the HIP version CLOUDSC using Serialbox" DEFAULT ON
-	CONDITION (Serialbox_FOUND OR HDF5_FOUND) AND HAVE_HIP
+### Helper macro to create a target and associated tests
+
+macro( cloudsc_add_hip_exe TARGET DRIVER KERNEL )
+
+    ecbuild_add_library(
+        TARGET ${TARGET}-${prec}-lib
+        INSTALL_HEADERS LISTED
+        SOURCES
+            cloudsc/yoecldp_c.h
+            cloudsc/dtype.h
+            cloudsc/load_state.h
+            cloudsc/load_state.cpp
+            cloudsc/cloudsc_validate.h
+            cloudsc/cloudsc_validate.cpp
+            cloudsc/mycpu.h
+            cloudsc/mycpu.cpp
+            ${DRIVER}
+            ${KERNEL}
+        PUBLIC_INCLUDES
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
+        PUBLIC_LIBS
+            $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
+            $<${HAVE_OMP}:OpenMP::OpenMP_CXX>
+            hip::device
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
+            $<$<STREQUAL:"${prec}","sp">:SINGLE>
+    )
+
+    set_source_files_properties( ${DRIVER} ${KERNEL}
+        PROPERTIES LANGUAGE HIP )
+
+    if( CMAKE_CXX_COMPILER_ID MATCHES "Cray" AND HAVE_OMP )
+        # Workaround for Linker issue with Cray compiler, see
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
+        target_link_options( ${TARGET}-${prec}-lib PUBLIC "-fopenmp" )
+    endif()
+
+    ecbuild_add_executable(
+        TARGET      ${TARGET}-${prec}
+        SOURCES     dwarf_cloudsc.cpp
+        LIBS
+            ${TARGET}-${prec}-lib
+    )
+
+
+    ecbuild_add_test(
+        TARGET      ${TARGET}-${prec}-serial
+        COMMAND     ${TARGET}-${prec}
+        ARGS        1 1000 128
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+
+endmacro()
+
+### Kernel variants
+
+# SCC
+cloudsc_add_hip_exe(
+    dwarf-cloudsc-hip
+    "cloudsc/cloudsc_driver.h;cloudsc/cloudsc_driver.cpp"
+    "cloudsc/cloudsc_c.h;cloudsc/cloudsc_c.cpp"
 )
 
-if( HAVE_CLOUDSC_HIP )
+# SCC-HOIST
+cloudsc_add_hip_exe(
+    dwarf-cloudsc-hip-hoist
+    "cloudsc/cloudsc_driver_hoist.h;cloudsc/cloudsc_driver_hoist.cpp"
+    "cloudsc/cloudsc_c_hoist.h;cloudsc/cloudsc_c_hoist.cpp"
+)
 
-    set(CMAKE_C_COMPILER "${ROCM_PATH}/bin/hipcc")
-    set(CMAKE_CXX_COMPILER "${ROCM_PATH}/bin/hipcc")
-
-    ###### SCC-HIP ####
-    ecbuild_add_library(
-        TARGET dwarf-cloudsc-hip-lib
-    	INSTALL_HEADERS LISTED
-        SOURCES
-	    cloudsc/dtype.h
-    	    cloudsc/yoecldp_c.h
-    	    cloudsc/load_state.h
-            cloudsc/load_state.cpp
-            cloudsc/cloudsc_c.h
-            cloudsc/cloudsc_c.cpp
-            cloudsc/cloudsc_driver.h
-            cloudsc/cloudsc_driver.cpp
-            cloudsc/cloudsc_validate.h
-            cloudsc/cloudsc_validate.cpp
-            cloudsc/mycpu.h
-            cloudsc/mycpu.cpp
-        PUBLIC_INCLUDES
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-        PUBLIC_LIBS
-            hip::device
-            $<${HAVE_HDF5}:hdf5::hdf5>
-            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
-            $<${HAVE_OMP}:OpenMP::OpenMP_C>
-        DEFINITIONS
-            ${CLOUDSC_DEFINITIONS}
-    )
-
-    target_include_directories(dwarf-cloudsc-hip-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
-    target_link_libraries(dwarf-cloudsc-hip-lib PUBLIC hip::device $<${HAVE_HDF5}:hdf5::hdf5> $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C> $<${HAVE_OMP}:OpenMP::OpenMP_C>)
-
-    if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
-      message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
-    else()
-      target_compile_options(dwarf-cloudsc-hip-lib PRIVATE --offload-arch=${CMAKE_HIP_ARCHITECTURES})
-    endif()
-
-    ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-hip
-        SOURCES dwarf_cloudsc.cpp
-        LIBS dwarf-cloudsc-hip-lib
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-hip-serial
-        COMMAND bin/dwarf-cloudsc-hip
-        ARGS 1 1000 64
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ##
-
-    ###### SCC-HOIST-HIP ####
-    ecbuild_add_library(
-        TARGET dwarf-cloudsc-hip-hoist-lib
-    	INSTALL_HEADERS LISTED
-        SOURCES
-	    cloudsc/dtype.h
-    	    cloudsc/yoecldp_c.h
-    	    cloudsc/load_state.h
-            cloudsc/load_state.cpp
-            cloudsc/cloudsc_c_hoist.h
-            cloudsc/cloudsc_c_hoist.cpp
-            cloudsc/cloudsc_driver_hoist.h
-            cloudsc/cloudsc_driver_hoist.cpp
-            cloudsc/cloudsc_validate.h
-            cloudsc/cloudsc_validate.cpp
-            cloudsc/mycpu.h
-            cloudsc/mycpu.cpp
-        PUBLIC_INCLUDES
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-        PUBLIC_LIBS
-            hip::device
-            $<${HAVE_HDF5}:hdf5::hdf5>
-            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
-            $<${HAVE_OMP}:OpenMP::OpenMP_C>
-        DEFINITIONS
-            ${CLOUDSC_DEFINITIONS}
-    )
-
-    target_include_directories(dwarf-cloudsc-hip-hoist-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
-    target_link_libraries(dwarf-cloudsc-hip-hoist-lib PUBLIC hip::device $<${HAVE_HDF5}:hdf5::hdf5> $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C> $<${HAVE_OMP}:OpenMP::OpenMP_C>)
-
-    if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
-      message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
-    else()
-      target_compile_options(dwarf-cloudsc-hip-hoist-lib PRIVATE --offload-arch=${CMAKE_HIP_ARCHITECTURES})
-    endif()
-
-    ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-hip-hoist
-        SOURCES dwarf_cloudsc.cpp
-        LIBS dwarf-cloudsc-hip-hoist-lib
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-hip-hoist-serial
-        COMMAND bin/dwarf-cloudsc-hip-hoist
-        ARGS 1 1000 64
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ##
-
-    ###### SCC-K-CACHING-HIP ####
-    ecbuild_add_library(
-        TARGET dwarf-cloudsc-hip-k-caching-lib
-    	INSTALL_HEADERS LISTED
-        SOURCES
-	    cloudsc/dtype.h
-    	    cloudsc/yoecldp_c.h
-    	    cloudsc/load_state.h
-            cloudsc/load_state.cpp
-            cloudsc/cloudsc_c_k_caching.h
-            cloudsc/cloudsc_c_k_caching.cpp
-            cloudsc/cloudsc_driver.h
-            cloudsc/cloudsc_driver.cpp
-            cloudsc/cloudsc_validate.h
-            cloudsc/cloudsc_validate.cpp
-            cloudsc/mycpu.h
-            cloudsc/mycpu.cpp
-        PUBLIC_INCLUDES
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-        PUBLIC_LIBS
-            hip::device
-            $<${HAVE_HDF5}:hdf5::hdf5>
-            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
-            $<${HAVE_OMP}:OpenMP::OpenMP_C>
-        DEFINITIONS
-            ${CLOUDSC_DEFINITIONS}
-    )
-
-    target_include_directories(dwarf-cloudsc-hip-k-caching-lib PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>)
-    target_link_libraries(dwarf-cloudsc-hip-k-caching-lib PUBLIC hip::device $<${HAVE_HDF5}:hdf5::hdf5> $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C> $<${HAVE_OMP}:OpenMP::OpenMP_C>)
-
-    if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
-      message(WARNING "No HIP architecture is set! ('CMAKE_HIP_ARCHITECTURES' is not defined)")
-    else()
-      target_compile_options(dwarf-cloudsc-hip-k-caching-lib PRIVATE --offload-arch=${CMAKE_HIP_ARCHITECTURES})
-    endif()
-
-    ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-hip-k-caching
-        SOURCES dwarf_cloudsc.cpp
-        LIBS dwarf-cloudsc-hip-k-caching-lib
-    )
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-hip-k-caching-serial
-        COMMAND bin/dwarf-cloudsc-hip-k-caching
-        ARGS 1 1000 64
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ##
-
-endif()
+# SCC-K-CACHING
+cloudsc_add_hip_exe(
+    dwarf-cloudsc-hip-k-caching
+    "cloudsc/cloudsc_driver.h;cloudsc/cloudsc_driver.cpp"
+    "cloudsc/cloudsc_c_k_caching.h;cloudsc/cloudsc_c_k_caching.cpp"
+)
