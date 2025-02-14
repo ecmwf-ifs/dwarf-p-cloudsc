@@ -69,10 +69,18 @@ if( HAVE_PROTOTYPE1 )
             Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module"
     )
 
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "Cray" AND HAVE_OMP )
+        # Workaround for Linker issue with Cray compiler, see
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
+        target_link_options( dwarf-P-cloudMicrophysics-IFSScheme-libs PUBLIC "-fopenmp" )
+    endif()
+
     ecbuild_add_executable(
         TARGET dwarf-P-cloudMicrophysics-IFSScheme
         SOURCES cloudsc_dwarf.F90
-        LIBS dwarf-P-cloudMicrophysics-IFSScheme-libs
+        LIBS
+            dwarf-P-cloudMicrophysics-IFSScheme-libs
+            $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
     )
 
     # Create symlink for the input data

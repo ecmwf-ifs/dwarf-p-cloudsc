@@ -76,6 +76,14 @@ macro( cloudsc_add_common_lib )
             Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${COMMON_LIB_SUFFIX}"
     )
 
+    if( CMAKE_C_COMPILER_ID MATCHES "Cray" AND HAVE_OMP )
+        if( "${COMMON_LIB_LIBS}" MATCHES "OpenMP::OpenMP_Fortran" )
+            # Workaround for Linker issue with Cray compiler, see
+            # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
+            target_link_options( cloudsc-common-${prec}-${COMMON_LIB_SUFFIX} PUBLIC "-fopenmp" )
+        endif()
+    endif()
+
 endmacro()
 
 ### Link type selection

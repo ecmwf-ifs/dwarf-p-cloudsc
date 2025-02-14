@@ -1,5 +1,14 @@
 if( HAVE_OMP )
 
+  if( CMAKE_Fortran_COMPILER_ID MATCHES "Cray" )
+    # Workaround for Linker issue with Cray compiler, see
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
+    set( OMP_LINK_OPTIONS "-fopenmp" )
+  else()
+    set( OMP_LINK_OPTIONS )
+  endif()
+
+
   if( NOT DEFINED HAVE_OMP_TARGET_TEAMS_DISTRIBUTE )
 
     try_compile(
@@ -7,6 +16,7 @@ if( HAVE_OMP )
       ${CMAKE_CURRENT_BINARY_DIR}
       ${PROJECT_SOURCE_DIR}/cmake/features/OMP/test_omp_target_teams_distribute.F90
       LINK_LIBRARIES OpenMP::OpenMP_Fortran
+      LINK_OPTIONS ${OMP_LINK_OPTIONS}
       OUTPUT_VARIABLE _HAVE_OMP_TARGET_TEAMS_DISTRIBUTE_OUTPUT
     )
 
@@ -22,6 +32,7 @@ if( HAVE_OMP )
       ${CMAKE_CURRENT_BINARY_DIR}
       ${PROJECT_SOURCE_DIR}/cmake/features/OMP/test_omp_target_loop_construct_bind_parallel.F90
       LINK_LIBRARIES OpenMP::OpenMP_Fortran
+      LINK_OPTIONS ${OMP_LINK_OPTIONS}
       OUTPUT_VARIABLE _HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL_OUTPUT
     )
 
@@ -37,6 +48,7 @@ if( HAVE_OMP )
       ${CMAKE_CURRENT_BINARY_DIR}
       ${PROJECT_SOURCE_DIR}/cmake/features/OMP/test_omp_target_loop_construct_bind_thread.F90
       LINK_LIBRARIES OpenMP::OpenMP_Fortran
+      LINK_OPTIONS ${OMP_LINK_OPTIONS}
       OUTPUT_VARIABLE _HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD_OUTPUT
     )
 

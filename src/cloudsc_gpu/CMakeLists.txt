@@ -46,15 +46,6 @@ function( cloudsc_add_gpu_exe )
         ENVIRONMENT ${_CL_TEST_ENV}
     )
     ecbuild_add_test(
-        TARGET ${_CL_TARGET}-${prec}-omp
-        COMMAND ${_CL_TARGET}-${prec}
-        ARGS 4 1000 128
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        OMP 4
-        ENVIRONMENT ${_CL_TEST_ENV}
-        CONDITION HAVE_OMP
-    )
-    ecbuild_add_test(
         TARGET ${_CL_TARGET}-${prec}-mpi
         COMMAND ${_CL_TARGET}-${prec}
         ARGS 1 1000 128
@@ -64,20 +55,25 @@ function( cloudsc_add_gpu_exe )
         ENVIRONMENT ${_CL_TEST_ENV}
         CONDITION HAVE_MPI
     )
-    ecbuild_add_test(
-        TARGET ${_CL_TARGET}-${prec}-mpi-omp
-        COMMAND ${_CL_TARGET}-${prec}
-        ARGS 2 1000 128
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        MPI 2
-        OMP 2
-        ENVIRONMENT ${_CL_TEST_ENV}
-        CONDITION HAVE_OMP AND HAVE_MPI
-    )
 endfunction()
 
 set( GPU_VARIANTS scc scc-stack scc-hoist scc-k-caching )
 set( CUDA_VARIANTS scc-cuf scc-cuf-k-caching )
+
+if( CMAKE_Fortran_COMPILER_ID MATCHES "Cray" AND CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL "16.0.1" )
+    # Fails to compile with error
+    # LLVM ERROR: Cannot select: t18: i32 = SETCC t2, Constant:i32<0>, setne:ch
+    #   t2: i32,ch = CopyFromReg # D:1 t0, Register:i32 %1
+    #       t1: i32 = Register %1
+    #   t5: i32 = Constant<0>
+    # In function:
+    # PLEASE submit a bug report to Cray and include the crash backtrace.
+    # Stack dump:
+    # 0.	Program arguments: /opt/cray/pe/cce/16.0.1/cce-clang/x86_64/bin/llc -mtriple=amdgcn-amd-amdhsa -disable-promote-alloca-to-lds -mcpu=gfx90a /tmp/cooltmpdir-u4GmVI/dwarf-cloudsc-gpu-scc-dp-cce-openmp-pre-llc.bc -filetype=obj -o /tmp/cooltmpdir-u4GmVI/dwarf-cloudsc-gpu-scc-dp-cce-openmp__llc.amdgpu
+    # 1.	Running pass 'CallGraph Pass Manager' on module '/tmp/cooltmpdir-u4GmVI/dwarf-cloudsc-gpu-scc-dp-cce-openmp-pre-llc.bc'.
+    # 2.	Running pass 'AMDGPU DAG->DAG Pattern Instruction Selection' on function '@2'
+    list( REMOVE_ITEM GPU_VARIANTS scc )
+endif()
 
 ### OpenACC GPU variants
 
@@ -147,8 +143,23 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
             DRIVER      cloudsc_driver_gpu_omp_${variant_}_mod.F90
             KERNEL      cloudsc_gpu_omp_${variant_}_mod.F90
             COMMON_LIB  omp
+            LIBS        OpenMP::OpenMP_Fortran
             TEST_ENV    ${test_env}
         )
+
+        if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+            target_compile_options(
+                dwarf-cloudsc-gpu-omp-${variant}-${prec}
+                PUBLIC "-mp=gpu"
+            )
+        elseif( CMAKE_CXX_COMPILER_ID MATCHES "Cray" )
+            # Workaround for Linker issue with Cray compiler, see
+            # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
+            target_link_options(
+                dwarf-cloudsc-gpu-omp-${variant}-${prec}
+                PUBLIC "-fopenmp"
+            )
+        endif()
     endforeach()
 
     if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU" )

@@ -40,10 +40,18 @@ ecbuild_add_library(
         ${CLOUDSC_DEFINITIONS}
 )
 
+if( CMAKE_C_COMPILER_ID MATCHES "Cray" AND HAVE_OMP )
+    # Workaround for Linker issue with Cray compiler, see
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
+    target_link_options( dwarf-cloudsc-c-lib PUBLIC "-fopenmp" )
+endif()
+
 ecbuild_add_executable(
     TARGET  dwarf-cloudsc-c
     SOURCES dwarf_cloudsc.c
-    LIBS dwarf-cloudsc-c-lib
+    LIBS
+        dwarf-cloudsc-c-lib
+        $<${HAVE_OMP}:OpenMP::OpenMP_C>
 )
 
 ecbuild_add_test(

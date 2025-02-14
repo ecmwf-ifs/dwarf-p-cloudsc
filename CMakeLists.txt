@@ -7,7 +7,8 @@
 # nor does it submit to any jurisdiction.
 
 # define minimum version of cmake required
-cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
+# 3.21 is required for HIP support
+cmake_minimum_required( VERSION 3.21 FATAL_ERROR )
 
 find_package( ecbuild REQUIRED )
 
@@ -35,7 +36,7 @@ ecbuild_add_option( FEATURE SINGLE_PRECISION
 ecbuild_add_option( FEATURE OMP
                     DESCRIPTION "Support for thread-level parallelism or GPUs using OpenMP"
                     DEFAULT ON
-                    REQUIRED_PACKAGES "OpenMP COMPONENTS Fortran C" )
+                    REQUIRED_PACKAGES "OpenMP COMPONENTS Fortran C CXX" )
 include(features/OMP)
 
 ecbuild_add_option( FEATURE MPI
@@ -68,7 +69,7 @@ ecbuild_add_option( FEATURE HIP
                     CONDITION CMAKE_HIP_COMPILER
                     REQUIRED_PACKAGES "hip" )
 if( HAVE_HIP )
-  enable_language( hip REQUIRED )
+  enable_language( HIP )
 endif()
 
 ecbuild_add_option( FEATURE SYCL
