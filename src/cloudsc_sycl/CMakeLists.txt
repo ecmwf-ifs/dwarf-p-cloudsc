@@ -6,9 +6,14 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-unset(SYCL_COMPILE_OPTIONS)
+if( NOT DEFINED SYCL_TARGETS )
+    set( SYCL_TARGETS "spir64" )
+endif()
+
 if( CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM" )
-    set(SYCL_COMPILE_OPTIONS -gline-tables-only -fsycl -fsycl-targets=spir64 -fsycl-early-optimizations)
+    if( NOT DEFINED SYCL_COMPILE_OPTIONS )
+        set( SYCL_COMPILE_OPTIONS -gline-tables-only -fsycl -fsycl-targets=${SYCL_TARGETS} -fsycl-early-optimizations )
+    endif()
 endif()
 
 set(CLOUDSC_SYCL_DEFINITIONS
@@ -81,7 +86,7 @@ function( cloudsc_add_sycl_exe )
 
     add_sycl_to_target(
         TARGET  ${_CL_TARGET}-${prec}-lib
-        SOURCES ${_CL_KERNEL}
+        SOURCES ${_CL_DRIVER} ${_CL_KERNEL}
     )
 
     ecbuild_add_executable(
@@ -93,7 +98,11 @@ function( cloudsc_add_sycl_exe )
     if( DEFINED SYCL_COMPILE_OPTIONS )
         target_compile_options( ${_CL_TARGET}-${prec}-lib
             PUBLIC ${SYCL_COMPILE_OPTIONS} )
+        target_link_options( ${_CL_TARGET}-${prec}-lib
+            PUBLIC ${SYCL_COMPILE_OPTIONS} )
         target_compile_options( ${_CL_TARGET}-${prec}
+            PUBLIC ${SYCL_COMPILE_OPTIONS} )
+        target_link_options( ${_CL_TARGET}-${prec}
             PUBLIC ${SYCL_COMPILE_OPTIONS} )
     endif()
 

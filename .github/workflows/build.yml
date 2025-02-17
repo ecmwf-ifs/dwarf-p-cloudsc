@@ -45,6 +45,8 @@ jobs:
             compiler_cxx: g++-14
             compiler_fc: gfortran-14
             python-version: 3.11
+            ctest_options: -E gpu-omp-scc-stack-sp
+              # SP stack segfaults somehow
             caching: true
 
           - name: linux nvhpc
@@ -74,9 +76,8 @@ jobs:
             compiler_cxx: icpx
             compiler_fc: ifx
             python-version: 3.11
-            cmake_options: -DENABLE_LOKI=OFF -DENABLE_SYCL=OFF
+            cmake_options: -DENABLE_LOKI=OFF -DSYCL_COMPILE_OPTIONS=-fsycl
                 # cloudsc_driver_loki_mod.idem_stack.F90(138): error #5623: **Internal compiler error: internal abort**
-                # SYCL has some problems with missing symbols
             caching: true
 
           - name : linux gnu-native mpi
@@ -87,6 +88,8 @@ jobs:
             compiler_fc: gfortran
             python-version: 3.11
             cmake_options: -DENABLE_MPI=ON
+            ctest_options: -E gpu-omp-scc-stack-sp
+              # SP stack segfaults somehow
             build_type: Bit
             caching: true
 

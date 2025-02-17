@@ -24,7 +24,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cl::sycl::queue q( device_select );
 
   printf("Running on %s\n", q.get_device().get_info<cl::sycl::info::device::name>().c_str());
-	
+
   dtype *tend_tmp_u;
   dtype *tend_tmp_v;
   dtype *tend_tmp_t;
@@ -400,7 +400,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     cl::sycl::range<1> local(nproma);
 
     q.submit([&](cl::sycl::handler &h) {
-        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) [[intel::reqd_sub_group_size(SUB_GROUP_SIZE)]] {			 
+        h.parallel_for( cl::sycl::nd_range<1>( global, local), [=] (cl::sycl::nd_item<1> item_ct1) [[intel::reqd_sub_group_size(SUB_GROUP_SIZE)]] {
     cloudsc_c(1, icend, nproma, ptsphy, d_pt, d_pq,
     		d_tend_tmp_t, d_tend_tmp_q, d_tend_tmp_a, d_tend_tmp_cld,
     		d_tend_loc_t, d_tend_loc_q, d_tend_loc_a, d_tend_loc_cld,
@@ -465,7 +465,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
-  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
+  printf(" %10s%10s%10s%10s%10s %4s : %10s%10s%10s\n",
     "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
   double zfrac, zmflops, zthrput;
   for (int t = 0; t < numthreads; t++) {
@@ -618,4 +618,3 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cl::sycl::free(d_pfhpsn, q);
   // end free device
 }
-
