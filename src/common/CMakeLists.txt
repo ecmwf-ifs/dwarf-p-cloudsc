@@ -155,6 +155,7 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
 
     if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
         target_compile_options( cloudsc-common-${prec}-omp PUBLIC "-mp=gpu" )
+        target_link_options( cloudsc-common-${prec}-omp PUBLIC "-mp=gpu" )
     endif()
 
 endif()

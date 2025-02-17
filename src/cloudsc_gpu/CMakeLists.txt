@@ -116,7 +116,7 @@ endif()
 ### OpenMP target GPU variants
 
 if( HAVE_OMP AND HAVE_OMP_TARGET )
-    set( OMP_DEFINITIONS "CLOUDSC_GPU_OMP_SCC" )
+    set( OMP_DEFINITIONS )
     if( HAVE_OMP_TARGET_LOOP_CONSTRUCT )
         list( PREPEND OMP_DEFINITIONS "HAVE_OMP_TARGET_LOOP_CONSTRUCT" )
     endif()
@@ -131,15 +131,19 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
         string( REPLACE "-" "_" variant_ ${variant} )
         string( TOUPPER ${variant_} VARIANT_ )
 
-        if( "${variant}" STREQUAL "scc" )
-            set( test_env "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" )
+        if( "${variant}" STREQUAL "scc" AND CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+            # TODO: This heap use seems excessive and results in terrible performance,
+            # but otherwise kernel launch fails entirely
+            set( test_env "NVCOMPILER_ACC_CUDA_HEAPSIZE=7G" )
         else()
             set( test_env )
         endif()
 
         cloudsc_add_gpu_exe(
             TARGET      dwarf-cloudsc-gpu-omp-${variant}
-            DEFINITIONS "${OMP_DEFINITIONS}_${VARIANT_}"
+            DEFINITIONS
+                ${OMP_DEFINITIONS}
+                "CLOUDSC_GPU_OMP_${VARIANT_}"
             DRIVER      cloudsc_driver_gpu_omp_${variant_}_mod.F90
             KERNEL      cloudsc_gpu_omp_${variant_}_mod.F90
             COMMON_LIB  omp
@@ -152,7 +156,11 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
                 dwarf-cloudsc-gpu-omp-${variant}-${prec}
                 PUBLIC "-mp=gpu"
             )
-        elseif( CMAKE_CXX_COMPILER_ID MATCHES "Cray" )
+            target_link_options(
+                dwarf-cloudsc-gpu-omp-${variant}-${prec}
+                PUBLIC "-mp=gpu"
+            )
+        elseif( CMAKE_Fortran_COMPILER_ID MATCHES "Cray" )
             # Workaround for Linker issue with Cray compiler, see
             # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
             target_link_options(
