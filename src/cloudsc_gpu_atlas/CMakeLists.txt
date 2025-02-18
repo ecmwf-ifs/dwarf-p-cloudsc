@@ -7,23 +7,22 @@
 # nor does it submit to any jurisdiction.
 
 
-ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_ATLAS
     DESCRIPTION "Build optimized GPU version of CLOUDSC based on Atlas + OpenACC" DEFAULT ON
-    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
+    CONDITION CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
-
-ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST_ATLAS
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays (based on Atlas + OpenACC)" DEFAULT ON
     CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
-ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING
+ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING_ATLAS
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with k-caching of local array in the kernel (based on Atlas + OpenACC)" DEFAULT ON
     CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
-if( HAVE_CLOUDSC_GPU_SCC )
+if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-atlas
         SOURCES
@@ -50,7 +49,7 @@ if( HAVE_CLOUDSC_GPU_SCC )
     )
 endif()
 
-if( HAVE_CLOUDSC_GPU_SCC_HOIST )
+if( HAVE_CLOUDSC_GPU_SCC_HOIST_ATLAS )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
         SOURCES
@@ -76,7 +75,7 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST )
     )
 endif()
 
-if( HAVE_CLOUDSC_GPU_SCC_K_CACHING )
+if( HAVE_CLOUDSC_GPU_SCC_K_CACHING_ATLAS )
     ecbuild_add_executable(
         TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas
         SOURCES
@@ -121,4 +120,6 @@ endif()
 # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
 #if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
 #    target_link_options( dwarf-cloudsc-gpu-scc-atlas PUBLIC "-gpu=pinned" )
+#    target_link_options( dwarf-cloudsc-gpu-scc-hoist-atlas PUBLIC "-gpu=pinned" )
+#    target_link_options( dwarf-cloudsc-gpu-scc-k-caching-atlas PUBLIC "-gpu=pinned" )
 #endif()
