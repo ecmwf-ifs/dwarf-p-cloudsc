@@ -19,6 +19,11 @@ Balthasar Reuter (balthasar.reuter@ecmwf.int)
 `dwarf-p-cloudsc` is distributed under the Apache Licence Version 2.0. See
 [LICENSE](LICENSE) file for details.
 
+## Contributing
+
+Contributions to `dwarf-p-cloudsc` are welcome. 
+In order to do so, please create a pull request with your contribution and sign the [contributors license agreement (CLA)](https://bol-claassistant.ecmwf.int/ecmwf-ifs/dwarf-p-cloudsc).
+
 ## Prototypes available
 
 - **dwarf-P-cloudMicrophysics-IFSScheme**: The original cloud scheme
