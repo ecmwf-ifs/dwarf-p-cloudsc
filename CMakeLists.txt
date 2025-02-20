@@ -54,6 +54,7 @@ ecbuild_add_option( FEATURE CUDA
     CONDITION CMAKE_CUDA_COMPILER )
 if( HAVE_CUDA )
     enable_language( CUDA )
+    find_package(CUDAToolkit)
 endif()
 
 ecbuild_add_option( FEATURE HIP
@@ -111,11 +112,19 @@ endif()
 ecbuild_add_option( FEATURE FIELD_API
     DESCRIPTION "Use field_api to manage GPU data offload and copyback"
     REQUIRED_PACKAGES "field_api"
-    CONDITION HAVE_CUDA
     DEFAULT ON )
 
 ecbuild_find_package( NAME loki )
 ecbuild_find_package( NAME atlas )
+
+ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
+  DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
+  CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
+  DEFAULT OFF )
+if( HAVE_FIELD_API_DISABLE_MAPPED_MEMORY )
+  list(APPEND CLOUDSC_DEFINITIONS FIELD_API_DISABLE_MAPPED_MEMORY)
+endif()
+
 
 # Add option for single-precision builds
 ecbuild_add_option( FEATURE SINGLE_PRECISION

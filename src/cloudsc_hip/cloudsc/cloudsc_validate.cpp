@@ -10,17 +10,15 @@
 
 #include "cloudsc_validate.h"
 
-#include <float.h>
 #include <math.h>
+#include <limits>
 
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a)<(b))?(a):(b))
 
-
-void print_error(const char *name, double zminval, double zmaxval, double zmaxerr,
-		 double zerrsum, double zsum, double zavgpgp, int ndim)
+void print_error(const char *name, dtype zminval, dtype zmaxval, dtype zmaxerr,
+		 dtype zerrsum, dtype zsum, dtype zavgpgp, int ndim)
 {
-  double zrelerr, zeps = DBL_EPSILON;
+  dtype zrelerr, zeps = std::numeric_limits<dtype>::epsilon();
   int iopt = 0;
   if (zerrsum < zeps) {
     zrelerr = 0.0;
@@ -45,87 +43,94 @@ void print_error(const char *name, double zminval, double zmaxval, double zmaxer
 }
 
 
-void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, int ngptot, int nblocks)
+void validate_1d(const char *name, dtype * v_ref, dtype * v_field, int nlon, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
-
-  zminval = +DBL_MAX;
-  zmaxval = -DBL_MAX;
+  double field_val, ref_val; 
+  zminval = +std::numeric_limits<double>::max();
+  zmaxval = -std::numeric_limits<double>::max();
   zmaxerr = 0.0;
   zerrsum = 0.0;
   zsum = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize, jk)		\
-    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+#pragma omp parallel for default(shared) private(b, bsize, jk)		\
+  reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jk = 0; jk < bsize; jk++) {
-      zminval = fmin(zminval, v_field[b*nlon+jk]);
-      zmaxval = fmax(zmaxval, v_field[b*nlon+jk]);
+      field_val = (double) v_field[b*nlon+jk];
+      ref_val = (double) v_ref[b*nlon+jk];
+
+      zminval = fmin(zminval, field_val);
+      zmaxval = fmax(zmaxval, field_val);
 
       // Difference against reference result in one-norm sense
-      zdiff = fabs(v_field[b*nlon+jk] - v_ref[b*nlon+jk]);
+      zdiff = fabs(field_val - ref_val);
       zmaxerr = fmax(zmaxerr, zdiff);
       zerrsum = zerrsum + zdiff;
-      zsum = zsum + abs(v_ref[b*nlon+jk]);
+      zsum = zsum + fabs(ref_val);
     }
   }
   zavgpgp = zerrsum / (double) ngptot;
-  print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 2);
+  print_error(name, (dtype)zminval, (dtype)zmaxval, (dtype)zmaxerr, (dtype)zerrsum, (dtype)zsum, (dtype)zavgpgp, 2);
 }
 
 
-void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int nlev, int ngptot, int nblocks)
+void validate_2d(const char *name, dtype *v_ref, dtype *v_field, int nlon, int nlev, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk;
   double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
+  double field_val, ref_val;
 
-  zminval = +DBL_MAX;
-  zmaxval = -DBL_MAX;
+  zminval = +std::numeric_limits<double>::max();
+  zmaxval = -std::numeric_limits<double>::max();
   zmaxerr = 0.0;
   zerrsum = 0.0;
   zsum = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
-    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+#pragma omp parallel for default(shared) private(b, bsize, jl, jk) \
+  reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jl = 0; jl < nlev; jl++) {
       for (jk = 0; jk < bsize; jk++) {
-	zminval = fmin(zminval, v_field[b*nlev*nlon+jl*nlon+jk]);
-	zmaxval = fmax(zmaxval, v_field[b*nlev*nlon+jl*nlon+jk]);
+	field_val = (double) v_field[b*nlev*nlon+jl*nlon+jk];
+        ref_val = (double) v_ref[b*nlev*nlon+jl*nlon+jk];
 
+	zminval = fmin(zminval, field_val);
+	zmaxval = fmax(zmaxval, field_val);
 	// Difference against reference result in one-norm sense
-	zdiff = fabs(v_field[b*nlev*nlon+jl*nlon+jk] - v_ref[b*nlev*nlon+jl*nlon+jk]);
+	zdiff = fabs(field_val - ref_val);
 	zmaxerr = fmax(zmaxerr, zdiff);
 	zerrsum = zerrsum + zdiff;
-	zsum = zsum + abs(v_ref[b*nlev*nlon+jl*nlon+jk]);
+	zsum = zsum + fabs(ref_val);
       }
     }
   }
-  zavgpgp = zerrsum / (double) ngptot;
-  print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 2);
+
+  zavgpgp = zerrsum / (dtype) ngptot;
+  print_error(name, (dtype)zminval, (dtype)zmaxval, (dtype)zmaxerr, (dtype)zerrsum, (dtype)zsum, (dtype)zavgpgp, 2);
 }
 
 
-void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
+void validate_3d(const char *name, dtype *v_ref, dtype *v_field, int nlon,
     int nlev, int nclv, int ngptot, int nblocks)
 {
   /* Computes and prints errors in the "L2 norm sense" */
   int b, bsize, jl, jk, jm;
-  double zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
+  dtype zminval, zmaxval, zdiff, zmaxerr, zerrsum, zsum, zrelerr, zavgpgp;
 
-  zminval = +DBL_MAX;
-  zmaxval = -DBL_MAX;
+  zminval = +std::numeric_limits<dtype>::max();
+  zmaxval = -std::numeric_limits<dtype>::max();
   zmaxerr = 0.0;
   zerrsum = 0.0;
   zsum = 0.0;
 
-  #pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
-    reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
+#pragma omp parallel for default(shared) private(b, bsize, jl, jk, jm) \
+  reduction(min:zminval) reduction(max:zmaxval,zmaxerr) reduction(+:zerrsum,zsum)
   for (b = 0; b < nblocks; b++) {
     bsize = min(nlon, ngptot - b*nlon);  // field block size
     for (jm = 0; jm < nclv; jm++) {
@@ -142,40 +147,40 @@ void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
 	}
       }
     }
-  }  
-  zavgpgp = zerrsum / (double) ngptot;
+  }
+  zavgpgp = zerrsum / (dtype) ngptot;
   print_error(name, zminval, zmaxval, zmaxerr, zerrsum, zsum, zavgpgp, 2);
 }
 
 
 int cloudsc_validate(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
-		     double *plude, double *pcovptot, double *prainfrac_toprfz, double *pfsqlf, double *pfsqif,
-		     double *pfcqlng, double *pfcqnng, double *pfsqrf, double *pfsqsf, double *pfcqrng, double *pfcqsng,
-		     double *pfsqltur, double *pfsqitur, double *pfplsl, double *pfplsn, double *pfhpsl, double *pfhpsn,
-		     double *tend_loc_a, double *tend_loc_q, double *tend_loc_t, double *tend_loc_cld)
+		     dtype *plude, dtype *pcovptot, dtype *prainfrac_toprfz, dtype *pfsqlf, dtype *pfsqif,
+		     dtype *pfcqlng, dtype *pfcqnng, dtype *pfsqrf, dtype *pfsqsf, dtype *pfcqrng, dtype *pfcqsng,
+		     dtype *pfsqltur, dtype *pfsqitur, dtype *pfplsl, dtype *pfplsn, dtype *pfhpsl, dtype *pfhpsn,
+		     dtype *tend_loc_a, dtype *tend_loc_q, dtype *tend_loc_t, dtype *tend_loc_cld)
 {
   const int nblocks = (ngptot / nproma) + min(ngptot % nproma, 1);
-  double *ref_plude = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_pcovptot = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_prainfrac_toprfz = (double*) malloc( sizeof(double) * nblocks*nproma );
-  double *ref_pfsqlf = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqif = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqlng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqnng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqrf = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqsf = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqrng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfcqsng = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqltur = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfsqitur = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfplsl = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfplsn = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfhpsl = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_pfhpsn = (double*) malloc( sizeof(double) * nblocks*(nlev+1)*nproma );
-  double *ref_tend_loc_a = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_tend_loc_q = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_tend_loc_t = (double*) malloc( sizeof(double) * nblocks*nlev*nproma );
-  double *ref_tend_loc_cld = (double*) malloc( sizeof(double) * nblocks*nclv*nlev*nproma );
+  dtype *ref_plude = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
+  dtype *ref_pcovptot = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
+  dtype *ref_prainfrac_toprfz = (dtype*) malloc( sizeof(dtype) * nblocks*nproma );
+  dtype *ref_pfsqlf = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfsqif = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfcqlng = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfcqnng = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfsqrf = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfsqsf = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfcqrng = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfcqsng = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfsqltur = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfsqitur = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfplsl = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfplsn = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfhpsl = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_pfhpsn = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
+  dtype *ref_tend_loc_a = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
+  dtype *ref_tend_loc_q = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
+  dtype *ref_tend_loc_t = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
+  dtype *ref_tend_loc_cld = (dtype*) malloc( sizeof(dtype) * nblocks*nclv*nlev*nproma );
 
   load_reference(nlon, nlev, nclv, ngptot, nproma,
                  ref_plude, ref_pcovptot, ref_prainfrac_toprfz, ref_pfsqlf, ref_pfsqif,

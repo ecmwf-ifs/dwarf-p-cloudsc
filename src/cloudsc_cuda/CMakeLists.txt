@@ -17,6 +17,17 @@ if( HAVE_CLOUDSC_C_CUDA )
     enable_language(CUDA)
     enable_language(CXX)
 
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+      set( CLOUDSC_CUDA_FLAGS "-lineinfo -maxrregcount=128" )
+    else()
+      set( CLOUDSC_CUDA_FLAGS "-lineinfo -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>" )
+    endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      set( CLOUDSC_CUDA_OPT_FLAGS "-O0 -g -G" )
+    else()
+      set( CLOUDSC_CUDA_OPT_FLAGS  "--ptxas-options=-O3 -O3 -use_fast_math" )
+    endif()
+
     ###### SCC-CUDA ####
     ecbuild_add_library(
         TARGET dwarf-cloudsc-c-cuda-lib
@@ -41,22 +52,12 @@ if( HAVE_CLOUDSC_C_CUDA )
 	    $<${HAVE_HDF5}:hdf5::hdf5>
 	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
 	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	    CUDA::cudart
 	DEFINITIONS
 	    ${CLOUDSC_DEFINITIONS}
     )
 
-    target_include_directories(
-        dwarf-cloudsc-c-cuda-lib
-        PUBLIC
-        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    )
-    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-        target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
-    else()
-        target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-            --ptxas-options=-O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>) 
-    endif()
-
+    target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
     set_target_properties( dwarf-cloudsc-c-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
@@ -99,22 +100,12 @@ if( HAVE_CLOUDSC_C_CUDA )
 	    $<${HAVE_HDF5}:hdf5::hdf5>
 	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
 	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	    CUDA::cudart
 	DEFINITIONS
 	    ${CLOUDSC_DEFINITIONS}
     )
 
-    target_include_directories(
-      dwarf-cloudsc-c-cuda-hoist-lib
-      PUBLIC
-      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    )
-    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-      target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
-    else()
-      target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-          --ptxas-options=-O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
-    endif()
-
+    target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
     set_target_properties( dwarf-cloudsc-c-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
@@ -157,21 +148,12 @@ if( HAVE_CLOUDSC_C_CUDA )
 	    $<${HAVE_HDF5}:hdf5::hdf5>
 	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
 	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	    CUDA::cudart
 	DEFINITIONS
 	    ${CLOUDSC_DEFINITIONS}
     )
 
-    target_include_directories(
-      dwarf-cloudsc-c-cuda-k-caching-lib
-      PUBLIC
-      ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
-    )
-    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-      target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>>)
-    else()
-      target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-          --ptxas-options=-O3 -use_fast_math -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>)
-    endif()
+    target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
     set_target_properties( dwarf-cloudsc-c-cuda-k-caching-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     ecbuild_add_executable(
@@ -191,6 +173,54 @@ if( HAVE_CLOUDSC_C_CUDA )
     )
     ###
 
+    ###### SCC-CUDA-OPT ####
+    ecbuild_add_library(
+        TARGET dwarf-cloudsc-c-cuda-opt-lib
+        INSTALL_HEADERS LISTED
+        SOURCES
+            cloudsc/yoecldp_c.h
+            cloudsc/load_state.h
+            cloudsc/load_state.cu
+            cloudsc/cloudsc_c_opt.h
+            cloudsc/cloudsc_c_opt.cu
+            cloudsc/cloudsc_driver_opt.h
+            cloudsc/cloudsc_driver_opt.cu
+            cloudsc/cloudsc_validate.h
+            cloudsc/cloudsc_validate.cu
+            cloudsc/mycpu.h
+            cloudsc/mycpu.cu
+        PUBLIC_INCLUDES
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
+        PUBLIC_LIBS
+            $<${HAVE_HDF5}:hdf5::hdf5>
+            $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
+            $<${HAVE_OMP}:OpenMP::OpenMP_C>
+	    CUDA::cudart
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
+    )
+
+    target_compile_options(dwarf-cloudsc-c-cuda-opt-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
+    set_target_properties( dwarf-cloudsc-c-cuda-opt-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+    ecbuild_add_executable(
+        TARGET  dwarf-cloudsc-c-cuda-opt
+        SOURCES dwarf_cloudsc.cpp
+        LIBS dwarf-cloudsc-c-cuda-opt-lib
+    )
+
+    target_link_libraries(dwarf-cloudsc-c-cuda-opt dwarf-cloudsc-c-cuda-opt-lib)
+
+    ecbuild_add_test(
+        TARGET dwarf-cloudsc-c-cuda-opt-serial
+        COMMAND bin/dwarf-cloudsc-c-cuda-opt
+        ARGS 1 1000 128
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        OMP 1
+    )
+    ###
+ 
  # Create symlink for the input data
  if( HAVE_SERIALBOX )
    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink

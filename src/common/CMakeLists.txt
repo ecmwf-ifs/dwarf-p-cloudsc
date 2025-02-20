@@ -28,13 +28,6 @@ list(APPEND CLOUDSC_COMMON_SOURCES
     module/cloudsc_mpi_mod.F90
 )
 
-if(NOT ENABLE_USE_STMT_FUNC)
-    list(APPEND CLOUDSC_COMMON_SOURCES
-        module/fcttre_mod.F90
-        module/fccld_mod.F90
-    )
-endif()
-
 list(APPEND CLOUDSC_CUDA_SOURCES
     module/fccld_mod.cuf.F90
     module/fcttre_mod.cuf.F90
@@ -82,6 +75,9 @@ ecbuild_add_library( TARGET cloudsc-common-lib
         $<${HAVE_MPI}:module/cloudsc_mpif.F90>
         $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
         $<${HAVE_FIELD_API}:module/cloudsc_field_state_mod.F90>
+        $<${HAVE_FIELD_API}:module/cloudsc_state_type_mod.F90>
+        $<${HAVE_FIELD_API}:module/cloudsc_aux_type_mod.F90>
+        $<${HAVE_FIELD_API}:module/cloudsc_flux_type_mod.F90>
     PRIVATE_INCLUDES
         $<${HAVE_HDF5}:${HDF5_Fortran_INCLUDE_DIRS}>
     PUBLIC_INCLUDES

@@ -1,46 +1,52 @@
-####################################################################
-# HIP 
-####################################################################
-
-set(CMAKE_HIP_ARCHITECTURES gfx90a)
-
-####################################################################
-# OpenMP
-####################################################################
-
-set( OpenMP_C_FLAGS           "-fopenmp" )
-set( OpenMP_CXX_FLAGS         "-fopenmp" )
-set( OpenMP_Fortran_FLAGS     "-fopenmp" )
-set( OpenMP_C_LIB_NAMES       "craymp" )
-set( OpenMP_CXX_LIB_NAMES     "craymp" )
-set( OpenMP_Fortran_LIB_NAMES "craymp" )
-set( OpenMP_craymp_LIBRARY    "craymp" )
+# (C) Copyright 1988- ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
 
 ####################################################################
-# OpenACC
+# COMPILER
 ####################################################################
 
-set( OpenACC_C_FLAGS       "-hacc" )
-set( OpenACC_CXX_FLAGS     "-hacc" )
-#set( OpenACC_Fortran_FLAGS "-hacc -hacc_model=auto_async_kernel:no_fast_addr:deep_copy" )
-set( OpenACC_Fortran_FLAGS "-hacc" )
+set( ECBUILD_FIND_MPI OFF )
+set( ENABLE_USE_STMT_FUNC ON CACHE STRING "" )
 
 ####################################################################
+# OpenMP FLAGS
+####################################################################
+
+set( OpenMP_C_FLAGS           "-fopenmp" CACHE STRING "" )
+set( OpenMP_CXX_FLAGS         "-fopenmp" CACHE STRING "" )
+set( OpenMP_Fortran_FLAGS     "-homp -hlist=aimd" CACHE STRING "" )
+set( OpenMP_C_LIB_NAMES       "craymp" CACHE STRING "" )
+set( OpenMP_CXX_LIB_NAMES     "craymp" CACHE STRING "" )
+set( OpenMP_Fortran_LIB_NAMES "craymp" CACHE STRING "" )
+set( OpenMP_craymp_LIBRARY    "/opt/cray/pe/cce/17.0.1/cce/x86_64/lib/libcraymp.so" CACHE STRING "" )
+
+####################################################################
+# OpenACC FLAGS
+####################################################################
+
+set( OpenACC_C_FLAGS "-hacc" CACHE STRING "" )
+set( OpenACC_CXX_FLAGS "-hacc" CACHE STRING "" )
+set( OpenACC_Fortran_FLAGS "-hacc" CACHE STRING "" )
+
+####################################################################
+# Compiler FLAGS
+####################################################################
+
 # General Flags (add to default)
-####################################################################
+set(ECBUILD_Fortran_FLAGS "-hcontiguous")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl, --as-needed")
 
-set( ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -M2260" )
+set(ECBUILD_Fortran_FLAGS_BIT "-O3 -hfp1 -hscalar3 -hvector3 -G2 -haggress -DNDEBUG")
 
-###################################################################
-# Libraries
-###################################################################
+if(NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+  set(CMAKE_HIP_ARCHITECTURES gfx90a)
+endif()
 
-set( BLAS_LIBRARIES   "$ENV{CRAY_LIBSCI}" CACHE STRING "BLAS_LIBRARIES" FORCE )
-set( LAPACK_LIBRARIES "$ENV{CRAY_LIBSCI}" CACHE STRING "LAPACK_LIBRARIES" FORCE )
-
-#set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -craype-verbose" )
-#set ( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -craype-verbose -fopenmp" )
-#set ( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -Wl, --as-needed" )
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=bfd")
-#-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-relax -lhugetlbfs")
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-relax -lhugetlbfs -fuse-ld=bfd -craype-verbose")
+# select OpenMP pragma to be used
+set( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL OFF CACHE BOOL "" )

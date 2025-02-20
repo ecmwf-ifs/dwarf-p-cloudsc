@@ -1,4 +1,3 @@
-#include "hip/hip_runtime.h"
 /*
  * (C) Copyright 1988- ECMWF.
  *
@@ -9,12 +8,12 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "hip/hip_runtime.h"
+#include "cuda.h"
 #include "yoecldp_c.h"
 #include <stdio.h>
 #include "dtype.h"
 
-__global__ void __launch_bounds__(128, 1) cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
+__global__ void cloudsc_c_opt(int kidia, int kfdia, int klon, dtype ptsphy,
   const dtype * __restrict__  pt,
   const dtype * __restrict__  pq, const dtype * __restrict__  tendency_tmp_t,
   const dtype * __restrict__  tendency_tmp_q, const dtype * __restrict__  tendency_tmp_a,

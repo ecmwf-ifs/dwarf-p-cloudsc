@@ -12,12 +12,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <omp.h>
-#include "hip/hip_runtime_api.h"
-#include "hip/hip_runtime.h"
+#include "cuda.h"
+#include "cuda_runtime.h"
 
 #include "yoecldp_c.h"
 #include "load_state.h"
-#include "cloudsc_c.h"
+#include "cloudsc_c_opt.h"
 #include "cloudsc_validate.h"
 #include "dtype.h"
 
