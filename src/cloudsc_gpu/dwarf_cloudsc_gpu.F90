@@ -138,6 +138,8 @@ ENDIF
 ! Create a global memory state using FIELD objects from serialized input data
 CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_PACKED_STORAGE', PACKED_STORAGE)
 USE_PACKED = TRIM(PACKED_STORAGE) == 'ON' .OR. TRIM(PACKED_STORAGE) == '1'
+! Create a global memory state from serialized input data
+CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT, NGPTOTG, USE_PACKED=USE_PACKED)
 ! Use Field API pinned memory capabilities for
 CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_FIELD_API_PINNED', PINNED_FIELD_MEMORY)
 INIT_PINNED_VALUE = TRIM(PINNED_FIELD_MEMORY) == 'ON' .OR. TRIM(PINNED_FIELD_MEMORY) == '1'
@@ -151,9 +153,6 @@ INIT_PINNED_VALUE = TRIM(PINNED_FIELD_MEMORY) == 'ON' .OR. TRIM(PINNED_FIELD_MEM
 ! Select the number of queues to use for data transfers and execution
 CALL GET_ENVIRONMENT_VARIABLE('CLOUDSC_ASYNC_NQUEUS', NQUEUES_CHARS)
 READ( NQUEUES_CHARS, * ) NQUEUES
-#else
-! Create a global memory state from serialized input data
-CALL GLOBAL_STATE%LOAD(NPROMA, NGPTOT, NGPTOTG)
 #endif
 
 #ifdef CLOUDSC_GPU_CLAW
