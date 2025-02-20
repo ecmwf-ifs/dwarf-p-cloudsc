@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-# Define the naive GPU dwarf variant as an ECBuild feature
+Define the naive GPU dwarf variant as an ECBuild feature
 ecbuild_add_option( FEATURE CLOUDSC_GPU_KERNELS
     DESCRIPTION "Build naive GPU version of CLOUDSC using `!$acc kernels`" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
@@ -49,6 +49,21 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC
 )
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_STACK
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with pool allocator for temporary arrays and OpenMP" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_STACKV2
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with pool allocator for temporary arrays and OpenMP" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_STACKV3
+    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with pool allocator for temporary arrays and OpenMP" DEFAULT OFF
+    CONDITION Serialbox_FOUND OR HDF5_FOUND
+)
+
+ecbuild_add_option( FEATURE CLOUDSC_GPU_OMP_SCC_RAW_STACK
     DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with pool allocator for temporary arrays and OpenMP" DEFAULT OFF
     CONDITION Serialbox_FOUND OR HDF5_FOUND
 )
@@ -233,6 +248,78 @@ if ( HAVE_CLOUDSC_GPU_OMP_SCC_STACK )
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
         OMP 1
     )
+
+endif()
+
+if ( HAVE_CLOUDSC_GPU_OMP_SCC_STACKV2 )
+
+    list( APPEND CLOUDSC_GPU_OMP_SCC_STACKV2_DEFINITIONS CLOUDSC_GPU_OMP_SCC_STACKV2 )
+    ecbuild_add_executable( TARGET dwarf-cloudsc-gpu-omp-scc-stackv2
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_stackv2_mod.F90
+            cloudsc_gpu_omp_scc_stackv2_mod.F90
+        LIBS
+            cloudsc-common-lib
+          DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_STACKV2_DEFINITIONS}
+    )
+
+
+    # ecbuild_add_test(
+    #     TARGET dwarf-cloudsc-gpu-omp-scc-stack-serial
+    #     COMMAND bin/dwarf-cloudsc-gpu-omp-scc-stack
+    #     ARGS 1 1000 128
+    #     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    #     OMP 1
+    # )
+
+endif()
+
+if ( HAVE_CLOUDSC_GPU_OMP_SCC_STACKV3 )
+
+    list( APPEND CLOUDSC_GPU_OMP_SCC_STACKV3_DEFINITIONS CLOUDSC_GPU_OMP_SCC_STACKV3 )
+    ecbuild_add_executable( TARGET dwarf-cloudsc-gpu-omp-scc-stackv3
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_stackv3_mod.F90
+            cloudsc_gpu_omp_scc_stackv3_mod.F90
+        LIBS
+            cloudsc-common-lib
+          DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_STACKV3_DEFINITIONS}
+    )
+
+
+    # ecbuild_add_test(
+    #     TARGET dwarf-cloudsc-gpu-omp-scc-stack-serial
+    #     COMMAND bin/dwarf-cloudsc-gpu-omp-scc-stack
+    #     ARGS 1 1000 128
+    #     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    #     OMP 1
+    # )
+
+endif()
+
+if ( HAVE_CLOUDSC_GPU_OMP_SCC_RAW_STACK )
+
+    list( APPEND CLOUDSC_GPU_OMP_SCC_RAW_STACK_DEFINITIONS CLOUDSC_GPU_OMP_SCC_RAW_STACK )
+    ecbuild_add_executable( TARGET dwarf-cloudsc-gpu-omp-scc-raw-stack
+        SOURCES
+            dwarf_cloudsc_gpu.F90
+            cloudsc_driver_gpu_omp_scc_raw_stack_mod.F90
+            cloudsc_gpu_omp_scc_raw_stack_mod.F90
+        LIBS
+            cloudsc-common-lib
+          DEFINITIONS ${CLOUDSC_DEFINITIONS} ${CLOUDSC_GPU_OMP_SCC_RAW_STACK_DEFINITIONS}
+    )
+
+
+    # ecbuild_add_test(
+    #     TARGET dwarf-cloudsc-gpu-omp-scc-stack-serial
+    #     COMMAND bin/dwarf-cloudsc-gpu-omp-scc-stack
+    #     ARGS 1 1000 128
+    #     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    #     OMP 1
+    # )
 
 endif()
 
