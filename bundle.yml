@@ -12,6 +12,8 @@ cmake : >
         BUILD_atlas=OFF
         BUILD_field_api=OFF
         BUILD_loki=OFF
+        ENABLE_MPI=OFF
+        ENABLE_OMP=ON
 
 projects :
 
