@@ -63,28 +63,28 @@ endmacro()
 
 # SCC
 cloudsc_add_cuda_exe(
-    dwarf-cloudsc-cuda-c
+    dwarf-cloudsc-gpu-cuda-c
     "cloudsc/cloudsc_driver.h;cloudsc/cloudsc_driver.cu"
     "cloudsc/cloudsc_c.h;cloudsc/cloudsc_c.cu"
 )
 
 # SCC-HOIST
 cloudsc_add_cuda_exe(
-    dwarf-cloudsc-cuda-c-hoist
+    dwarf-cloudsc-gpu-cuda-c-hoist
     "cloudsc/cloudsc_driver_hoist.h;cloudsc/cloudsc_driver_hoist.cu"
     "cloudsc/cloudsc_c_hoist.h;cloudsc/cloudsc_c_hoist.cu"
 )
 
 # SCC-K-CACHING
 cloudsc_add_cuda_exe(
-    dwarf-cloudsc-cuda-c-k-caching
+    dwarf-cloudsc-gpu-cuda-c-k-caching
     "cloudsc/cloudsc_driver.h;cloudsc/cloudsc_driver.cu"
     "cloudsc/cloudsc_c_k_caching.h;cloudsc/cloudsc_c_k_caching.cu"
 )
 
 # SCC-OPT
 cloudsc_add_cuda_exe(
-    dwarf-cloudsc-cuda-c-opt
+    dwarf-cloudsc-gpu-cuda-c-opt
     "cloudsc/cloudsc_driver_opt.h;cloudsc/cloudsc_driver_opt.cu"
     "cloudsc/cloudsc_c_opt.h;cloudsc/cloudsc_c_opt.cu"
 )

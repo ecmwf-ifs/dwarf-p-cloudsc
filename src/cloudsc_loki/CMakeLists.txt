@@ -254,7 +254,7 @@ if( HAVE_CUDA )
         string( REPLACE "-" "_" variant_ ${variant} )
 
         cloudsc_add_loki_exe(
-            TARGET dwarf-cloudsc-loki-scc-${variant}
+            TARGET dwarf-cloudsc-loki-gpu-scc-${variant}
             MODE ${variant}
             CONFIG cloudsc_cuf_loki.config
             COMMON_LIB cuda
@@ -266,7 +266,7 @@ if( HAVE_CUDA )
             KERNEL cuf_cloudsc.F90
         )
 
-        target_link_options( dwarf-cloudsc-loki-scc-${variant}-${prec}-lib
+        target_link_options( dwarf-cloudsc-loki-gpu-scc-${variant}-${prec}-lib
             PUBLIC "-cuda"
         )
 

@@ -57,7 +57,9 @@ jobs:
             compiler_fc: nvfortran
             python-version: 3.11
             cmake_options: -DCMAKE_CUDA_ARCHITECTURES=80
-            ctest_options: -E cu
+            ctest_options: -E gpu
+              # Some OpenMP-target variants segfault when executed on the host but run fine on device,
+              # thus we will test these instead using a build-hpc workflow
             caching: true
 
           - name : linux intel-classic
@@ -78,6 +80,8 @@ jobs:
             python-version: 3.11
             cmake_options: -DENABLE_LOKI=OFF -DSYCL_COMPILE_OPTIONS=-fsycl
                 # cloudsc_driver_loki_mod.idem_stack.F90(138): error #5623: **Internal compiler error: internal abort**
+            ctest_options: -E gpu-omp
+
             caching: true
 
           - name : linux gnu-native mpi
