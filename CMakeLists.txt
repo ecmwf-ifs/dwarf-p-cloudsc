@@ -22,7 +22,7 @@ include( cloudsc_compile_options )
 
 ### Precision selection
 
-set( CLOUDSC_PRECISIONS )
+set( CLOUDSC_DEFINITIONS )
 
 ecbuild_add_option( FEATURE DOUBLE_PRECISION
                     DEFAULT ON
@@ -45,7 +45,7 @@ ecbuild_add_option( FEATURE MPI
                     DEFAULT OFF
                     REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
 if( HAVE_MPI )
-  list( APPEND CLOUDSC_COMPILE_DEFINITIONS HAVE_MPI )
+  list( APPEND CLOUDSC_DEFINITIONS HAVE_MPI )
 endif()
 
 include(features/ACC)
