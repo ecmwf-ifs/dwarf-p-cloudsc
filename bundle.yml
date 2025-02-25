@@ -52,8 +52,8 @@ projects :
             ECKIT_ENABLE_CUDA=OFF
 
     - field_api :
-        git     : https://github.com/ecmwf-ifs/field_api.git
-        version : je-sliced-field-offloads
+        git     : https://github.com/wertysas/field_api.git
+        version : je-async-partial-offload-force
         require : ecbuild
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
