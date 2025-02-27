@@ -117,6 +117,19 @@ options :
             ENABLE_CLOUDSC_GPU_OMP_SCC_STACK=ON
             ENABLE_CLOUDSC_GPU_OMP_SCC_K_CACHING=ON
 
+    - with-mix:
+        help: Enable GPU kernel variant based on OpenMP/OpenACC and HIP/CUDA/SYCL
+        cmake: >
+            ENABLE_CLOUDSC_MIX=ON
+
+    - cloudsc-gpu-offload :
+        help  : "Data offload model for GPU variants. Available options: OMP, ACC"
+        cmake : CLOUDSC_GPU_OFFLOAD={{value}}
+
+    - cloudsc-gpu-lang :
+        help  : "Kernel language for low-level GPU kernel implementations. Available options: CUDA, HIP, SYCL"
+        cmake : CLOUDSC_GPU_LANG={{value}}
+
     - with-cuda :
         help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran
         cmake : >

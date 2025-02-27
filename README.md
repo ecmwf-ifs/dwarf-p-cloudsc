@@ -71,6 +71,13 @@ In order to do so, please create a pull request with your contribution and sign 
   using CUDA-Fortran (CUF). To enable this variant,
   a suitable CUDA installation is required and the `--with-cuda` flag
   needs to be passed at the build stage.
+- **dwarf-cloudsc-mix**: GPU-enabled SCC-K-CACHING with data
+  offload via *OpenMP*/*OpenACC* (specify via
+  `--cloudsc-gpu-offload=OMP|ACC`, default: `ACC`) and a low-level C-style kernel
+  implementation via *CUDA*/*HIP*/*SYCL* (specify via
+  `--cloudsc-gpu-lang=CUDA|HIP|SYCL`, default: `CUDA`). The implementation
+  consists of a Fortran driver, C-binding/interface and low-level C-style kernel
+  implementation. To enable this variant, use `--with-mix`.
 - **CUDA C prototypes**: To enable these variants, a suitable 
   CUDA installation is required and the `--with-cuda` flag needs
   to be pased at the build stage.
