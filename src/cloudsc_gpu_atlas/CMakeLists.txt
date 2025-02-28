@@ -9,7 +9,7 @@
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_ATLAS
     DESCRIPTION "Build optimized GPU version of CLOUDSC based on Atlas + OpenACC" DEFAULT ON
-    CONDITION CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
+    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
 )
 
 ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST_ATLAS
