@@ -19,7 +19,7 @@ projects :
 
     - ecbuild :
         git     : https://github.com/ecmwf/ecbuild
-        version : 3.8.0
+        version : master
         bundle  : false
 
     - serialbox :
@@ -44,7 +44,7 @@ projects :
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : 1.24.4
+        version : master
         require : ecbuild
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
@@ -55,20 +55,22 @@ projects :
         git     : https://github.com/ecmwf-ifs/field_api.git
         version : v0.3.4
         require : ecbuild
+        optional: true
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
             FIELD_API_ENABLE_ACC=OFF
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
-        version : 0.11.0
+        version : master
         require : ecbuild eckit
         cmake   : >
             FCKIT_ENABLE_TESTS=OFF
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : feature/MultiField
+        version : feature/pluto
+        optional: true
         require : ecbuild eckit fckit
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
@@ -114,12 +116,15 @@ options :
             ENABLE_CLOUDSC_GPU_SCC_K_CACHING=ON
             ENABLE_CLOUDSC_GPU_OMP_SCC=ON
             ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=ON
+            ATLAS_ENABLE_ACC=ON
+            ATLAS_ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_OMP_SCC_STACK=ON
             ENABLE_CLOUDSC_GPU_OMP_SCC_K_CACHING=ON
 
     - with-cuda :
         help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran
         cmake : >
+            ATLAS_ENABLE_CUDA=ON
             ENABLE_CUDA=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF=ON
             ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
