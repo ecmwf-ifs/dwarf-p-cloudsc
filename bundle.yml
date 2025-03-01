@@ -104,6 +104,12 @@ options :
         cmake : >
             ENABLE_FIELD_API_DISABLE_MAPPED_MEMORY=ON
     
+    - with-std-par :
+        help: Enable STD par variants
+        cmake : >
+            ENABLE_CLOUDSC_STD_PAR_SCC=ON
+            ENABLE_CLOUDSC_STD_PAR_SCC_K_CACHING=ON
+
     - with-gpu :
         help  : Enable GPU kernels
         cmake : >
