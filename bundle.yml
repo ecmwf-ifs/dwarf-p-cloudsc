@@ -19,7 +19,7 @@ projects :
 
     - ecbuild :
         git     : https://github.com/ecmwf/ecbuild
-        version : 3.8.0
+        version : 3.9.1
         bundle  : false
 
     - serialbox :
@@ -36,7 +36,7 @@ projects :
 
     - loki :
         git     : https://github.com/ecmwf-ifs/loki
-        version : main
+        version : 0.3.0
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
@@ -68,7 +68,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : feature/MultiField
+        version : 0.41.1
         require : ecbuild eckit fckit
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
@@ -103,7 +103,7 @@ options :
         help : Disables automatic registering of Field API fields in ACC map.
         cmake : >
             ENABLE_FIELD_API_DISABLE_MAPPED_MEMORY=ON
-    
+
     - with-gpu :
         help  : Enable GPU kernels
         cmake : >
@@ -137,7 +137,7 @@ options :
     - sycl-sub-group-size :
          help  : SYCL subgroup size
          cmake : SYCL_SUB_GROUP_SIZE={{value}}
-    
+
     - cloudsc-cpp-math :
          help  : "Specify the math function interfaces to use in C++ (device) kernels. Available options: C, STD, SYCL"
          cmake : CLOUDSC_CPP_MATH={{value}}
