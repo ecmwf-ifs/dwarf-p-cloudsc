@@ -19,6 +19,7 @@ benchmark:
 
     # Benchmark parameters
     parameterset:
+    - { name: patches_mode, _: '0' }
     - name: build_set
       init_with: include_parameterset.yml
     - name: arch_set
@@ -51,6 +52,7 @@ benchmark:
 
     # Benchmark parameters
     parameterset:
+    - { name: patches_mode, _: '0' }
     - name: build_set
       init_with: include_parameterset.yml
       parameter:
@@ -78,3 +80,36 @@ benchmark:
     patternset: !include include_patternset.yml:["patternset"]
     analyser: !include include_analyser.yml:["analyser"]
     result: !include include_result.yml:["result"]
+
+  ###############################################
+  - name: cpu_patches
+    outpath: rundir_cpu_patches
+    comment: Run CPU variants of CLOUDSC with different test patches
+    ###############################################
+
+    # Benchmark parameters
+    parameterset:
+      - { name: patches_mode, _: '1' }
+      - name: build_set
+        init_with: include_parameterset.yml
+      - name: arch_set
+        init_with: include_arch.yml
+      - name: run_set
+        init_with: include_run.yml
+        parameter:
+          # Available binaries
+          - name: target
+            mode: python
+            _: |
+              ','.join(
+                ['dwarf-cloudsc-fortran'] +
+                {'hdf5': [], 'serialbox': ['dwarf-cloudsc-c']}['$io_library']
+              )
+
+    # Benchmark execution steps
+    step: !include include_step.yml:["step"]
+
+    # Parse output and compile results table
+    patternset: !include include_patternset.yml:["patternset"]
+    analyser: !include include_analyser.yml:["analyser"]
+    result: !include include_result.yml:["patches_result"]
