@@ -11,9 +11,7 @@ cmake : >
         BUILD_fckit=OFF
         BUILD_atlas=OFF
         BUILD_field_api=OFF
-        ENABLE_OMP=ON
-        ENABLE_CUDA=OFF
-        ENABLE_SINGLE_PRECISION=OFF
+        BUILD_loki=OFF
 
 projects :
 
@@ -40,11 +38,10 @@ projects :
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
-            LOKI_ENABLE_NO_INSTALL=ON
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : 1.24.4
+        version : 1.28.5
         require : ecbuild
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
@@ -57,11 +54,10 @@ projects :
         require : ecbuild
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
-            FIELD_API_ENABLE_ACC=OFF
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
-        version : 0.11.0
+        version : 0.13.3
         require : ecbuild eckit
         cmake   : >
             FCKIT_ENABLE_TESTS=OFF
@@ -85,57 +81,48 @@ options :
         help  : Specify compiler options via supplied toolchain file
         cmake : CMAKE_TOOLCHAIN_FILE={{value}}
 
-    - single-precision :
-        # Disabling DOUBLE_PRECISION only affects field_api
-        help  : Enable single precision build of the dwarf
-        cmake : >
-            ENABLE_SINGLE_PRECISION=ON
-            ENABLE_DOUBLE_PRECISION=OFF
-            FIELD_API_DEFINITIONS=SINGLE
+    - with-single-precision :
+        help  : Enable single precision build of the dwarf [ON|OFF]
+        cmake : ENABLE_SINGLE_PRECISION={{value}}
+
+    - with-double-precision :
+        help  : Enable double precision build of the dwarf [ON|OFF]
+        cmake : ENABLE_DOUBLE_PRECISION={{value}}
 
     - with-field-api :
-        help : Enable Field API variants to be built
-        cmake : >
-            BUILD_field_api=ON
-            ENABLE_CLOUDSC_FORTRAN_FIELD=ON
+        help : Enable Field API variants [ON|OFF]
+        cmake : BUILD_field_api={{value}}
 
     - without-mapped-fields :
-        help : Disables automatic registering of Field API fields in ACC map.
-        cmake : >
-            ENABLE_FIELD_API_DISABLE_MAPPED_MEMORY=ON
+        help : Disables automatic registering of Field API fields in ACC map
+        cmake : ENABLE_FIELD_API_DISABLE_MAPPED_MEMORY=ON
 
-    - with-gpu :
-        help  : Enable GPU kernels
+    - with-acc :
+        help : Enable OpenACC programming model for GPU variants [ON|OFF]
         cmake : >
-            FIELD_API_ENABLE_ACC=ON
-            ENABLE_CLOUDSC_GPU_SCC=ON
-            ENABLE_CLOUDSC_GPU_SCC_HOIST=ON
-            ENABLE_CLOUDSC_GPU_SCC_STACK=ON
-            ENABLE_CLOUDSC_GPU_SCC_K_CACHING=ON
-            ENABLE_CLOUDSC_GPU_OMP_SCC=ON
-            ENABLE_CLOUDSC_GPU_OMP_SCC_HOIST=ON
-            ENABLE_CLOUDSC_GPU_OMP_SCC_STACK=ON
-            ENABLE_CLOUDSC_GPU_OMP_SCC_K_CACHING=ON
+            DWARF_P_CLOUDSC_ENABLE_ACC={{value}}
+            FIELD_API_ENABLE_ACC={{value}}
+
+    - with-openmp :
+        help  : Enable OpenMP threading or GPU offloading [ON|OFF]
+        cmake : ENABLE_OMP={{value}}
 
     - with-cuda :
-        help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran
+        help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran [ON|OFF]
         cmake : >
-            ENABLE_CUDA=ON
-            ENABLE_CLOUDSC_GPU_SCC_CUF=ON
-            ENABLE_CLOUDSC_GPU_SCC_CUF_K_CACHING=ON
+            DWARF_P_CLOUDSC_ENABLE_CUDA={{value}}
+            FIELD_API_ENABLE_CUDA={{value}}
 
     - with-hip :
-        help: Enable GPU kernel variant based on HIP
-        cmake: >
-            ENABLE_HIP=ON
+        help  : Enable GPU kernel variant based on HIP [ON|OFF]
+        cmake : DWARF_P_CLOUDSC_ENABLE_HIP={{value}}
 
     - with-sycl :
-        help: Enable GPU kernel variant based on SYCL
-        cmake: >
-            ENABLE_SYCL=ON
+        help  : Enable GPU kernel variant based on SYCL [ON|OFF]
+        cmake : DWARF_P_CLOUDSC_ENABLE_SYCL={{value}}
 
     - sycl-sub-group-size :
-         help  : SYCL subgroup size
+         help  : Specify the SYCL subgroup size
          cmake : SYCL_SUB_GROUP_SIZE={{value}}
 
     - cloudsc-cpp-math :
@@ -143,39 +130,39 @@ options :
          cmake : CLOUDSC_CPP_MATH={{value}}
 
     - with-mpi :
-        help  : Enable MPI-parallel kernel
-        cmake : ENABLE_MPI=ON
-
-    - without-openmp :
-        help  : Disable OpenMP
-        cmake : ENABLE_OMP=OFF
+        help  : Enable MPI-parallel driver [ON|OFF]
+        cmake : ENABLE_MPI={{value}}
 
     - with-loki :
-        help  : Enable Loki source-to-source transformations
-        cmake : >
-            ENABLE_CLOUDSC_LOKI=ON
-            LOKI_ENABLE_NO_INSTALL=OFF
+        help  : Enable Loki source-to-source transformations [ON|OFF]
+        cmake : BUILD_loki={{value}}
 
     - without-loki-install :
         help  : Skip installation of Loki (Requires Loki to be on the PATH)
-        cmake : >
-            LOKI_ENABLE_NO_INSTALL=ON
+        cmake : LOKI_ENABLE_NO_INSTALL=ON
 
     - loki-frontend :
-        help  : Frontend parser to use for Loki transformations
+        help  : Frontend parser to use for Loki transformations [FP|OMNI]
         cmake : LOKI_FRONTEND={{value}}
 
     - with-python :
-        help  : Enable Python variants of CLOUDSC
-        cmake : >
-            CLOUDSC_PYTHON_F2PY=ON
+        help  : Enable Python F2Py variants of CLOUDSC [ON|OFF]
+        cmake : DWARF_P_CLOUDSC_ENABLE_PYTHON_F2PY={{value}}
+
+    - with-pyiface :
+        help  : Enable Python-driver variant for modified cloudsc-fortran variant [ON|OFF]
+        cmake : DWARF_P_CLOUDSC_ENABLE_PYIFACE={{value}}
+
+    - with-pyiface-binary :
+        help  : Build Fortran binary corresponding to pyiface variant
+        cmake : DWARF_P_CLOUDSC_ENABLE_PYIFACE_BINARY={{value}}
 
     - with-atlas :
-        help  : Build Atlas and its dependencies (eckit, fckit) and enable Atlas-based variants of CLOUDSC (incompatible with --single-precision)
+        help  : Enable Atlas and its dependencies (eckit, fckit) for Atlas-based variants of CLOUDSC [ON|OFF]
         cmake : >
-            BUILD_eckit=ON
-            BUILD_fckit=ON
-            BUILD_atlas=ON
+            BUILD_eckit={{value}}
+            BUILD_fckit={{value}}
+            BUILD_atlas={{value}}
 
     - with-dependency-tests :
         help  : Build and enable tests for CLOUDSC dependencies that are build as part of the bundle (eckit, fckit, Atlas, Loki)
@@ -184,52 +171,20 @@ options :
             ECKIT_ENABLE_TESTS=ON
             FCKIT_ENABLE_TESTS=ON
             ATLAS_ENABLE_TESTS=ON
+            FIELD_API_ENABLE_TESTS=ON
 
-    - cloudsc-prototype1 :
+    - with-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
-        cmake : ENABLE_CLOUDSC_PROTOTYPE1={{value}}
+        cmake : DWARF_P_CLOUDSC_ENABLE_PROTOTYPE1={{value}}
 
-    - cloudsc-fortran :
-        help  : Build the new Fortran version of CLOUDSC [ON|OFF]
-        cmake : ENABLE_CLOUDSC_FORTRAN={{value}}
-
-    - cloudsc-fortran-pyiface :
-        help  : Build the Python driver interfaced with the new Fortran version of CLOUDSC [ON|OFF]
-        cmake : ENABLE_CLOUDSC_FORTRAN_PYIFACE={{value}}
-
-    - cloudsc-fortran-pyiface-binary :
-        help  : Build the Fortran binary for the PYIFACE version [ON|OFF]
-        cmake : ENABLE_CLOUDSC_FORTRAN_PYIFACE_BINARY={{value}}
-
-    - cloudsc-c :
-        help  : Build the C version of CLOUDSC [ON|OFF]
-        cmake : ENABLE_CLOUDSC_C={{value}}
-
-    - cloudsc-loki :
-        help  : Build the optimized Loki-based GPU version CLOUDSC  [ON|OFF]
-        cmake : ENABLE_CLOUDSC_LOKI={{value}}
-
-    - cloudsc-python-f2py :
-        help  : Enable dedicated pure Python variant of CLOUDSC [ON|OFF]
-        cmake : ENABLE_CLOUDSC_PYTHON_F2PY={{value}}
-
-    - hdf5 :
+    - with-hdf5 :
         help : Enable use of HDF5 input file [ON|OFF]
-        cmake : ENABLE_HDF5={{value}}
-
-    - without-hdf5 :
-        help : Disable use of HDF5 input file
-        cmake : ENABLE_HDF5=OFF
+        cmake : DWARF_P_CLOUDSC_ENABLE_HDF5={{value}}
 
     - with-serialbox :
-        help  : Enable Serialbox utility for platform-agnostic file I/O (disables HDF5)
+        help  : Enable Serialbox utility for platform-agnostic file I/O [ON|OFF]
         cmake : >
-            ENABLE_HDF5=OFF
-            ENABLE_SERIALBOX=ON
-            BUILD_serialbox=ON
-
-    - serialbox-experimental :
-        help  : Enable Serialbox experimental filesystem [ON|OFF]
-        cmake : SERIALBOX_ENABLE_EXPERIMENTAL_FILESYSTEM={{value}}
+            DWARF_P_CLOUDSC_ENABLE_SERIALBOX={{value}}
+            BUILD_serialbox={{value}}
 
 ...
