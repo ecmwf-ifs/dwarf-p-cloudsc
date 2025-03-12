@@ -33,8 +33,23 @@ def expand_field(f, klon, ngptot):
     f_new[...] = np.tile(f, (1,)*(rank-1) + (m,))[...,:ngptot]
     return f_new
 
-def load_input_fields(path, transpose=False, ngptot=100):
+def load_input_fields(path, ngptot=100, transpose=False):
     """
+    Reads the CLOUDSC input arrays from HFD5 file and expands them to
+    the requested size. It also adds empty arrays for output fields.
+
+    By default, this will read the data in row-major C layout. The
+    :data:`transpose` flag can be used to change all data arrays into
+    column-major Fortran layout.
+
+    Parameters
+    ----------
+    path : Path or str
+        Path to the input data file.
+    ngptot : int
+        Total number of horizontal points (columns) to generate
+    transpose : bool
+        Flag to transpose all arrays into column-major Fortran layout.
     """
     fields = OrderedDict()
 
@@ -81,39 +96,40 @@ def load_input_fields(path, transpose=False, ngptot=100):
         fields['PFHPSL'] = np.ndarray(order="C", shape=(klev+1, ngptot))
         fields['PFHPSN'] = np.ndarray(order="C", shape=(klev+1, ngptot))
 
+    if transpose:
+        for k, f in fields.items():
+            if isinstance(f, np.ndarray):
+                fields[k] = f.transpose()
+
     return fields
 
 
-def load_input_parameters(path):
-    class TECLDP:
-        pass
-    yrecldp = TECLDP()
+def load_input_parameters(path, yrecldp, yrmcst, yrethf):
+    """
+    Lods the CLOUDSC model configuration from HFD5 file and populates
+    three structs.
 
-    class TEPHLI:
-        pass
-    yrephli = TEPHLI()
+    Note that the parameter object mimic the Fortran derived types and
+    may simply be empty Python objects if type compatibility is not
+    needed.
 
-    class TMCST:
-        pass
-    yrmcst = TMCST()
-
-    class TETHF:
-        pass
-    yrethf = TETHF()
-
-    class TECLD:
-        pass
-    yrecld = TECLD()
+    Parameters
+    ----------
+    path : Path or str
+        Path to the input data file.
+    yrecldp : object
+        Container object for struct of type ``TECLDP``
+    yrmcst : object
+        Container object for struct of type ``TOMCST``
+    yrethf : object
+        Container object for struct of type ``TOETHF``
+    """
 
     with h5py.File(path, 'r') as f:
         tecldp_keys = [k for k in f.keys() if 'YRECLDP' in k]
         for k in tecldp_keys:
             attrkey = k.replace('YRECLDP_', '').lower()
             setattr(yrecldp, attrkey, f[k][0])
-        tephli_keys = [k for k in f.keys() if 'YREPHLI' in k]
-        for k in tephli_keys:
-            attrkey = k.replace('YREPHLI_', '').lower()
-            setattr(yrephli, attrkey, f[k][0])
 
         yrmcst.rg = f['RG'][0]
         yrmcst.rd = f['RD'][0]
@@ -150,16 +166,21 @@ def load_input_parameters(path):
         klev = f['KLEV'][0]
         pap = np.ascontiguousarray(f['PAP'])
         paph = np.ascontiguousarray(f['PAPH'])
-        yrecld.ceta = np.ndarray(order="C", shape=(klev, ))
-        yrecld.ceta[:] = pap[0:,0] / paph[klev,0]
 
-        yrephli.lphylin = True
-
-    return yrecldp, yrmcst, yrethf, yrephli, yrecld
+    return yrecldp, yrmcst, yrethf
 
 
 def load_reference_fields(path, ngptot=100):
     """
+    Reads the CLOUDSC reference result data from HFD5 file and
+    expands arrays to the requested size.
+
+    Parameters
+    ----------
+    path : Path or str
+        Path to the input data file.
+    ngptot : int
+        Total number of horizontal points (columns) to generate
     """
     fields = OrderedDict()
 

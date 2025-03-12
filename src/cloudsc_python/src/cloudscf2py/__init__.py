@@ -10,4 +10,5 @@
 
 
 from cloudscf2py.inputs import *
+from cloudscf2py.validate import *
 from cloudscf2py.cloudsc_py import *
