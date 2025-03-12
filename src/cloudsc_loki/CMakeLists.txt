@@ -84,9 +84,9 @@ function( cloudsc_add_loki_exe )
             ${COMMON_MODULE}
         INCLUDES
             ${COMMON_INCLUDE}
-        # XMOD
-        #     ${CMAKE_CURRENT_BINARY_DIR}
-        #     ${XMOD_DIR}
+        XMOD
+            ${CMAKE_CURRENT_BINARY_DIR}
+            ${XMOD_DIR}
         ${TRAFO_OPTIONS}
     )
 
