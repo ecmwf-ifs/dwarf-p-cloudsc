@@ -53,11 +53,7 @@ jobs:
               #SBATCH --qos=dg
             arch: ecmwf/hpc2020/nvhpc/22.11
             modules: ~
-            #   - cmake
-            #   - ninja
-            #   - prgenv/nvidia
-            #   - hpcx-openmpi/2.14.0-cuda
-            #   - fftw
+            build_options: --with-loki=ON --with-field-api=ON --with-mpi=ON
 
           - name: lumi-g cce
             site: lumi
@@ -80,6 +76,7 @@ jobs:
             #   - buildtools
             output_dir: /scratch/project_465000527/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
             workdir: /scratch/project_465000527/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
+            build_options: --with-loki=ON
             # cmake_options: -DOpenMP_C_LIB_NAMES=craymp -DOpenMP_CXX_LIB_NAMES=craymp -DOpenMP_Fortran_LIB_NAMES=craymp -DOpenMP_craymp_LIBRARY=craymp
             # ctest_options: -E gpu
 
@@ -112,7 +109,7 @@ jobs:
             git reset --hard FETCH_HEAD
 
             ./cloudsc-bundle create
-            ./cloudsc-bundle build --arch ${{matrix.arch}} --keep-going --retry-verbose
+            ./cloudsc-bundle build --arch ${{matrix.arch}} --keep-going --retry-verbose ${{matrix.build_options}}
 
             source build/env.sh
             ctest --test-dir build --output-on-failure {{ ctest_options }}
