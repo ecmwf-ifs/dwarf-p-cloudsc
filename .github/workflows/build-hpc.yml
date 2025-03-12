@@ -1,0 +1,121 @@
+name: build-hpc
+
+# Controls when the action will run
+on:
+
+  # Trigger the workflow on all pushes to main and develop, except on tag creation
+  push:
+    branches:
+    - main
+    - develop
+    tags-ignore:
+    - '**'
+
+  # Trigger the workflow on all pull requests
+  pull_request: ~
+
+  # Allow workflow to be dispatched on demand
+  workflow_dispatch: ~
+
+  # Trigger after public PR approved for CI
+  pull_request_target:
+    types: [labeled]
+
+env:
+  CLOUDSC_TOOLS: ${{ github.workspace }}/.github/tools
+  CTEST_PARALLEL_LEVEL: 1
+  CACHE_SUFFIX: v1        # Increase to force new cache to be created
+
+jobs:
+  ci-hpc:
+    name: ci-hpc
+    if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+
+    strategy:
+      fail-fast: false    # false: try to complete all jobs
+
+      matrix:
+        name:
+          - ac-gpu nvhpc
+          # - lumi-g cce
+
+        include:
+          - name: ac-gpu nvhpc
+            site: ac-batch
+            troika_user_secret: HPC_CI_SSH_USER
+            sbatch_options: |
+              #SBATCH --time=00:20:00
+              #SBATCH --nodes=1
+              #SBATCH --ntasks=2
+              #SBATCH --cpus-per-task=32
+              #SBATCH --gpus-per-task=1
+              #SBATCH --mem=200G
+              #SBATCH --qos=dg
+            arch: ecmwf/hpc2020/nvhpc/22.11
+            modules: ~
+            #   - cmake
+            #   - ninja
+            #   - prgenv/nvidia
+            #   - hpcx-openmpi/2.14.0-cuda
+            #   - fftw
+
+          - name: lumi-g cce
+            site: lumi
+            troika_user_secret: LUMI_CI_SSH_USER
+            sbatch_options: |
+              #SBATCH --time=00:20:00
+              #SBATCH --nodes=1
+              #SBATCH --ntasks-per-node=8
+              #SBATCH --gpus-per-task=1
+              #SBATCH --partition=dev-g
+              #SBATCH --account=project_465000527
+            arch: eurohpc/lumi/cray-gpu/17.0.1
+            modules: ~
+            #   - CrayEnv
+            #   - PrgEnv-cray
+            #   - cce/17.0.1
+            #   - craype-accel-amd-gfx90a
+            #   - rocm/6.0.3
+            #   - cray-fftw
+            #   - buildtools
+            output_dir: /scratch/project_465000527/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
+            workdir: /scratch/project_465000527/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
+            # cmake_options: -DOpenMP_C_LIB_NAMES=craymp -DOpenMP_CXX_LIB_NAMES=craymp -DOpenMP_Fortran_LIB_NAMES=craymp -DOpenMP_craymp_LIBRARY=craymp
+            # ctest_options: -E gpu
+
+
+    runs-on: [self-hosted, linux, hpc]
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: ecmwf-actions/reusable-workflows/ci-hpc-generic@v2
+        with:
+          site: ${{ matrix.site }}
+          troika_user: ${{ secrets[matrix.troika_user_secret] }}
+          sbatch_options: ${{ matrix.sbatch_options }}
+          output_dir: ${{ matrix.output_dir || '' }}
+          workdir: ${{ matrix.workdir || '' }}
+          template_data: |
+            ctest_options: ${{ matrix.ctest_options || '' }}
+          template: |
+            {% for module in "${{ join(matrix.modules, ',') }}".split(',') %}
+              module load {{module}}
+            {% endfor %}
+
+            REPO=${{ github.event.pull_request.head.repo.full_name || github.repository }}
+            SHA=${{ github.event.pull_request.head.sha || github.sha }}
+            mkdir -p $REPO
+            pushd $REPO
+            git init
+            git remote add origin ${{ github.server_url }}/$REPO
+            git fetch origin $SHA
+            git reset --hard FETCH_HEAD
+
+            ./cloudsc-bundle create
+            ./cloudsc-bundle build --arch ${{matrix.arch}} --keep-going --retry-verbose
+
+            source build/env.sh
+            ctest --test-dir build --output-on-failure {{ ctest_options }}
+            popd
+
+            rm -r $REPO
