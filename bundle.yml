@@ -102,7 +102,7 @@ options :
     - with-acc :
         help : Enable OpenACC programming model for GPU variants [ON|OFF]
         cmake : >
-            DWARF_P_CLOUDSC_ENABLE_ACC={{value}}
+            DWARF-P-CLOUDSC_ENABLE_ACC={{value}}
             FIELD_API_ENABLE_ACC={{value}}
 
     - with-openmp :
@@ -112,16 +112,16 @@ options :
     - with-cuda :
         help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran [ON|OFF]
         cmake : >
-            DWARF_P_CLOUDSC_ENABLE_CUDA={{value}}
+            DWARF-P-CLOUDSC_ENABLE_CUDA={{value}}
             FIELD_API_ENABLE_CUDA={{value}}
 
     - with-hip :
         help  : Enable GPU kernel variant based on HIP [ON|OFF]
-        cmake : DWARF_P_CLOUDSC_ENABLE_HIP={{value}}
+        cmake : DWARF-P-CLOUDSC_ENABLE_HIP={{value}}
 
     - with-sycl :
         help  : Enable GPU kernel variant based on SYCL [ON|OFF]
-        cmake : DWARF_P_CLOUDSC_ENABLE_SYCL={{value}}
+        cmake : DWARF-P-CLOUDSC_ENABLE_SYCL={{value}}
 
     - sycl-sub-group-size :
          help  : Specify the SYCL subgroup size
@@ -149,15 +149,15 @@ options :
 
     - with-python :
         help  : Enable Python F2Py variants of CLOUDSC [ON|OFF]
-        cmake : DWARF_P_CLOUDSC_ENABLE_PYTHON_F2PY={{value}}
+        cmake : DWARF-P-CLOUDSC_ENABLE_PYTHON_F2PY={{value}}
 
     - with-pyiface :
         help  : Enable Python-driver variant for modified cloudsc-fortran variant [ON|OFF]
-        cmake : DWARF_P_CLOUDSC_ENABLE_PYIFACE={{value}}
+        cmake : DWARF-P-CLOUDSC_ENABLE_PYIFACE={{value}}
 
     - with-pyiface-binary :
         help  : Build Fortran binary corresponding to pyiface variant
-        cmake : DWARF_P_CLOUDSC_ENABLE_PYIFACE_BINARY={{value}}
+        cmake : DWARF-P-CLOUDSC_ENABLE_PYIFACE_BINARY={{value}}
 
     - with-atlas :
         help  : Enable Atlas and its dependencies (eckit, fckit) for Atlas-based variants of CLOUDSC [ON|OFF]
@@ -177,16 +177,16 @@ options :
 
     - with-prototype1 :
         help  : Build the original operational Fortran prototype [ON|OFF]
-        cmake : DWARF_P_CLOUDSC_ENABLE_PROTOTYPE1={{value}}
+        cmake : DWARF-P-CLOUDSC_ENABLE_PROTOTYPE1={{value}}
 
     - with-hdf5 :
         help : Enable use of HDF5 input file [ON|OFF]
-        cmake : DWARF_P_CLOUDSC_ENABLE_HDF5={{value}}
+        cmake : DWARF-P-CLOUDSC_ENABLE_HDF5={{value}}
 
     - with-serialbox :
         help  : Enable Serialbox utility for platform-agnostic file I/O [ON|OFF]
         cmake : >
-            DWARF_P_CLOUDSC_ENABLE_SERIALBOX={{value}}
+            DWARF-P-CLOUDSC_ENABLE_SERIALBOX={{value}}
             BUILD_serialbox={{value}}
 
 ...
