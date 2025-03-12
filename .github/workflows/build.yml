@@ -1,219 +1,215 @@
 name: build
 
-# Controls when the workflow will run
+# Controls when the action will run
 on:
-  # Triggers the workflow on push events
+
+  # Trigger the workflow on all pushes, except on tag creation
   push:
-    branches: [ 'main', 'develop' ]
-    tags-ignore: [ '**' ]
+   branches:
+   - '**'
+   tags-ignore:
+   - '**'
 
-  # Triggers the workflow on pull request events
-  pull_request:
+  # Trigger the workflow on all pull requests
+  pull_request: ~
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  # Allow workflow to be dispatched on demand
+  workflow_dispatch: ~
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  CLOUDSC_TOOLS: ${{ github.workspace }}/.github/tools
+  CTEST_PARALLEL_LEVEL: 1
+  CACHE_SUFFIX: v1        # Increase to force new cache to be created
+
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    name: ${{ matrix.arch }} ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
-
-    # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+  ci:
+    name: ci
 
     strategy:
-      fail-fast: false  # false: try to complete all jobs
+      fail-fast: false    # false: try to complete all jobs
 
       matrix:
-
-        arch: ['gnu/9.4.0']  # Default arch on Github is GNU 9.4.0 for now
-
-        io_library_flag: ['', '--with-serialbox']  # Switch between Serialbox and HDF5
-
-        build_flags:
-          - ''  # Plain build without any options
-          - '--with-gpu --with-loki --with-atlas' # Enable Loki, Atlas, and GPU variants
-          - '--with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, Atlas, and GPU variants with MPI
-          - '--single-precision --with-gpu --with-loki --with-atlas --with-mpi' # Enable Loki, and GPU variants with MPI in a single-precision build
-          - '--with-field' # Enable Field API CPU variant
-          - '--with-field --with-mpi' # Enable Field API CPU variant with mpi
-          - '--single-precision --with-field --with-mpi' # Enable Field API CPU variant with mpi and single-precision
-
-        pyiface_flag: ['']  # Enable the pyiface variant
-
-        python_f2py_flag: ['']  # Enable the f2py variant
-
-        ctest_exclude_pattern: ['-scc-hoist-']  # Regex to disable CTest tests
+        build_type: [Release, Bit, Debug]
+        name:
+          - linux gnu-14
+          - linux nvhpc
+          - linux intel-classic
+          - linux intel-llvm
 
         include:
-          # Add pyiface build configuration for double precision, non-MPI, HDF5 only
-          - arch: gnu/9.4.0
-            io_library_flag: ''
-            build_flags: '--cloudsc-fortran-pyiface=ON --cloudsc-python-f2py=ON'
 
-          # Add nvhpc build configurations with serialbox and HDF5
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --cmake="ENABLE_ACC=OFF"'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --with-cuda'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda-'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
-          - arch: nvhpc/21.9
-            nvhpc_version: 21.9
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-cuda'  # GPU variants don't work on CPU runners, loki-c variant causes SIGFPE
+          - name: linux gnu-14
+            os: ubuntu-24.04
+            compiler: gnu-14
+            compiler_cc: gcc-14
+            compiler_cxx: g++-14
+            compiler_fc: gfortran-14
+            python-version: 3.11
+            ctest_options: -E gpu-omp-scc-stack-sp
+              # SP stack segfaults somehow
+            caching: true
 
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --cmake="ENABLE_ACC=OFF"'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--with-gpu --with-loki --with-cuda'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda-'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-atlas'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: ''
-            build_flags: '--single-precision --with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
-          - arch: nvhpc/23.5
-            nvhpc_version: 23.5
-            io_library_flag: '--with-serialbox'
-            build_flags: '--with-gpu --with-loki --with-cuda --with-field --without-mapped-fields'
-            ctest_exclude_pattern: '-gpu-|-scc-|-loki-c|-loki-sca|-cuda'  # GPU variants don't work on CPU runners, loki-c and loki-sca variant causes SIGFPE
+          - name: linux nvhpc
+            os: ubuntu-24.04
+            compiler: nvhpc
+            compiler_cc: nvc
+            compiler_cxx: nvc++
+            compiler_fc: nvfortran
+            python-version: 3.11
+            cmake_options: -DCMAKE_CUDA_ARCHITECTURES=80
+            ctest_options: -E gpu
+              # Some OpenMP-target variants segfault when executed on the host but run fine on device,
+              # thus we will test these instead using a build-hpc workflow
+            caching: true
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+          - name : linux intel-classic
+            os: ubuntu-24.04
+            compiler: intel-classic
+            compiler_cc: icc
+            compiler_cxx: icpc
+            compiler_fc: ifort
+            python-version: 3.11
+            caching: true
+
+          - name : linux intel-llvm
+            os: ubuntu-24.04
+            compiler: intel-llvm
+            compiler_cc: icx
+            compiler_cxx: icpx
+            compiler_fc: ifx
+            python-version: 3.11
+            cmake_options: -DENABLE_LOKI=OFF -DSYCL_COMPILE_OPTIONS=-fsycl
+                # cloudsc_driver_loki_mod.idem_stack.F90(138): error #5623: **Internal compiler error: internal abort**
+            ctest_options: -E gpu-omp
+
+            caching: true
+
+          - name : linux gnu-native mpi
+            os: ubuntu-24.04
+            compiler: gnu-13
+            compiler_cc: gcc
+            compiler_cxx: g++
+            compiler_fc: gfortran
+            python-version: 3.11
+            cmake_options: -DENABLE_MPI=ON
+            ctest_options: -E gpu-omp-scc-stack-sp
+              # SP stack segfaults somehow
+            build_type: Bit
+            caching: true
+
+    runs-on: ${{ matrix.os }}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      # Installs required packages
-      - name: Package installation
-        run: |
-          sudo apt-get install libc-dev-bin gfortran-9 gcc-9 g++-9
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-      # Install MPI
-      - name: Install MPI via Apt
-        if: contains( matrix.build_flags, 'with-mpi' )
-        run: sudo apt-get install libopenmpi-dev
+    - name: Environment
+      run:  |
+        echo "DEPS_DIR=${{ runner.temp }}/deps" >> $GITHUB_ENV
+        echo "CC=${{ matrix.compiler_cc }}"     >> $GITHUB_ENV
+        echo "CXX=${{ matrix.compiler_cxx }}"   >> $GITHUB_ENV
+        echo "FC=${{ matrix.compiler_fc }}"     >> $GITHUB_ENV
 
-      # Free up disk space for nvhpc
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        if: contains( matrix.arch, 'nvhpc' )
-        continue-on-error: true
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
+        if [[ "${{ matrix.os }}" =~ macos ]]; then
+          brew install ninja
+        else
+          sudo apt-get update
+          sudo apt-get install ninja-build
 
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
+          if [[ "${{ matrix.name }}" =~ mpi ]]; then
+            sudo apt-get install libopenmpi-dev libhdf5-dev
+          fi
 
-      # Install Compiler
-      - name: Install nvhpc
-        if: contains( matrix.arch, 'nvhpc' )
-        env:
-          nvhpc_version: ${{ matrix.nvhpc_version }}
-        run: .github/scripts/bootstrap-nvhpc.sh
+          if [[ "${{ matrix.name }}" =~ serialbox ]]; then
+            sudo apt-get install boost
+          fi
+        fi
 
-      # Install HDF5
-      - name: Install HDF5 via Apt
-        if: ${{ ! contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' ) }}
-        run: sudo apt-get install libhdf5-dev
+        printenv
 
-      - name: Install HDF5 from source
-        if: contains( matrix.arch, 'nvhpc' ) && ! contains( matrix.io_library_flag, 'with-serialbox' )
-        run: |
-          source arch/github/ubuntu/${{ matrix.arch }}/env.sh
-          FC=pgf90 .github/scripts/install-hdf5.sh
+    - name: Cache Dependencies
+      if: matrix.caching
+      id: deps-cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.DEPS_DIR }}
+        key: deps-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}
+        save-always: true
 
-      # Install Boost
-      - name: Install Boost libraries
-        if: contains( matrix.io_library_flag, 'with-serialbox' )
-        run: sudo apt install libboost-filesystem-dev libboost-system-dev
+    # Free up disk space for nvhpc
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      if: contains( matrix.compiler, 'nvhpc' )
+      continue-on-error: true
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: false
 
-      # Check-out dependencies as part of the bundle creation
-      - name: Bundle create
-        run: ./cloudsc-bundle create
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
 
-      # Build the targets
-      - name: Bundle build
-        run: |
-          ./cloudsc-bundle build --verbose --retry-verbose \
-          --arch=arch/github/ubuntu/${{ matrix.arch }} \
-          ${{ matrix.io_library_flag }} ${{ matrix.build_flags }}
+    - name: Install NVHPC compiler
+      if: contains( matrix.compiler, 'nvhpc' )
+      shell: bash -eux {0}
+      run: |
+        ${CLOUDSC_TOOLS}/install-nvhpc.sh --prefix /opt/nvhpc --version 24.5
+        source /opt/nvhpc/env.sh
+        echo "${NVHPC_DIR}/compilers/bin" >> $GITHUB_PATH
+        echo "NVHPC_ROOT=${NVHPC_DIR}" >> $GITHUB_ENV
+        echo "NVHPC_CUDA_HOME=${NVHPC_DIR}/cuda/12.4" >> $GITHUB_ENV
 
-      # Verify targets exist
-      - name: Verify targets
-        env:
-          io_library_flag: ${{ matrix.io_library_flag }}
-          build_flags: ${{ matrix.build_flags }}
-        run: .github/scripts/verify-targets.sh
+    - name: Install Intel Classic compiler
+      if: contains( matrix.compiler, 'intel-classic' )
+      run: |
+        ${CLOUDSC_TOOLS}/install-intel-classic.sh
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+        echo "CACHE_SUFFIX=$CC-$($CC -dumpversion)" >> $GITHUB_ENV
 
-      # Run ctest
-      - name: Run CTest
-        if: ${{ !( contains(matrix.build_flags, '--single-precision') || (contains(matrix.build_flags, '--with-cuda') && contains(matrix.arch, 'nvhpc')) ) }}
-        working-directory: ./build
-        run: |
-          source env.sh
-          ctest -O ctest.log --output-on-failure -E "${{ matrix.ctest_exclude_pattern }}"
+    - name: Install Intel LLVM compiler
+      if: contains( matrix.compiler, 'intel-llvm' )
+      run: |
+        ${CLOUDSC_TOOLS}/install-intel-llvm.sh
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+        echo "CACHE_SUFFIX=$CC-$($CC -dumpversion)" >> $GITHUB_ENV
+
+    - name: Install HDF5 from source
+      if: ${{ ! contains( matrix.name, 'native' ) }}
+      run: |
+        if [[ -f ${{ env.DEPS_DIR }}/hdf5/lib/libhdf5.settings ]]; then
+          echo "::debug::HDF5 restored from cache"
+        else
+          ${CLOUDSC_TOOLS}/install-hdf5.sh --prefix ${{ env.DEPS_DIR }}/hdf5
+        fi
+        echo "HDF5_ROOT=${{ env.DEPS_DIR }}/hdf5" >> $GITHUB_ENV
+
+    - name: Build & Test
+      id: build-test
+      uses: ecmwf-actions/build-package@v2
+      with:
+        self_coverage: false
+        force_build: true
+        cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
+        recreate_cache: ${{ matrix.caching == false }}
+        dependencies: |
+          ecmwf/ecbuild
+          ecmwf-ifs/loki@refs/tags/0.3.0
+        dependency_branch: develop
+        dependency_cmake_options: |
+          ecmwf-ifs/loki: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
+        cmake_options:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}"
+        ctest_options: "${{ matrix.ctest_options }}"
+
+# TODO: add eckit, fckit, atlas, fiat, field_api

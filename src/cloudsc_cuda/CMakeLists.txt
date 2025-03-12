@@ -6,189 +6,24 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-# Define this dwarf variant as an ECBuild feature
-ecbuild_add_option( FEATURE CLOUDSC_C_CUDA
-    DESCRIPTION "Build the CUDA version of CLOUDSC C using Serialbox" DEFAULT ON
-    CONDITION (Serialbox_FOUND OR HDF5_FOUND) AND HAVE_CUDA
-)
+### Helper macro to create a target and associated tests
 
-if( HAVE_CLOUDSC_C_CUDA )
+macro( cloudsc_add_cuda_exe TARGET DRIVER KERNEL )
 
-    enable_language(CUDA)
-    enable_language(CXX)
-
-    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-      set( CLOUDSC_CUDA_FLAGS "-lineinfo -maxrregcount=128" )
-    else()
-      set( CLOUDSC_CUDA_FLAGS "-lineinfo -maxrregcount=128 -gencode arch=compute_${CMAKE_CUDA_ARCHITECTURES},code=sm_${CMAKE_CUDA_ARCHITECTURES}>" )
-    endif()
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      set( CLOUDSC_CUDA_OPT_FLAGS "-O0 -g -G" )
-    else()
-      set( CLOUDSC_CUDA_OPT_FLAGS  "--ptxas-options=-O3 -O3 -use_fast_math" )
-    endif()
-
-    ###### SCC-CUDA ####
     ecbuild_add_library(
-        TARGET dwarf-cloudsc-c-cuda-lib
-        INSTALL_HEADERS LISTED
-        SOURCES
-        cloudsc/yoecldp_c.h
-        cloudsc/load_state.h
-	    cloudsc/dtype.h
-            cloudsc/load_state.cu
-            cloudsc/cloudsc_c.h
-            cloudsc/cloudsc_c.cu
-            cloudsc/cloudsc_driver.h
-            cloudsc/cloudsc_driver.cu
-            cloudsc/cloudsc_validate.h
-            cloudsc/cloudsc_validate.cu
-            cloudsc/mycpu.h
-            cloudsc/mycpu.cu
-        PUBLIC_INCLUDES
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-	PUBLIC_LIBS
-	    $<${HAVE_HDF5}:hdf5::hdf5>
-	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
-	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
-	    CUDA::cudart
-	DEFINITIONS
-	    ${CLOUDSC_DEFINITIONS}
-    )
-
-    target_compile_options(dwarf-cloudsc-c-cuda-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
-    set_target_properties( dwarf-cloudsc-c-cuda-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-    ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-c-cuda
-        SOURCES dwarf_cloudsc.cpp
-        LIBS dwarf-cloudsc-c-cuda-lib
-    )
-
-    target_link_libraries(dwarf-cloudsc-c-cuda dwarf-cloudsc-c-cuda-lib)
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-c-cuda-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ###
-
-    ###### SCC-CUDA-HOIST ####
-    ecbuild_add_library(
-        TARGET dwarf-cloudsc-c-cuda-hoist-lib
+        TARGET ${TARGET}-${prec}-lib
         INSTALL_HEADERS LISTED
         SOURCES
             cloudsc/yoecldp_c.h
+            cloudsc/dtype.h
             cloudsc/load_state.h
             cloudsc/load_state.cu
-            cloudsc/cloudsc_c_hoist.h
-            cloudsc/cloudsc_c_hoist.cu
-            cloudsc/cloudsc_driver_hoist.h
-            cloudsc/cloudsc_driver_hoist.cu
             cloudsc/cloudsc_validate.h
             cloudsc/cloudsc_validate.cu
             cloudsc/mycpu.h
             cloudsc/mycpu.cu
-        PUBLIC_INCLUDES
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-	PUBLIC_LIBS
-	    $<${HAVE_HDF5}:hdf5::hdf5>
-	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
-	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
-	    CUDA::cudart
-	DEFINITIONS
-	    ${CLOUDSC_DEFINITIONS}
-    )
-
-    target_compile_options(dwarf-cloudsc-c-cuda-hoist-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
-    set_target_properties( dwarf-cloudsc-c-cuda-hoist-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-    ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-c-cuda-hoist
-        SOURCES dwarf_cloudsc.cpp
-        LIBS dwarf-cloudsc-c-cuda-hoist-lib
-    )
-
-    target_link_libraries(dwarf-cloudsc-c-cuda-hoist dwarf-cloudsc-c-cuda-hoist-lib)
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-c-cuda-hoist-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda-hoist
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ###
-
-    ###### SCC-CUDA-K-CACHING ####
-    ecbuild_add_library(
-        TARGET dwarf-cloudsc-c-cuda-k-caching-lib
-        INSTALL_HEADERS LISTED
-        SOURCES
-            cloudsc/yoecldp_c.h
-            cloudsc/load_state.h
-            cloudsc/load_state.cu
-            cloudsc/cloudsc_c_k_caching.h
-            cloudsc/cloudsc_c_k_caching.cu
-            cloudsc/cloudsc_driver.h
-            cloudsc/cloudsc_driver.cu
-            cloudsc/cloudsc_validate.h
-            cloudsc/cloudsc_validate.cu
-            cloudsc/mycpu.h
-            cloudsc/mycpu.cu
-        PUBLIC_INCLUDES
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
-	PUBLIC_LIBS
-	    $<${HAVE_HDF5}:hdf5::hdf5>
-	    $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
-	    $<${HAVE_OMP}:OpenMP::OpenMP_C>
-	    CUDA::cudart
-	DEFINITIONS
-	    ${CLOUDSC_DEFINITIONS}
-    )
-
-    target_compile_options(dwarf-cloudsc-c-cuda-k-caching-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
-    set_target_properties( dwarf-cloudsc-c-cuda-k-caching-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-    ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-c-cuda-k-caching
-        SOURCES dwarf_cloudsc.cpp
-        LIBS dwarf-cloudsc-c-cuda-k-caching-lib
-    )
-
-    target_link_libraries(dwarf-cloudsc-c-cuda-k-caching dwarf-cloudsc-c-cuda-k-caching-lib)
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-c-cuda-k-caching-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda-k-caching
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ###
-
-    ###### SCC-CUDA-OPT ####
-    ecbuild_add_library(
-        TARGET dwarf-cloudsc-c-cuda-opt-lib
-        INSTALL_HEADERS LISTED
-        SOURCES
-            cloudsc/yoecldp_c.h
-            cloudsc/load_state.h
-            cloudsc/load_state.cu
-            cloudsc/cloudsc_c_opt.h
-            cloudsc/cloudsc_c_opt.cu
-            cloudsc/cloudsc_driver_opt.h
-            cloudsc/cloudsc_driver_opt.cu
-            cloudsc/cloudsc_validate.h
-            cloudsc/cloudsc_validate.cu
-            cloudsc/mycpu.h
-            cloudsc/mycpu.cu
+            ${DRIVER}
+            ${KERNEL}
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cloudsc>
@@ -196,44 +31,60 @@ if( HAVE_CLOUDSC_C_CUDA )
             $<${HAVE_HDF5}:hdf5::hdf5>
             $<${HAVE_SERIALBOX}:Serialbox::Serialbox_C>
             $<${HAVE_OMP}:OpenMP::OpenMP_C>
-	    CUDA::cudart
+            CUDA::cudart
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
+            $<$<STREQUAL:"${prec}","sp">:SINGLE>
     )
 
-    target_compile_options(dwarf-cloudsc-c-cuda-opt-lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>)
-    set_target_properties( dwarf-cloudsc-c-cuda-opt-lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_options( ${TARGET}-${prec}-lib
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>
+    )
+    set_target_properties( ${TARGET}-${prec}-lib
+        PROPERTIES CUDA_SEPARABLE_COMPILATION ON
+    )
 
     ecbuild_add_executable(
-        TARGET  dwarf-cloudsc-c-cuda-opt
-        SOURCES dwarf_cloudsc.cpp
-        LIBS dwarf-cloudsc-c-cuda-opt-lib
+        TARGET      ${TARGET}-${prec}
+        SOURCES     dwarf_cloudsc.cpp
+        LIBS        ${TARGET}-${prec}-lib
     )
-
-    target_link_libraries(dwarf-cloudsc-c-cuda-opt dwarf-cloudsc-c-cuda-opt-lib)
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-c-cuda-opt-serial
-        COMMAND bin/dwarf-cloudsc-c-cuda-opt
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
+        TARGET      ${TARGET}-${prec}-serial
+        COMMAND     ${TARGET}-${prec}
+        ARGS        1 1000 128
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
-    ###
- 
- # Create symlink for the input data
- if( HAVE_SERIALBOX )
-   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-       ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
- endif()
 
- if( HAVE_HDF5 )
-   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-       ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-       ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
- endif()
+endmacro()
 
-else()
-    ecbuild_info( "CUDA not found, disabling CUDA prototype(s)" )
-endif()
+### Kernel variants
+
+# SCC
+cloudsc_add_cuda_exe(
+    dwarf-cloudsc-gpu-cuda-c
+    "cloudsc/cloudsc_driver.h;cloudsc/cloudsc_driver.cu"
+    "cloudsc/cloudsc_c.h;cloudsc/cloudsc_c.cu"
+)
+
+# SCC-HOIST
+cloudsc_add_cuda_exe(
+    dwarf-cloudsc-gpu-cuda-c-hoist
+    "cloudsc/cloudsc_driver_hoist.h;cloudsc/cloudsc_driver_hoist.cu"
+    "cloudsc/cloudsc_c_hoist.h;cloudsc/cloudsc_c_hoist.cu"
+)
+
+# SCC-K-CACHING
+cloudsc_add_cuda_exe(
+    dwarf-cloudsc-gpu-cuda-c-k-caching
+    "cloudsc/cloudsc_driver.h;cloudsc/cloudsc_driver.cu"
+    "cloudsc/cloudsc_c_k_caching.h;cloudsc/cloudsc_c_k_caching.cu"
+)
+
+# SCC-OPT
+cloudsc_add_cuda_exe(
+    dwarf-cloudsc-gpu-cuda-c-opt
+    "cloudsc/cloudsc_driver_opt.h;cloudsc/cloudsc_driver_opt.cu"
+    "cloudsc/cloudsc_c_opt.h;cloudsc/cloudsc_c_opt.cu"
+)

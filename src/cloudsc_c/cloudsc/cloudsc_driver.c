@@ -10,7 +10,9 @@
 
 #include "cloudsc_driver.h"
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include "mycpu.h"
 
 
@@ -178,14 +180,18 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 	     phrsw, phrlw, pvervel, pap, paph, plsm,  ktype, plu,
 	     plude, psnde, pmfu, pmfd, pa, pclv, psupsat);
 
+#ifdef _OPENMP
   double t1 = omp_get_wtime();
+#endif
 
 #pragma omp parallel num_threads(numthreads) default(shared)
   {
     int b, bsize, icalls=0, igpc=0;
     int coreid = mycpu();
+#ifdef _OPENMP
     int tid = omp_get_thread_num();
     double start = omp_get_wtime();
+#endif
 
 /* #pragma omp parallel for num_threads(numthreads) default(shared) private(b, bsize) */
 #pragma omp for schedule(runtime) nowait
@@ -220,19 +226,22 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
       igpc += bsize;
     }
 
+#ifdef _OPENMP
     double end = omp_get_wtime();
     /* int msec = diff * 1000 / CLOCKS_PER_SEC; */
     zinfo[0][tid] = end - start;
     zinfo[1][tid] = (double) coreid;
     zinfo[2][tid] = (double) icalls;
     zinfo[3][tid] = (double) igpc;
+#endif
   }
 
+#ifdef _OPENMP
   double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
   printf(" Reference MFLOP count for 100 columns : %12.8f\n", 1.0e-06 * zhpm);
-  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
+  printf(" %10s%10s%10s%10s%10s %4s : %10s%10s%10s\n",
     "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
   double zfrac, zmflops, zthrput;
   for (int t = 0; t < numthreads; t++) {
@@ -260,6 +269,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   }
   printf(" %10d%10d%10d%10d%10d %4d : %10d%10d%10d TOTAL\n",
 	 numthreads, numcols, numcols, nblocks, nproma, -1, (int)(tdiff * 1000.), (int)zmflops, (int)zthrput);
+#endif
 
   cloudsc_validate(klon, nlev, nclv, numcols, nproma,
 		   plude, pcovptot, prainfrac_toprfz, pfsqlf, pfsqif,

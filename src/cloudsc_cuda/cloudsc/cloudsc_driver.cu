@@ -457,7 +457,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
-  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
+  printf(" %10s%10s%10s%10s%10s %+4s : %10s%10s%10s\n",
     "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
   double zfrac, zmflops, zthrput;
   for (int t = 0; t < numthreads; t++) {
@@ -608,4 +608,3 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaFree(d_pfhpsn);
   // end free device
 }
-

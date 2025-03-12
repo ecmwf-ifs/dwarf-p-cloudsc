@@ -159,7 +159,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   pap        = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
   paph       = (dtype*) malloc( sizeof(dtype) * nblocks*(nlev+1)*nproma );
   plsm       = (dtype*) malloc( sizeof(dtype) * nblocks*nproma );
-  ldcum      = (int*) malloc( sizeof(int) * nblocks*nproma ); 
+  ldcum      = (int*) malloc( sizeof(int) * nblocks*nproma );
   ktype      = (int*) malloc( sizeof(int) * nblocks*nproma );
   plu        = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
   plude      = (dtype*) malloc( sizeof(dtype) * nblocks*nlev*nproma );
@@ -271,22 +271,22 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   dtype *d_pfhpsl;
   dtype *d_pfhpsn;
   dtype *d_zfoealfa;
-  dtype *d_ztp1; 
+  dtype *d_ztp1;
   dtype *d_zli;
-  dtype *d_za; 
-  dtype *d_zaorig; 
+  dtype *d_za;
+  dtype *d_zaorig;
   dtype *d_zliqfrac;
-  dtype *d_zicefrac; 
-  dtype *d_zqx; 
+  dtype *d_zicefrac;
+  dtype *d_zqx;
   dtype *d_zqx0;
-  dtype *d_zpfplsx; 
+  dtype *d_zpfplsx;
   dtype *d_zlneg;
   dtype *d_zqxn2d;
-  dtype *d_zqsmix; 
-  dtype *d_zqsliq; 
+  dtype *d_zqsmix;
+  dtype *d_zqsliq;
   dtype *d_zqsice;
-  dtype *d_zfoeewmt; 
-  dtype *d_zfoeew; 
+  dtype *d_zfoeewmt;
+  dtype *d_zfoeew;
   dtype *d_zfoeeliqt;
   // end device declarations
 
@@ -497,7 +497,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   double t2 = omp_get_wtime();
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
-  printf(" %+10s%+10s%+10s%+10s%+10s %+4s : %+10s%+10s%+10s\n",
+  printf(" %10s%10s%10s%10s%10s %+4s : %10s%10s%10s\n",
     "NUMOMP", "NGPTOT", "#GP-cols", "#BLKS", "NPROMA", "tid#", "Time(msec)", "MFlops/s", "col/s");
   double zfrac, zmflops, zthrput;
   for (int t = 0; t < numthreads; t++) {
@@ -534,9 +534,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
 		   pfsqltur, pfsqitur, pfplsl, pfplsn, pfhpsl, pfhpsn,
 		   tend_loc_a, tend_loc_q, tend_loc_t, tend_loc_cld);
 
-  free(plcrit_aer); 
-  free(picrit_aer); 
-  free(pre_ice);    
+  free(plcrit_aer);
+  free(picrit_aer);
+  free(pre_ice);
   free(pccn);
   free(pnice);
   free(pt);
@@ -551,7 +551,7 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   free(phrlw);
   free(pvervel);
   free(pap);
-  free(paph); 
+  free(paph);
   free(plsm);
   free(ktype);
   free(plu);
@@ -666,4 +666,3 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   cudaFree(d_zfoeeliqt);
   // end free device
 }
-

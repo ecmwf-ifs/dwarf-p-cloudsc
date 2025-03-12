@@ -7,133 +7,164 @@
 # nor does it submit to any jurisdiction.
 
 # define minimum version of cmake required
-cmake_minimum_required( VERSION 3.17 FATAL_ERROR )
+# 3.21 is required for HIP support
+# 3.23.5 is required for SYCL support
+cmake_minimum_required( VERSION 3.23.5 FATAL_ERROR )
 
 find_package( ecbuild REQUIRED )
 
 # define the project
-project( dwarf-p-cloudsc LANGUAGES C Fortran )
+project( dwarf-p-cloudsc LANGUAGES C CXX Fortran )
 
-include( cmake/compat.cmake )
-if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  ecbuild_add_fortran_flags("-ffree-line-length-none")
-  if( CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
-    ecbuild_add_fortran_flags("-fallow-argument-mismatch")
-  endif()
-  if( CMAKE_Fortran_COMPILER_VERSION VERSION_LESS "11.0")
-    set( ENABLE_ACC OFF )
-  endif()
-endif()
+ecbuild_enable_fortran( REQUIRED NO_MODULE_DIRECTORY )
 
 include( cloudsc_compile_options )
 
-### OpenACC
-if( ${CMAKE_VERSION} VERSION_LESS "3.25" AND (NOT DEFINED ENABLE_ACC OR ENABLE_ACC ) )
-    # Incredibly inconvenient: FindOpenACC does _not_ set OpenACC_FOUND, only
-    # the language-specific components OpenACC_Fortran_FOUND and OpenACC_C_FOUND.
-    # This means, even internally CMake considers OpenACC as not found.
-    # (See eg get_property(... GLOBAL PROPERTY PACKAGES_NOT_FOUND))
-    # Therefore, we search for OpenACC, set OpenACC_FOUND ourselves according to
-    # the result, and then, trigger a second find_package via ecbuild_add_option.
-    # This then conveniently takes the previously set OpenACC_FOUND into account
-    # and rectifies CMake's internal bookkeeping in the process.
-    # This has been fixed in CMake 3.25
-    find_package( OpenACC )
-    if( OpenACC_Fortran_FOUND AND OpenACC_C_FOUND )
-        set( OpenACC_FOUND ON )
-    endif()
+### Precision selection
+
+set( CLOUDSC_DEFINITIONS )
+
+ecbuild_add_option( FEATURE DOUBLE_PRECISION
+                    DEFAULT ON
+                    DESCRIPTION "Build double precision CLOUDSC binaries" )
+
+ecbuild_add_option( FEATURE SINGLE_PRECISION
+                    DEFAULT ON
+                    DESCRIPTION "Build single precision CLOUDSC binaries" )
+
+### Programming models
+
+ecbuild_add_option( FEATURE OMP
+                    DESCRIPTION "Support for thread-level parallelism or GPUs using OpenMP"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "OpenMP COMPONENTS Fortran C CXX" )
+include(features/OMP)
+
+ecbuild_add_option( FEATURE MPI
+                    DESCRIPTION "Support for task-level parallelism using MPI"
+                    DEFAULT OFF
+                    REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
+if( HAVE_MPI )
+  list( APPEND CLOUDSC_DEFINITIONS HAVE_MPI )
 endif()
+
+include(features/ACC)
 ecbuild_add_option( FEATURE ACC
-    DESCRIPTION "OpenACC" DEFAULT ON
-    REQUIRED_PACKAGES "OpenACC" )
+                    DEFAULT ON
+                    DESCRIPTION "Support for using GPUs with OpenACC"
+                    REQUIRED_PACKAGES "OpenACC COMPONENTS Fortran" )
 
 include(CheckLanguage)
 check_language( CUDA )
 ecbuild_add_option( FEATURE CUDA
-    DESCRIPTION "CUDA" DEFAULT OFF
-    CONDITION CMAKE_CUDA_COMPILER )
-if( HAVE_CUDA )
-    enable_language( CUDA )
-    find_package(CUDAToolkit)
-endif()
+                    DESCRIPTION "Support for using GPUs with CUDA"
+                    DEFAULT ON
+                    CONDITION CMAKE_CUDA_COMPILER
+                    REQUIRED_PACKAGES "CUDAToolkit" )
+include(features/CUDA)
 
+check_language( HIP )
 ecbuild_add_option( FEATURE HIP
-	DESCRIPTION "HIP" DEFAULT OFF
-	REQUIRED_PACKAGES "hip" )
-if ( HAVE_HIP )
-  if(NOT DEFINED ROCM_PATH)
-    if(DEFINED ENV{ROCM_PATH})
-      set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Path to which ROCM has been installed")
-    else()
-      set(ROCM_PATH "/opt/rocm" CACHE PATH "Path to which ROCM has been installed")
-    endif()
-  endif()
-  find_package(hip REQUIRED)
+	                  DESCRIPTION "Support for using GPUs with HIP"
+                    DEFAULT ON
+                    CONDITION CMAKE_HIP_COMPILER
+                    REQUIRED_PACKAGES "hip" )
+if( HAVE_HIP )
+  enable_language( HIP )
 endif()
 
 ecbuild_add_option( FEATURE SYCL
-	DESCRIPTION "SYCL" DEFAULT OFF
-	REQUIRED_PACKAGES "IntelSYCL")
+	                  DESCRIPTION "Support for using GPUs with SYCL"
+                    DEFAULT ON
+                  	REQUIRED_PACKAGES "IntelSYCL" )
 
-### OpenMP
-ecbuild_add_option( FEATURE OMP
-    DESCRIPTION "OpenMP" DEFAULT ON
-    REQUIRED_PACKAGES "OpenMP COMPONENTS Fortran C" )
-include(features/OMP)
+### Link options
 
-### MPI
-ecbuild_add_option( FEATURE MPI
-    DESCRIPTION "MPI" DEFAULT OFF
-    REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
-if( HAVE_MPI )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_MPI )
-endif()
+ecbuild_add_option( FEATURE GPU_STATIC
+                    DEFAULT ON
+                    DESCRIPTION "Compile GPU targets using static libraries" )
 
-### HDF5
+### I/O libraries
+
 ecbuild_add_option( FEATURE HDF5
-    DESCRIPTION "Use HDF5 to read input and reference data"
-    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran C"
-    DEFAULT ON )
+                    DESCRIPTION "Use HDF5 to read input and reference data"
+                    REQUIRED_PACKAGES "HDF5 COMPONENTS Fortran C"
+                    DEFAULT ON )
 if( HAVE_HDF5 )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 )
+  list(APPEND CLOUDSC_DEFINITIONS HAVE_HDF5 )
 endif()
 
 # Add Serialbox utility package for platform-agnostic file I/O
 ecbuild_add_option( FEATURE SERIALBOX
-    DESCRIPTION "Use Serialbox to read input and reference data"
-    REQUIRED_PACKAGES "Serialbox"
-    CONDITION NOT HAVE_HDF5
-    DEFAULT OFF )
+                    DESCRIPTION "Use Serialbox to read input and reference data"
+                    REQUIRED_PACKAGES "Serialbox"
+                    CONDITION NOT HAVE_HDF5
+                    DEFAULT OFF )
 if( HAVE_SERIALBOX )
-    list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
+  list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
+
+### Enable/disable specific variants
+
+# Add loki source-to-source translation toolchain to generate code variants
+ecbuild_add_option( FEATURE LOKI
+                    DESCRIPTION "Support for generating GPU variants with Loki"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "loki" )
 
 # Add field_api library to manage data fields
 ecbuild_add_option( FEATURE FIELD_API
-    DESCRIPTION "Use field_api to manage GPU data offload and copyback"
-    REQUIRED_PACKAGES "field_api"
-    DEFAULT ON )
-
-ecbuild_find_package( NAME loki )
-ecbuild_find_package( NAME atlas )
+                    DESCRIPTION "Use field_api to manage GPU data offload and copyback"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "field_api" )
 
 ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
-  DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
-  CONDITION HAVE_FIELD_API AND field_api_HAVE_ACC AND field_api_HAVE_CUDA
-  DEFAULT OFF )
+                    DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
+                    CONDITION HAVE_FIELD_API
+                    DEFAULT OFF )
 if( HAVE_FIELD_API_DISABLE_MAPPED_MEMORY )
   list(APPEND CLOUDSC_DEFINITIONS FIELD_API_DISABLE_MAPPED_MEMORY)
 endif()
 
+# Add atlas library to manage data fields
+ecbuild_add_option( FEATURE ATLAS
+                    DESCRIPTION "Use Atlas to manage GPU data offload and copyback"
+                    DEFAULT ON
+                    REQUIRED_PACKAGES "atlas" )
 
-# Add option for single-precision builds
-ecbuild_add_option( FEATURE SINGLE_PRECISION
-    DESCRIPTION "Build CLOUDSC in single precision" DEFAULT OFF
-)
-set(prec dp)
-if( HAVE_SINGLE_PRECISION )
-    list(APPEND CLOUDSC_DEFINITIONS SINGLE)
-    set(prec sp)
+# A variant driven by Python
+# NB: This requires Python3 to install f90wrap and its dependencies, and has only been
+#     tested successfully with GNU and Intel compilers
+find_package( Python3 COMPONENTS Interpreter QUIET )
+ecbuild_add_option( FEATURE PYIFACE
+                    DESCRIPTION "Build a (slightly customized) cloudsc-fortran variant with Python interface"
+                    DEFAULT OFF
+                    CONDITION HAVE_HDF5 AND Python3_FOUND AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU|Intel" )
+
+ecbuild_add_option( FEATURE PYIFACE_BINARY
+                    DESCRIPTION "Build the debug-oriented binary for Python interface of (customized) cloudsc-fortran"
+                    DEFAULT OFF
+                    CONDITION HAVE_PYIFACE )
+
+# A pure Python variant, created from Loki transpilation
+ecbuild_add_option( FEATURE PYTHON_F2PY
+                    DESCRIPTION "Build the pure Python variant from Loki transpilation"
+                    DEFAULT OFF
+                    CONDITION HAVE_HDF5 AND Python3_FOUND AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU|Intel" )
+
+### Input data
+
+if( HAVE_HDF5 )
+  file( CREATE_LINK
+        "${PROJECT_SOURCE_DIR}/config-files/input.h5"
+        "${CMAKE_BINARY_DIR}/input.h5" )
+  file( CREATE_LINK
+        "${PROJECT_SOURCE_DIR}/config-files/reference.h5"
+        "${CMAKE_BINARY_DIR}/reference.h5" )
+elseif( HAVE_SERIALBOX )
+  file( CREATE_LINK
+        "${PROJECT_SOURCE_DIR}/data"
+        "${CMAKE_BINARY_DIR}/data" )
 endif()
 
 # build executables

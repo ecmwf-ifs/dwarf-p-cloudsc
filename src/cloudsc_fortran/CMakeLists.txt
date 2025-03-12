@@ -6,139 +6,91 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-# Define this dwarf variant as an ECBuild feature
-ecbuild_add_option( FEATURE CLOUDSC_FORTRAN
-    DESCRIPTION "Build the new Fortran version CLOUDSC using Serialbox" DEFAULT ON
-    CONDITION Serialbox_FOUND OR HDF5_FOUND
-)
+### Macro to create executable and accompanying tests
 
-# Define the cloudsc CPU variant
-ecbuild_add_option( FEATURE CLOUDSC_FORTRAN_FIELD
-    DESCRIPTION "Build the field API Fortran version of CLOUDSC using Serialbox" DEFAULT ON
-    CONDITION HAVE_FIELD_API AND (Serialbox_FOUND OR HDF5_FOUND)
-)
+function( cloudsc_add_fortran_exe )
 
-if( HAVE_CLOUDSC_FORTRAN )
+    set( options "" )
+    set( single_value_args TARGET DRIVER COMMON_LIB )
+    set( multi_value_args DEFINITIONS )
 
-    # Define the binary build target for this variant
+    cmake_parse_arguments( _CL "${options}" "${single_value_args}" "${multi_value_args}" ${ARGN} )
+
+    if( _CL_UNPARSED_ARGUMENTS )
+        ecbuild_critical( "Unknown keywords given to cloudsc_add_fortran_exe(): \"${_CL_UNPARSED_ARGUMENTS}\"")
+    endif()
+
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-fortran
+        TARGET ${_CL_TARGET}-${prec}
         SOURCES
             dwarf_cloudsc.F90
-            cloudsc_driver_mod.F90
+            ${_CL_DRIVER}
             cloudsc.F90
         LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS}
+            cloudsc-common-${prec}-${_CL_COMMON_LIB}
+            $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
+        DEFINITIONS
+            ${_CL_DEFINITIONS}
     )
 
-    # Create symlink for the input data
-    if( HAVE_SERIALBOX )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-    endif()
-
-    if( HAVE_HDF5 )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
-    endif()
+    set_target_properties( ${_CL_TARGET}-${prec}
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${_CL_TARGET}"
+    )
 
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-serial
-        COMMAND bin/dwarf-cloudsc-fortran
+        TARGET ${_CL_TARGET}-${prec}-serial
+        COMMAND ${_CL_TARGET}-${prec}
         ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         OMP 1
     )
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-omp
-        COMMAND bin/dwarf-cloudsc-fortran
+        TARGET ${_CL_TARGET}-${prec}-omp
+        COMMAND ${_CL_TARGET}-${prec}
         ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         OMP 4
         CONDITION HAVE_OMP
     )
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-mpi
-        COMMAND bin/dwarf-cloudsc-fortran
+        TARGET ${_CL_TARGET}-${prec}-mpi
+        COMMAND ${_CL_TARGET}-${prec}
         ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         MPI 2
         OMP 1
         CONDITION HAVE_MPI
     )
     ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-mpi-omp
-        COMMAND bin/dwarf-cloudsc-fortran
+        TARGET ${_CL_TARGET}-${prec}-mpi-omp
+        COMMAND ${_CL_TARGET}-${prec}
         ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         MPI 2
         OMP 4
         CONDITION HAVE_OMP AND HAVE_MPI
     )
-endif()
+endfunction()
 
-if( HAVE_CLOUDSC_FORTRAN_FIELD )
+### Definition of executable variants
 
-    # Define the binary build target for this variant
-    ecbuild_add_executable(
+# Default Fortran driver
+cloudsc_add_fortran_exe(
+    TARGET dwarf-cloudsc-fortran
+    DRIVER cloudsc_driver_mod.F90
+    COMMON_LIB lib
+    DEFINITIONS ${CLOUDSC_DEFINITIONS}
+)
+
+# Default Fortran driver using FIELD_API
+if( HAVE_FIELD_API )
+    cloudsc_add_fortran_exe(
         TARGET dwarf-cloudsc-fortran-field
-        SOURCES
-            dwarf_cloudsc.F90
-            cloudsc_driver_field_mod.F90
-            cloudsc.F90
-        LIBS
-            cloudsc-common-lib
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_FIELD
-    )
-
-    # Create symlink for the input data
-    if( HAVE_SERIALBOX )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-    endif()
-
-    if( HAVE_HDF5 )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-          ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
-    endif()
-
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-field-serial
-        COMMAND bin/dwarf-cloudsc-fortran-field
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-field-omp
-        COMMAND bin/dwarf-cloudsc-fortran-field
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 4
-        CONDITION HAVE_OMP
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-field-mpi
-        COMMAND bin/dwarf-cloudsc-fortran-field
-        ARGS 1 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 1
-        CONDITION HAVE_MPI
-    )
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-fortran-field-mpi-omp
-        COMMAND bin/dwarf-cloudsc-fortran-field
-        ARGS 4 100 16
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        MPI 2
-        OMP 4
-        CONDITION HAVE_OMP AND HAVE_MPI
+        DRIVER cloudsc_driver_field_mod.F90
+        COMMON_LIB field_api
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
+            CLOUDSC_FIELD
     )
 endif()
-
