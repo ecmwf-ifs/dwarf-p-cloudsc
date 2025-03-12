@@ -68,9 +68,8 @@ contains
     logical, allocatable, intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer(kind=jpim), intent(in), optional :: ngptotg
-    logical, allocatable :: buffer(:), rbuf(:)
+    logical, allocatable :: buffer(:)
     integer(kind=jpim) :: start, end, size
-    integer(kind=4), allocatable :: tmp(:)
 
     call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
     if (.not. allocated(field))  allocate(field(nproma, nblocks))

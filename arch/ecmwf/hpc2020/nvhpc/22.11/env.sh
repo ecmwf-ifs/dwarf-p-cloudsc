@@ -21,15 +21,7 @@ module_unload() {
 }
 
 # Unload all modules to be certain
-module_unload nvidia
-module_unload intel-mpi
-module_unload openmpi
-module_unload hpcx-openmpi
-module_unload boost
-module_unload hdf5
-module_unload cmake
-module_unload python3
-module_unload java
+module purge
 
 # Load modules
 module_load cmake/3.25.2
@@ -39,8 +31,10 @@ module_load hpcx-openmpi/2.14.0-cuda
 # module_load boost/1.71.0
 module_load eigen/3.4.0
 module_load hdf5/1.10.6
-module_load python3/3.10.10-01
+module_load cmake/3.28.3
+module_load python3/3.11.10-01
 module_load java/11.0.6
+module_load ninja/1.11.1
 
 # Increase stack size to maximum
 ulimit -S -s unlimited

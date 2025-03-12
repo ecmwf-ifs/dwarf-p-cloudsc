@@ -8,8 +8,10 @@
  * nor does it submit to any jurisdiction.
  */
 #include <float.h>
+#include <algorithm>
 #include <CL/sycl.hpp>
-#include <limits> 
+#include <limits>
+#include <math.h>
 
 void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
   const dtype * __restrict__  pt,
@@ -319,7 +321,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
   dtype zqxn2d[5 * klev];
 
   jl = item_ct.get_local_id(0); //threadIdx.x;
-  ibl = item_ct.get_group(0); // or 2? blockIdx.z; 
+  ibl = item_ct.get_group(0); // or 2? blockIdx.z;
 
 
   //===============================================================================
@@ -2628,4 +2630,3 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
       -rlstt*pfplsn[jl + klon*(jk + (klev + 1)*(ibl))];
   }
 }
-

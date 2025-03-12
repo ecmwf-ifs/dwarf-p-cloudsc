@@ -40,7 +40,7 @@ void print_error(const char *name, double zminval, double zmaxval, double zmaxer
   clwarn = (zrelerr > 10.0 * zeps) ? " !!!!" : "     ";
   zrelerr = 100.0 * zrelerr;
 
-  printf(" %+20s %dD%d %20.13le %20.13le %20.13le %20.13le %20.13le %s\n",
+  printf(" %20s %dD%d %20.13le %20.13le %20.13le %20.13le %20.13le %s\n",
          name, ndim, iopt, zminval, zmaxval, zmaxerr, zavgpgp, zrelerr, clwarn);
 }
 
@@ -71,7 +71,7 @@ void validate_1d(const char *name, double * v_ref, double * v_field, int nlon, i
       zdiff = fabs(field[b][jk] - reference[b][jk]);
       zmaxerr = fmax(zmaxerr, zdiff);
       zerrsum = zerrsum + zdiff;
-      zsum = zsum + abs(reference[b][jk]);
+      zsum = zsum + fabs(reference[b][jk]);
     }
   }
   zavgpgp = zerrsum / (double) ngptot;
@@ -106,7 +106,7 @@ void validate_2d(const char *name, double *v_ref, double *v_field, int nlon, int
 	zdiff = fabs(field[b][jl][jk] - reference[b][jl][jk]);
 	zmaxerr = fmax(zmaxerr, zdiff);
 	zerrsum = zerrsum + zdiff;
-	zsum = zsum + abs(reference[b][jl][jk]);
+	zsum = zsum + fabs(reference[b][jl][jk]);
       }
     }
   }
@@ -144,7 +144,7 @@ void validate_3d(const char *name, double *v_ref, double *v_field, int nlon,
 	  zdiff = fabs(field[b][jm][jl][jk] - reference[b][jm][jl][jk]);
 	  zmaxerr = fmax(zmaxerr, zdiff);
 	  zerrsum = zerrsum + zdiff;
-	  zsum = zsum + abs(reference[b][jm][jl][jk]);
+	  zsum = zsum + fabs(reference[b][jm][jl][jk]);
 	}
       }
     }
@@ -190,7 +190,7 @@ void cloudsc_validate(const int nlon, const int nlev, const int nclv, const int 
 		 ref_tend_loc_a, ref_tend_loc_q, ref_tend_loc_t, ref_tend_loc_cld);
 
 
-  printf(" %+20s %s %+20s %+20s %+20s %+20s %+20s\n",
+  printf(" %20s %s %20s %20s %20s %20s %20s\n",
 	 "Variable", "Dim", "MinValue", "MaxValue", "AbsMaxErr", "AvgAbsErr/GP", "MaxRelErr-%");
 
   validate_2d("PLUDE", ref_plude, plude, nproma, nlev, ngptot, nblocks);

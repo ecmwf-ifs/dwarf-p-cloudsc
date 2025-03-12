@@ -7,46 +7,36 @@
 # nor does it submit to any jurisdiction.
 
 ####################################################################
-# COMPILER
-####################################################################
-
-set( ECBUILD_FIND_MPI OFF )
-set( ENABLE_USE_STMT_FUNC ON CACHE STRING "" )
-
-####################################################################
 # OpenMP FLAGS
 ####################################################################
 
 set( OpenMP_C_FLAGS           "-fopenmp" CACHE STRING "" )
 set( OpenMP_CXX_FLAGS         "-fopenmp" CACHE STRING "" )
-set( OpenMP_Fortran_FLAGS     "-homp -hlist=aimd" CACHE STRING "" )
-set( OpenMP_C_LIB_NAMES       "craymp" CACHE STRING "" )
-set( OpenMP_CXX_LIB_NAMES     "craymp" CACHE STRING "" )
-set( OpenMP_Fortran_LIB_NAMES "craymp" CACHE STRING "" )
-set( OpenMP_craymp_LIBRARY    "/opt/cray/pe/cce/17.0.1/cce/x86_64/lib/libcraymp.so" CACHE STRING "" )
+set( OpenMP_Fortran_FLAGS     "-fopenmp" CACHE STRING "" )
 
 ####################################################################
 # OpenACC FLAGS
 ####################################################################
 
 set( OpenACC_C_FLAGS "-hacc" CACHE STRING "" )
-set( OpenACC_CXX_FLAGS "-hacc" CACHE STRING "" )
-set( OpenACC_Fortran_FLAGS "-hacc" CACHE STRING "" )
 
 ####################################################################
 # Compiler FLAGS
 ####################################################################
 
 # General Flags (add to default)
-set(ECBUILD_Fortran_FLAGS "-hcontiguous")
+set(ECBUILD_Fortran_FLAGS "${ECBUILD_FORTRAN_FLAGS} -hcontiguous")
 set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -hbyteswapio")
-set(ECBUILD_Fortran_FLAGS "${ECBUILD_Fortran_FLAGS} -Wl, --as-needed")
 
 set(ECBUILD_Fortran_FLAGS_BIT "-O3 -hfp1 -hscalar3 -hvector3 -G2 -haggress -DNDEBUG")
+
+set(CMAKE_HIP_FLAGS "-Wno-unused-result")
 
 if(NOT DEFINED CMAKE_HIP_ARCHITECTURES)
   set(CMAKE_HIP_ARCHITECTURES gfx90a)
 endif()
 
 # select OpenMP pragma to be used
+set( HAVE_OMP_TARGET_LOOP_CONSTRUCT OFF CACHE BOOL "" )
 set( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_PARALLEL OFF CACHE BOOL "" )
+set( HAVE_OMP_TARGET_LOOP_CONSTRUCT_BIND_THREAD OFF CACHE BOOL "" )

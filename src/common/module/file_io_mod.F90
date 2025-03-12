@@ -71,7 +71,7 @@ contains
 #endif
   end subroutine input_finalize
 
-    
+
   subroutine load_scalar_real(name, variable)
     character(len=*), intent(in) :: name
     real(kind=JPRB), intent(inout) :: variable
@@ -116,15 +116,15 @@ contains
 #endif
   end subroutine load_scalar_log
 
-  
+
   subroutine load_array_i1(name, start, end, size, nlon, buffer)
     ! Load data from file into the local memory buffer
     character(len=*), intent(in) :: name
     integer(kind=jpim), intent(in) :: start, end, size, nlon
     integer(kind=jpim), intent(out) :: buffer(size)
+#ifdef HAVE_SERIALBOX
     integer(kind=jpim), allocatable :: rbuf(:)
 
-#ifdef HAVE_SERIALBOX
     allocate(rbuf(nlon))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, rbuf)
     buffer(:) = rbuf(start:end)
@@ -141,9 +141,9 @@ contains
     character(len=*), intent(in) :: name
     integer(kind=jpim), intent(in) :: start, end, size, nlon
     logical, intent(out) :: buffer(size)
+#ifdef HAVE_SERIALBOX
     logical, allocatable :: rbuf(:)
 
-#ifdef HAVE_SERIALBOX
     allocate(rbuf(nlon))
     call fs_read_field(ppser_serializer_ref, ppser_savepoint, name, rbuf)
     buffer(:) = rbuf(start:end)

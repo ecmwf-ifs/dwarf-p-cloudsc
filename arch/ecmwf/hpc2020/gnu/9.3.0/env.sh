@@ -19,25 +19,18 @@ module_unload() {
 }
 
 # Unload all modules to be certain
-module_unload gcc
-module_unload openmpi
-module_unload boost
-module_unload hdf5
-module_unload cmake
-module_unload python3
-module_unload java
+module purge
 
 # Load modules
 module_load prgenv/gnu
 module_load gcc/9.3.0
 module_load openmpi/4.1.1.1
-module_load boost/1.71.0
+module_load boost/1.75.0
 module_load hdf5/1.10.6
-module_load cmake/3.25.2
-module_load python3/3.8.8-01
+module_load cmake/3.28.3
+module_load python3/3.11.10-01
 module_load java/11.0.6
+module_load ninja/1.11.1
 
 # Restore tracing to stored setting
 { if [[ -n "$tracing_" ]]; then set -x; else set +x; fi } 2>/dev/null
-
-export ECBUILD_TOOLCHAIN="./toolchain.cmake"

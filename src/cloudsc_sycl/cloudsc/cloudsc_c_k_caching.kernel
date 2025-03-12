@@ -8,8 +8,10 @@
  * nor does it submit to any jurisdiction.
  */
 #include <float.h>
+#include <algorithm>
 #include <CL/sycl.hpp>
 #include <limits>
+#include <math.h>
 
 void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
   const dtype * __restrict__  pt,
@@ -484,7 +486,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
     // Fortran counting is beautiful!
     jk_i = (jk + 1) % 2;
     jk_ip1 = (jk + 2) % 2;
-    jk_im1 = (jk) % 2; 
+    jk_im1 = (jk) % 2;
 
     if (1 <= jk + 1 && jk + 1 <= klev) {
       ztp1[jk_i] = pt[jl + klon*(jk + klev*ibl)] + ptsphy*
@@ -576,7 +578,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
       //----------------------------------------
       zfoealfa = ((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))));
       zfoeewmt = MYMIN(((dtype)(r2es*((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*
-        MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)) + 
+        MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)) +
 	(1.0 - (dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))))*
 	MYEXP((r3ies*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4ies))))) / pap[jl + klon*(jk + klev*ibl)], (dtype) 0.5);
       zqsmix = zfoeewmt;
@@ -587,8 +589,8 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
       // liquid water saturation for T>273K
       //---------------------------------------------
       zalfa = ((dtype)(MYMAX(0.0, copysign(1.0, ztp1[jk_i] - rtt))));
-      zfoeew = MYMIN((zalfa*((dtype)(r2es*MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)))) + 
-        ((dtype) 1.0 - zalfa)*((dtype)(r2es*MYEXP((r3ies*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4ies))))) / 
+      zfoeew = MYMIN((zalfa*((dtype)(r2es*MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)))) +
+        ((dtype) 1.0 - zalfa)*((dtype)(r2es*MYEXP((r3ies*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4ies))))) /
         pap[jl + klon*(jk + klev*ibl)], (dtype) 0.5);
       zfoeew = MYMIN((dtype) 0.5, zfoeew);
       zqsice = zfoeew / ((dtype) 1.0 - retv*zfoeew);
@@ -596,7 +598,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
       //----------------------------------
       // liquid water saturation
       //----------------------------------
-      zfoeeliqt = MYMIN(((dtype)(r2es*MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)))) / 
+      zfoeeliqt = MYMIN(((dtype)(r2es*MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)))) /
         pap[jl + klon*(jk + klev*ibl)], (dtype) 0.5);
       zqsliq = zfoeeliqt;
       zqsliq = zqsliq / ((dtype) 1.0 - retv*zqsliq);
@@ -1122,7 +1124,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
         // Formerly a call to CUADJTQ(..., ICALL=5)
         zqp = (dtype) 1.0 / pap[jl + klon*(jk + klev*ibl)];
         zqsat = ((dtype)(r2es*((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*
-          MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)) + 
+          MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)) +
 	  (1.0 - (dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))))*
 	  MYEXP((r3ies*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4ies)))))*zqp;
         zqsat = MYMIN((dtype) 0.5, zqsat);
@@ -1131,11 +1133,11 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
         zcond = (zqsmix - zqsat) / ((dtype) 1.0 + zqsat*zcor*((dtype)(((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*r5alvcp)*
           (1.0/MYPOWN(ztp1[jk_i] - r4les, 2)) + ((1.0 - (dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))))*r5alscp)*
 	  (1.0/MYPOWN(ztp1[jk_i] - r4ies, 2)))));
-        ztp1[jk_i] = ztp1[jk_i] + ((dtype)((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*ralvdcp + 
+        ztp1[jk_i] = ztp1[jk_i] + ((dtype)((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*ralvdcp +
           (1.0 - (dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))))*ralsdcp))*zcond;
         zqsmix = zqsmix - zcond;
         zqsat = ((dtype)(r2es*((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*
-          MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)) + 
+          MYEXP((r3les*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4les)) +
           (1.0 - (dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))))*
           MYEXP((r3ies*(ztp1[jk_i] - rtt))/(ztp1[jk_i] - r4ies)))))*zqp;
         zqsat = MYMIN((dtype) 0.5, zqsat);
@@ -1144,7 +1146,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
         zcond1 = (zqsmix - zqsat) / ((dtype) 1.0 + zqsat*zcor*((dtype)(((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*r5alvcp)*
           (1.0/MYPOWN(ztp1[jk_i] - r4les, 2)) + ((1.0 - (dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))))*r5alscp)*
 	  (1.0/MYPOWN(ztp1[jk_i] - r4ies, 2)))));
-        ztp1[jk_i] = ztp1[jk_i] + ((dtype)((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*ralvdcp + 
+        ztp1[jk_i] = ztp1[jk_i] + ((dtype)((dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2)))*ralvdcp +
           (1.0 - (dtype)(MYMIN(1.0, MYPOWN((MYMAX(rtice, MYMIN(rtwat, ztp1[jk_i])) - rtice)*rtwat_rtice_r, 2))))*ralsdcp))*zcond1;
         zqsmix = zqsmix - zcond1;
 
@@ -1479,7 +1481,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
             ztcg = (dtype) 1.0;
             zfacx1i = (dtype) 1.0;
 
-            zaplusb = (*yrecldp).rcl_apb1*zvpice - (*yrecldp).rcl_apb2*zvpice*ztp1[jk_i] + 
+            zaplusb = (*yrecldp).rcl_apb1*zvpice - (*yrecldp).rcl_apb2*zvpice*ztp1[jk_i] +
               pap[jl + klon*(jk + klev*ibl)]*(*yrecldp).rcl_apb3*(MYPOWN(ztp1[jk_i], 3));
             zcorrfac = MYPOW(((dtype) 1.0 / zrho), (dtype) 0.5);
             zcorrfac2 = (MYPOW((ztp1[jk_i] / (dtype) 273.0), (dtype) 1.5))
@@ -2214,7 +2216,7 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
             // ZFACX1I modification is based on Andrew Barrett's results
             zfacx1s = (dtype) 1.0;                //v1 (ZICE0/1.E-5_JPRB)**0.627_JPRB
 
-            zaplusb = (*yrecldp).rcl_apb1*zvpice - (*yrecldp).rcl_apb2*zvpice*ztp1[jk_i] + 
+            zaplusb = (*yrecldp).rcl_apb1*zvpice - (*yrecldp).rcl_apb2*zvpice*ztp1[jk_i] +
               pap[jl + klon*(jk + klev*ibl)]*(*yrecldp).rcl_apb3*(MYPOWN(ztp1[jk_i], 3));
             zcorrfac = MYPOW((1.0 / zrho), 0.5);
             zcorrfac2 =
@@ -2628,4 +2630,3 @@ void cloudsc_c(int kidia, int kfdia, int klon, dtype ptsphy,
       -rlstt*pfplsn[jl + klon*(jk + (klev + 1)*ibl)];
   }
 }
-

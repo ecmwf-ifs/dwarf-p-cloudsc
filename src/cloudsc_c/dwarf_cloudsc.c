@@ -10,6 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "cloudsc_driver.h"
 
@@ -44,7 +47,7 @@ int main( int argc, char *argv[] ) {
     cloudsc_driver(omp_threads, ngptot, nproma);
   }
   else {
-    printf("Calling c-cloudsc with the right number of arguments will work better ;-) \n",argc);
+    printf("Calling c-cloudsc with the right number of arguments will work better ;-) \n");
     return_code = EXIT_FAILURE;
   }
 

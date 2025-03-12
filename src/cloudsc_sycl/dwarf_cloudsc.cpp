@@ -34,7 +34,7 @@ int main( int argc, char *argv[] ) {
     ngptot      = atoi( argv[2] );
     nproma      = atoi( argv[3] );
     if (ngptot % nproma != 0) {
-    	printf("Calling the SYCL variant(s) of cloudsc with non-matching ngptot and nproma won't work!\nMake ngptot a multiple of nproma!\n",argc);
+    	printf("Calling the SYCL variant(s) of cloudsc with non-matching ngptot and nproma won't work!\nMake ngptot a multiple of nproma!\n");
     	return_code = EXIT_FAILURE;
     }
     else{
@@ -42,7 +42,7 @@ int main( int argc, char *argv[] ) {
     }
   }
   else {
-    printf("Calling c-cloudsc with the right number of arguments will work better ;-) \n",argc);
+    printf("Calling c-cloudsc with the right number of arguments will work better ;-) \n");
     return_code = EXIT_FAILURE;
   }
 

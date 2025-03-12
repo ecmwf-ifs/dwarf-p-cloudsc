@@ -39,7 +39,7 @@ void read_hdf5(hid_t file_id, const char *name, dtype *field) {
   double dbl_field;
   dataset_id = H5Dopen2(file_id, name, H5P_DEFAULT);
   status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &dbl_field);
-  *field = (dtype)dbl_field; 
+  *field = (dtype)dbl_field;
   status = H5Dclose(dataset_id);
 }
 #endif
@@ -66,14 +66,14 @@ void query_state(int *klon, int *klev)
   read_hdf5_int(file_id, "/KLON", klon);
 
   status = H5Fclose(file_id);
-#endif  
+#endif
 }
 
 void expand_1d(dtype *buffer, dtype *field_in, int nlon, int nproma, int ngptot, int nblocks)
 {
   int b, i, buf_start_idx, buf_idx;
 
-#pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
+  #pragma omp parallel for default(shared) private(b, i, buf_start_idx, buf_idx)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
@@ -119,7 +119,7 @@ void expand_3d(dtype *buffer_in, dtype *field_in, int nlon, int nlev, int nclv, 
 {
   int b, l, c, i, buf_start_idx, buf_idx;
 
-#pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i, c)
+  #pragma omp parallel for default(shared) private(b, buf_start_idx, buf_idx, l, i, c)
   for (b = 0; b < nblocks; b++) {
     buf_start_idx = ((b)*nproma) % nlon;
     for (i = 0; i < nproma; i++) {
@@ -263,19 +263,19 @@ void load_and_expand_3d(hid_t file_id, const char *name, int nlon, int nlev, int
 
 
 /* Read input state into memory */
-void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma, 
+void load_state(const int nlon, const int nlev, const int nclv, const int ngptot, const int nproma,
     dtype* ptsphy, dtype* plcrit_aer, dtype* picrit_aer,
-    dtype* pre_ice, dtype* pccn, dtype* pnice, dtype* pt, dtype* pq, 
+    dtype* pre_ice, dtype* pccn, dtype* pnice, dtype* pt, dtype* pq,
     dtype* tend_cml_t, dtype* tend_cml_q, dtype* tend_cml_a, dtype* tend_cml_cld,
     dtype* tend_tmp_t, dtype* tend_tmp_q, dtype* tend_tmp_a, dtype* tend_tmp_cld,
-    dtype* pvfa, dtype* pvfl, dtype* pvfi, dtype* pdyna, dtype* pdynl, dtype* pdyni, 
+    dtype* pvfa, dtype* pvfl, dtype* pvfi, dtype* pdyna, dtype* pdynl, dtype* pdyni,
     dtype* phrsw, dtype* phrlw, dtype* pvervel, dtype* pap, dtype* paph, dtype* plsm,
     int* ktype, dtype* plu, dtype* plude, dtype* psnde, dtype* pmfu,
     dtype* pmfd, dtype* pa, dtype* pclv, dtype* psupsat, struct TECLDP* yrecldp,
-    dtype* rg, dtype* rd, dtype* rcpd, dtype* retv, dtype* rlvtt, dtype* rlstt, 
+    dtype* rg, dtype* rd, dtype* rcpd, dtype* retv, dtype* rlvtt, dtype* rlstt,
     dtype* rlmlt, dtype* rtt, dtype* rv, dtype* r2es, dtype* r3les, dtype* r3ies,
     dtype* r4les, dtype* r4ies, dtype* r5les, dtype* r5ies, dtype* r5alvcp, dtype* r5alscp,
-    dtype* ralvdcp, dtype* ralsdcp, dtype* ralfdcp, dtype* rtwat, 
+    dtype* ralvdcp, dtype* ralsdcp, dtype* ralfdcp, dtype* rtwat,
     dtype* rtice, dtype* rticecu, dtype* rtwat_rtice_r, dtype *rtwat_rticecu_r,
     dtype* rkoop1, dtype* rkoop2 )
 {
@@ -528,161 +528,161 @@ void load_state(const int nlon, const int nlev, const int nclv, const int ngptot
   load_and_expand_2d(file_id, "PA", nlon, nlev, nproma, ngptot, nblocks, pa);
   load_and_expand_3d(file_id, "PCLV", nlon, nlev, nclv, nproma, ngptot, nblocks, pclv);
   load_and_expand_2d(file_id, "PSUPSAT", nlon, nlev, nproma, ngptot, nblocks, psupsat);
-  
+
   read_hdf5(file_id, "/PTSPHY", ptsphy);
-  
+
   read_hdf5(file_id, "/RG", rg);
   read_hdf5(file_id, "/RD", rd);
-  read_hdf5(file_id, "/RCPD", rcpd); 
-  read_hdf5(file_id, "/RETV", retv);   
-  read_hdf5(file_id, "/RLVTT", rlvtt);  
-  read_hdf5(file_id, "/RLSTT", rlstt);  
-  read_hdf5(file_id, "/RLMLT", rlmlt);  
-  read_hdf5(file_id, "/RTT", rtt);  
-  read_hdf5(file_id, "/RV", rv);  
-  read_hdf5(file_id, "/R2ES", r2es);  
-  read_hdf5(file_id, "/R3LES", r3les);  
-  read_hdf5(file_id, "/R3IES", r3ies);  
-  read_hdf5(file_id, "/R4LES", r4les);  
-  read_hdf5(file_id, "/R4IES", r4ies);  
-  read_hdf5(file_id, "/R5LES", r5les);  
-  read_hdf5(file_id, "/R5IES", r5ies);  
-  read_hdf5(file_id, "/R5ALVCP", r5alvcp);  
-  read_hdf5(file_id, "/R5ALSCP", r5alscp);  
-  read_hdf5(file_id, "/RALVDCP", ralvdcp);  
-  read_hdf5(file_id, "/RALSDCP", ralsdcp);  
-  read_hdf5(file_id, "/RALFDCP", ralfdcp);  
-  read_hdf5(file_id, "/RTWAT", rtwat);  
-  read_hdf5(file_id, "/RTICE", rtice);  
-  read_hdf5(file_id, "/RTICECU", rticecu);  
-  read_hdf5(file_id, "/RTWAT_RTICE_R", rtwat_rtice_r);  
-  read_hdf5(file_id, "/RTWAT_RTICECU_R", rtwat_rticecu_r);  
-  read_hdf5(file_id, "/RKOOP1", rkoop1);  
-  read_hdf5(file_id, "/RKOOP2", rkoop2);  
-  
-  read_hdf5(file_id, "/YRECLDP_RAMID", &yrecldp->ramid);  
-  read_hdf5(file_id, "/YRECLDP_RCLDIFF", &yrecldp->rcldiff);  
-  read_hdf5(file_id, "/YRECLDP_RCLDIFF_CONVI", &yrecldp->rcldiff_convi);  
-  read_hdf5(file_id, "/YRECLDP_RCLCRIT", &yrecldp->rclcrit);  
-  read_hdf5(file_id, "/YRECLDP_RCLCRIT_SEA", &yrecldp->rclcrit_sea);  
-  read_hdf5(file_id, "/YRECLDP_RCLCRIT_LAND", &yrecldp->rclcrit_land);  
-  read_hdf5(file_id, "/YRECLDP_RKCONV", &yrecldp->rkconv);  
-  read_hdf5(file_id, "/YRECLDP_RPRC1", &yrecldp->rprc1);  
-  read_hdf5(file_id, "/YRECLDP_RPRC2", &yrecldp->rprc2);  
-  read_hdf5(file_id, "/YRECLDP_RCLDMAX", &yrecldp->rcldmax);  
-  read_hdf5(file_id, "/YRECLDP_RPECONS", &yrecldp->rpecons);  
-  read_hdf5(file_id, "/YRECLDP_RVRFACTOR", &yrecldp->rvrfactor);  
-  read_hdf5(file_id, "/YRECLDP_RPRECRHMAX", &yrecldp->rprecrhmax);  
-  read_hdf5(file_id, "/YRECLDP_RTAUMEL", &yrecldp->rtaumel);  
-  read_hdf5(file_id, "/YRECLDP_RAMIN", &yrecldp->ramin);  
-  read_hdf5(file_id, "/YRECLDP_RLMIN", &yrecldp->rlmin);  
-  read_hdf5(file_id, "/YRECLDP_RKOOPTAU", &yrecldp->rkooptau);  
-  read_hdf5(file_id, "/YRECLDP_RCLDTOPP", &yrecldp->rcldtopp);  
-  read_hdf5(file_id, "/YRECLDP_RLCRITSNOW", &yrecldp->rlcritsnow);  
-  read_hdf5(file_id, "/YRECLDP_RSNOWLIN1", &yrecldp->rsnowlin1);  
-  read_hdf5(file_id, "/YRECLDP_RSNOWLIN2", &yrecldp->rsnowlin2);  
-  read_hdf5(file_id, "/YRECLDP_RICEHI1", &yrecldp->ricehi1);  
-  read_hdf5(file_id, "/YRECLDP_RICEHI2", &yrecldp->ricehi2);  
-  read_hdf5(file_id, "/YRECLDP_RICEINIT", &yrecldp->riceinit);  
-  read_hdf5(file_id, "/YRECLDP_RVICE", &yrecldp->rvice);  
-  read_hdf5(file_id, "/YRECLDP_RVRAIN", &yrecldp->rvrain);  
-  read_hdf5(file_id, "/YRECLDP_RVSNOW", &yrecldp->rvsnow);  
-  read_hdf5(file_id, "/YRECLDP_RTHOMO", &yrecldp->rthomo);  
-  read_hdf5(file_id, "/YRECLDP_RCOVPMIN", &yrecldp->rcovpmin);  
-  read_hdf5(file_id, "/YRECLDP_RCCN", &yrecldp->rccn);  
-  read_hdf5(file_id, "/YRECLDP_RNICE", &yrecldp->rnice);  
-  read_hdf5(file_id, "/YRECLDP_RCCNOM", &yrecldp->rccnom);  
-  read_hdf5(file_id, "/YRECLDP_RCCNSS", &yrecldp->rccnss);  
-  read_hdf5(file_id, "/YRECLDP_RCCNSU", &yrecldp->rccnsu);  
-  read_hdf5(file_id, "/YRECLDP_RCLDTOPCF", &yrecldp->rcldtopcf);  
-  read_hdf5(file_id, "/YRECLDP_RDEPLIQREFRATE", &yrecldp->rdepliqrefrate);  
-  read_hdf5(file_id, "/YRECLDP_RDEPLIQREFDEPTH", &yrecldp->rdepliqrefdepth);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KKAac", &yrecldp->rcl_kkaac);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KKBac", &yrecldp->rcl_kkbac);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KKAau", &yrecldp->rcl_kkaau);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KKBauq", &yrecldp->rcl_kkbauq);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KKBaun", &yrecldp->rcl_kkbaun);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KK_cloud_num_sea", &yrecldp->rcl_kk_cloud_num_sea);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KK_cloud_num_land", &yrecldp->rcl_kk_cloud_num_land);  
-  read_hdf5(file_id, "/YRECLDP_RCL_AI", &yrecldp->rcl_ai);  
-  read_hdf5(file_id, "/YRECLDP_RCL_BI", &yrecldp->rcl_bi);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CI", &yrecldp->rcl_ci);  
-  read_hdf5(file_id, "/YRECLDP_RCL_DI", &yrecldp->rcl_di);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X1I", &yrecldp->rcl_x1i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X2I", &yrecldp->rcl_x2i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X3I", &yrecldp->rcl_x3i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X4I", &yrecldp->rcl_x4i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST1I", &yrecldp->rcl_const1i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST2I", &yrecldp->rcl_const2i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST3I", &yrecldp->rcl_const3i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST4I", &yrecldp->rcl_const4i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST5I", &yrecldp->rcl_const5i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST6I", &yrecldp->rcl_const6i);  
-  read_hdf5(file_id, "/YRECLDP_RCL_APB1", &yrecldp->rcl_apb1);  
-  read_hdf5(file_id, "/YRECLDP_RCL_APB2", &yrecldp->rcl_apb2);  
-  read_hdf5(file_id, "/YRECLDP_RCL_APB3", &yrecldp->rcl_apb3);  
-  read_hdf5(file_id, "/YRECLDP_RCL_AS", &yrecldp->rcl_as);  
-  read_hdf5(file_id, "/YRECLDP_RCL_BS", &yrecldp->rcl_bs);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CS", &yrecldp->rcl_cs);  
-  read_hdf5(file_id, "/YRECLDP_RCL_DS", &yrecldp->rcl_ds);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X1S", &yrecldp->rcl_x1s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X2S", &yrecldp->rcl_x2s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X3S", &yrecldp->rcl_x3s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X4S", &yrecldp->rcl_x4s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST1S", &yrecldp->rcl_const1s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST2S", &yrecldp->rcl_const2s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST3S", &yrecldp->rcl_const3s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST4S", &yrecldp->rcl_const4s);   
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST5S", &yrecldp->rcl_const5s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST6S", &yrecldp->rcl_const6s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST7S", &yrecldp->rcl_const7s);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST8S", &yrecldp->rcl_const8s);   
-  read_hdf5(file_id, "/YRECLDP_RDENSWAT", &yrecldp->rdenswat);  
-  read_hdf5(file_id, "/YRECLDP_RDENSREF", &yrecldp->rdensref);  
-  read_hdf5(file_id, "/YRECLDP_RCL_AR", &yrecldp->rcl_ar);  
-  read_hdf5(file_id, "/YRECLDP_RCL_BR", &yrecldp->rcl_br);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CR", &yrecldp->rcl_cr);  
-  read_hdf5(file_id, "/YRECLDP_RCL_DR", &yrecldp->rcl_dr);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X1R", &yrecldp->rcl_x1r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X2R", &yrecldp->rcl_x2r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_X4R", &yrecldp->rcl_x4r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_KA273", &yrecldp->rcl_ka273);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CDENOM1", &yrecldp->rcl_cdenom1);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CDENOM2", &yrecldp->rcl_cdenom2);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CDENOM3", &yrecldp->rcl_cdenom3);  
-  read_hdf5(file_id, "/YRECLDP_RCL_SCHMIDT", &yrecldp->rcl_schmidt);  
-  read_hdf5(file_id, "/YRECLDP_RCL_DYNVISC", &yrecldp->rcl_dynvisc);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST1R", &yrecldp->rcl_const1r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST2R", &yrecldp->rcl_const2r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST3R", &yrecldp->rcl_const3r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST4R", &yrecldp->rcl_const4r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_FAC1", &yrecldp->rcl_fac1);  
-  read_hdf5(file_id, "/YRECLDP_RCL_FAC2", &yrecldp->rcl_fac2);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST5R", &yrecldp->rcl_const5r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_CONST6R", &yrecldp->rcl_const6r);  
-  read_hdf5(file_id, "/YRECLDP_RCL_FZRAB", &yrecldp->rcl_fzrab);  
+  read_hdf5(file_id, "/RCPD", rcpd);
+  read_hdf5(file_id, "/RETV", retv);
+  read_hdf5(file_id, "/RLVTT", rlvtt);
+  read_hdf5(file_id, "/RLSTT", rlstt);
+  read_hdf5(file_id, "/RLMLT", rlmlt);
+  read_hdf5(file_id, "/RTT", rtt);
+  read_hdf5(file_id, "/RV", rv);
+  read_hdf5(file_id, "/R2ES", r2es);
+  read_hdf5(file_id, "/R3LES", r3les);
+  read_hdf5(file_id, "/R3IES", r3ies);
+  read_hdf5(file_id, "/R4LES", r4les);
+  read_hdf5(file_id, "/R4IES", r4ies);
+  read_hdf5(file_id, "/R5LES", r5les);
+  read_hdf5(file_id, "/R5IES", r5ies);
+  read_hdf5(file_id, "/R5ALVCP", r5alvcp);
+  read_hdf5(file_id, "/R5ALSCP", r5alscp);
+  read_hdf5(file_id, "/RALVDCP", ralvdcp);
+  read_hdf5(file_id, "/RALSDCP", ralsdcp);
+  read_hdf5(file_id, "/RALFDCP", ralfdcp);
+  read_hdf5(file_id, "/RTWAT", rtwat);
+  read_hdf5(file_id, "/RTICE", rtice);
+  read_hdf5(file_id, "/RTICECU", rticecu);
+  read_hdf5(file_id, "/RTWAT_RTICE_R", rtwat_rtice_r);
+  read_hdf5(file_id, "/RTWAT_RTICECU_R", rtwat_rticecu_r);
+  read_hdf5(file_id, "/RKOOP1", rkoop1);
+  read_hdf5(file_id, "/RKOOP2", rkoop2);
+
+  read_hdf5(file_id, "/YRECLDP_RAMID", &yrecldp->ramid);
+  read_hdf5(file_id, "/YRECLDP_RCLDIFF", &yrecldp->rcldiff);
+  read_hdf5(file_id, "/YRECLDP_RCLDIFF_CONVI", &yrecldp->rcldiff_convi);
+  read_hdf5(file_id, "/YRECLDP_RCLCRIT", &yrecldp->rclcrit);
+  read_hdf5(file_id, "/YRECLDP_RCLCRIT_SEA", &yrecldp->rclcrit_sea);
+  read_hdf5(file_id, "/YRECLDP_RCLCRIT_LAND", &yrecldp->rclcrit_land);
+  read_hdf5(file_id, "/YRECLDP_RKCONV", &yrecldp->rkconv);
+  read_hdf5(file_id, "/YRECLDP_RPRC1", &yrecldp->rprc1);
+  read_hdf5(file_id, "/YRECLDP_RPRC2", &yrecldp->rprc2);
+  read_hdf5(file_id, "/YRECLDP_RCLDMAX", &yrecldp->rcldmax);
+  read_hdf5(file_id, "/YRECLDP_RPECONS", &yrecldp->rpecons);
+  read_hdf5(file_id, "/YRECLDP_RVRFACTOR", &yrecldp->rvrfactor);
+  read_hdf5(file_id, "/YRECLDP_RPRECRHMAX", &yrecldp->rprecrhmax);
+  read_hdf5(file_id, "/YRECLDP_RTAUMEL", &yrecldp->rtaumel);
+  read_hdf5(file_id, "/YRECLDP_RAMIN", &yrecldp->ramin);
+  read_hdf5(file_id, "/YRECLDP_RLMIN", &yrecldp->rlmin);
+  read_hdf5(file_id, "/YRECLDP_RKOOPTAU", &yrecldp->rkooptau);
+  read_hdf5(file_id, "/YRECLDP_RCLDTOPP", &yrecldp->rcldtopp);
+  read_hdf5(file_id, "/YRECLDP_RLCRITSNOW", &yrecldp->rlcritsnow);
+  read_hdf5(file_id, "/YRECLDP_RSNOWLIN1", &yrecldp->rsnowlin1);
+  read_hdf5(file_id, "/YRECLDP_RSNOWLIN2", &yrecldp->rsnowlin2);
+  read_hdf5(file_id, "/YRECLDP_RICEHI1", &yrecldp->ricehi1);
+  read_hdf5(file_id, "/YRECLDP_RICEHI2", &yrecldp->ricehi2);
+  read_hdf5(file_id, "/YRECLDP_RICEINIT", &yrecldp->riceinit);
+  read_hdf5(file_id, "/YRECLDP_RVICE", &yrecldp->rvice);
+  read_hdf5(file_id, "/YRECLDP_RVRAIN", &yrecldp->rvrain);
+  read_hdf5(file_id, "/YRECLDP_RVSNOW", &yrecldp->rvsnow);
+  read_hdf5(file_id, "/YRECLDP_RTHOMO", &yrecldp->rthomo);
+  read_hdf5(file_id, "/YRECLDP_RCOVPMIN", &yrecldp->rcovpmin);
+  read_hdf5(file_id, "/YRECLDP_RCCN", &yrecldp->rccn);
+  read_hdf5(file_id, "/YRECLDP_RNICE", &yrecldp->rnice);
+  read_hdf5(file_id, "/YRECLDP_RCCNOM", &yrecldp->rccnom);
+  read_hdf5(file_id, "/YRECLDP_RCCNSS", &yrecldp->rccnss);
+  read_hdf5(file_id, "/YRECLDP_RCCNSU", &yrecldp->rccnsu);
+  read_hdf5(file_id, "/YRECLDP_RCLDTOPCF", &yrecldp->rcldtopcf);
+  read_hdf5(file_id, "/YRECLDP_RDEPLIQREFRATE", &yrecldp->rdepliqrefrate);
+  read_hdf5(file_id, "/YRECLDP_RDEPLIQREFDEPTH", &yrecldp->rdepliqrefdepth);
+  read_hdf5(file_id, "/YRECLDP_RCL_KKAac", &yrecldp->rcl_kkaac);
+  read_hdf5(file_id, "/YRECLDP_RCL_KKBac", &yrecldp->rcl_kkbac);
+  read_hdf5(file_id, "/YRECLDP_RCL_KKAau", &yrecldp->rcl_kkaau);
+  read_hdf5(file_id, "/YRECLDP_RCL_KKBauq", &yrecldp->rcl_kkbauq);
+  read_hdf5(file_id, "/YRECLDP_RCL_KKBaun", &yrecldp->rcl_kkbaun);
+  read_hdf5(file_id, "/YRECLDP_RCL_KK_cloud_num_sea", &yrecldp->rcl_kk_cloud_num_sea);
+  read_hdf5(file_id, "/YRECLDP_RCL_KK_cloud_num_land", &yrecldp->rcl_kk_cloud_num_land);
+  read_hdf5(file_id, "/YRECLDP_RCL_AI", &yrecldp->rcl_ai);
+  read_hdf5(file_id, "/YRECLDP_RCL_BI", &yrecldp->rcl_bi);
+  read_hdf5(file_id, "/YRECLDP_RCL_CI", &yrecldp->rcl_ci);
+  read_hdf5(file_id, "/YRECLDP_RCL_DI", &yrecldp->rcl_di);
+  read_hdf5(file_id, "/YRECLDP_RCL_X1I", &yrecldp->rcl_x1i);
+  read_hdf5(file_id, "/YRECLDP_RCL_X2I", &yrecldp->rcl_x2i);
+  read_hdf5(file_id, "/YRECLDP_RCL_X3I", &yrecldp->rcl_x3i);
+  read_hdf5(file_id, "/YRECLDP_RCL_X4I", &yrecldp->rcl_x4i);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST1I", &yrecldp->rcl_const1i);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST2I", &yrecldp->rcl_const2i);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST3I", &yrecldp->rcl_const3i);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST4I", &yrecldp->rcl_const4i);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST5I", &yrecldp->rcl_const5i);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST6I", &yrecldp->rcl_const6i);
+  read_hdf5(file_id, "/YRECLDP_RCL_APB1", &yrecldp->rcl_apb1);
+  read_hdf5(file_id, "/YRECLDP_RCL_APB2", &yrecldp->rcl_apb2);
+  read_hdf5(file_id, "/YRECLDP_RCL_APB3", &yrecldp->rcl_apb3);
+  read_hdf5(file_id, "/YRECLDP_RCL_AS", &yrecldp->rcl_as);
+  read_hdf5(file_id, "/YRECLDP_RCL_BS", &yrecldp->rcl_bs);
+  read_hdf5(file_id, "/YRECLDP_RCL_CS", &yrecldp->rcl_cs);
+  read_hdf5(file_id, "/YRECLDP_RCL_DS", &yrecldp->rcl_ds);
+  read_hdf5(file_id, "/YRECLDP_RCL_X1S", &yrecldp->rcl_x1s);
+  read_hdf5(file_id, "/YRECLDP_RCL_X2S", &yrecldp->rcl_x2s);
+  read_hdf5(file_id, "/YRECLDP_RCL_X3S", &yrecldp->rcl_x3s);
+  read_hdf5(file_id, "/YRECLDP_RCL_X4S", &yrecldp->rcl_x4s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST1S", &yrecldp->rcl_const1s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST2S", &yrecldp->rcl_const2s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST3S", &yrecldp->rcl_const3s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST4S", &yrecldp->rcl_const4s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST5S", &yrecldp->rcl_const5s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST6S", &yrecldp->rcl_const6s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST7S", &yrecldp->rcl_const7s);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST8S", &yrecldp->rcl_const8s);
+  read_hdf5(file_id, "/YRECLDP_RDENSWAT", &yrecldp->rdenswat);
+  read_hdf5(file_id, "/YRECLDP_RDENSREF", &yrecldp->rdensref);
+  read_hdf5(file_id, "/YRECLDP_RCL_AR", &yrecldp->rcl_ar);
+  read_hdf5(file_id, "/YRECLDP_RCL_BR", &yrecldp->rcl_br);
+  read_hdf5(file_id, "/YRECLDP_RCL_CR", &yrecldp->rcl_cr);
+  read_hdf5(file_id, "/YRECLDP_RCL_DR", &yrecldp->rcl_dr);
+  read_hdf5(file_id, "/YRECLDP_RCL_X1R", &yrecldp->rcl_x1r);
+  read_hdf5(file_id, "/YRECLDP_RCL_X2R", &yrecldp->rcl_x2r);
+  read_hdf5(file_id, "/YRECLDP_RCL_X4R", &yrecldp->rcl_x4r);
+  read_hdf5(file_id, "/YRECLDP_RCL_KA273", &yrecldp->rcl_ka273);
+  read_hdf5(file_id, "/YRECLDP_RCL_CDENOM1", &yrecldp->rcl_cdenom1);
+  read_hdf5(file_id, "/YRECLDP_RCL_CDENOM2", &yrecldp->rcl_cdenom2);
+  read_hdf5(file_id, "/YRECLDP_RCL_CDENOM3", &yrecldp->rcl_cdenom3);
+  read_hdf5(file_id, "/YRECLDP_RCL_SCHMIDT", &yrecldp->rcl_schmidt);
+  read_hdf5(file_id, "/YRECLDP_RCL_DYNVISC", &yrecldp->rcl_dynvisc);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST1R", &yrecldp->rcl_const1r);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST2R", &yrecldp->rcl_const2r);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST3R", &yrecldp->rcl_const3r);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST4R", &yrecldp->rcl_const4r);
+  read_hdf5(file_id, "/YRECLDP_RCL_FAC1", &yrecldp->rcl_fac1);
+  read_hdf5(file_id, "/YRECLDP_RCL_FAC2", &yrecldp->rcl_fac2);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST5R", &yrecldp->rcl_const5r);
+  read_hdf5(file_id, "/YRECLDP_RCL_CONST6R", &yrecldp->rcl_const6r);
+  read_hdf5(file_id, "/YRECLDP_RCL_FZRAB", &yrecldp->rcl_fzrab);
   read_hdf5(file_id, "/YRECLDP_RCL_FZRBB", &yrecldp->rcl_fzrbb);
   read_hdf5_int(file_id, "/YRECLDP_LCLDEXTRA", &yrecldp->lcldextra); // Bool
-  read_hdf5_int(file_id, "/YRECLDP_LCLDBUDGET", &yrecldp->lcldbudget); // Bool 
-  read_hdf5_int(file_id, "/YRECLDP_NSSOPT", &yrecldp->nssopt);   
-  read_hdf5_int(file_id, "/YRECLDP_NCLDTOP", &yrecldp->ncldtop);  
-  read_hdf5_int(file_id, "/YRECLDP_NAECLBC", &yrecldp->naeclbc);  
-  read_hdf5_int(file_id, "/YRECLDP_NAECLDU", &yrecldp->naecldu);  
-  read_hdf5_int(file_id, "/YRECLDP_NAECLOM", &yrecldp->naeclom);  
-  read_hdf5_int(file_id, "/YRECLDP_NAECLSS", &yrecldp->naeclss);  
-  read_hdf5_int(file_id, "/YRECLDP_NAECLSU", &yrecldp->naeclsu);  
-  read_hdf5_int(file_id, "/YRECLDP_NCLDDIAG", &yrecldp->nclddiag);  
-  read_hdf5_int(file_id, "/YRECLDP_NAERCLD", &yrecldp->naercld);  
-  read_hdf5_int(file_id, "/YRECLDP_LAERLIQAUTOLSP", &yrecldp->laerliqautolsp); // Bool 
-  read_hdf5_int(file_id, "/YRECLDP_LAERLIQAUTOCP", &yrecldp->laerliqautocp); // Bool 
-  read_hdf5_int(file_id, "/YRECLDP_LAERLIQAUTOCPB", &yrecldp->laerliqautocpb); // Bool 
-  read_hdf5_int(file_id, "/YRECLDP_LAERLIQCOLL", &yrecldp->laerliqcoll); // Bool 
-  read_hdf5_int(file_id, "/YRECLDP_LAERICESED", &yrecldp->laericesed); // Bool 
-  read_hdf5_int(file_id, "/YRECLDP_LAERICEAUTO", &yrecldp->laericeauto); // Bool 
-  read_hdf5(file_id, "/YRECLDP_NSHAPEP", &yrecldp->nshapep);  
-  read_hdf5(file_id, "/YRECLDP_NSHAPEQ", &yrecldp->nshapeq);  
-  read_hdf5_int(file_id, "/YRECLDP_NBETA", &yrecldp->nbeta);  
-  
+  read_hdf5_int(file_id, "/YRECLDP_LCLDBUDGET", &yrecldp->lcldbudget); // Bool
+  read_hdf5_int(file_id, "/YRECLDP_NSSOPT", &yrecldp->nssopt);
+  read_hdf5_int(file_id, "/YRECLDP_NCLDTOP", &yrecldp->ncldtop);
+  read_hdf5_int(file_id, "/YRECLDP_NAECLBC", &yrecldp->naeclbc);
+  read_hdf5_int(file_id, "/YRECLDP_NAECLDU", &yrecldp->naecldu);
+  read_hdf5_int(file_id, "/YRECLDP_NAECLOM", &yrecldp->naeclom);
+  read_hdf5_int(file_id, "/YRECLDP_NAECLSS", &yrecldp->naeclss);
+  read_hdf5_int(file_id, "/YRECLDP_NAECLSU", &yrecldp->naeclsu);
+  read_hdf5_int(file_id, "/YRECLDP_NCLDDIAG", &yrecldp->nclddiag);
+  read_hdf5_int(file_id, "/YRECLDP_NAERCLD", &yrecldp->naercld);
+  read_hdf5_int(file_id, "/YRECLDP_LAERLIQAUTOLSP", &yrecldp->laerliqautolsp); // Bool
+  read_hdf5_int(file_id, "/YRECLDP_LAERLIQAUTOCP", &yrecldp->laerliqautocp); // Bool
+  read_hdf5_int(file_id, "/YRECLDP_LAERLIQAUTOCPB", &yrecldp->laerliqautocpb); // Bool
+  read_hdf5_int(file_id, "/YRECLDP_LAERLIQCOLL", &yrecldp->laerliqcoll); // Bool
+  read_hdf5_int(file_id, "/YRECLDP_LAERICESED", &yrecldp->laericesed); // Bool
+  read_hdf5_int(file_id, "/YRECLDP_LAERICEAUTO", &yrecldp->laericeauto); // Bool
+  read_hdf5(file_id, "/YRECLDP_NSHAPEP", &yrecldp->nshapep);
+  read_hdf5(file_id, "/YRECLDP_NSHAPEQ", &yrecldp->nshapeq);
+  read_hdf5_int(file_id, "/YRECLDP_NBETA", &yrecldp->nbeta);
+
   status = H5Fclose(file_id);
 
 #endif

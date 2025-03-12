@@ -40,7 +40,7 @@ void print_error(const char *name, double zminval, double zmaxval, double zmaxer
   const char* clwarn = (zrelerr > 10.0 * zeps) ? " !!!!" : "     ";
   zrelerr = 100.0 * zrelerr;
 
-  printf(" %+20s %dD%d %20.13le %20.13le %20.13le %20.13le %20.13le %s\n",
+  printf(" %20s %dD%d %20.13le %20.13le %20.13le %20.13le %20.13le %s\n",
          name, ndim, iopt, zminval, zmaxval, zmaxerr, zavgpgp, zrelerr, clwarn);
 }
 
@@ -205,7 +205,7 @@ int cloudsc_validate(const int nlon, const int nlev, const int nclv, const int n
 		 ref_tend_loc_a, ref_tend_loc_q, ref_tend_loc_t, ref_tend_loc_cld);
 
 
-  printf(" %+20s %s %+20s %+20s %+20s %+20s %+20s\n",
+  printf(" %20s %s %20s %20s %20s %20s %20s\n",
 	 "Variable", "Dim", "MinValue", "MaxValue", "AbsMaxErr", "AvgAbsErr/GP", "MaxRelErr-%");
 
   validate_2d("PLUDE", ref_plude, plude, nproma, nlev, ngptot, nblocks);
