@@ -1,0 +1,130 @@
+name: build-hpc
+
+# Controls when the action will run
+on:
+
+  # Trigger the workflow on all pushes to main and develop, except on tag creation
+  push:
+    branches:
+    - main
+    - develop
+    tags-ignore:
+    - '**'
+
+  # Trigger the workflow on all pull requests
+  pull_request: ~
+
+  # Allow workflow to be dispatched on demand
+  workflow_dispatch: ~
+
+  # Trigger after public PR approved for CI
+  pull_request_target:
+    types: [labeled]
+
+env:
+  CLOUDSC_TOOLS: ${{ github.workspace }}/.github/tools
+  CTEST_PARALLEL_LEVEL: 1
+  CACHE_SUFFIX: v1        # Increase to force new cache to be created
+
+jobs:
+  ci-hpc:
+    name: ci-hpc
+    if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+
+    strategy:
+      fail-fast: false    # false: try to complete all jobs
+
+      matrix:
+        name:
+          - ac-gpu nvhpc
+          - lumi-g cce
+
+        include:
+          - name: ac-gpu nvhpc
+            site: ac-batch
+            troika_user_secret: HPC_CI_SSH_USER
+            sbatch_options: |
+              #SBATCH --time=00:20:00
+              #SBATCH --nodes=1
+              #SBATCH --ntasks=1
+              #SBATCH --cpus-per-task=32
+              #SBATCH --gpus-per-task=1
+              #SBATCH --mem=200G
+              #SBATCH --qos=dg
+            arch: ecmwf/hpc2020/nvhpc/24.5
+            modules: ~
+            build_options: --with-loki=ON --with-field-api=ON
+            # TODO: These tests trigger a SIGFPE, to be investigated
+            exclude_tests:
+              - dwarf-cloudsc-loki-c-dp-serial
+              - dwarf-cloudsc-loki-c-dp-omp
+              - dwarf-cloudsc-fortran-sp-serial
+              - dwarf-cloudsc-fortran-sp-omp
+              - dwarf-cloudsc-fortran-field-sp-serial
+              - dwarf-cloudsc-fortran-field-sp-omp
+              - dwarf-cloudsc-loki-idem-sp-serial
+              - dwarf-cloudsc-loki-idem-stack-sp-serial
+
+          - name: lumi-g cce
+            site: lumi
+            troika_user_secret: LUMI_CI_SSH_USER
+            account_secret: LUMI_CI_PROJECT
+            sbatch_options: |
+              #SBATCH --time=00:20:00
+              #SBATCH --nodes=1
+              #SBATCH --ntasks-per-node=1
+              #SBATCH --gpus-per-task=1
+              #SBATCH --partition=dev-g
+              #SBATCH --account={0}
+            arch: eurohpc/lumi/cray-gpu/17.0.1
+            modules: ~
+            output_dir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
+            workdir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
+            # TODO: Building without OpenMP because some tests fail on OMPT initialization
+            build_options: --with-loki=ON --with-openmp=OFF
+            # TODO: These tests fail with "Memory access fault by GPU node-4"
+            exclude_tests:
+              - dwarf-cloudsc-hip-dp-serial
+              - dwarf-cloudsc-hip-hoist-dp-serial
+              - dwarf-cloudsc-hip-k-caching-dp-serial
+              - dwarf-cloudsc-hip-sp-serial
+
+    runs-on: [self-hosted, linux, hpc]
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: ecmwf-actions/reusable-workflows/ci-hpc-generic@v2
+        with:
+          site: ${{ matrix.site }}
+          troika_user: ${{ secrets[matrix.troika_user_secret] }}
+          sbatch_options: ${{ format(matrix.sbatch_options, secrets[matrix.account_secret]) }}
+          output_dir: ${{ format(matrix.output_dir, secrets[matrix.account_secret]) || '' }}
+          workdir: ${{ format(matrix.workdir, secrets[matrix.account_secret]) || '' }}
+          template_data: |
+            ctest_options: ${{ matrix.ctest_options || '' }}
+          template: |
+            {% for module in "${{ join(matrix.modules, ',') }}".split(',') %}
+              module load {{module}}
+            {% endfor %}
+
+            REPO=${{ github.event.pull_request.head.repo.full_name || github.repository }}
+            SHA=${{ github.event.pull_request.head.sha || github.sha }}
+            mkdir -p $REPO
+            pushd $REPO
+            git init
+            git remote add origin ${{ github.server_url }}/$REPO
+            git fetch origin $SHA
+            git reset --hard FETCH_HEAD
+
+            ./cloudsc-bundle create
+            ./cloudsc-bundle build --arch ${{matrix.arch}} --keep-going --retry-verbose ${{matrix.build_options}}
+
+            {% for test in "${{ join(matrix.exclude_tests, ',') }}".split(',') %}
+              echo {{test}} >> exclude_tests
+            {% endfor %}
+
+            source build/env.sh
+            ctest --test-dir build --output-on-failure --exclude-from-file ../exclude_tests {{ ctest_options }}
+            popd
+
+            rm -r ./$REPO
