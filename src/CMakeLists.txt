@@ -6,21 +6,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-<<<<<<< HEAD
-add_subdirectory(prototype1)
-add_subdirectory(common)
-add_subdirectory(cloudsc_fortran)
-add_subdirectory(cloudsc_fortran_atlas)
-add_subdirectory(cloudsc_pyiface)
-add_subdirectory(cloudsc_python)
-add_subdirectory(cloudsc_c)
-add_subdirectory(cloudsc_cuda)
-add_subdirectory(cloudsc_hip)
-add_subdirectory(cloudsc_sycl)
-add_subdirectory(cloudsc_gpu)
-add_subdirectory(cloudsc_gpu_atlas)
-add_subdirectory(cloudsc_loki)
-=======
 set( COMMON_MODULE "${CMAKE_CURRENT_SOURCE_DIR}/common/module" )
 set( COMMON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/common/include" )
 
@@ -75,4 +60,3 @@ foreach( prec IN LISTS CLOUDSC_PRECISIONS )
   endif()
 
 endforeach()
->>>>>>> develop
