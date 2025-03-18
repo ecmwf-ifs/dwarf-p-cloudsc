@@ -63,7 +63,7 @@ jobs:
             caching: true
 
           - name : linux intel-classic
-            os: ubuntu-24.04
+            os: ubuntu-22.04
             compiler: intel-classic
             compiler_cc: icc
             compiler_cxx: icpc
@@ -204,11 +204,15 @@ jobs:
         cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
         recreate_cache: ${{ matrix.caching == false }}
         dependencies: |
-          ecmwf/ecbuild
-          ecmwf-ifs/loki@refs/tags/0.3.0
-        dependency_branch: develop
+          ecmwf/ecbuild@refs/heads/develop
+          ecmwf-ifs/loki
+          ecmwf-ifs/fiat@refs/heads/develop
+          ecmwf-ifs/field_api
+        dependency_branch: main
         dependency_cmake_options: |
           ecmwf-ifs/loki: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
+          ecmwf-ifs/fiat: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
+          ecmwf-ifs/field_api: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
         cmake_options:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}"
         ctest_options: "${{ matrix.ctest_options }}"
 
