@@ -10,7 +10,9 @@
 
 #include "cloudsc_driver_hoist.h"
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include "mycpu.h"
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -418,12 +420,18 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
   hipMemcpy(d_yrecldp, yrecldp, sizeof(TECLDP), hipMemcpyHostToDevice);
   // end host to device
 
+#ifdef _OPENMP
   double t1 = omp_get_wtime();
+#endif
 
     int b, bsize, icalls=0, igpc=numcols;
     int coreid = mycpu();
+#ifdef _OPENMP
     int tid = omp_get_thread_num();
     double start = omp_get_wtime();
+#else
+    int tid = 0;
+#endif
 
     dim3 blockdim(nproma, 1, 1);
     //dim3 griddim(1, 1, ceil(((dtype)numcols) / ((dtype)nproma)));
@@ -462,7 +470,9 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     gpuErrchk( hipPeekAtLastError() );
     gpuErrchk( hipDeviceSynchronize() );
 
+#ifdef _OPENMP
     double end = omp_get_wtime();
+#endif
 
     // device to host
     hipMemcpy(tend_loc_t, d_tend_loc_t, sizeof(dtype) * nblocks*nlev*nproma, hipMemcpyDeviceToHost);
@@ -490,12 +500,18 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     hipMemcpy(pfhpsn, d_pfhpsn, sizeof(dtype) * nblocks*(nlev+1)*nproma, hipMemcpyDeviceToHost);
 
     /* int msec = diff * 1000 / CLOCKS_PER_SEC; */
+#ifdef _OPENMP
     zinfo[0][tid] = end - start;
+#else
+    zinfo[0][tid] = 0;
+#endif
     zinfo[1][tid] = (dtype) coreid;
     zinfo[2][tid] = (dtype) icalls;
     zinfo[3][tid] = (dtype) igpc;
 
+#ifdef _OPENMP
   double t2 = omp_get_wtime();
+#endif
 
   printf("     NUMOMP=%d, NGPTOT=%d, NPROMA=%d, NGPBLKS=%d\n", numthreads, numcols, nproma, nblocks);
   printf(" %10s%10s%10s%10s%10s %4s : %10s%10s%10s\n",
@@ -517,7 +533,11 @@ void cloudsc_driver(int numthreads, int numcols, int nproma) {
     printf(" %10d%10d%10d%10d%10d %4d : %10d%10d%10d @ core#\n",
            numthreads, numcols, igpc, icalls, nproma, t, (int)(tloc * 1000.), (int)zmflops, (int)zthrput);
   }
+#ifdef _OPENMP
   double tdiff = t2 - t1;
+#else
+  double tdiff = 0.0;
+#endif
   zfrac = 1.0;
   if (tdiff > 0.0) {
     zmflops = 1.0e-06 * zfrac * zhpm * ((double)numcols / 100.) / tdiff;
