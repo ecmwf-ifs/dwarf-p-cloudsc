@@ -24,7 +24,7 @@ ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING_ATLAS
 
 if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc-atlas
+        TARGET dwarf-cloudsc-gpu-scc-atlas-${prec}
         SOURCES
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
@@ -35,7 +35,7 @@ if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
         LIBS
             atlas_f
             pluto_f
-            cloudsc-common-lib
+            cloudsc-common-${prec}-atlas
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
     )
 
@@ -51,7 +51,7 @@ endif()
 
 if( HAVE_CLOUDSC_GPU_SCC_HOIST_ATLAS )
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
+        TARGET dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
         SOURCES
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
@@ -62,7 +62,7 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST_ATLAS )
         LIBS
             atlas_f
             pluto_f
-            cloudsc-common-lib
+            cloudsc-common-${prec}-atlas
         DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
     )
 
@@ -77,7 +77,7 @@ endif()
 
 if( HAVE_CLOUDSC_GPU_SCC_K_CACHING_ATLAS )
     ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas
+        TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
         SOURCES
             cloudsc_global_atlas_state_mod.F90
             expand_atlas_mod.F90
@@ -88,7 +88,7 @@ if( HAVE_CLOUDSC_GPU_SCC_K_CACHING_ATLAS )
         LIBS
             atlas_f
             pluto_f
-            cloudsc-common-lib
+            cloudsc-common-${prec}-atlas
             DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
     )
 
