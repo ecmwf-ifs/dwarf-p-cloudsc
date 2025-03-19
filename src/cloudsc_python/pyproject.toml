@@ -28,6 +28,8 @@ dependencies = [
     "click",
     "h5py",
     "numpy",
+    "f90wrap>=0.2.15",
+    "loki @ git+https://github.com/ecmwf-ifs/loki.git@main" # Required for JIT-building via f90wrap
 ]
 
 [project.scripts]
