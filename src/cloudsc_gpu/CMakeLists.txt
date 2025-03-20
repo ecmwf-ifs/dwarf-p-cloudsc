@@ -28,7 +28,7 @@ function( cloudsc_add_gpu_exe )
             ${_CL_DRIVER}
             ${_CL_KERNEL}
         LIBS
-            cloudsc-common-${prec}-${_CL_COMMON_LIB}
+            cloudsc_common.${prec}.${_CL_COMMON_LIB}
             ${_CL_LIBS}
     )
 
