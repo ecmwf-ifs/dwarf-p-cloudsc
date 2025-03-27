@@ -469,94 +469,30 @@ CONTAINS
       ! DO JKGLO=1,NGPTOT,NPROMA ! just a way to loop over NGPBLKS
       !    IBL=(JKGLO-1)/NPROMA+1
       !    ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
-      PT(QUEUE)%P(:,:,IBL)=IBL
-      PQ(QUEUE)%P(:,:,IBL)=IBL
-      
-      TEND_TMP_T(QUEUE)%P(:,:,IBL)=IBL
-      TEND_TMP_Q(QUEUE)%P(:,:,IBL)=IBL
-      TEND_TMP_A(QUEUE)%P(:,:,IBL)=IBL
-      TEND_TMP_CLD(QUEUE)%P(:,:,:,IBL)=IBL
-      
-      TEND_LOC_T(QUEUE)%P(:,:,IBL)=IBL
-      TEND_LOC_Q(QUEUE)%P(:,:,IBL)=IBL
-      TEND_LOC_A(QUEUE)%P(:,:,IBL)=IBL
-      TEND_LOC_CLD(QUEUE)%P(:,:,:,IBL)=IBL
-      
-      PVFA(QUEUE)%P(:,:,IBL)=IBL
-      PVFL(QUEUE)%P(:,:,IBL)=IBL
-      PVFI(QUEUE)%P(:,:,IBL)=IBL
-      PDYNA(QUEUE)%P(:,:,IBL)=IBL
-      PDYNL(QUEUE)%P(:,:,IBL)=IBL
-      PDYNI(QUEUE)%P(:,:,IBL)=IBL
-      
-      PHRSW(QUEUE)%P(:,:,IBL)=IBL
-      PHRLW(QUEUE)%P(:,:,IBL)=IBL
-      PVERVEL(QUEUE)%P(:,:,IBL)=IBL
-      PAP(QUEUE)%P(:,:,IBL)=IBL
-      PAPH(QUEUE)%P(:,:,IBL)=IBL
-      PLSM(QUEUE)%P(:,IBL)=IBL
-      LDCUM(QUEUE)%P(:,IBL)=IBL
-      KTYPE(QUEUE)%P(:,IBL)=IBL
-      
-      PLU(QUEUE)%P(:,:,IBL)=IBL
-      PLUDE(QUEUE)%P(:,:,IBL)=IBL
-      PSNDE(QUEUE)%P(:,:,IBL)=IBL
-      PMFU(QUEUE)%P(:,:,IBL)=IBL
-      PMFD(QUEUE)%P(:,:,IBL)=IBL
-      !---prognostic fields
-      PA(QUEUE)%P(:,:,IBL)=IBL
-      PCLV(QUEUE)%P(:,:,:,IBL)=IBL
-      PSUPSAT(QUEUE)%P(:,:,IBL)=IBL
-      !-- arrays for aerosol-cloud interactions
-      PLCRIT_AER(QUEUE)%P(:,:,IBL)=IBL
-      PICRIT_AER(QUEUE)%P(:,:,IBL)=IBL
-      PRE_ICE(QUEUE)%P(:,:,IBL)=IBL
-      PCCN(QUEUE)%P(:,:,IBL)=IBL
-      PNICE(QUEUE)%P(:,:,IBL)=IBL
-      !---diagnostic output
-      PCOVPTOT(QUEUE)%P(:,:,IBL)=IBL
-      PRAINFRAC_TOPRFZ(QUEUE)%P(:,IBL)=IBL
-      !---resulting fluxes
-      PFSQLF(QUEUE)%P(:,:,IBL)=IBL
-      PFSQIF (QUEUE)%P(:,:,IBL)=IBL
-      PFCQNNG(QUEUE)%P(:,:,IBL)=IBL
-      PFCQLNG(QUEUE)%P(:,:,IBL)=IBL
-      PFSQRF(QUEUE)%P(:,:,IBL)=IBL
-       PFSQSF (QUEUE)%P(:,:,IBL)=IBL
-      PFCQRNG(QUEUE)%P(:,:,IBL)=IBL
-      PFCQSNG(QUEUE)%P(:,:,IBL)=IBL
-      PFSQLTUR(QUEUE)%P(:,:,IBL)=IBL
-      PFSQITUR (QUEUE)%P(:,:,IBL)=IBL
-    
-      PFPLSL(QUEUE)%P(:,:,IBL)=IBL
-      PFPLSN(QUEUE)%P(:,:,IBL)=IBL
-      PFHPSL(QUEUE)%P(:,:,IBL)=IBL
-      PFHPSN(QUEUE)%P(:,:,IBL)=IBL
-
-         ! CALL CLOUDSC_SCC &
-         !  & (1, ICEND, NPROMA, NLEV, PTSPHY,&
-         !  & PT(QUEUE)%P(:,:,IBL), PQ(QUEUE)%P(:,:,IBL), &
-         !  & TEND_TMP_T(QUEUE)%P(:,:,IBL), TEND_TMP_Q(QUEUE)%P(:,:,IBL), TEND_TMP_A(QUEUE)%P(:,:,IBL), TEND_TMP_CLD(QUEUE)%P(:,:,:,IBL), &
-         !  & TEND_LOC_T(QUEUE)%P(:,:,IBL), TEND_LOC_Q(QUEUE)%P(:,:,IBL), TEND_LOC_A(QUEUE)%P(:,:,IBL), TEND_LOC_CLD(QUEUE)%P(:,:,:,IBL), &
-         !  & PVFA(QUEUE)%P(:,:,IBL), PVFL(QUEUE)%P(:,:,IBL), PVFI(QUEUE)%P(:,:,IBL), PDYNA(QUEUE)%P(:,:,IBL), PDYNL(QUEUE)%P(:,:,IBL), PDYNI(QUEUE)%P(:,:,IBL), &
-         !  & PHRSW(QUEUE)%P(:,:,IBL),    PHRLW(QUEUE)%P(:,:,IBL),&
-         !  & PVERVEL(QUEUE)%P(:,:,IBL),  PAP(QUEUE)%P(:,:,IBL),      PAPH(QUEUE)%P(:,:,IBL),&
-         !  & PLSM(QUEUE)%P(:,IBL),       LDCUM(QUEUE)%P(:,IBL),      KTYPE(QUEUE)%P(:,IBL), &
-         !  & PLU(QUEUE)%P(:,:,IBL),      PLUDE(QUEUE)%P(:,:,IBL),    PSNDE(QUEUE)%P(:,:,IBL),    PMFU(QUEUE)%P(:,:,IBL),     PMFD(QUEUE)%P(:,:,IBL),&
-         !  !---prognostic fields
-         !  & PA(QUEUE)%P(:,:,IBL),       PCLV(QUEUE)%P(:,:,:,IBL),   PSUPSAT(QUEUE)%P(:,:,IBL),&
-         !  !-- arrays for aerosol-cloud interactions
-         !  & PLCRIT_AER(QUEUE)%P(:,:,IBL),PICRIT_AER(QUEUE)%P(:,:,IBL),&
-         !  & PRE_ICE(QUEUE)%P(:,:,IBL),&
-         !  & PCCN(QUEUE)%P(:,:,IBL),     PNICE(QUEUE)%P(:,:,IBL),&
-         !  !---diagnostic output
-         !  & PCOVPTOT(QUEUE)%P(:,:,IBL), PRAINFRAC_TOPRFZ(QUEUE)%P(:,IBL),&
-         !  !---resulting fluxes
-         !  & PFSQLF(QUEUE)%P(:,:,IBL),   PFSQIF (QUEUE)%P(:,:,IBL),  PFCQNNG(QUEUE)%P(:,:,IBL),  PFCQLNG(QUEUE)%P(:,:,IBL),&
-         !  & PFSQRF(QUEUE)%P(:,:,IBL),   PFSQSF (QUEUE)%P(:,:,IBL),  PFCQRNG(QUEUE)%P(:,:,IBL),  PFCQSNG(QUEUE)%P(:,:,IBL),&
-         !  & PFSQLTUR(QUEUE)%P(:,:,IBL), PFSQITUR (QUEUE)%P(:,:,IBL), &
-         !  & PFPLSL(QUEUE)%P(:,:,IBL),   PFPLSN(QUEUE)%P(:,:,IBL),   PFHPSL(QUEUE)%P(:,:,IBL),   PFHPSN(QUEUE)%P(:,:,IBL),&
-         !  & YRECLDP=LOCAL_YRECLDP)
+         CALL CLOUDSC_SCC &
+          & (1, ICEND, NPROMA, NLEV, PTSPHY,&
+          & PT(QUEUE)%P(:,:,IBL), PQ(QUEUE)%P(:,:,IBL), &
+          & TEND_TMP_T(QUEUE)%P(:,:,IBL), TEND_TMP_Q(QUEUE)%P(:,:,IBL), TEND_TMP_A(QUEUE)%P(:,:,IBL), TEND_TMP_CLD(QUEUE)%P(:,:,:,IBL), &
+          & TEND_LOC_T(QUEUE)%P(:,:,IBL), TEND_LOC_Q(QUEUE)%P(:,:,IBL), TEND_LOC_A(QUEUE)%P(:,:,IBL), TEND_LOC_CLD(QUEUE)%P(:,:,:,IBL), &
+          & PVFA(QUEUE)%P(:,:,IBL), PVFL(QUEUE)%P(:,:,IBL), PVFI(QUEUE)%P(:,:,IBL), PDYNA(QUEUE)%P(:,:,IBL), PDYNL(QUEUE)%P(:,:,IBL), PDYNI(QUEUE)%P(:,:,IBL), &
+          & PHRSW(QUEUE)%P(:,:,IBL),    PHRLW(QUEUE)%P(:,:,IBL),&
+          & PVERVEL(QUEUE)%P(:,:,IBL),  PAP(QUEUE)%P(:,:,IBL),      PAPH(QUEUE)%P(:,:,IBL),&
+          & PLSM(QUEUE)%P(:,IBL),       LDCUM(QUEUE)%P(:,IBL),      KTYPE(QUEUE)%P(:,IBL), &
+          & PLU(QUEUE)%P(:,:,IBL),      PLUDE(QUEUE)%P(:,:,IBL),    PSNDE(QUEUE)%P(:,:,IBL),    PMFU(QUEUE)%P(:,:,IBL),     PMFD(QUEUE)%P(:,:,IBL),&
+          !---prognostic fields
+          & PA(QUEUE)%P(:,:,IBL),       PCLV(QUEUE)%P(:,:,:,IBL),   PSUPSAT(QUEUE)%P(:,:,IBL),&
+          !-- arrays for aerosol-cloud interactions
+          & PLCRIT_AER(QUEUE)%P(:,:,IBL),PICRIT_AER(QUEUE)%P(:,:,IBL),&
+          & PRE_ICE(QUEUE)%P(:,:,IBL),&
+          & PCCN(QUEUE)%P(:,:,IBL),     PNICE(QUEUE)%P(:,:,IBL),&
+          !---diagnostic output
+          & PCOVPTOT(QUEUE)%P(:,:,IBL), PRAINFRAC_TOPRFZ(QUEUE)%P(:,IBL),&
+          !---resulting fluxes
+          & PFSQLF(QUEUE)%P(:,:,IBL),   PFSQIF (QUEUE)%P(:,:,IBL),  PFCQNNG(QUEUE)%P(:,:,IBL),  PFCQLNG(QUEUE)%P(:,:,IBL),&
+          & PFSQRF(QUEUE)%P(:,:,IBL),   PFSQSF (QUEUE)%P(:,:,IBL),  PFCQRNG(QUEUE)%P(:,:,IBL),  PFCQSNG(QUEUE)%P(:,:,IBL),&
+          & PFSQLTUR(QUEUE)%P(:,:,IBL), PFSQITUR (QUEUE)%P(:,:,IBL), &
+          & PFPLSL(QUEUE)%P(:,:,IBL),   PFPLSN(QUEUE)%P(:,:,IBL),   PFHPSL(QUEUE)%P(:,:,IBL),   PFHPSN(QUEUE)%P(:,:,IBL),&
+          & YRECLDP=LOCAL_YRECLDP)
 
       ENDDO
 !$acc end parallel loop
@@ -585,103 +521,12 @@ CONTAINS
       CALL TENDENCY_LOC%F_A%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
       CALL TENDENCY_LOC%F_CLD%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
 
-<<<<<<< HEAD
     END DO ! End of block loop
     
     WRITE(0,*) "GOT HERE"
 !$acc wait ! Wait for all async queues to finish
 
 !$acc exit data delete(local_yrecldp)
-
-
-DO IBL=1,NGPBLKS
-  DO KL=1,NLEV
-    DO NP=1,NPROMA
-      IF (TEND_LOC_T(QUEUE)%P(NP,KL,IBL)/=IBL) THEN
-        write(0, *) "FAILURE IN TEND_LOC... IBL", IBL
-      END IF
-      IF (TEND_LOC_Q(QUEUE)%P(NP,KL,IBL)/=IBL) THEN
-        write(0, *) "FAILURE IN TEND_LOC... IBL", IBL
-      END IF
-      IF (TEND_LOC_A(QUEUE)%P(NP,KL,IBL)/=IBL) THEN
-        write(0, *) "FAILURE IN TEND_LOC... IBL", IBL
-      END IF
-    END DO
-  END DO
-END DO
-      ! CALL AUX%F_PLUDE%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL AUX%F_PCOVPTOT%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL AUX%F_PRAINFRAC_TOPRFZ%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFSQLF%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFSQIF%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFCQLNG%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFCQNNG%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFSQRF%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFSQSF%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFCQRNG%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFCQSNG%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFSQLTUR%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFSQITUR%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFPLSL%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFPLSN%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFHPSL%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL FLUX%F_PFHPSN%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL TENDENCY_LOC%F_T%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL TENDENCY_LOC%F_Q%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL TENDENCY_LOC%F_A%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-      ! CALL TENDENCY_LOC%F_CLD%SYNC_HOST_FORCE(BLK_BOUNDS=BLK_BOUNDS, QUEUE=QUEUE, OFFSET=OFFSET)
-
-  
-      ! PVFA(QUEUE)%P(:,:,IBL)/=IBL
-      ! PVFL(QUEUE)%P(:,:,IBL)/=IBL
-      ! PVFI(QUEUE)%P(:,:,IBL)/=IBL
-      ! PDYNA(QUEUE)%P(:,:,IBL)/=IBL
-      ! PDYNL(QUEUE)%P(:,:,IBL)/=IBL
-      ! PDYNI(QUEUE)%P(:,:,IBL)/=IBL
-      ! 
-      ! PHRSW(QUEUE)%P(:,:,IBL)/=IBL
-      ! PHRLW(QUEUE)%P(:,:,IBL)/=IBL
-      ! PVERVEL(QUEUE)%P(:,:,IBL)/=IBL
-      ! PAP(QUEUE)%P(:,:,IBL)/=IBL
-      ! PAPH(QUEUE)%P(:,:,IBL)/=IBL
-      ! PLSM(QUEUE)%P(:,IBL)/=IBL
-      ! LDCUM(QUEUE)%P(:,IBL)/=IBL
-      ! KTYPE(QUEUE)%P(:,IBL)/=IBL
-      ! 
-      ! PLU(QUEUE)%P(:,:,IBL)/=IBL
-      ! PLUDE(QUEUE)%P(:,:,IBL)/=IBL
-      ! PSNDE(QUEUE)%P(:,:,IBL)/=IBL
-      ! PMFU(QUEUE)%P(:,:,IBL)/=IBL
-      ! PMFD(QUEUE)%P(:,:,IBL)/=IBL
-      ! !---prognostic fields
-      ! PA(QUEUE)%P(:,:,IBL)/=IBL
-      ! PCLV(QUEUE)%P(:,:,:,IBL)/=IBL
-      ! PSUPSAT(QUEUE)%P(:,:,IBL)/=IBL
-      ! !-- arrays for aerosol-cloud interactions
-      ! PLCRIT_AER(QUEUE)%P(:,:,IBL)/=IBLPICRIT_AER(QUEUE)%P(:,:,IBL)/=IBL
-      ! PRE_ICE(QUEUE)%P(:,:,IBL)/=IBL
-      ! PCCN(QUEUE)%P(:,:,IBL)/=IBL
-      ! PNICE(QUEUE)%P(:,:,IBL)/=IBL
-      ! !---diagnostic output
-      ! PCOVPTOT(QUEUE)%P(:,:,IBL)/=IBL
-      ! PRAINFRAC_TOPRFZ(QUEUE)%P(:,IBL)/=IBL
-      ! !---resulting fluxes
-      ! PFSQLF(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFSQIF (QUEUE)%P(:,:,IBL)/=IBL
-      ! PFCQNNG(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFCQLNG(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFSQRF(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFSQSF (QUEUE)%P(:,:,IBL)/=IBL
-      ! PFCQRNG(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFCQSNG(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFSQLTUR(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFSQITUR (QUEUE)%P(:,:,IBL)/=IBL
-      ! 
-      ! PFPLSL(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFPLSN(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFHPSL(QUEUE)%P(:,:,IBL)/=IBL
-      ! PFHPSN(QUEUE)%P(:,:,IBL)/=IBL
-
 
 
     CALL TIMER%END()
