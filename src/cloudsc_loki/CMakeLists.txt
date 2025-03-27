@@ -236,6 +236,27 @@ if( HAVE_FIELD_API )
         DRIVER cloudsc_driver_field_loki_mod.F90
         TEST_ENV "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
     )
+
+    ####################################################
+    ##  "Single Column Coalesced Field Blocked" (SCC- ##
+    ##   FIELD-BLOCKED)                               ##
+    ##   * Removes horizontal vector loops            ##
+    ##   * Invokes compute kernel as `!$acc vector`   ##
+    ##   * Uses Field API for device data offloading  ##
+    ####################################################
+    cloudsc_add_loki_exe(
+        TARGET dwarf-cloudsc-loki-scc-field-blocked
+        MODE scc-field-blocked
+        CONFIG cloudsc_loki_field_offload.config
+        COMMON_LIB field_api
+        DEFINITIONS
+            ${CLOUDSC_DEFINITIONS}
+            CLOUDSC_GPU_TIMING
+            CLOUDSC_GPU_SCC_FIELD
+        DRIVER cloudsc_driver_field_loki_mod.F90
+        TEST_ENV "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
+    )
+
 endif()
 
 if( HAVE_CUDA )
