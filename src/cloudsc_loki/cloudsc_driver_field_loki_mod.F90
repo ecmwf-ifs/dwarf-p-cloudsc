@@ -70,6 +70,7 @@ CONTAINS
     CALL TIMER%THREAD_START(TID)
 
     !$omp do schedule(runtime) reduction(+:power_total,power_count)
+    !$loki driver-loop
     DO JKGLO=1,NGPTOT,NPROMA
         IBL=(JKGLO-1)/NPROMA+1
         ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
