@@ -189,4 +189,15 @@ options :
             DWARF-P-CLOUDSC_ENABLE_SERIALBOX={{value}}
             BUILD_serialbox={{value}}
 
+populate_options:
+  - wheel-python-version :
+      help     : Download Python wheels for a specific Python version
+      populate : LOKI_WHEEL_PYTHON_VERSION={{value}}
+      type     : int
+
+  - wheel-arch :
+      help     : Download Python wheels for a specific platform
+      populate : LOKI_WHEEL_ARCH={{value}}
+      type     : str
+
 ...
