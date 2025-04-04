@@ -14,7 +14,7 @@
 
 # Check at least one argument was provided:
 if [[ $# -eq 0 ]]; then
-  echo "FAIL: At least one argument expected: 'build' or 'create'"
+  echo "FAIL: At least one argument expected: 'build' or 'create' or 'populate'"
   exit 1
 fi
 
@@ -26,6 +26,8 @@ if [[ "build" == "$1"* ]]; then
   BOOTSTRAPPED=${ECBUNDLE_DIR}ecbundle-build
 elif [[ "create" == "$1"* ]]; then
   BOOTSTRAPPED=${ECBUNDLE_DIR}ecbundle-create
+elif [[ "populate" == "$1"* ]]; then
+  BOOTSTRAPPED=${ECBUNDLE_DIR}ecbundle-populate
 else
   echo "FAIL: Expected 'build' or 'create' as first argument"
   exit 1
