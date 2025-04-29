@@ -142,8 +142,8 @@ CONTAINS
     IF (HOIST_POOL_STR_LEN > 0 ) THEN
       READ(HOIST_POOL_STR(1:HOIST_POOL_STR_LEN), *) HOIST_POOL
     ENDIF
-    IF (ALL(HOIST_POOL/=[-1,0,1])) THEN
-        PRINT *, "HOIST_POOL must be -1, 0, or 1. Exiting."
+    IF (ALL(HOIST_POOL/=[0,1])) THEN
+        PRINT *, "HOIST_POOL must be 0 or 1. Exiting."
         STOP
     END IF
 
@@ -156,50 +156,29 @@ CONTAINS
 #endif
 
 #ifdef CLOUDSC_GPU_SCC_HOIST
-if (HOIST_POOL == -1) then
-!$acc enter data create( &
-!$acc & ZFOEALFA(NPROMA, NLEV+1, NGPBLKS), &
-!$acc & ZTP1(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZLI(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZA(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZAORIG(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZLIQFRAC(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZICEFRAC(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZQX(NPROMA, NLEV, NCLV, NGPBLKS), &
-!$acc & ZQX0(NPROMA, NLEV, NCLV, NGPBLKS), &
-!$acc & ZPFPLSX(NPROMA, NLEV+1, NCLV, NGPBLKS), &
-!$acc & ZLNEG(NPROMA, NLEV, NCLV, NGPBLKS), &
-!$acc & ZQXN2D(NPROMA, NLEV, NCLV, NGPBLKS), &
-!$acc & ZQSMIX(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZQSLIQ(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZQSICE(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZFOEEWMT(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZFOEEW(NPROMA, NLEV, NGPBLKS), &
-!$acc & ZFOEELIQT(NPROMA, NLEV, NGPBLKS) )
-else
-    if (HOIST_POOL == 1) then
-        device_allocator = pluto%make_allocator(pluto%device_pool_resource())
-    else if (HOIST_POOL == 0) then
-        device_allocator = pluto%make_allocator(pluto%device_resource())
-    endif
-    call device_allocator%allocate(ZFOEALFA, [NPROMA, NLEV+1, NGPBLKS])
-    call device_allocator%allocate(ZTP1, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZLI, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZA, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZAORIG, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZLIQFRAC, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZICEFRAC, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZQX, [NPROMA, NLEV, NCLV, NGPBLKS])
-    call device_allocator%allocate(ZQX0, [NPROMA, NLEV, NCLV, NGPBLKS])
-    call device_allocator%allocate(ZPFPLSX, [NPROMA, NLEV+1, NCLV, NGPBLKS])
-    call device_allocator%allocate(ZLNEG, [NPROMA, NLEV, NCLV, NGPBLKS])
-    call device_allocator%allocate(ZQXN2D, [NPROMA, NLEV, NCLV, NGPBLKS])
-    call device_allocator%allocate(ZQSMIX, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZQSLIQ, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZQSICE, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZFOEEWMT, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZFOEEW, [NPROMA, NLEV, NGPBLKS])
-    call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
+ if (HOIST_POOL == 1) then
+    device_allocator = pluto%make_allocator(pluto%device_pool_resource())
+  else
+    device_allocator = pluto%make_allocator(pluto%device_resource())
+  endif
+  call device_allocator%allocate(ZFOEALFA, [NPROMA, NLEV+1, NGPBLKS])
+  call device_allocator%allocate(ZTP1, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZLI, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZA, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZAORIG, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZLIQFRAC, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZICEFRAC, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZQX, [NPROMA, NLEV, NCLV, NGPBLKS])
+  call device_allocator%allocate(ZQX0, [NPROMA, NLEV, NCLV, NGPBLKS])
+  call device_allocator%allocate(ZPFPLSX, [NPROMA, NLEV+1, NCLV, NGPBLKS])
+  call device_allocator%allocate(ZLNEG, [NPROMA, NLEV, NCLV, NGPBLKS])
+  call device_allocator%allocate(ZQXN2D, [NPROMA, NLEV, NCLV, NGPBLKS])
+  call device_allocator%allocate(ZQSMIX, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZQSLIQ, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZQSICE, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZFOEEWMT, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZFOEEW, [NPROMA, NLEV, NGPBLKS])
+  call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
 end if
 #endif
 
