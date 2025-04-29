@@ -16,13 +16,13 @@ MODULE CLOUDSC_DRIVER_SCC_MOD
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM, FTIMER
 
 #ifdef CLOUDSC_GPU_SCC
-  USE CLOUDSC_GPU_SCC_MOD, ONLY: CLOUDSC_SCC
+  USE CLOUDSC_GPU_SCC_MOD, ONLY: CLOUDSC => CLOUDSC_SCC
 #endif
 #ifdef CLOUDSC_GPU_SCC_HOIST
-  USE CLOUDSC_GPU_SCC_HOIST_MOD, ONLY: CLOUDSC_SCC_HOIST
+  USE CLOUDSC_GPU_SCC_HOIST_MOD, ONLY: CLOUDSC => CLOUDSC_SCC_HOIST
 #endif
 #ifdef CLOUDSC_GPU_SCC_K_CACHING
-  USE CLOUDSC_GPU_SCC_K_CACHING_MOD, ONLY: CLOUDSC_SCC_K_CACHING
+  USE CLOUDSC_GPU_SCC_K_CACHING_MOD, ONLY: CLOUDSC => CLOUDSC_SCC_K_CACHING
 #endif
 
   USE ATLAS_MODULE
@@ -117,9 +117,14 @@ CONTAINS
     REAL(KIND=JPRB), CONTIGUOUS  :: PRAINFRAC_TOPRFZ(:,:)
     REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_LOC_CLD(:,:,:,:)
 
-    INTEGER :: JKGLO, IBL, ICEND, HOIST_POOL_STR_LEN
+    INTEGER :: JKGLO, IBL, ICEND, HOIST_POOL_STR_LEN, JL
     CHARACTER(32) :: HOIST_POOL_STR
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
+
+#ifndef CLOUDSC_GPU_SCC
+    ! Local copy of cloud parameters for offload
+    TYPE(TECLDP) :: LOCAL_YRECLDP
+#endif
 
 #ifdef CLOUDSC_GPU_SCC_HOIST
     ! Local declarations of promoted temporaries via atlas::pluto
@@ -130,12 +135,7 @@ CONTAINS
         & ZQSICE(:,:,:), ZFOEEWMT(:,:,:), ZFOEEW(:,:,:), ZFOEELIQT(:,:,:)
     REAL(KIND=JPRB), POINTER :: ZQX(:,:,:,:), ZQX0(:,:,:,:), &
         & ZPFPLSX(:,:,:,:), ZLNEG(:,:,:,:), ZQXN2D(:,:,:,:)
-#endif
-
-#if (defined CLOUDSC_GPU_SCC_HOIST) || (defined CLOUDSC_GPU_SCC_K_CACHING)
-    INTEGER(KIND=JPIM) :: JL, HOIST_POOL
-    ! Local copy of cloud parameters for offload
-    TYPE(TECLDP) :: LOCAL_YRECLDP
+    INTEGER(KIND=JPIM) :: HOIST_POOL
 
     HOIST_POOL = 0
     CALL GET_ENVIRONMENT_VARIABLE("HOIST_POOL", VALUE=HOIST_POOL_STR, LENGTH=HOIST_POOL_STR_LEN)
@@ -146,7 +146,9 @@ CONTAINS
         PRINT *, "HOIST_POOL must be 0 or 1. Exiting."
         STOP
     END IF
+#endif
 
+#ifndef CLOUDSC_GPU_SCC
     ! Workaround for PGI / OpenACC oddities:
     ! Create a local copy of the parameter struct to ensure they get
     ! moved to the device the in ``acc data`` clause below
@@ -179,7 +181,6 @@ CONTAINS
   call device_allocator%allocate(ZFOEEWMT, [NPROMA, NLEV, NGPBLKS])
   call device_allocator%allocate(ZFOEEW, [NPROMA, NLEV, NGPBLKS])
   call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
-end if
 #endif
 
 !$acc data deviceptr(&
@@ -207,8 +208,11 @@ end if
        IBL=(JKGLO-1)/NPROMA+1
        ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
 
-#ifdef CLOUDSC_GPU_SCC
-       CALL CLOUDSC_SCC &
+#ifndef CLOUDSC_GPU_SCC
+!$acc loop vector
+      DO JL=1,ICEND
+#endif
+        CALL CLOUDSC &
         & (1, ICEND, NPROMA, NLEV, PTSPHY,&
         & PT(:,:,IBL), PQ(:,:,IBL), &
         & TENDENCY_TMP_T(:,:,IBL), TENDENCY_TMP_Q(:,:,IBL), TENDENCY_TMP_A(:,:,IBL), TENDENCY_TMP_CLD(:,:,:,IBL), &
@@ -231,70 +235,22 @@ end if
         & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
         & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
         & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+#if defined CLOUDSC_GPU_SCC
         & YRECLDP=YRECLDP)
-#elif CLOUDSC_GPU_SCC_HOIST
-!$acc loop vector
-      DO JL=1,ICEND
-        CALL CLOUDSC_SCC_HOIST &
-        & (1, ICEND, NPROMA, NLEV, PTSPHY,&
-        & PT(:,:,IBL), PQ(:,:,IBL), &
-        & TENDENCY_TMP_T(:,:,IBL), TENDENCY_TMP_Q(:,:,IBL), TENDENCY_TMP_A(:,:,IBL), TENDENCY_TMP_CLD(:,:,:,IBL), &
-        & TENDENCY_LOC_T(:,:,IBL), TENDENCY_LOC_Q(:,:,IBL), TENDENCY_LOC_A(:,:,IBL), TENDENCY_LOC_CLD(:,:,:,IBL), &
-        & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
-        & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
-        & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
-        & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
-        & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
-                               !---prognostic fields
-        & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
-                               !-- arrays for aerosol-cloud interactions
-        & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
-        & PRE_ICE(:,:,IBL),&
-        & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
-                               !---diagnostic output
-        & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
-                               !---resulting fluxes
-        & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
-        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
-        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
-        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
+#else
         & LOCAL_YRECLDP, &
+#if defined CLOUDSC_GPU_SCC_HOIST
         & ZFOEALFA(:,:,IBL), ZTP1(:,:,IBL), ZLI(:,:,IBL), ZA(:,:,IBL), ZAORIG(:,:,IBL), &
         & ZLIQFRAC(:,:,IBL), ZICEFRAC(:,:,IBL), ZQX(:,:,:,IBL), ZQX0(:,:,:,IBL), ZPFPLSX(:,:,:,IBL), &
         & ZLNEG(:,:,:,IBL), ZQXN2D(:,:,:,IBL), ZQSMIX(:,:,IBL), ZQSLIQ(:,:,IBL), ZQSICE(:,:,IBL), &
-        & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), JL=JL)
-      ENDDO
-#elif CLOUDSC_GPU_SCC_K_CACHING
-!$acc loop vector
-      DO JL=1,ICEND
-       CALL CLOUDSC_SCC_K_CACHING &
-        & (1, ICEND, NPROMA, NLEV, PTSPHY,&
-        & PT(:,:,IBL), PQ(:,:,IBL), &
-        & TENDENCY_TMP_T(:,:,IBL), TENDENCY_TMP_Q(:,:,IBL), TENDENCY_TMP_A(:,:,IBL), TENDENCY_TMP_CLD(:,:,:,IBL), &
-        & TENDENCY_LOC_T(:,:,IBL), TENDENCY_LOC_Q(:,:,IBL), TENDENCY_LOC_A(:,:,IBL), TENDENCY_LOC_CLD(:,:,:,IBL), &
-        & PVFA(:,:,IBL), PVFL(:,:,IBL), PVFI(:,:,IBL), PDYNA(:,:,IBL), PDYNL(:,:,IBL), PDYNI(:,:,IBL), &
-        & PHRSW(:,:,IBL),    PHRLW(:,:,IBL),&
-        & PVERVEL(:,:,IBL),  PAP(:,:,IBL),      PAPH(:,:,IBL),&
-        & PLSM(:,IBL),       LDCUM(:,IBL),      KTYPE(:,IBL), &
-        & PLU(:,:,IBL),      PLUDE(:,:,IBL),    PSNDE(:,:,IBL),    PMFU(:,:,IBL),     PMFD(:,:,IBL),&
-        !---prognostic fields
-        & PA(:,:,IBL),       PCLV(:,:,:,IBL),   PSUPSAT(:,:,IBL),&
-        !-- arrays for aerosol-cloud interactions
-        & PLCRIT_AER(:,:,IBL),PICRIT_AER(:,:,IBL),&
-        & PRE_ICE(:,:,IBL),&
-        & PCCN(:,:,IBL),     PNICE(:,:,IBL),&
-        !---diagnostic output
-        & PCOVPTOT(:,:,IBL), PRAINFRAC_TOPRFZ(:,IBL),&
-        !---resulting fluxes
-        & PFSQLF(:,:,IBL),   PFSQIF (:,:,IBL),  PFCQNNG(:,:,IBL),  PFCQLNG(:,:,IBL),&
-        & PFSQRF(:,:,IBL),   PFSQSF (:,:,IBL),  PFCQRNG(:,:,IBL),  PFCQSNG(:,:,IBL),&
-        & PFSQLTUR(:,:,IBL), PFSQITUR (:,:,IBL), &
-        & PFPLSL(:,:,IBL),   PFPLSN(:,:,IBL),   PFHPSL(:,:,IBL),   PFHPSN(:,:,IBL),&
-        & YRECLDP=LOCAL_YRECLDP, JL=JL)
+        & ZFOEEWMT(:,:,IBL), ZFOEEW(:,:,IBL), ZFOEELIQT(:,:,IBL), &
+#endif
+        JL=JL)
+#endif
+#ifndef CLOUDSC_GPU_SCC
       ENDDO
 #endif
-
-  ENDDO
+    ENDDO
 !$acc end parallel loop
 !$acc end data
 
@@ -305,7 +261,6 @@ end if
 #endif
 
 #ifdef CLOUDSC_GPU_SCC_HOIST
-if (HOIST_POOL /= -1) then
     call device_allocator%deallocate(ZFOEALFA)
     call device_allocator%deallocate(ZTP1)
     call device_allocator%deallocate(ZLI)
@@ -324,7 +279,6 @@ if (HOIST_POOL /= -1) then
     call device_allocator%deallocate(ZFOEEWMT)
     call device_allocator%deallocate(ZFOEEW)
     call device_allocator%deallocate(ZFOEELIQT)
-end if
 #endif
   END SUBROUTINE CLOUDSC_KERNEL
 

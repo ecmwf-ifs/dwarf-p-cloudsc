@@ -29,13 +29,7 @@
 
 module_load() {
   echo "+ module load $1"
-  if [ "${2:-""}" == "ECBUNDLE_CONFIGURE_ONLY" ]; then
-    if [ -n "${ECBUNDLE_CONFIGURE:-""}" ]; then
-      module load $1
-    else
-      echo " WARNING: Module $1 not loaded (only during configuration)"
-    fi
-  fi
+  module load $1
 }
 module_unload() {
   echo "+ module unload $1"
