@@ -50,12 +50,19 @@ projects :
             ECKIT_ENABLE_BUILD_TOOLS=OFF
             ECKIT_ENABLE_CUDA=OFF
 
-    - field_api :
-        git     : https://github.com/ecmwf-ifs/field_api
-        version : develop-ecmwf
+    - fiat      :
+        git     : https://github.com/ecmwf-ifs/fiat
+        version : 1.5.1 
         require : ecbuild
+ 
+    - field_api :
+        git     : https://github.com/ecmwf-ifs/field_api.git
+        version : napz-io-hdf5serial-pr 
+        require : ecbuild fiat
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+            ENABLE_FIAT=ON
+            ENABLE_IO=ON
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
@@ -76,7 +83,7 @@ projects :
         # The CLOUDSC dwarf project with multiple implementations
         dir     : $PWD
         version : develop
-        require : ecbuild serialbox loki field_api
+        require : ecbuild serialbox loki field_api fiat
 
 options :
     - toolchain :

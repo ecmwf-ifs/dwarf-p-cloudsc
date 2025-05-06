@@ -19,7 +19,8 @@ function( cloudsc_add_fortran_exe )
     if( _CL_UNPARSED_ARGUMENTS )
         ecbuild_critical( "Unknown keywords given to cloudsc_add_fortran_exe(): \"${_CL_UNPARSED_ARGUMENTS}\"")
     endif()
-
+## find fiat
+field_api_find_fiat_modules() 
     ecbuild_add_executable(
         TARGET ${_CL_TARGET}-${prec}
         SOURCES

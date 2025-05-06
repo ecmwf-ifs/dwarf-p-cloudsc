@@ -9,14 +9,14 @@
 ### Source files for common lib
 
 set(CLOUDSC_COMMON_SOURCES
-    module/parkind1.F90
+#    module/parkind1.F90
     module/yoecldp.F90
     module/yomcst.F90
     module/yoethf.F90
     module/yoephli.F90
     module/yomphyder.F90
     module/routines.F90
-    module/abor1.F90
+#    module/abor1.F90
     module/timer_mod.F90
     module/mycpu.c
     module/ec_pmon_mod.F90
@@ -65,6 +65,9 @@ macro( cloudsc_add_common_lib )
             $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
             $<${HAVE_MPI}:MPI::MPI_Fortran>
             ${COMMON_LIB_LIBS}
+            fiat
+            field_api_${prec}
+            parkind_${prec}
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
