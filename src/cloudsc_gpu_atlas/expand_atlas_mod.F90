@@ -45,17 +45,17 @@ contains
     type(atlas_trace) :: trace
     trace = atlas_trace("expand_atlas_mod.F90", __LINE__, "loadvar_atlas", "IO")
 
+    ngptot = fspace%size()
+    nblocks = fspace%nblks()
+
     field = fset%field(name)
     frank = field%rank()
+    nproma = field%shape(1)
+    nlev = field%shape(2)
+
     lfield = (name == "LDCUM")
     ifield = (name == "KTYPE")
     rfield = ((.not. lfield) .and. (.not. ifield))
-
-    nlev = field%levels()
-    !nproma = fspace%nproma()
-    nproma = field%shape(1)
-    ngptot = fspace%size()
-    nblocks = fspace%nblks()
 
     if (frank == 2) then
       call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)

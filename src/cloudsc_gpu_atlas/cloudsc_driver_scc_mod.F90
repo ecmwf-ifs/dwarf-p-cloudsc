@@ -409,7 +409,7 @@ CONTAINS
     CALL FSET%DEVICE_DATA(16, PVERVEL)
     CALL FSET%DEVICE_DATA(17, PAP)
     CALL FSET%DEVICE_DATA(18, PLU)
-    CALL FSET%DEVICE_DATA(19, PLUDE) !in/out
+    CALL FSET%DEVICE_DATA(19, PLUDE) ! in/out
     CALL FSET%DEVICE_DATA(20, PSNDE)
     CALL FSET%DEVICE_DATA(21, PMFU)
     CALL FSET%DEVICE_DATA(22, PMFD)
@@ -478,7 +478,7 @@ CONTAINS
     ! On GPUs, adding block-level column totals is cumbersome and
     ! error prone, and of little value due to the large number of
     ! processing "thread teams". Instead we register the total here.
-    CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
+    !CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
 
     CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
 
