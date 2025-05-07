@@ -59,7 +59,7 @@ TYPE(ATLAS_TRACE) :: TRACE
   ! Initialize MPI environment
   CALL CLOUDSC_MPI_INIT(NUMOMP)
   CALL ATLAS_LIBRARY%INITIALISE()
-  TRACE = ATLAS_TRACE("dwarf_cloudsc_atlas.F90",__LINE__,"program")
+  TRACE = ATLAS_TRACE("dwarf_cloudsc_atlas.F90", __LINE__, "program")
 
   ! Get total number of grid points (NGPTOTG) with which to run the benchmark
   IF (IARGS >= 2) THEN
@@ -76,17 +76,15 @@ TYPE(ATLAS_TRACE) :: TRACE
   ! timing of memory pool allocations
   FSET = ATLAS_FIELDSET()
   CALL GLOBAL_ATLAS_STATE%LOAD(FSET, FSPACE, NPROMA, NGPTOTG)
-  write(0,*) " ### Ignore the above timer, it is timing the one-time memory pool allocation"
 
   FSET = ATLAS_FIELDSET()
   CALL GLOBAL_ATLAS_STATE%LOAD(FSET, FSPACE, NPROMA, NGPTOTG)
-  write(0,*) " ### Above timer is host allocation"
 
   CALL GET_ENV_INT("NITER", NITER)
 
   ! Call the driver to perform the parallel loop over our kernel
   DO  JITER = 1, NITER
-    write(0,'(A,I0,A,I0)') "### ITERATION ", JITER, '/', NITER
+    write(0,'(A,I0,A,I0)') "\n### ITERATION ", JITER, '/', NITER
     CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, GLOBAL_ATLAS_STATE%KFLDX, GLOBAL_ATLAS_STATE%PTSPHY)
 
     ! Validate the output against serialized reference data
