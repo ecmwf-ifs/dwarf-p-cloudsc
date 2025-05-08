@@ -56,66 +56,66 @@ CONTAINS
     INTEGER(KIND=JPIM), INTENT(IN) :: NLEV
     INTEGER(KIND=JPIM), INTENT(IN) :: NPROMA
     REAL(KIND=JPRB), INTENT(IN)   :: PTSPHY       ! Physics timestep
-    REAL(KIND=JPRB), CONTIGUOUS  :: PLCRIT_AER(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PICRIT_AER(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PRE_ICE(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PCCN(:,:,:)     ! liquid cloud condensation nuclei
-    REAL(KIND=JPRB), CONTIGUOUS  :: PNICE(:,:,:)    ! ice number concentration (cf. CCN)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PT(:,:,:)       ! T at start of callpar
-    REAL(KIND=JPRB), CONTIGUOUS  :: PQ(:,:,:)       ! Q at start of callpar
-    REAL(KIND=JPRB), CONTIGUOUS  :: PVFA(:,:,:)     ! CC from VDF scheme
-    REAL(KIND=JPRB), CONTIGUOUS  :: PVFL(:,:,:)     ! Liq from VDF scheme
-    REAL(KIND=JPRB), CONTIGUOUS  :: PVFI(:,:,:)     ! Ice from VDF scheme
-    REAL(KIND=JPRB), CONTIGUOUS  :: PDYNA(:,:,:)    ! CC from Dynamics
-    REAL(KIND=JPRB), CONTIGUOUS  :: PDYNL(:,:,:)    ! Liq from Dynamics
-    REAL(KIND=JPRB), CONTIGUOUS  :: PDYNI(:,:,:)    ! Liq from Dynamics
-    REAL(KIND=JPRB), CONTIGUOUS  :: PHRSW(:,:,:)    ! Short-wave heating rate
-    REAL(KIND=JPRB), CONTIGUOUS  :: PHRLW(:,:,:)    ! Long-wave heating rate
-    REAL(KIND=JPRB), CONTIGUOUS  :: PVERVEL(:,:,:)  ! Vertical velocity
-    REAL(KIND=JPRB), CONTIGUOUS  :: PAP(:,:,:)      ! Pressure on full levels
-    REAL(KIND=JPRB), CONTIGUOUS  :: PLU(:,:,:)      ! Conv. condensate
-    REAL(KIND=JPRB), CONTIGUOUS  :: PLUDE(:,:,:)    ! Conv. detrained water
-    REAL(KIND=JPRB), CONTIGUOUS  :: PSNDE(:,:,:)    ! Conv. detrained snow
-    REAL(KIND=JPRB), CONTIGUOUS  :: PMFU(:,:,:)     ! Conv. mass flux up
-    REAL(KIND=JPRB), CONTIGUOUS  :: PMFD(:,:,:)     ! Conv. mass flux down
-    REAL(KIND=JPRB), CONTIGUOUS  :: PA(:,:,:)       ! Original Cloud fraction (t)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PSUPSAT(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_CML_T(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_CML_A(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_CML_Q(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_TMP_T(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_TMP_A(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_TMP_Q(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PLSM(:,:)       ! Land fraction (0-1)
-    LOGICAL, CONTIGUOUS          :: LDCUM(:,:)      ! Convection active
-    INTEGER(KIND=JPIM),CONTIGUOUS:: KTYPE(:,:)      ! Convection type 0,1,2
-    REAL(KIND=JPRB), CONTIGUOUS  :: PAPH(:,:,:)     ! Pressure on half levels
-    REAL(KIND=JPRB), CONTIGUOUS  :: PCLV(:,:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_CML_CLD(:,:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_TMP_CLD(:,:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PLCRIT_AER(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PICRIT_AER(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PRE_ICE(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PCCN(:,:,:)     ! liquid cloud condensation nuclei
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PNICE(:,:,:)    ! ice number concentration (cf. CCN)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PT(:,:,:)       ! T at start of callpar
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PQ(:,:,:)       ! Q at start of callpar
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PVFA(:,:,:)     ! CC from VDF scheme
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PVFL(:,:,:)     ! Liq from VDF scheme
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PVFI(:,:,:)     ! Ice from VDF scheme
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PDYNA(:,:,:)    ! CC from Dynamics
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PDYNL(:,:,:)    ! Liq from Dynamics
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PDYNI(:,:,:)    ! Liq from Dynamics
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PHRSW(:,:,:)    ! Short-wave heating rate
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PHRLW(:,:,:)    ! Long-wave heating rate
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PVERVEL(:,:,:)  ! Vertical velocity
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PAP(:,:,:)      ! Pressure on full levels
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PLU(:,:,:)      ! Conv. condensate
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(INOUT)  :: PLUDE(:,:,:)    ! Conv. detrained water
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PSNDE(:,:,:)    ! Conv. detrained snow
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PMFU(:,:,:)     ! Conv. mass flux up
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PMFD(:,:,:)     ! Conv. mass flux down
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PA(:,:,:)       ! Original Cloud fraction (t)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PSUPSAT(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_CML_T(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_CML_A(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_CML_Q(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_TMP_T(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_TMP_A(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_TMP_Q(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PLSM(:,:)       ! Land fraction (0-1)
+    LOGICAL,         CONTIGUOUS, INTENT(IN)  :: LDCUM(:,:)      ! Convection active
+    INTEGER(KIND=JPIM),CONTIGUOUS, INTENT(IN):: KTYPE(:,:)      ! Convection type 0,1,2
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PAPH(:,:,:)     ! Pressure on half levels
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: PCLV(:,:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_CML_CLD(:,:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(IN)  :: TENDENCY_TMP_CLD(:,:,:,:)
 
     ! output variables
     ! Note: flux diagnostics for DDH budget are named P*
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFSQLF(:,:,:)    ! Flux of liquid
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFSQIF(:,:,:)    ! Flux of ice
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFCQLNG(:,:,:)   ! -ve corr for liq
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFCQNNG(:,:,:)   ! -ve corr for ice
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFSQRF(:,:,:)    ! Flux diagnostics
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFSQSF(:,:,:)    !    for DDH, generic
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFCQRNG(:,:,:)   ! rain
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFCQSNG(:,:,:)   ! snow
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFSQLTUR(:,:,:)  ! liquid flux due to VDF
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFSQITUR(:,:,:)  ! ice flux due to VDF
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFPLSL(:,:,:)    ! liq+rain sedim flux
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFPLSN(:,:,:)    ! ice+snow sedim flux
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFHPSL(:,:,:)    ! Enthalpy flux for liq
-    REAL(KIND=JPRB), CONTIGUOUS  :: PFHPSN(:,:,:)    ! ice number concentration (cf. CCN)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PCOVPTOT(:,:,:)    ! Precip fraction
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_LOC_T(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_LOC_A(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_LOC_Q(:,:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: PRAINFRAC_TOPRFZ(:,:)
-    REAL(KIND=JPRB), CONTIGUOUS  :: TENDENCY_LOC_CLD(:,:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFSQLF(:,:,:)    ! Flux of liquid
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFSQIF(:,:,:)    ! Flux of ice
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFCQLNG(:,:,:)   ! -ve corr for liq
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFCQNNG(:,:,:)   ! -ve corr for ice
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFSQRF(:,:,:)    ! Flux diagnostics
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFSQSF(:,:,:)    !    for DDH, generic
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFCQRNG(:,:,:)   ! rain
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFCQSNG(:,:,:)   ! snow
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFSQLTUR(:,:,:)  ! liquid flux due to VDF
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFSQITUR(:,:,:)  ! ice flux due to VDF
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFPLSL(:,:,:)    ! liq+rain sedim flux
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFPLSN(:,:,:)    ! ice+snow sedim flux
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFHPSL(:,:,:)    ! Enthalpy flux for liq
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PFHPSN(:,:,:)    ! ice number concentration (cf. CCN)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PCOVPTOT(:,:,:)    ! Precip fraction
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: TENDENCY_LOC_T(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: TENDENCY_LOC_A(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: TENDENCY_LOC_Q(:,:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: PRAINFRAC_TOPRFZ(:,:)
+    REAL(KIND=JPRB), CONTIGUOUS, INTENT(OUT)  :: TENDENCY_LOC_CLD(:,:,:,:)
 
     INTEGER :: JKGLO, IBL, ICEND, HOIST_POOL_STR_LEN, JL
     CHARACTER(32) :: HOIST_POOL_STR
@@ -283,12 +283,12 @@ CONTAINS
   END SUBROUTINE CLOUDSC_KERNEL
 
 
-  SUBROUTINE CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, KFLDX, PTSPHY)
+  SUBROUTINE CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, PTSPHY)
     ! Driver routine that performans the parallel NPROMA-blocking and
     ! invokes the CLOUDSC kernel
 
     TYPE(ATLAS_FIELDSET), INTENT(INOUT) :: FSET
-    INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NGPTOTG, KFLDX
+    INTEGER(KIND=JPIM), INTENT(IN)    :: NUMOMP, NGPTOTG
     REAL(KIND=JPRB), INTENT(IN)   :: PTSPHY       ! Physics timestep
 
     TYPE(ATLAS_FUNCTIONSPACE_BLOCKSTRUCTUREDCOLUMNS) :: FSPACE
@@ -373,8 +373,8 @@ CONTAINS
     NPROMA = FIELD%SHAPE(1)
     NLEV = FSPACE%LEVELS()
     NGPTOT = FSPACE%SIZE()
+    NGPBLKS = FIELD%SHAPE(4)
 
-    NGPBLKS = (NGPTOT / NPROMA) + MIN(MOD(NGPTOT,NPROMA), 1)
 1003 format(5x,'NUMPROC=',i0,', NUMOMP=',i0,', NGTOT=', i0,', NGPTOTG=',i0,', NPROMA=',i0,', NGPBLKS=',i0)
     if (irank == 0) then
       write(0,1003) NUMPROC,NUMOMP,NGPTOT, NGPTOTG,NPROMA,NGPBLKS
