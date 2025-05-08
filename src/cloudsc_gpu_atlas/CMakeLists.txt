@@ -27,7 +27,7 @@ if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
         TARGET dwarf-cloudsc-gpu-scc-atlas-${prec}
         SOURCES
             cloudsc_global_atlas_state_mod.F90
-            expand_atlas_mod.F90
+            ../cloudsc_fortran_atlas/expand_atlas_mod.F90
             validate_atlas_mod.F90
             ../cloudsc_gpu/cloudsc_gpu_scc_mod.F90
             cloudsc_driver_scc_mod.F90
@@ -54,7 +54,7 @@ if( HAVE_CLOUDSC_GPU_SCC_HOIST_ATLAS )
         TARGET dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
         SOURCES
             cloudsc_global_atlas_state_mod.F90
-            expand_atlas_mod.F90
+            ../cloudsc_fortran_atlas/expand_atlas_mod.F90
             validate_atlas_mod.F90
             ../cloudsc_gpu/cloudsc_gpu_scc_hoist_mod.F90
             cloudsc_driver_scc_mod.F90
@@ -80,7 +80,7 @@ if( HAVE_CLOUDSC_GPU_SCC_K_CACHING_ATLAS )
         TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
         SOURCES
             cloudsc_global_atlas_state_mod.F90
-            expand_atlas_mod.F90
+            ../cloudsc_fortran_atlas/expand_atlas_mod.F90
             validate_atlas_mod.F90
             ../cloudsc_gpu/cloudsc_gpu_scc_k_caching_mod.F90
             cloudsc_driver_scc_mod.F90
