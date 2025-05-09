@@ -88,9 +88,6 @@ CONTAINS
     REAL(KIND=JPRB), POINTER :: TMP3D(:,:,:)
     REAL(KIND=JPRB), POINTER :: TMP2D(:,:)
     TYPE(ATLAS_FIELD) :: FIELD
-    TYPE(ATLAS_CONFIG) :: CONFIG
-    TYPE(ATLAS_CONFIG), DIMENSION(30) :: IN_MFIELD_CONFIG ! the last five variables are special and added through FieldSet
-    TYPE(ATLAS_CONFIG), DIMENSION(14) :: OUT_MFIELD_CONFIG ! the last two variables are special and added through FieldSet
     LOGICAL :: LMULTIFIELD
     CHARACTER(len=8) :: CENV, FPREC
     INTEGER :: CENV_LEN
@@ -131,14 +128,6 @@ CONTAINS
       WRITE(0,*) "NBLKS       = ", FSPACE%NBLKS()
       WRITE(0,*) "NPROMA      = ", NPROMA
     ENDIF
-
-    ! create multifield
-    CONFIG = ATLAS_CONFIG()
-    CALL CONFIG%SET("type", "MultiFieldCreatorIFS")
-    CALL CONFIG%SET("nproma", NPROMA)
-    CALL CONFIG%SET("ngptot", FSPACE%SIZE())
-    WRITE (FPREC,"(A4,I2)") "real", 8*jprb
-    CALL CONFIG%SET("datatype", TRIM(FPREC))
 
     TDIFF = FTIMER()
 
@@ -237,7 +226,6 @@ CONTAINS
     CALL INPUT_FINALIZE()
 
     CALL FIELD%FINAL()
-    CALL CONFIG%FINAL()
     CALL GRID%FINAL()
     CALL TRACE%FINAL()
   END SUBROUTINE CLOUDSC_GLOBAL_ATLAS_STATE_LOAD
