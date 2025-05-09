@@ -47,12 +47,12 @@ TYPE(ATLAS_TRACE) :: TRACE
     CALL GET_COMMAND_ARGUMENT(1, CLARG, LENARG)
     READ(CLARG(1:LENARG),*) NUMOMP
     if (NUMOMP <= 0) then
-  #ifdef _OPENMP
+#ifdef _OPENMP
       NUMOMP = OMP_GET_MAX_THREADS()
-  #else
+#else
       ! if arg is 0 or negative, and OpenMP disabled; defaults to 1
       NUMOMP = 1
-  #endif
+#endif
     end if
   end if
 
