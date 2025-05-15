@@ -50,7 +50,7 @@ endif()
 
 include(features/ACC)
 ecbuild_add_option( FEATURE ACC
-                    DEFAULT ON
+	            DEFAULT OFF
                     DESCRIPTION "Support for using GPUs with OpenACC"
                     REQUIRED_PACKAGES "OpenACC COMPONENTS Fortran" )
 
