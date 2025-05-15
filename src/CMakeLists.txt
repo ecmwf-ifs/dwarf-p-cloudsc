@@ -30,7 +30,7 @@ foreach( prec IN LISTS CLOUDSC_PRECISIONS )
   # A few variants only support double precision
   if( "${prec}" STREQUAL "dp" )
     add_subdirectory( prototype1 cloudsc_prototype1.${prec} )
-    add_subdirectory( cloudsc_c cloudsc_c.${prec} )
+    # add_subdirectory( cloudsc_c cloudsc_c.${prec} )
     if( HAVE_PYIFACE )
       add_subdirectory( cloudsc_pyiface cloudsc_pyiface.${prec} )
     endif()
