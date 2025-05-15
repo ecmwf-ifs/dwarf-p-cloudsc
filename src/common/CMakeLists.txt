@@ -76,6 +76,8 @@ macro( cloudsc_add_common_lib )
             Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${COMMON_LIB_SUFFIX}"
     )
 
+    # target_link_options( cloudsc-common-${prec}-${COMMON_LIB_SUFFIX} PUBLIC "-lomptarget" )
+
     if( CMAKE_C_COMPILER_ID MATCHES "Cray" AND HAVE_OMP )
         if( "${COMMON_LIB_LIBS}" MATCHES "OpenMP::OpenMP_Fortran" )
             # Workaround for Linker issue with Cray compiler, see
@@ -88,17 +90,17 @@ endmacro()
 
 ### Link type selection
 
-if( BUILD_SHARED_LIBS )
-    set( LINK_TYPE SHARED )
-else()
+# if( BUILD_SHARED_LIBS )
+#     set( LINK_TYPE SHARED )
+# else()
     set( LINK_TYPE STATIC )
-endif()
+    # endif()
 
-if( HAVE_GPU_STATIC )
+    # if( HAVE_GPU_STATIC )
     set( GPU_LINK_TYPE STATIC )
-else()
-    set( GPU_LINK_TYPE ${LINK_TYPE} )
-endif()
+    # else()
+    # set( GPU_LINK_TYPE ${LINK_TYPE} )
+    # endif()
 
 ### Common lib with OpenMP
 
@@ -152,6 +154,8 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
         LIBS
             OpenMP::OpenMP_Fortran
     )
+
+    # target_link_options( cloudsc-common-${prec}-omp PUBLIC "-lomptarget" )
 
     if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
         target_compile_options( cloudsc-common-${prec}-omp PUBLIC "-mp=gpu" )
