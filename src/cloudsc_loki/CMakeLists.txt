@@ -253,6 +253,7 @@ if( HAVE_FIELD_API )
             ${CLOUDSC_DEFINITIONS}
             CLOUDSC_GPU_TIMING
             CLOUDSC_GPU_SCC_FIELD
+            CLOUDSC_GPU_SCC_FIELD_BLOCKED
         DRIVER cloudsc_driver_field_loki_mod.F90
         TEST_ENV "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
     )
@@ -274,6 +275,7 @@ if( HAVE_FIELD_API )
             ${CLOUDSC_DEFINITIONS}
             CLOUDSC_GPU_TIMING
             CLOUDSC_GPU_SCC_FIELD
+            CLOUDSC_GPU_SCC_FIELD_ASYNC
         DRIVER cloudsc_driver_field_loki_mod.F90
         TEST_ENV "NVCOMPILER_ACC_CUDA_HEAPSIZE=128M"
     )
