@@ -7,119 +7,91 @@
 # nor does it submit to any jurisdiction.
 
 
-ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_ATLAS
-    DESCRIPTION "Build optimized GPU version of CLOUDSC based on Atlas + OpenACC" DEFAULT ON
-    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
+ecbuild_add_executable(
+    TARGET dwarf-cloudsc-gpu-scc-atlas-${prec}
+    SOURCES
+        cloudsc_global_atlas_state_mod.F90
+        ../cloudsc_fortran_atlas/expand_atlas_mod.F90
+        ../cloudsc_fortran_atlas/validate_atlas_mod.F90
+        ../cloudsc_gpu/cloudsc_gpu_scc_mod.F90
+        cloudsc_driver_scc_mod.F90
+        dwarf_cloudsc_atlas.F90
+    LIBS
+        atlas_f
+        pluto_f
+        cloudsc-common-${prec}-atlas
+    DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
 )
 
-ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_HOIST_ATLAS
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with hoisted temporary arrays (based on Atlas + OpenACC)" DEFAULT ON
-    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
+set_target_properties( dwarf-cloudsc-gpu-scc-atlas-${prec}
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-dwarf-cloudsc-gpu-scc-atlas"
 )
 
-ecbuild_add_option( FEATURE CLOUDSC_GPU_SCC_K_CACHING_ATLAS
-    DESCRIPTION "Build optimized GPU version of CLOUDSC using SCC with k-caching of local array in the kernel (based on Atlas + OpenACC)" DEFAULT ON
-    CONDITION atlas_FOUND AND (Serialbox_FOUND OR HDF5_FOUND)
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+    ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
 )
 
-if( HAVE_CLOUDSC_GPU_SCC_ATLAS )
-    ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc-atlas-${prec}
-        SOURCES
-            cloudsc_global_atlas_state_mod.F90
-            ../cloudsc_fortran_atlas/expand_atlas_mod.F90
-            ../cloudsc_fortran_atlas/validate_atlas_mod.F90
-            ../cloudsc_gpu/cloudsc_gpu_scc_mod.F90
-            cloudsc_driver_scc_mod.F90
-            dwarf_cloudsc_atlas.F90
-        LIBS
-            atlas_f
-            pluto_f
-            cloudsc-common-${prec}-atlas
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC
-    )
 
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-scc-atlas
-        COMMAND bin/dwarf-cloudsc-gpu-scc-atlas
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-        ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
-    )
-endif()
+ecbuild_add_executable(
+    TARGET dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
+    SOURCES
+        cloudsc_global_atlas_state_mod.F90
+        ../cloudsc_fortran_atlas/expand_atlas_mod.F90
+        ../cloudsc_fortran_atlas/validate_atlas_mod.F90
+        ../cloudsc_gpu/cloudsc_gpu_scc_hoist_mod.F90
+        cloudsc_driver_scc_mod.F90
+        dwarf_cloudsc_atlas.F90
+    LIBS
+        atlas_f
+        pluto_f
+        cloudsc-common-${prec}-atlas
+    DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
+)
 
-if( HAVE_CLOUDSC_GPU_SCC_HOIST_ATLAS )
-    ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
-        SOURCES
-            cloudsc_global_atlas_state_mod.F90
-            ../cloudsc_fortran_atlas/expand_atlas_mod.F90
-            ../cloudsc_fortran_atlas/validate_atlas_mod.F90
-            ../cloudsc_gpu/cloudsc_gpu_scc_hoist_mod.F90
-            cloudsc_driver_scc_mod.F90
-            dwarf_cloudsc_atlas.F90
-        LIBS
-            atlas_f
-            pluto_f
-            cloudsc-common-${prec}-atlas
-        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_HOIST
-    )
+set_target_properties( dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-dwarf-cloudsc-gpu-scc-hoist-atlas"
+)
 
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-scc-hoist-atlas
-        COMMAND bin/dwarf-cloudsc-gpu-scc-hoist-atlas
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-endif()
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+)
 
-if( HAVE_CLOUDSC_GPU_SCC_K_CACHING_ATLAS )
-    ecbuild_add_executable(
-        TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
-        SOURCES
-            cloudsc_global_atlas_state_mod.F90
-            ../cloudsc_fortran_atlas/expand_atlas_mod.F90
-            ../cloudsc_fortran_atlas/validate_atlas_mod.F90
-            ../cloudsc_gpu/cloudsc_gpu_scc_k_caching_mod.F90
-            cloudsc_driver_scc_mod.F90
-            dwarf_cloudsc_atlas.F90
-        LIBS
-            atlas_f
-            pluto_f
-            cloudsc-common-${prec}-atlas
-            DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
-    )
+ecbuild_add_executable(
+    TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
+    SOURCES
+        cloudsc_global_atlas_state_mod.F90
+        ../cloudsc_fortran_atlas/expand_atlas_mod.F90
+        ../cloudsc_fortran_atlas/validate_atlas_mod.F90
+        ../cloudsc_gpu/cloudsc_gpu_scc_k_caching_mod.F90
+        cloudsc_driver_scc_mod.F90
+        dwarf_cloudsc_atlas.F90
+    LIBS
+        atlas_f
+        pluto_f
+        cloudsc-common-${prec}-atlas
+        DEFINITIONS ${CLOUDSC_DEFINITIONS} CLOUDSC_GPU_SCC_K_CACHING
+)
 
-    ecbuild_add_test(
-        TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas
-        COMMAND bin/dwarf-cloudsc-gpu-scc-k-caching-atlas
-        ARGS 1 1000 128
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../..
-        OMP 1
-    )
-endif()
+set_target_properties( dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
+        PROPERTIES
+            Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-dwarf-cloudsc-gpu-scc-k-caching-atlas"
+)
 
-
-# Create symlink for the input data
-if( HAVE_SERIALBOX )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../data ${CMAKE_CURRENT_BINARY_DIR}/../../../data )
-endif()
-
-
-if( HAVE_HDF5 )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/input.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../input.h5 )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../config-files/reference.h5 ${CMAKE_CURRENT_BINARY_DIR}/../../../reference.h5 )
-endif()
-
-
-# Importantly, we add the "pinned" flag to the linker command to ensure pinning!
-#if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
-#    target_link_options( dwarf-cloudsc-gpu-scc-atlas PUBLIC "-gpu=pinned" )
-#    target_link_options( dwarf-cloudsc-gpu-scc-hoist-atlas PUBLIC "-gpu=pinned" )
-#    target_link_options( dwarf-cloudsc-gpu-scc-k-caching-atlas PUBLIC "-gpu=pinned" )
-#endif()
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+)
