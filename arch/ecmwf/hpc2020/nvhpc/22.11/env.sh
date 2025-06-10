@@ -24,11 +24,9 @@ module_unload() {
 module purge
 
 # Load modules
-module_load cmake/3.25.2
 module_load prgenv/nvidia
 module_load nvidia/22.11
 module_load hpcx-openmpi/2.14.0-cuda
-# module_load boost/1.71.0
 module_load eigen/3.4.0
 module_load hdf5/1.10.6
 module_load cmake/3.28.3
