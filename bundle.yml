@@ -107,7 +107,6 @@ options :
             DWARF-P-CLOUDSC_ENABLE_ACC={{value}}
             FIELD_API_ENABLE_ACC={{value}}
             ATLAS_ENABLE_ACC={{value}}
-            ATLAS_ENABLE_CUDA={{value}}
 
     - with-openmp :
         help  : Enable OpenMP threading or GPU offloading [ON|OFF]
