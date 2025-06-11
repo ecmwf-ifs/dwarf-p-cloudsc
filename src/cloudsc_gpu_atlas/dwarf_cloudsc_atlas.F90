@@ -84,7 +84,7 @@ TYPE(ATLAS_TRACE) :: TRACE
 
   ! Call the driver to perform the parallel loop over our kernel
   DO  JITER = 1, NITER
-    write(0,'(A,I0,A,I0)') "\n### ITERATION ", JITER, '/', NITER
+    write(0,'(A,I0,A,I0)') "### ITERATION ", JITER, '/', NITER
     CALL CLOUDSC_DRIVER(FSET, NUMOMP, NGPTOTG, GLOBAL_ATLAS_STATE%PTSPHY)
 
     ! Validate the output against serialized reference data
