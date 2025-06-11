@@ -101,10 +101,10 @@ CONTAINS
     LMULTIFIELD = .FALSE.
     CALL GET_ENVIRONMENT_VARIABLE("CLOUDSC_ATLAS_MULTIFIELD", CENV, CENV_LEN)
     IF (CENV_LEN > 0 ) THEN
-      IF (TRIM(CENV) == "1" .OR. TRIM(CENV) == "ON") THEN
+      IF (TRIM(CENV) == "1") THEN
         LMULTIFIELD = .TRUE.
-      ELSE IF (TRIM(CENV) /= "0" .AND. TRIM(CENV) /= "OFF") THEN
-        PRINT *, "LMULTIFIELD can only be one of: 0, 1, ON, OFF."
+      ELSE IF (TRIM(CENV) /= "0") THEN
+        PRINT *, "LMULTIFIELD can only be 0 or 1."
         STOP
       ENDIF
     ENDIF
