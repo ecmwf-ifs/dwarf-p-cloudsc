@@ -83,7 +83,7 @@ projects :
         # The CLOUDSC dwarf project with multiple implementations
         dir     : $PWD
         version : develop
-        require : ecbuild serialbox loki field_api fiat
+        require : ecbuild serialbox loki field_api
 
 options :
     - toolchain :

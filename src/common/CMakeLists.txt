@@ -9,23 +9,26 @@
 ### Source files for common lib
 
 set(CLOUDSC_COMMON_SOURCES
-#    module/parkind1.F90
     module/yoecldp.F90
     module/yomcst.F90
     module/yoethf.F90
     module/yoephli.F90
     module/yomphyder.F90
     module/routines.F90
-#    module/abor1.F90
     module/timer_mod.F90
     module/mycpu.c
-    module/ec_pmon_mod.F90
-    module/oml_mod.F90
     module/file_io_mod.F90
     module/expand_mod.F90
     module/validate_mod.F90
     module/cloudsc_global_state_mod.F90
     module/cloudsc_mpi_mod.F90
+)
+
+set(CLOUDSC_FIAT_SOURCES
+    module/parkind1.F90
+    module/ec_pmon_mod.F90
+    module/oml_mod.F90
+    module/abor1.F90
 )
 
 set(CLOUDSC_CUDA_SOURCES
@@ -58,6 +61,7 @@ macro( cloudsc_add_common_lib )
         SOURCES
             ${CLOUDSC_COMMON_SOURCES}
             ${COMMON_LIB_SOURCES}
+            $<$<NOT:$<BOOL:${HAVE_FIAT}>>:${CLOUDSC_FIAT_SOURCES}>
             $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
             $<${HAVE_MPI}:module/cloudsc_mpif.F90>
         PUBLIC_LIBS
@@ -65,9 +69,9 @@ macro( cloudsc_add_common_lib )
             $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
             $<${HAVE_MPI}:MPI::MPI_Fortran>
             ${COMMON_LIB_LIBS}
-            fiat
-            field_api_${prec}
-            parkind_${prec}
+            $<${HAVE_FIELD_API}:fiat>
+            $<${HAVE_FIELD_API}:field_api_${prec}>
+            $<$<NOT:$<BOOL:${HAVE_FIAT}>>:parkind_${prec}>
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
