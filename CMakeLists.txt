@@ -125,11 +125,6 @@ ecbuild_add_option( FEATURE LOKI
                     DEFAULT ON
                     REQUIRED_PACKAGES "loki" )
 
-ecbuild_add_option( FEATURE LOKI
-                    DESCRIPTION "Support for generating GPU variants with Loki"
-                    DEFAULT ON
-                    REQUIRED_PACKAGES "loki" )
-
 # Add field_api library to manage data fields
 ecbuild_add_option( FEATURE FIELD_API
                     DESCRIPTION "Use field_api to manage GPU data offload and copyback"

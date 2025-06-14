@@ -71,7 +71,7 @@ macro( cloudsc_add_common_lib )
             ${COMMON_LIB_LIBS}
             $<${HAVE_FIELD_API}:fiat>
             $<${HAVE_FIELD_API}:field_api_${prec}>
-            $<$<NOT:$<BOOL:${HAVE_FIAT}>>:parkind_${prec}>
+#            $<$<NOT:$<BOOL:${HAVE_FIELD_API}>>:parkind_${prec}>
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
