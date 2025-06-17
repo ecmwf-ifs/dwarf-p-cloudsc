@@ -34,9 +34,17 @@ ecbuild_add_test(
     ARGS 1 1000 128
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OMP 1
-    ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M"
+    ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" CLOUDSC_ATLAS_MULTIFIELD=0
 )
 
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-multifield-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+    ENVIRONMENT "NVCOMPILER_ACC_CUDA_HEAPSIZE=64M" CLOUDSC_ATLAS_MULTIFIELD=1
+)
 
 ecbuild_add_executable(
     TARGET dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
@@ -65,6 +73,34 @@ ecbuild_add_test(
     ARGS 1 1000 128
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OMP 1
+    ENVIRONMENT HOIST_POOL=0 CLOUDSC_ATLAS_MULTIFIELD=0
+)
+
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-hoist-multifield-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+    ENVIRONMENT HOIST_POOL=0 CLOUDSC_ATLAS_MULTIFIELD=1
+)
+
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-hoist_pool-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+    ENVIRONMENT HOIST_POOL=1 CLOUDSC_ATLAS_MULTIFIELD=0
+)
+
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-hoist_pool-multifield-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-hoist-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+    ENVIRONMENT HOIST_POOL=1 CLOUDSC_ATLAS_MULTIFIELD=1
 )
 
 ecbuild_add_executable(
@@ -94,4 +130,14 @@ ecbuild_add_test(
     ARGS 1 1000 128
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OMP 1
+    ENVIRONMENT CLOUDSC_ATLAS_MULTIFIELD=0
+)
+
+ecbuild_add_test(
+    TARGET dwarf-cloudsc-gpu-scc-k-caching-multifield-atlas-${prec}
+    COMMAND bin/dwarf-cloudsc-gpu-scc-k-caching-atlas-${prec}
+    ARGS 1 1000 128
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+    ENVIRONMENT CLOUDSC_ATLAS_MULTIFIELD=1
 )
