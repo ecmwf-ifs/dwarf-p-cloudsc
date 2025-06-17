@@ -7,6 +7,13 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+#
+# COMPILATION ERRORS
+#
+# NVFORTRAN-F-0000-Internal compiler error. Intrinsic already declared with different signature  (dwarf-p-cloudsc/source/cloudsc-dwarf/src/prototype1/cloudsc/cloudsc.F90: 1079
+#
+#
+
 # Source me to get the correct configure/build/run environment
 
 # Store tracing and disable (module is *way* too verbose)
