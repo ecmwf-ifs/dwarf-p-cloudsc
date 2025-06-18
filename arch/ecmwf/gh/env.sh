@@ -13,6 +13,7 @@
 # NVFORTRAN-F-0000-Internal compiler error. Intrinsic already declared with different signature  (dwarf-p-cloudsc/source/cloudsc-dwarf/src/prototype1/cloudsc/cloudsc.F90: 1079
 #
 #
+echo "WARNING This environment is known not to compile prototype1 on GraceHopper/ECMWF."
 
 # Source me to get the correct configure/build/run environment
 
