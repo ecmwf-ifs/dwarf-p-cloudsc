@@ -73,6 +73,8 @@ projects :
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
             ATLAS_ENABLE_CUDA=OFF
+            ATLAS_ENABLE_HIP=OFF
+            ATLAS_ENABLE_ACC=OFF
 
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
@@ -121,7 +123,9 @@ options :
 
     - with-hip :
         help  : Enable GPU kernel variant based on HIP [ON|OFF]
-        cmake : DWARF-P-CLOUDSC_ENABLE_HIP={{value}}
+        cmake : >
+            DWARF-P-CLOUDSC_ENABLE_HIP={{value}}
+            ATLAS_ENABLE_HIP={{value}}
 
     - with-sycl :
         help  : Enable GPU kernel variant based on SYCL [ON|OFF]
