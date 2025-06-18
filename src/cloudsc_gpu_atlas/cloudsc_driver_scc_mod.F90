@@ -121,6 +121,7 @@ CONTAINS
     INTEGER :: JKGLO, IBL, ICEND, HOIST_POOL_STR_LEN, JL
     CHARACTER(32) :: HOIST_POOL_STR
     INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
+    LOGICAL :: LL_HALT_INVALID
 
 #ifndef CLOUDSC_GPU_SCC
     ! Local copy of cloud parameters for offload
@@ -183,9 +184,12 @@ CONTAINS
   call device_allocator%allocate(ZFOEELIQT, [NPROMA, NLEV, NGPBLKS])
 #endif
 
-!#if (ATLAS_HAVE_GPU == 0)
+! temporary disable floating-point-trapping of FE_INVALID caused by
+! too aggressive optimisation within the CLOUDSC function
+#if (ATLAS_HAVE_GPU == 0)
+    CALL IEEE_GET_HALTING_MODE(IEEE_INVALID, LL_HALT_INVALID)
     CALL IEEE_SET_HALTING_MODE(IEEE_INVALID, .FALSE.)
-!#endif
+#endif
 
 !$acc data deviceptr(&
 !$acc & PLCRIT_AER, PICRIT_AER, PRE_ICE,    PCCN,       PNICE, &
@@ -258,11 +262,11 @@ CONTAINS
 !$acc end parallel loop
 !$acc end data
 
-!#if (ATLAS_HAVE_GPU == 0)
-    CALL IEEE_SET_HALTING_MODE(IEEE_INVALID, .TRUE.)
-!#endif
-
     CALL TIMER%THREAD_END(TID)
+
+#if (ATLAS_HAVE_GPU == 0)
+    CALL IEEE_SET_HALTING_MODE(IEEE_INVALID, LL_HALT_INVALID)
+#endif
 
 #ifdef CLOUDSC_GPU_SCC
 !$acc end data
@@ -486,7 +490,7 @@ CONTAINS
     ! On GPUs, adding block-level column totals is cumbersome and
     ! error prone, and of little value due to the large number of
     ! processing "thread teams". Instead we register the total here.
-    !CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
+    CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
 
     CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
 
