@@ -131,6 +131,15 @@ endif()
 ### Common lib for Atlas-managed data structures
 
 if( HAVE_ATLAS )
+    set( ATLAS_HAVE_GPU 0 )
+    if ( pluto_HAVE_CUDA OR pluto_HAVE_HIP )
+        set( ATLAS_HAVE_GPU 1 )
+    endif()
+    set( USE_ACC ${HAVE_ACC} )
+    if ( NOT ATLAS_HAVE_GPU )
+       set( USE_ACC 0 )
+    endif()
+
     # NB: This does not contain the global state and expand
     #     modules at the moment
     cloudsc_add_common_lib(
@@ -138,7 +147,7 @@ if( HAVE_ATLAS )
         TYPE ${GPU_LINK_TYPE}
         LIBS
             $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
-            $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
+            $<${USE_ACC}:OpenACC::OpenACC_Fortran>
     )
 endif()
 
