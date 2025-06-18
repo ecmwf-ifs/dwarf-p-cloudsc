@@ -72,9 +72,6 @@ projects :
         require : ecbuild eckit fckit
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
-            ATLAS_ENABLE_CUDA=OFF
-            ATLAS_ENABLE_HIP=OFF
-            ATLAS_ENABLE_ACC=OFF
 
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
