@@ -137,7 +137,8 @@ if( HAVE_ATLAS )
     endif()
     set( USE_ACC ${HAVE_ACC} )
     if ( NOT ATLAS_HAVE_GPU )
-       set( USE_ACC 0 )
+        message(WARNING "Atlas was not compiled with GPU support -> OpenACC instructions will be ignored in the dwarf.")
+        set( USE_ACC 0 )
     endif()
 
     # NB: This does not contain the global state and expand
