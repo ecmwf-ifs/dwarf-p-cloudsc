@@ -186,10 +186,8 @@ CONTAINS
 
 ! temporary disable floating-point-trapping of FE_INVALID caused by
 ! too aggressive optimisation within the CLOUDSC function
-#if (ATLAS_HAVE_GPU == 0)
-    CALL IEEE_GET_HALTING_MODE(IEEE_INVALID, LL_HALT_INVALID)
-    CALL IEEE_SET_HALTING_MODE(IEEE_INVALID, .FALSE.)
-#endif
+  CALL IEEE_GET_HALTING_MODE(IEEE_INVALID, LL_HALT_INVALID)
+  CALL IEEE_SET_HALTING_MODE(IEEE_INVALID, .FALSE.)
 
 !$acc data deviceptr(&
 !$acc & PLCRIT_AER, PICRIT_AER, PRE_ICE,    PCCN,       PNICE, &
@@ -264,9 +262,7 @@ CONTAINS
 
     CALL TIMER%THREAD_END(TID)
 
-#if (ATLAS_HAVE_GPU == 0)
     CALL IEEE_SET_HALTING_MODE(IEEE_INVALID, LL_HALT_INVALID)
-#endif
 
 #ifdef CLOUDSC_GPU_SCC
 !$acc end data
