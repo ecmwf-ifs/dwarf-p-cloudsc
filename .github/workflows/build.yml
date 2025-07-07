@@ -35,13 +35,11 @@ jobs:
           - linux nvhpc
           - linux intel-classic
           - linux intel-llvm
-        python-version: [3.11]
-        os: [ubuntu-24.04]
-        caching: [true]
 
         include:
 
           - name: linux gnu-14
+            os: ubuntu-24.04
             compiler: gnu-14
             compiler_cc: gcc-14
             compiler_cxx: g++-14
@@ -49,8 +47,11 @@ jobs:
             cmake_options: -DENABLE_ATLAS=ON
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
+            python-version: 3.11
+            caching: true
 
           - name: linux nvhpc
+            os: ubuntu-24.04
             compiler: nvhpc
             compiler_cc: nvc
             compiler_cxx: nvc++
@@ -59,15 +60,21 @@ jobs:
             ctest_options: -E gpu|mix
               # Some OpenMP-target variants segfault when executed on the host but run fine on device,
               # thus we will test these instead using a build-hpc workflow
+            python-version: 3.11
+            caching: true
 
           - name : linux intel-classic
+            os: ubuntu-24.04
             compiler: intel-classic
             compiler_cc: icc
             compiler_cxx: icpc
             compiler_fc: ifort
             cmake_options: -DENABLE_ATLAS=ON
+            python-version: 3.11
+            caching: true
 
           - name : linux intel-llvm
+            os: ubuntu-24.04
             compiler: intel-llvm
             compiler_cc: icx
             compiler_cxx: icpx
@@ -75,8 +82,11 @@ jobs:
             cmake_options: -DENABLE_LOKI=OFF -DSYCL_COMPILE_OPTIONS=-fsycl -DENABLE_CLOUDSC_MIX=OFF -DENABLE_ATLAS=ON
                 # cloudsc_driver_loki_mod.idem_stack.F90(138): error #5623: **Internal compiler error: internal abort**
             ctest_options: -E gpu-omp
+            python-version: 3.11
+            caching: true
 
           - name : linux gnu-native mpi
+            os: ubuntu-24.04
             compiler: gnu-13
             compiler_cc: gcc
             compiler_cxx: g++
@@ -85,6 +95,8 @@ jobs:
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
             build_type: Bit
+            python-version: 3.11
+            caching: true
 
     runs-on: ${{ matrix.os }}
     steps:
