@@ -69,6 +69,13 @@ jobs:
               - dwarf-cloudsc-gpu-std-par-scc-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial
+              - dwarf-cloudsc-gpu-scc-multifield-atlas-dp
+              - dwarf-cloudsc-fortran-atlas-sp-serial
+              - dwarf-cloudsc-fortran-atlas-sp-omp
+              - dwarf-cloudsc-gpu-scc-atlas-sp
+              - dwarf-cloudsc-gpu-scc-multifield-atlas-sp
+              - dwarf-cloudsc-gpu-scc-hoist-multifield-atlas-sp
+              - dwarf-cloudsc-gpu-scc-hoist_pool-atlas-sp
 
           - name: lumi-g cce
             site: lumi
