@@ -54,7 +54,7 @@ jobs:
               #SBATCH --qos=dg
             arch: ecmwf/hpc2020/nvhpc/24.5
             modules: ~
-            build_options: --with-loki=ON --with-field-api=ON --with-atlas=ON --with-cuda=ON
+            build_options: --with-loki=ON --with-field-api=ON
             # TODO: These tests trigger a SIGFPE, to be investigated
             #  'dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial' works with NVHPC 22.11 but triggers SIGFPE with 24.5
             exclude_tests:
@@ -69,6 +69,23 @@ jobs:
               - dwarf-cloudsc-gpu-std-par-scc-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial
+
+          include:
+          - name: ac-gpu nvhpc
+            site: ac-batch
+            troika_user_secret: HPC_CI_SSH_USER
+            sbatch_options: |
+              #SBATCH --time=00:20:00
+              #SBATCH --nodes=1
+              #SBATCH --ntasks=1
+              #SBATCH --cpus-per-task=32
+              #SBATCH --gpus-per-task=1
+              #SBATCH --mem=200G
+              #SBATCH --qos=dg
+            arch: ecmwf/hpc2020/nvhpc/24.5
+            modules: ~
+            build_options: --with-loki=OFF --with-field-api=OFF --with-openmp=OFF --with-atlas=ON --with-cuda=ON
+            exclude_tests:
               - dwarf-cloudsc-gpu-scc-multifield-atlas-dp
               - dwarf-cloudsc-fortran-atlas-sp-serial
               - dwarf-cloudsc-fortran-atlas-sp-omp
@@ -100,6 +117,24 @@ jobs:
               - dwarf-cloudsc-hip-hoist-dp-serial
               - dwarf-cloudsc-hip-k-caching-dp-serial
               - dwarf-cloudsc-hip-sp-serial
+
+          - name: lumi-g cce
+            site: lumi
+            troika_user_secret: LUMI_CI_SSH_USER
+            account_secret: LUMI_CI_PROJECT
+            sbatch_options: |
+              #SBATCH --time=00:20:00
+              #SBATCH --nodes=1
+              #SBATCH --ntasks-per-node=1
+              #SBATCH --gpus-per-task=1
+              #SBATCH --partition=dev-g
+              #SBATCH --account={0}
+            arch: eurohpc/lumi/cray-gpu/17.0.1
+            modules: ~
+            output_dir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
+            workdir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
+            # TODO: Building without OpenMP because some tests fail on OMPT initialization
+            build_options: --with-loki=OFF --with-openmp=OFF --with-atlas=ON --with-hip=ON
 
     runs-on: [self-hosted, linux, hpc]
     env:
