@@ -35,9 +35,9 @@ jobs:
           - linux nvhpc
           - linux intel-classic
           - linux intel-llvm
-        python-version: 3.11
-        os: ubuntu-24.04
-        caching: true
+        python-version: [3.11]
+        os: [ubuntu-24.04]
+        caching: [true]
 
         include:
 
