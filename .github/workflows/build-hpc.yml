@@ -70,7 +70,6 @@ jobs:
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial
 
-          include:
           - name: ac-gpu nvhpc
             site: ac-batch
             troika_user_secret: HPC_CI_SSH_USER
