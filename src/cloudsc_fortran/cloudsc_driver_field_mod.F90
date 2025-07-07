@@ -69,12 +69,6 @@ CONTAINS
         CALL FLUX%UPDATE_VIEW(IBL)
         CALL TENDENCY_LOC%UPDATE_VIEW(IBL)
         CALL TENDENCY_TMP%UPDATE_VIEW(IBL)
-        
-        !-- These were uninitialized : meaningful only when we compare error differences
-        PAUX%PCOVPTOT = 0.0_JPRB
-        TENDENCY_LOC%CLD(:,:,NCLV) = 0.0_JPRB
-
-
 
         CALL CLOUDSC(    1,    ICEND,    NPROMA,  NLEV, & ! These could also be accessed through FIELD_STATE
               & PTSPHY,&

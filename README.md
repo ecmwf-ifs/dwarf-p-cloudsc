@@ -71,6 +71,13 @@ In order to do so, please create a pull request with your contribution and sign 
   using CUDA-Fortran (CUF). To enable this variant,
   a suitable CUDA installation is required and the `--with-cuda` flag
   needs to be passed at the build stage.
+- **dwarf-cloudsc-mix**: GPU-enabled SCC-K-CACHING with data
+  offload via *OpenMP*/*OpenACC* (specify via
+  `--cloudsc-mix-gpu-offload=OMP|ACC`, default: `ACC`) and a low-level C-style kernel
+  implementation via *CUDA*/*HIP*/*SYCL* (specify via
+  `--cloudsc-mix-gpu-lang=CUDA|HIP|SYCL`, default: `CUDA`). The implementation
+  consists of a Fortran driver, C-binding/interface and low-level C-style kernel
+  implementation. To enable this variant, use `--with-mix`.
 - **CUDA C prototypes**: To enable these variants, a suitable 
   CUDA installation is required and the `--with-cuda` flag needs
   to be pased at the build stage.
@@ -107,6 +114,24 @@ In order to do so, please create a pull request with your contribution and sign 
   minor modifications (i.e. derived types/global paramters handling).
   Turned off by default, activate at the build stage with 
   `--cloudsc-fortran-pyiface=ON`.
+- **dwarf-cloudsc-gpu-scc-field-blocked**: A version that uses FIELD API for
+data offload and the SCC loop layout, with a double blocked driver loop that
+offloads the data in chunks and enables running arbitrarily large problem sizes.
+Two environment variables can be used to configure this variant:
+  * ``CLOUDSC_BLOCKING_CHUNK_SIZE`` (default ``512``) - The chunk size (the number
+of  ``NPROMA`` blocks) that will be processed in each iteration.
+  * ``CLOUDSC_FIELD_API_PINNED`` (default ``OFF``) - If turned ``ON`` fields will be allocated
+in page-locked memory.
+- **dwarf-cloudsc-gpu-scc-field-async**: A version that uses FIELD API for
+data offload and the SCC loop layout, with a double blocked driver loop that
+offloads the data in chunks and enables running arbitrarily large problem sizes. Three
+environment variables can be used to configure this variant:
+  * ``CLOUDSC_BLOCKING_CHUNK_SIZE`` (default ``512``) - The chunk size (the number
+of ``NPROMA`` blocks) that will be processed in each iteration.
+  * ``CLOUDSC_ASYNC_NQUEUES`` (default ``3``) - The number of queues (i.e. CUDA streams) used by the async variant.
+  * ``CLOUDSC_FIELD_API_PINNED`` (default ``OFF``) - If CUDA is enabled, then this variable **should be set to ``ON``**.
+This will ensure that fields are allocated in page-locked memory and that the kernel and data transfers are executed
+asynchronously.
 - **dwarf-cloudsc-fortran-atlas**: A version of **dwarf-cloudsc-fortran** which uses the [Atlas library](https://github.com/ecmwf/atlas) 
   and its Field and FieldSet data stuctures. There are two storage settings for variables. If the environment variable
   CLOUDSC_ATLAS_MULTIFIELD = 0 (the default, if not set), the variables are managed as atlas::FieldSet,

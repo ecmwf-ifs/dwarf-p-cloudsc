@@ -59,6 +59,7 @@ endfunction()
 
 set( GPU_VARIANTS scc scc-stack scc-hoist scc-k-caching )
 set( CUDA_VARIANTS scc-cuf scc-cuf-k-caching )
+set( STDPAR_VARIANTS scc scc-k-caching)
 
 if( CMAKE_Fortran_COMPILER_ID MATCHES "Cray" AND CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL "16.0.1" )
     # Fails to compile with error
@@ -184,6 +185,36 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
 
 endif()
 
+
+### STDPAR Fortran variants
+
+if( HAVE_STDPAR )
+
+    foreach( variant IN LISTS STDPAR_VARIANTS )
+        string( REPLACE "-" "_" variant_ ${variant} )
+        string( TOUPPER ${variant_} VARIANT_ )
+
+	if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+            cloudsc_add_compile_options(
+                SOURCES
+                    cloudsc_std_par_${variant_}_mod.F90
+                    cloudsc_driver_std_par_${variant_}_mod.F90
+                FLAGS "-stdpar=gpu"
+	    )
+	endif()
+        cloudsc_add_gpu_exe(
+            TARGET      dwarf-cloudsc-gpu-std-par-${variant}
+	    DEFINITIONS CLOUDSC_STD_PAR_${VARIANT_}
+            DRIVER      cloudsc_driver_std_par_${variant_}_mod.F90
+            KERNEL
+                cloudsc_std_par_${variant_}_mod.F90
+                nlev_mod.F90
+            COMMON_LIB  acc
+        )
+    endforeach()
+
+endif()
+
 ### CUDA Fortran variants
 
 if( HAVE_CUDA )
@@ -235,4 +266,39 @@ if( HAVE_FIELD_API )
     if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" AND field_api_HAVE_CUDA )
         target_link_options( dwarf-cloudsc-gpu-scc-field-${prec} PUBLIC "-gpu=pinned" )
     endif()
+
+    cloudsc_add_gpu_exe(
+        TARGET      dwarf-cloudsc-gpu-scc-field-blocked
+        DEFINITIONS CLOUDSC_GPU_SCC_FIELD_BLOCKED
+        DRIVER      cloudsc_driver_gpu_scc_field_blocked_mod.F90
+        KERNEL      cloudsc_gpu_scc_mod.F90
+        COMMON_LIB  field_api
+        TEST_ENV
+            NVCOMPILER_ACC_CUDA_HEAPSIZE=64M
+            DEV_ALLOC_SIZE=1073741824
+            $<${HAVE_CUDA}:CLOUDSC_FIELD_API_PINNED=ON>
+    )
+
+    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" AND field_api_HAVE_CUDA )
+        target_link_options( dwarf-cloudsc-gpu-scc-field-blocked-${prec} PUBLIC "-gpu=pinned" )
+    endif()
+
+    cloudsc_add_gpu_exe(
+        TARGET      dwarf-cloudsc-gpu-scc-field-async
+        DEFINITIONS CLOUDSC_GPU_SCC_FIELD_ASYNC
+        DRIVER      cloudsc_driver_gpu_scc_field_async_mod.F90
+        KERNEL      cloudsc_gpu_scc_mod.F90
+        COMMON_LIB  field_api
+        TEST_ENV
+            NVCOMPILER_ACC_CUDA_HEAPSIZE=64M
+            DEV_ALLOC_SIZE=1073741824
+            $<${HAVE_CUDA}:CLOUDSC_FIELD_API_PINNED=ON>
+    )
+
+    # Importantly, we add the "pinned" flag to the linker command to ensure pinning!
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" AND field_api_HAVE_CUDA )
+        target_link_options( dwarf-cloudsc-gpu-scc-field-async-${prec} PUBLIC "-gpu=pinned" )
+    endif()
+
 endif()

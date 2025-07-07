@@ -51,8 +51,8 @@ projects :
             ECKIT_ENABLE_CUDA=OFF
 
     - field_api :
-        git     : https://github.com/ecmwf-ifs/field_api.git
-        version : v0.3.4
+        git     : https://github.com/ecmwf-ifs/field_api
+        version : develop-ecmwf
         require : ecbuild
         optional: true
         cmake   : >
@@ -110,6 +110,19 @@ options :
     - with-openmp :
         help  : Enable OpenMP threading or GPU offloading [ON|OFF]
         cmake : ENABLE_OMP={{value}}
+
+    - with-mix:
+        help: Enable GPU kernel variant based on OpenMP/OpenACC and HIP/CUDA/SYCL
+        cmake: >
+            ENABLE_CLOUDSC_MIX=ON
+
+    - cloudsc-mix-gpu-offload :
+        help  : "Data offload model for GPU variants. Available options: OMP, ACC"
+        cmake : CLOUDSC_MIX_GPU_OFFLOAD={{value}}
+
+    - cloudsc-mix-gpu-lang :
+        help  : "Kernel language for low-level GPU kernel implementations. Available options: CUDA, HIP, SYCL"
+        cmake : CLOUDSC_MIX_GPU_LANG={{value}}
 
     - with-cuda :
         help  : Enable GPU kernel variants based on CUDA and CUDA-Fortran [ON|OFF]

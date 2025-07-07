@@ -55,6 +55,7 @@ jobs:
             modules: ~
             build_options: --with-loki=ON --with-field-api=ON
             # TODO: These tests trigger a SIGFPE, to be investigated
+            #  'dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial' works with NVHPC 22.11 but triggers SIGFPE with 24.5
             exclude_tests:
               - dwarf-cloudsc-loki-c-dp-serial
               - dwarf-cloudsc-loki-c-dp-omp
@@ -64,6 +65,9 @@ jobs:
               - dwarf-cloudsc-fortran-field-sp-omp
               - dwarf-cloudsc-loki-idem-sp-serial
               - dwarf-cloudsc-loki-idem-stack-sp-serial
+              - dwarf-cloudsc-gpu-std-par-scc-sp-serial
+              - dwarf-cloudsc-gpu-std-par-scc-k-caching-sp-serial
+              - dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial
 
           - name: lumi-g cce
             site: lumi
@@ -93,7 +97,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: ecmwf-actions/reusable-workflows/ci-hpc-generic@v2
+      - uses: ecmwf/reusable-workflows/ci-hpc-generic@v2
         with:
           site: ${{ matrix.site }}
           troika_user: ${{ secrets[matrix.troika_user_secret] }}

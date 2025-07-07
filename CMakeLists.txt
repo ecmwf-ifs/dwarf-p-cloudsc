@@ -56,6 +56,11 @@ ecbuild_add_option( FEATURE ACC
                     DESCRIPTION "Support for using GPUs with OpenACC"
                     REQUIRED_PACKAGES "OpenACC COMPONENTS Fortran" )
 
+ecbuild_add_option( FEATURE STDPAR
+                    DEFAULT ON
+                    DESCRIPTION "Support for using GPUs via DO CONCURRENT and OpenACC for global variable offloading"
+		    CONDITION HAVE_ACC )
+
 include(CheckLanguage)
 check_language( CUDA )
 ecbuild_add_option( FEATURE CUDA
@@ -105,6 +110,14 @@ ecbuild_add_option( FEATURE SERIALBOX
 if( HAVE_SERIALBOX )
   list(APPEND CLOUDSC_DEFINITIONS HAVE_SERIALBOX)
 endif()
+
+
+### Mix variants
+
+ecbuild_add_option( FEATURE CLOUDSC_MIX
+	DESCRIPTION "Build the mix version CLOUDSC (Fortran driver + OpenMP/OpenACC + HIP/CUDA/SYCL" DEFAULT ON
+	CONDITION (HAVE_CUDA OR HAVE_HIP OR HAVE_SYCL) AND (HAVE_ACC OR HAVE_OMP_TARGET)
+)
 
 ### Enable/disable specific variants
 
