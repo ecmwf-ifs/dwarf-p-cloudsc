@@ -36,7 +36,7 @@ else
    echo "Download already present in ${TEMPORARY_FILES}/ecbuild"
 fi
 
-mkdir bootstrap
-cd bootstrap
+cd ${TEMPORARY_FILES}/ecbuild
+mkdir -p bootstrap && cd bootstrap && rm -rf *
 ../bin/ecbuild --prefix=$ECBUILD_INSTALL_DIR ..
 make install
