@@ -196,34 +196,6 @@ jobs:
         fi
         echo "HDF5_ROOT=${{ env.DEPS_DIR }}/hdf5" >> $GITHUB_ENV
 
-    - name: Install atlas from source
-      if: ${{ ! contains( matrix.cmake_option, 'ATLAS' ) }}
-      run: |
-        if [[ -f ${{ env.DEPS_DIR }}/ecbuild/bin/ecbuild ]]; then
-          echo "::debug::ecbuild restored from cache"
-        else
-          ${CLOUDSC_TOOLS}/install-ecbuild.sh --prefix ${{ env.DEPS_DIR }}/ecbuild
-        fi
-        echo "ECBUILD_DIR=${{ env.DEPS_DIR }}/ecbuild" >> $GITHUB_ENV
-                if [ -f ${{ env.DEPS_DIR }}/eckit/lib/libeckit.dylib ] || [ -f ${{ env.DEPS_DIR }}/eckit/lib/libeckit.so ]; then
-          echo "::debug::eckit restored from cache"
-        else
-          ${CLOUDSC_TOOLS}/install-eckit.sh --prefix ${{ env.DEPS_DIR }}/eckit
-        fi
-        echo "ECKIT_DIR=${{ env.DEPS_DIR }}/eckit" >> $GITHUB_ENV
-                if [ -f ${{ env.DEPS_DIR }}/fckit/lib/libfckit.dylib ] || [ -f ${{ env.DEPS_DIR }}/fckit/lib/libfckit.so ]; then
-          echo "::debug::fckit restored from cache"
-        else
-          ${CLOUDSC_TOOLS}/install-fckit.sh --prefix ${{ env.DEPS_DIR }}/fckit
-        fi
-        echo "FCKIT_DIR=${{ env.DEPS_DIR }}/fckit" >> $GITHUB_ENV
-        if [ -f ${{ env.DEPS_DIR }}/atlas/lib/libatlas.dylib ] || [ -f ${{ env.DEPS_DIR }}/atlas/lib/libatlas.so ]; then
-          echo "::debug::atlas restored from cache"
-        else
-          ${CLOUDSC_TOOLS}/install-atlas.sh --prefix ${{ env.DEPS_DIR }}/atlas
-        fi
-        echo "ATLAS_DIR=${{ env.DEPS_DIR }}/atlas" >> $GITHUB_ENV
-
     - name: Build & Test
       id: build-test
       uses: ecmwf/build-package@v2
@@ -233,7 +205,10 @@ jobs:
         cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
         recreate_cache: ${{ matrix.caching == false }}
         dependencies: |
-          ecmwf/ecbuild
+          ecmwf/ecbuild@refs/tags/3.9.1
+          ecmwf/eckit@refs/tags/1.28.5
+          ecmwf/fckit@refs/tags/0.13.3
+          ecmwf/atlas@refs/tags/0.43.0
           ecmwf-ifs/loki@refs/tags/0.3.0
         dependency_branch: develop
         dependency_cmake_options: |
@@ -241,4 +216,4 @@ jobs:
         cmake_options:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}"
         ctest_options: "${{ matrix.ctest_options }}"
 
-# TODO: add eckit, fckit, fiat, field_api
+# TODO: add fiat, field_api
