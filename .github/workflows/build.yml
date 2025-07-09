@@ -156,9 +156,11 @@ jobs:
         android: true
         dotnet: true
         haskell: true
-        large-packages: true
-        docker-images: true
+        large-packages: false # takes too long
+        docker-images: false # takes too long
         swap-storage: true
+
+
 
     - name: Install NVHPC compiler
       if: contains( matrix.compiler, 'nvhpc' )
@@ -212,11 +214,11 @@ jobs:
           ecmwf-ifs/loki@refs/tags/0.3.0
         dependency_branch: develop
         dependency_cmake_options: |
-          ecmwf/eckit:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF -DENABLE_ECKIT_CMD=OFF -DENABLE_ECKIT_SQL=OFF -DENABLE_WARNINGS=OFF"
-          ecmwf/fckit:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF"
-          ecmwf/atlas:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF -DENABLE_WARNINGS=OFF"
-          ecmwf-ifs/loki: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF"
-        cmake_options:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}"
+          ecmwf/eckit: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF -DENABLE_ECKIT_CMD=OFF -DENABLE_ECKIT_SQL=OFF -DENABLE_WARNINGS=OFF
+          ecmwf/fckit: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF
+          ecmwf/atlas: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF -DENABLE_WARNINGS=OFF
+          ecmwf-ifs/loki: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF
+        cmake_options: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}
         ctest_options: "${{ matrix.ctest_options }}"
 
 # TODO: add fiat, field_api
