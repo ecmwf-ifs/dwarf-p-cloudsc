@@ -120,7 +120,6 @@ CONTAINS
 
     INTEGER :: JKGLO, IBL, ICEND, HOIST_POOL_STR_LEN, JL
     CHARACTER(32) :: HOIST_POOL_STR
-    INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
     LOGICAL :: LL_HALT_INVALID
 
 #ifndef CLOUDSC_GPU_SCC
@@ -205,9 +204,8 @@ CONTAINS
 !$acc & TENDENCY_LOC_T, TENDENCY_LOC_A, TENDENCY_LOC_Q, &
 !$acc & PRAINFRAC_TOPRFZ, TENDENCY_LOC_CLD )
 
-    ! Local timer for each thread
-    TID = 0
-    CALL TIMER%THREAD_START(TID)
+    ! Local timer for each thread. The main code part does not run threaded, so TID=0
+    CALL TIMER%THREAD_START(TID=0)
 
 !$acc parallel loop gang vector_length(NPROMA)
     DO JKGLO=1,NGPTOT,NPROMA
@@ -260,7 +258,8 @@ CONTAINS
 !$acc end parallel loop
 !$acc end data
 
-    CALL TIMER%THREAD_END(TID)
+    ! The main code part does not run threaded, so TID=0
+    CALL TIMER%THREAD_END(TID=0)
 
     CALL IEEE_SET_HALTING_MODE(IEEE_INVALID, LL_HALT_INVALID)
 
@@ -306,7 +305,6 @@ CONTAINS
     INTEGER(KIND=JPIM) :: JKGLO, IBL, ICEND, NGPBLKS
 
     TYPE(PERFORMANCE_TIMER) :: TIMER
-    INTEGER(KIND=JPIM) :: TID ! thread id from 0 .. NUMOMP - 1
     TYPE(ATLAS_TRACE)  :: TRACE
 
     ! input variables
@@ -394,7 +392,6 @@ CONTAINS
     TDIFF = FTIMER() - TDIFF
     PRINT *, "Device allocate [ms]: ", INT(TDIFF * 1000.0_JPRD)
 
-    TID = 0
     CALL TIMER%START(NUMOMP)
 
     CALL FSET%UPDATE_DEVICE([(JKGLO, JKGLO=1,37)])
@@ -487,7 +484,7 @@ CONTAINS
     ! On GPUs, adding block-level column totals is cumbersome and
     ! error prone, and of little value due to the large number of
     ! processing "thread teams". Instead we register the total here.
-    CALL TIMER%THREAD_LOG(TID=TID, IGPC=NGPTOT)
+    CALL TIMER%THREAD_LOG(TID=0, IGPC=NGPTOT)
 
     CALL TIMER%PRINT_PERFORMANCE(NPROMA, NGPBLKS, NGPTOT)
 
