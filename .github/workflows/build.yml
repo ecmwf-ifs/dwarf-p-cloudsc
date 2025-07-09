@@ -44,7 +44,7 @@ jobs:
             compiler_cc: gcc-14
             compiler_cxx: g++-14
             compiler_fc: gfortran-14
-            cmake_options: -DENABLE_ATLAS=ON -DATLAS_ENABLE_OMP=OFF
+            cmake_options: -DATLAS_ENABLE_OMP=OFF
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
             python-version: 3.11
@@ -56,7 +56,7 @@ jobs:
             compiler_cc: nvc
             compiler_cxx: nvc++
             compiler_fc: nvfortran
-            cmake_options: -DCMAKE_CUDA_ARCHITECTURES=80 -DENABLE_ATLAS=ON
+            cmake_options: -DCMAKE_CUDA_ARCHITECTURES=80
             ctest_options: -E gpu|mix
               # Some OpenMP-target variants segfault when executed on the host but run fine on device,
               # thus we will test these instead using a build-hpc workflow
@@ -69,7 +69,7 @@ jobs:
             compiler_cc: icc
             compiler_cxx: icpc
             compiler_fc: ifort
-            cmake_options: -DENABLE_ATLAS=ON
+            cmake_options: " "
             python-version: 3.11
             caching: true
 
@@ -79,7 +79,7 @@ jobs:
             compiler_cc: icx
             compiler_cxx: icpx
             compiler_fc: ifx
-            cmake_options: -DENABLE_LOKI=OFF -DSYCL_COMPILE_OPTIONS=-fsycl -DENABLE_CLOUDSC_MIX=OFF -DENABLE_ATLAS=ON
+            cmake_options: -DENABLE_LOKI=OFF -DSYCL_COMPILE_OPTIONS=-fsycl -DENABLE_CLOUDSC_MIX=OFF
                 # cloudsc_driver_loki_mod.idem_stack.F90(138): error #5623: **Internal compiler error: internal abort**
             ctest_options: -E gpu-omp
             python-version: 3.11
@@ -91,7 +91,7 @@ jobs:
             compiler_cc: gcc
             compiler_cxx: g++
             compiler_fc: gfortran
-            cmake_options: -DENABLE_MPI=ON -DENABLE_ATLAS=ON
+            cmake_options: -DENABLE_MPI=ON -DATLAS_ENABLE_OMP=OFF
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
             build_type: Bit
