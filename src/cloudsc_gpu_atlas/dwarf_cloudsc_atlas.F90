@@ -42,20 +42,6 @@ TYPE(ATLAS_TRACE) :: TRACE
 
   IARGS = COMMAND_ARGUMENT_COUNT()
 
-  ! Get the number of OpenMP threads to use for the benchmark
-  if (IARGS >= 1) then
-    CALL GET_COMMAND_ARGUMENT(1, CLARG, LENARG)
-    READ(CLARG(1:LENARG),*) NUMOMP
-    if (NUMOMP <= 0) then
-#ifdef _OPENMP
-      NUMOMP = OMP_GET_MAX_THREADS()
-#else
-      ! if arg is 0 or negative, and OpenMP disabled; defaults to 1
-      NUMOMP = 1
-#endif
-    end if
-  end if
-
   ! Initialize MPI environment
   CALL CLOUDSC_MPI_INIT(NUMOMP)
   CALL ATLAS_LIBRARY%INITIALISE()

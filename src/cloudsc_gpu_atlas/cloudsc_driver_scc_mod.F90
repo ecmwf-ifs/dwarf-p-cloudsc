@@ -206,7 +206,7 @@ CONTAINS
 !$acc & PRAINFRAC_TOPRFZ, TENDENCY_LOC_CLD )
 
     ! Local timer for each thread
-    TID = GET_THREAD_NUM()
+    TID = 0
     CALL TIMER%THREAD_START(TID)
 
 !$acc parallel loop gang vector_length(NPROMA)
