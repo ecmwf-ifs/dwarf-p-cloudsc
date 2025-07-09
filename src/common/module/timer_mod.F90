@@ -16,6 +16,7 @@ use omp_lib
 #define omp_get_num_threads() 1
 #define omp_get_max_threads() 1
 #define omp_get_thread_num() 0
+#define omp_in_parallel() .false.
 #endif
 
   USE CLOUDSC_MPI_MOD, ONLY: IRANK, NUMPROC, CLOUDSC_MPI_GATHER_INT
@@ -55,8 +56,11 @@ CONTAINS
   FUNCTION GET_THREAD_NUM()
     ! Wrapper toget OpenMP thread ID
     INTEGER(KIND=JPIM) :: GET_THREAD_NUM
-
-    GET_THREAD_NUM = omp_get_thread_num()
+    IF (omp_in_parallel()) then
+      GET_THREAD_NUM = omp_get_thread_num()
+    ELSE
+      GET_THREAD_NUM = 0
+    ENDIF
   END FUNCTION GET_THREAD_NUM
 
   FUNCTION FTIMER()
