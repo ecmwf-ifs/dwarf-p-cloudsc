@@ -44,7 +44,7 @@ jobs:
             compiler_cc: gcc-14
             compiler_cxx: g++-14
             compiler_fc: gfortran-14
-            cmake_options: -DENABLE_ATLAS=ON
+            cmake_options: -DENABLE_ATLAS=ON -DATLAS_ENABLE_OMP=OFF
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
             python-version: 3.11
@@ -208,7 +208,7 @@ jobs:
           ecmwf/ecbuild@refs/tags/3.9.1
           ecmwf/eckit@refs/tags/1.28.5
           ecmwf/fckit@refs/tags/0.13.3
-          ecmwf/atlas@refs/tags/0.43.0
+          ecmwf/atlas@hotfix/0.43.1
           ecmwf-ifs/loki@refs/tags/0.3.0
         dependency_branch: develop
         dependency_cmake_options: |
