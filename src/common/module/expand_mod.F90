@@ -234,7 +234,6 @@ contains
   end subroutine expand_i1
 
   subroutine expand_r1(buffer, field, nlon, nproma, ngptot, nblocks)
-    use omp_lib
     real(kind=jprb), intent(inout) :: buffer(nlon)
     real(kind=jprb), intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
@@ -274,7 +273,6 @@ contains
   end subroutine expand_r1
 
   subroutine expand_r2(buffer, field, nlon, nproma, nlev, ngptot, nblocks)
-    use omp_lib
     real(kind=jprb), intent(inout) :: buffer(nlon, nlev)
     real(kind=jprb), intent(inout) :: field(:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
@@ -314,7 +312,6 @@ contains
   end subroutine expand_r2
 
   subroutine expand_r3(buffer, field, nlon, nproma, nlev, ndim, ngptot, nblocks)
-    use omp_lib
     real(kind=jprb), intent(inout) :: buffer(nlon, nlev, ndim)
     real(kind=jprb), intent(inout) :: field(:,:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
