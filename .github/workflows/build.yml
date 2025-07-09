@@ -212,7 +212,7 @@ jobs:
           ecmwf-ifs/loki@refs/tags/0.3.0
         dependency_branch: develop
         dependency_cmake_options: |
-          ecmwf-ifs/loki: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
+          ecmwf-ifs/loki: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF"
         cmake_options:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}"
         ctest_options: "${{ matrix.ctest_options }}"
 
