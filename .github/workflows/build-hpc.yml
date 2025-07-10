@@ -47,8 +47,8 @@ jobs:
             sbatch_options: |
               #SBATCH --time=00:20:00
               #SBATCH --nodes=1
-              #SBATCH --ntasks=1
-              #SBATCH --cpus-per-task=32
+              #SBATCH --ntasks-per-node=4
+              #SBATCH --cpus-per-task=64
               #SBATCH --gpus-per-task=1
               #SBATCH --mem=200G
               #SBATCH --qos=dg
