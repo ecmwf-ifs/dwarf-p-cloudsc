@@ -69,6 +69,8 @@ jobs:
               - dwarf-cloudsc-gpu-std-par-scc-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial
+              - dwarf-cloudsc-fortran-atlas-sp-serial
+              - dwarf-cloudsc-fortran-atlas-sp-omp
 
           - name: lumi-g cce
             site: lumi
