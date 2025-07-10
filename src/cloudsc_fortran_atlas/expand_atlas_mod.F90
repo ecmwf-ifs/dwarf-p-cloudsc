@@ -9,8 +9,6 @@
 
 module expand_atlas_mod
   use atlas_module
-  use atlas_fieldset_module
-  use atlas_functionspace_blockstructuredcolumns_module
 
   use parkind1 , only : jpim, jprb
   use yomphyder, only : state_type
