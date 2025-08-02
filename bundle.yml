@@ -57,12 +57,10 @@ projects :
  
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
-        version : napz-io-hdf5serial-pr 
+        version : main 
         require : ecbuild fiat
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
-            ENABLE_FIAT=ON
-            ENABLE_IO=ON
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
@@ -101,6 +99,14 @@ options :
     - with-field-api :
         help : Enable Field API variants [ON|OFF]
         cmake : BUILD_field_api={{value}}
+
+    - with-field-api-io :
+        help : Enable Field API IO (requires MPI) [ON|OFF]
+        cmake : >
+            FIELD_API_ENABLE_IO={{value}}
+            FIELD_API_ENABLE_FIAT={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
+            ENABLE_MPI=ON
 
     - without-mapped-fields :
         help : Disables automatic registering of Field API fields in ACC map
