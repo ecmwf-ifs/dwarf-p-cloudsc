@@ -53,7 +53,7 @@ jobs:
               #SBATCH --qos=dg
             arch: ecmwf/hpc2020/nvhpc/24.5
             modules: ~
-            build_options: --with-loki=ON --with-field-api=ON --with-atlas=ON --with-cuda=ON --with-acc=ON
+            build_options: --with-loki=ON --with-field-api=ON --with-field-api-io-serial=ON --with-atlas=ON --with-cuda=ON --with-acc=ON
             # TODO: These tests trigger a SIGFPE, to be investigated
             #  'dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial' works with NVHPC 22.11 but triggers SIGFPE with 24.5
             exclude_tests:
