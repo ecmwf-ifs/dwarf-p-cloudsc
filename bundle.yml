@@ -19,7 +19,7 @@ projects :
 
     - ecbuild :
         git     : https://github.com/ecmwf/ecbuild
-        version : 3.9.1
+        version : 3.11.0
         bundle  : false
 
     - serialbox :
@@ -43,39 +43,44 @@ projects :
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : 1.28.5
+        version : 1.30.0
         require : ecbuild
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
             ECKIT_ENABLE_BUILD_TOOLS=OFF
             ECKIT_ENABLE_CUDA=OFF
+            ECKIT_ENABLE_ECKIT_GEO=OFF
+            ECKIT_ENABLE_ECKIT_CMD=OFF
+            ECKIT_ENABLE_ECKIT_SQL=OFF
+            ECKIT_ENABLE_WARNINGS=OFF
 
     - fiat      :
         git     : https://github.com/ecmwf-ifs/fiat
         version : 1.5.1 
         require : ecbuild
- 
+        optional: true
+        cmake   : >
+            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+            
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
         version : main 
         require : ecbuild fiat
-        cmake   : >
-            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
-
+        
     - fckit :
         git     : https://github.com/ecmwf/fckit
-        version : 0.13.3
+        version : 0.14.0
         require : ecbuild eckit
         cmake   : >
             FCKIT_ENABLE_TESTS=OFF
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : 0.41.1
+        version : 0.43.1
+        optional: true
         require : ecbuild eckit fckit
         cmake   : >
             ATLAS_ENABLE_TESTS=OFF
-            ATLAS_ENABLE_CUDA=OFF
 
     - cloudsc-dwarf :
         # The CLOUDSC dwarf project with multiple implementations
@@ -117,6 +122,7 @@ options :
         cmake : >
             DWARF-P-CLOUDSC_ENABLE_ACC={{value}}
             FIELD_API_ENABLE_ACC={{value}}
+            ATLAS_ENABLE_ACC={{value}}
 
     - with-openmp :
         help  : Enable OpenMP threading or GPU offloading [ON|OFF]
@@ -140,10 +146,13 @@ options :
         cmake : >
             DWARF-P-CLOUDSC_ENABLE_CUDA={{value}}
             FIELD_API_ENABLE_CUDA={{value}}
+            ATLAS_ENABLE_CUDA={{value}}
 
     - with-hip :
         help  : Enable GPU kernel variant based on HIP [ON|OFF]
-        cmake : DWARF-P-CLOUDSC_ENABLE_HIP={{value}}
+        cmake : >
+            DWARF-P-CLOUDSC_ENABLE_HIP={{value}}
+            ATLAS_ENABLE_HIP={{value}}
 
     - with-sycl :
         help  : Enable GPU kernel variant based on SYCL [ON|OFF]

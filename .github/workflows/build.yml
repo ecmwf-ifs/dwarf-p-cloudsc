@@ -44,9 +44,10 @@ jobs:
             compiler_cc: gcc-14
             compiler_cxx: g++-14
             compiler_fc: gfortran-14
-            python-version: 3.11
+            cmake_options: -DATLAS_ENABLE_OMP=OFF
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
+            python-version: 3.11
             caching: true
 
           - name: linux nvhpc
@@ -55,19 +56,20 @@ jobs:
             compiler_cc: nvc
             compiler_cxx: nvc++
             compiler_fc: nvfortran
-            python-version: 3.11
             cmake_options: -DCMAKE_CUDA_ARCHITECTURES=80
             ctest_options: -E gpu|mix
               # Some OpenMP-target variants segfault when executed on the host but run fine on device,
               # thus we will test these instead using a build-hpc workflow
+            python-version: 3.11
             caching: true
 
           - name : linux intel-classic
-            os: ubuntu-24.04
+            os: ubuntu-22.04
             compiler: intel-classic
             compiler_cc: icc
             compiler_cxx: icpc
             compiler_fc: ifort
+            cmake_options: " "
             python-version: 3.11
             caching: true
 
@@ -77,11 +79,10 @@ jobs:
             compiler_cc: icx
             compiler_cxx: icpx
             compiler_fc: ifx
-            python-version: 3.11
             cmake_options: -DENABLE_LOKI=OFF -DSYCL_COMPILE_OPTIONS=-fsycl -DENABLE_CLOUDSC_MIX=OFF
                 # cloudsc_driver_loki_mod.idem_stack.F90(138): error #5623: **Internal compiler error: internal abort**
             ctest_options: -E gpu-omp
-
+            python-version: 3.11
             caching: true
 
           - name : linux gnu-native mpi
@@ -90,11 +91,11 @@ jobs:
             compiler_cc: gcc
             compiler_cxx: g++
             compiler_fc: gfortran
-            python-version: 3.11
-            cmake_options: -DENABLE_MPI=ON
+            cmake_options: -DENABLE_MPI=ON -DATLAS_ENABLE_OMP=OFF
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
             build_type: Bit
+            python-version: 3.11
             caching: true
 
     runs-on: ${{ matrix.os }}
@@ -155,9 +156,11 @@ jobs:
         android: true
         dotnet: true
         haskell: true
-        large-packages: true
-        docker-images: true
+        large-packages: false # takes too long
+        docker-images: false # takes too long
         swap-storage: true
+
+
 
     - name: Install NVHPC compiler
       if: contains( matrix.compiler, 'nvhpc' )
@@ -204,12 +207,18 @@ jobs:
         cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
         recreate_cache: ${{ matrix.caching == false }}
         dependencies: |
-          ecmwf/ecbuild
+          ecmwf/ecbuild@refs/tags/3.11.0
+          ecmwf/eckit@refs/tags/1.30.0
+          ecmwf/fckit@refs/tags/0.14.0
+          ecmwf/atlas@refs/tags/0.43.1
           ecmwf-ifs/loki@refs/tags/0.3.0
         dependency_branch: develop
         dependency_cmake_options: |
-          ecmwf-ifs/loki: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
-        cmake_options:    "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}"
+          ecmwf/eckit: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF -DENABLE_ECKIT_CMD=OFF -DENABLE_ECKIT_SQL=OFF -DENABLE_ECKIT_GEO=OFF -DENABLE_WARNINGS=OFF
+          ecmwf/fckit: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF
+          ecmwf/atlas: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF -DENABLE_WARNINGS=OFF
+          ecmwf-ifs/loki: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF
+        cmake_options: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }}
         ctest_options: "${{ matrix.ctest_options }}"
 
-# TODO: add eckit, fckit, atlas, fiat, field_api
+# TODO: add fiat, field_api

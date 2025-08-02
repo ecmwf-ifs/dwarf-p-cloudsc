@@ -46,14 +46,14 @@ jobs:
             sbatch_options: |
               #SBATCH --time=00:20:00
               #SBATCH --nodes=1
-              #SBATCH --ntasks=1
-              #SBATCH --cpus-per-task=32
+              #SBATCH --ntasks-per-node=4
+              #SBATCH --cpus-per-task=64
               #SBATCH --gpus-per-task=1
               #SBATCH --mem=200G
               #SBATCH --qos=dg
             arch: ecmwf/hpc2020/nvhpc/24.5
             modules: ~
-            build_options: --with-loki=ON --with-field-api=ON
+            build_options: --with-loki=ON --with-field-api=ON --with-atlas=ON --with-cuda=ON --with-acc=ON
             # TODO: These tests trigger a SIGFPE, to be investigated
             #  'dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial' works with NVHPC 22.11 but triggers SIGFPE with 24.5
             exclude_tests:
@@ -68,6 +68,8 @@ jobs:
               - dwarf-cloudsc-gpu-std-par-scc-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-sp-serial
               - dwarf-cloudsc-gpu-std-par-scc-k-caching-dp-serial
+              - dwarf-cloudsc-fortran-atlas-sp-serial
+              - dwarf-cloudsc-fortran-atlas-sp-omp
 
           - name: lumi-g cce
             site: lumi
@@ -76,7 +78,8 @@ jobs:
             sbatch_options: |
               #SBATCH --time=00:20:00
               #SBATCH --nodes=1
-              #SBATCH --ntasks-per-node=1
+              #SBATCH --ntasks-per-node=8
+              #SBATCH --cpus-per-task=7
               #SBATCH --gpus-per-task=1
               #SBATCH --partition=dev-g
               #SBATCH --account={0}
@@ -85,7 +88,7 @@ jobs:
             output_dir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
             workdir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
             # TODO: Building without OpenMP because some tests fail on OMPT initialization
-            build_options: --with-loki=ON --with-openmp=OFF
+            build_options: --with-loki=ON --with-openmp=OFF --with-atlas=ON --with-hip=ON --with-acc=ON
             # TODO: These tests fail with "Memory access fault by GPU node-4"
             exclude_tests:
               - dwarf-cloudsc-hip-dp-serial
@@ -107,28 +110,54 @@ jobs:
           template_data: |
             ctest_options: ${{ matrix.ctest_options || '' }}
           template: |
-            {% for module in "${{ join(matrix.modules, ',') }}".split(',') %}
-              module load {{module}}
-            {% endfor %}
-
             REPO=${{ github.event.pull_request.head.repo.full_name || github.repository }}
             SHA=${{ github.event.pull_request.head.sha || github.sha }}
+            { set +x; } 2>/dev/null # trace off
+
+            echo "::group::Load modules"
+            {% for module in "${{ join(matrix.modules, ',') }}".split(',') %}
+              echo "+ module load {{module}}"
+              module load {{module}}
+            {% endfor %}
+            echo "::endgroup::"
+
+            echo "::group::Checkout $(basename $REPO)"
+            { set -x; } 2>/dev/null # trace on
             mkdir -p $REPO
             pushd $REPO
             git init
             git remote add origin ${{ github.server_url }}/$REPO
             git fetch origin $SHA
             git reset --hard FETCH_HEAD
+            { set +x; } 2>/dev/null # trace off
+            echo "::endgroup::"
 
+            echo "::group::cloudsc-bundle create"
+            { set -x; } 2>/dev/null # trace on
             ./cloudsc-bundle create
-            ./cloudsc-bundle build --arch ${{matrix.arch}} --keep-going --retry-verbose ${{matrix.build_options}}
+            { set +x; } 2>/dev/null # trace off
+            echo "::endgroup::"
 
+            echo "::group::cloudsc-bundle build"
+            { set -x; } 2>/dev/null # trace on
+            ./cloudsc-bundle build --arch ${{matrix.arch}} --keep-going --retry-verbose ${{matrix.build_options}}
+            { set +x; } 2>/dev/null # trace off
+            echo "::endgroup::"
+
+            echo "::group::cloudsc-bundle test"
             {% for test in "${{ join(matrix.exclude_tests, ',') }}".split(',') %}
               echo {{test}} >> exclude_tests
             {% endfor %}
-
+            echo "Excluded tests:"
+            echo "---------------"
+            cat exclude_tests
+            { set -x; } 2>/dev/null # trace on
             source build/env.sh
             ctest --test-dir build --output-on-failure --exclude-from-file ../exclude_tests {{ ctest_options }}
-            popd
+            { set +x; } 2>/dev/null # trace off
+            echo "::endgroup::"
 
+            echo "::group::Cleanup"
+            popd
             rm -r ./$REPO
+            echo "::endgroup::"

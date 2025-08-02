@@ -235,9 +235,15 @@ contains
 
   subroutine expand_r1(buffer, field, nlon, nproma, ngptot, nblocks)
     real(kind=jprb), intent(inout) :: buffer(nlon)
-    real(kind=jprb), intent(inout) :: field(nproma, nblocks)
+    real(kind=jprb), intent(inout) :: field(:,:)
     integer(kind=jpim), intent(in) :: nlon, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
+
+    if ( size(field, 1) /= nproma .or. size(field, 2) /= nblocks ) then
+      write(*,*) nproma, nblocks
+      write(*,*) size(field, 1), size(field, 2)
+      call ABOR1("field dimensions not matching")
+    end if
 
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
@@ -267,11 +273,16 @@ contains
   end subroutine expand_r1
 
   subroutine expand_r2(buffer, field, nlon, nproma, nlev, ngptot, nblocks)
-          use omp_lib
     real(kind=jprb), intent(inout) :: buffer(nlon, nlev)
-    real(kind=jprb), intent(inout) :: field(nproma, nlev, nblocks)
+    real(kind=jprb), intent(inout) :: field(:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
+
+    if ( size(field, 1) /= nproma .or. size(field, 2) /= nlev .or. size(field, 3) /= nblocks ) then
+      write(*,*) nproma, nlev, nblocks
+      write(*,*) size(field, 1), size(field, 2), size(field, 3)
+      call ABOR1("field dimensions not matching")
+    end if
 
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
@@ -302,9 +313,17 @@ contains
 
   subroutine expand_r3(buffer, field, nlon, nproma, nlev, ndim, ngptot, nblocks)
     real(kind=jprb), intent(inout) :: buffer(nlon, nlev, ndim)
-    real(kind=jprb), intent(inout) :: field(nproma, nlev, ndim, nblocks)
+    real(kind=jprb), intent(inout) :: field(:,:,:,:)
     integer(kind=jpim), intent(in) :: nlon, nlev, ndim, nproma, ngptot, nblocks
     integer :: b, gidx, bsize, fidx, fend, bidx, bend
+
+    if ( size(field, 1) /= nproma .or. size(field, 2) /= nlev .or. size(field, 3) /= ndim &
+      & .or. size(field, 4) /= nblocks ) then
+      write(*,*) nproma, nlev, ndim, nblocks
+      write(*,*) size(field, 1), size(field, 2), size(field, 3), size(field, 4)
+      call ABOR1("field dimensions not matching")
+    end if
+
 !$omp parallel do default(shared) private(b, gidx, bsize, fidx, fend, bidx, bend) schedule(runtime)
     do b=1, nblocks
        gidx = (b-1)*nproma + 1  ! Global starting index of the block in the general domain

@@ -160,7 +160,7 @@ REAL(KIND=JPRB) :: RSNAN
 
 #ifdef _OPENACC
 !$acc declare copyin(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
-#else
+#elif defined(HAVE_OMP_TARGET)
 !$omp declare target(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
 #endif
 
@@ -324,7 +324,7 @@ CONTAINS
     CALL YRCST_COPY_PARAMETERS()
 #ifdef _OPENACC
 !$acc update device(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
-#else
+#elif defined(HAVE_OMP_TARGET)
 !$omp target update to(rg, rd, rcpd, retv, rlvtt, rlstt, rlmlt, rtt, rv)
 #endif
   END SUBROUTINE YOMCST_LOAD_PARAMETERS

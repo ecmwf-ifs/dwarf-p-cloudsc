@@ -9,8 +9,6 @@
 
 module expand_atlas_mod
   use atlas_module
-  use atlas_fieldset_module
-  use atlas_functionspace_blockstructuredcolumns_module
 
   use parkind1 , only : jpim, jprb
   use yomphyder, only : state_type
@@ -51,11 +49,11 @@ contains
     ifield = (name == "KTYPE")
     rfield = ((.not. lfield) .and. (.not. ifield))
 
-    nlev = field%levels()
-    !nproma = fspace%nproma()
-    nproma = field%shape(1)
     ngptot = fspace%size()
     nblocks = fspace%nblks()
+
+    nproma = field%shape(1)
+    nlev = field%shape(2)
 
     if (frank == 2) then
       call get_offsets(start, end, size, nlon, 1, 1, ngptot, ngptotg)
@@ -121,11 +119,11 @@ contains
 
     field = fset%field(name)
     fspace = field%functionspace()
-    nlev = field%levels()
     ngptot = fspace%size()
-    !nproma = fspace%nproma()
-    nproma = field%shape(1)
     nblocks = fspace%nblks()
+
+    nproma = field%shape(1)
+    nlev = field%shape(2)
     ndim = field%shape(3) - 3
 
     call get_offsets(start, end, size, nlon, ndim, nlev, ngptot, ngptotg)

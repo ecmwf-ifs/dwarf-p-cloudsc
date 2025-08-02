@@ -137,8 +137,16 @@ This will ensure that fields are allocated in page-locked memory and that the ke
 asynchronously.
 - **dwarf-cloudsc-fortran-atlas**: A version of **dwarf-cloudsc-fortran** which uses the [Atlas library](https://github.com/ecmwf/atlas) 
   and its Field and FieldSet data stuctures. There are two storage settings for variables. If the environment variable
-  CLOUDSC_ATLAS_MULTIFIELD is "0", "OFF", or "FALSE", the variables are managed as atlas::FieldSet, which is an array of atlas::Fields. For other values of CLOUDSC_ATLAS_MULTIFIELD, a batching of variables is used as (BLK_IDX, LEV, VAR_ID, BLK_ID).
-  
+  CLOUDSC_ATLAS_MULTIFIELD = 0 (the default, if not set), the variables are managed as atlas::FieldSet,
+  which is an array of atlas::Fields. For CLOUDSC_ATLAS_MULTIFIELD = 1, batching of variables is used as (BLK_IDX, LEV, VAR_ID, BLK_ID).
+- **dwarf-cloudsc-gpu-scc-atlas**: A GPU-enabled version which uses the [Atlas library](https://github.com/ecmwf/atlas) 
+  and its Field and FieldSet data stuctures with device offload capabilities. There are two storage settings for variables,
+  managed through the environment variable CLOUDSC_ATLAS_MULTIFIELD as before.
+- **dwarf-cloudsc-gpu-scc-hoist-atlas**: An optimised version of **dwarf-cloudsc-gpu-scc-atlas** which uses host side
+  hoisted temporary local variables. The hoisted temporary variables can be allocated within a pool using HOIST_POOL=1,
+  or separately allocated, by setting HOIST_POOL=0, which is the default if nothing has been set.
+- **dwarf-cloudsc-gpu-scc-k-caching-atlas**: A further optimised version of **dwarf-cloudsc-gpu-scc-atlas**
+  which uses the SCC loop layout in combination with loop fusion and temporary local array demotion.
 
 ## Download and Installation
 

@@ -26,8 +26,8 @@ module purge
 # Load modules
 module_load prgenv/nvidia
 module_load nvidia/22.11
-module_load hpcx-openmpi/2.10.0
-# module_load boost/1.71.0
+module_load hpcx-openmpi/2.14.0-cuda
+module_load eigen/3.4.0
 module_load hdf5/1.10.6
 module_load cmake/3.28.3
 module_load python3/3.11.10-01

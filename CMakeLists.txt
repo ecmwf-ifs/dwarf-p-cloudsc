@@ -11,6 +11,8 @@
 # 3.23.5 is required for SYCL support
 cmake_minimum_required( VERSION 3.23.5 FATAL_ERROR )
 
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 find_package( ecbuild REQUIRED )
 
 # define the project
@@ -70,7 +72,7 @@ include(features/CUDA)
 
 check_language( HIP )
 ecbuild_add_option( FEATURE HIP
-	                  DESCRIPTION "Support for using GPUs with HIP"
+                    DESCRIPTION "Support for using GPUs with HIP"
                     DEFAULT ON
                     CONDITION CMAKE_HIP_COMPILER
                     REQUIRED_PACKAGES "hip" )
@@ -79,9 +81,9 @@ if( HAVE_HIP )
 endif()
 
 ecbuild_add_option( FEATURE SYCL
-	                  DESCRIPTION "Support for using GPUs with SYCL"
+                    DESCRIPTION "Support for using GPUs with SYCL"
                     DEFAULT ON
-                  	REQUIRED_PACKAGES "IntelSYCL" )
+                    REQUIRED_PACKAGES "IntelSYCL" )
 
 ### Link options
 
