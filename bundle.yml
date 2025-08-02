@@ -61,6 +61,7 @@ projects :
         optional: true
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+            FIELD_API_ENABLE_TESTS=OFF
 
     - fckit :
         git     : https://github.com/ecmwf/fckit
@@ -99,6 +100,18 @@ options :
     - with-field-api :
         help : Enable Field API variants [ON|OFF]
         cmake : BUILD_field_api={{value}}
+
+    - with-field-api-io-serial :
+        help : Enable Field API IO (serial only) [ON|OFF]
+        cmake : >
+            FIELD_API_ENABLE_IO_SERIAL={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
+
+    - with-field-api-io-parallel :
+        help : Enable Field API IO (requires MPI) [ON|OFF]
+        cmake : >
+            FIELD_API_ENABLE_IO_PARALLEL={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
 
     - without-mapped-fields :
         help : Disables automatic registering of Field API fields in ACC map
