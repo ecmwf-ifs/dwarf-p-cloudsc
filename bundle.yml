@@ -64,7 +64,7 @@ projects :
             
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
-        version : main 
+        version : develop-ecmwf 
         require : ecbuild fiat
         
     - fckit :

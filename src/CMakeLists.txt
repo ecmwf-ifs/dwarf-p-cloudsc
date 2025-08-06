@@ -45,7 +45,7 @@ foreach( prec IN LISTS CLOUDSC_PRECISIONS )
 
   # Add all remaining subdirectories with precision-specific binary directories
   add_subdirectory( cloudsc_fortran cloudsc_fortran.${prec} )
-  #add_subdirectory( cloudsc_gpu cloudsc_gpu.${prec} )
+  add_subdirectory( cloudsc_gpu cloudsc_gpu.${prec} )
 
   if( HAVE_CUDA )
     add_subdirectory( cloudsc_cuda cloudsc_cuda.${prec} )
