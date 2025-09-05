@@ -86,6 +86,12 @@ ecbuild_add_library(
         cloudsc-common-${prec}-lib
 )
 
+    set_target_properties( dwarf-cloudsc-gpu-lib-${prec} 
+                          PROPERTIES
+                          Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${CLOUDSC_MIX_GPU_LANG}"
+    )
+
+
 # Provide definitions to target
 foreach(_def CUDA_LANG HIP_LANG SYCL_LANG ACC_OFFLOAD OMP_OFFLOAD GPU_LANG GPU_OFFLOAD)
   target_compile_definitions(dwarf-cloudsc-gpu-lib-${prec} PUBLIC ${_def}=${${_def}})
@@ -116,6 +122,10 @@ ecbuild_add_executable(
 )
 
 set_target_properties(dwarf-cloudsc-mix-${prec} PROPERTIES LINKER_LANGUAGE Fortran)
+set_target_properties(dwarf-cloudsc-mix-${prec} 
+                      PROPERTIES
+                      Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${CLOUDSC_MIX_GPU_LANG}"
+                      )
 
 # CUDA specific
 if (CLOUDSC_MIX_GPU_LANG STREQUAL "CUDA")
