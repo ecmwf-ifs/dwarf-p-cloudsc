@@ -48,7 +48,7 @@ jobs:
             ctest_options: -E gpu-omp-scc-stack-sp
               # SP stack segfaults somehow
             python-version: 3.11
-            caching: true
+            caching: false
 
           - name: linux nvhpc
             os: ubuntu-24.04
@@ -61,7 +61,7 @@ jobs:
               # Some OpenMP-target variants segfault when executed on the host but run fine on device,
               # thus we will test these instead using a build-hpc workflow
             python-version: 3.11
-            caching: true
+            caching: false
 
           - name : linux intel-classic
             os: ubuntu-22.04
@@ -71,7 +71,7 @@ jobs:
             compiler_fc: ifort
             cmake_options: " "
             python-version: 3.11
-            caching: true
+            caching: false
 
           - name : linux intel-llvm
             os: ubuntu-24.04
@@ -83,7 +83,7 @@ jobs:
                 # cloudsc_driver_loki_mod.idem_stack.F90(138): error #5623: **Internal compiler error: internal abort**
             ctest_options: -E gpu-omp
             python-version: 3.11
-            caching: true
+            caching: false
 
           - name : linux gnu-native mpi
             os: ubuntu-24.04
@@ -96,7 +96,7 @@ jobs:
               # SP stack segfaults somehow
             build_type: Bit
             python-version: 3.11
-            caching: true
+            caching: false
 
     runs-on: ${{ matrix.os }}
     steps:
