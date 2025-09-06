@@ -65,8 +65,6 @@ projects :
         git     : https://github.com/ecmwf-ifs/field_api.git
         version : develop-ecmwf 
         require : ecbuild fiat
-        cmake   : >
-            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
         
     - fckit :
         git     : https://github.com/ecmwf/fckit
@@ -104,7 +102,7 @@ options :
 
     - with-field-api :
         help : Enable Field API variants [ON|OFF]
-        cmake : BUILD_field_api={{value}}
+        cmake : BUILD_fiat={{value}}  BUILD_field_api={{value}}
 
     - with-field-api-io :
         help : Enable Field API IO (requires MPI) [ON|OFF]
