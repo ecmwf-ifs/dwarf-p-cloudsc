@@ -134,9 +134,9 @@ ecbuild_add_option( FEATURE FIELD_API
                     REQUIRED_PACKAGES "field_api" )
 
 ecbuild_add_option( FEATURE FIELD_API_ENABLE_IO
-		    DESCRIPTION "Use field_api IO to store field_api objects to disk."
+                    DESCRIPTION "Use field_api IO to store field_api objects to disk."
                     CONDITION HAVE_FIELD_API
-		    DEFAULT OFF )
+                    DEFAULT OFF )
 if( HAVE_FIELD_API_ENABLE_IO )
    list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO)
 endif()
