@@ -69,7 +69,7 @@ macro( cloudsc_add_common_lib )
             $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
             $<${HAVE_MPI}:MPI::MPI_Fortran>
             ${COMMON_LIB_LIBS}
-            $<${HAVE_FIELD_API}:fiat>
+#            $<${HAVE_FIELD_API}:fiat>
             $<${HAVE_FIELD_API}:field_api_${prec}>
 #            $<$<NOT:$<BOOL:${HAVE_FIELD_API}>>:parkind_${prec}>
         PUBLIC_INCLUDES
