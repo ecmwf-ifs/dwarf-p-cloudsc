@@ -132,7 +132,6 @@ if( HAVE_FIELD_API )
             $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
             $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
             field_api_${prec}
-            oml_mod 
     )
 endif()
 
