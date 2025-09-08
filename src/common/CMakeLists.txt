@@ -22,14 +22,14 @@ set(CLOUDSC_COMMON_SOURCES
     module/validate_mod.F90
     module/cloudsc_global_state_mod.F90
     module/cloudsc_mpi_mod.F90
-)
-
-set(CLOUDSC_FIAT_SOURCES
+#set(CLOUDSC_FIAT_SOURCES
     module/parkind1.F90
     module/ec_pmon_mod.F90
     module/oml_mod.F90
     module/abor1.F90
+#)
 )
+
 
 set(CLOUDSC_CUDA_SOURCES
     module/fccld_mod.cuf.F90
@@ -61,7 +61,7 @@ macro( cloudsc_add_common_lib )
         SOURCES
             ${CLOUDSC_COMMON_SOURCES}
             ${COMMON_LIB_SOURCES}
-            $<$<NOT:$<BOOL:${HAVE_FIAT}>>:${CLOUDSC_FIAT_SOURCES}>
+#            $<$<NOT:$<BOOL:${HAVE_FIAT}>>:${CLOUDSC_FIAT_SOURCES}>
             $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
             $<${HAVE_MPI}:module/cloudsc_mpif.F90>
         PUBLIC_LIBS
