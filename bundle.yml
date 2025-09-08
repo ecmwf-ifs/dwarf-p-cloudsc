@@ -61,17 +61,18 @@ projects :
         require : ecbuild
         optional: true
             
-    - field_api :
-        git     : https://github.com/ecmwf-ifs/field_api.git
-        version : develop-ecmwf 
-        require : ecbuild fiat
-        
     - fckit :
         git     : https://github.com/ecmwf/fckit
         version : 0.14.0
         require : ecbuild eckit
         cmake   : >
             FCKIT_ENABLE_TESTS=OFF
+            FCKIT_ENABLE_FCKIT_VENV=ON
+
+    - field_api :
+        git     : https://github.com/ecmwf-ifs/field_api.git
+        version : develop-ecmwf 
+        require : ecbuild fiat
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
