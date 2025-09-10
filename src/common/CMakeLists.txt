@@ -8,6 +8,13 @@
 
 ### Source files for common lib
 
+set(CLOUDSC_FIAT_SOURCES
+    module/parkind1.F90
+    module/ec_pmon_mod.F90
+    module/oml_mod.F90
+    module/abor1.F90
+)
+
 set(CLOUDSC_COMMON_SOURCES
     module/yoecldp.F90
     module/yomcst.F90
@@ -22,12 +29,6 @@ set(CLOUDSC_COMMON_SOURCES
     module/validate_mod.F90
     module/cloudsc_global_state_mod.F90
     module/cloudsc_mpi_mod.F90
-#set(CLOUDSC_FIAT_SOURCES
-    module/parkind1.F90
-    module/ec_pmon_mod.F90
-    module/oml_mod.F90
-    module/abor1.F90
-#)
 )
 
 
@@ -59,6 +60,7 @@ macro( cloudsc_add_common_lib )
             $<$<STREQUAL:"${prec}","sp">:SINGLE>
             ${COMMON_LIB_DEFINITIONS}
         SOURCES
+            ${CLOUDSC_FIAT_SOURCES}
             ${CLOUDSC_COMMON_SOURCES}
             ${COMMON_LIB_SOURCES}
 #            $<$<NOT:$<BOOL:${HAVE_FIAT}>>:${CLOUDSC_FIAT_SOURCES}>

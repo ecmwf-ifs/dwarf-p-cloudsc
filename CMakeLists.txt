@@ -45,7 +45,7 @@ include(features/OMP)
 ecbuild_add_option( FEATURE MPI
                     DESCRIPTION "Support for task-level parallelism using MPI"
                     DEFAULT OFF
-                    REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
+                    REQUIRED_PACKAGES "MPI COMPONENTS Fortran C CXX" )
 if( HAVE_MPI )
   list( APPEND CLOUDSC_DEFINITIONS HAVE_MPI )
 endif()
@@ -137,8 +137,17 @@ ecbuild_add_option( FEATURE FIELD_API_ENABLE_IO
                     DESCRIPTION "Use field_api IO to store field_api objects to disk."
                     CONDITION HAVE_FIELD_API
                     DEFAULT OFF )
+
 if( HAVE_FIELD_API_ENABLE_IO )
    list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO)
+   if( HAVE_FIELD_API_ENABLE_IO_MPL )
+     list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO_MPL)
+   elseif( HAVE_FIELD_API_ENABLE_IO_MPI )
+     find_package(MPI REQUIRED )
+     list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO_MPI)
+   elseif( HAVE_FIELD_API_ENABLE_IO_SERIAL )
+     list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO_SERIAL)
+   endif()
 endif()
 
 ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY

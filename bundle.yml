@@ -74,8 +74,9 @@ projects :
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
         version : develop-ecmwf 
-        require : ecbuild fiat
+        require : ecbuild
         cmake   : >
+            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
             FIELD_API_ENABLE_TESTS=OFF
 
     - atlas :
@@ -107,14 +108,34 @@ options :
 
     - with-field-api :
         help : Enable Field API variants [ON|OFF]
-        cmake : BUILD_fiat={{value}}  BUILD_field_api={{value}}
+        cmake : BUILD_field_api={{value}}
 
-    - with-field-api-io :
+    - with-field-api-io-serial :
+        help : Enable Field API IO (serial only) [ON|OFF]
+        cmake : >
+            FIELD_API_ENABLE_IO={{value}}
+            FIELD_API_ENABLE_IO_SERIAL={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
+            ENABLE_FIELD_API_ENABLE_IO_SERIAL={{value}}
+
+    - with-field-api-io-mpi :
         help : Enable Field API IO (requires MPI) [ON|OFF]
         cmake : >
             FIELD_API_ENABLE_IO={{value}}
+            FIELD_API_ENABLE_IO_MPI={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
+            ENABLE_FIELD_API_ENABLE_IO_MPI={{value}}
+            ENABLE_MPI=ON
+
+    - with-field-api-io-mpl :
+        help : Enable Field API IO (requires MPL) [ON|OFF]
+        cmake : >
+            BUILD_fiat={{value}}
+            FIELD_API_ENABLE_IO={{value}}
+            FIELD_API_ENABLE_IO_MPL={{value}}
             FIELD_API_ENABLE_FIAT={{value}}
             ENABLE_FIELD_API_ENABLE_IO={{value}}
+            ENABLE_FIELD_API_ENABLE_IO_MPL={{value}}
             ENABLE_MPI=ON
 
     - without-mapped-fields :
