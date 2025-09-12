@@ -138,18 +138,6 @@ ecbuild_add_option( FEATURE FIELD_API_ENABLE_IO
                     CONDITION HAVE_FIELD_API
                     DEFAULT OFF )
 
-if( HAVE_FIELD_API_ENABLE_IO )
-   list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO)
-   if( HAVE_FIELD_API_ENABLE_IO_MPL )
-     list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO_MPL)
-   elseif( HAVE_FIELD_API_ENABLE_IO_MPI )
-     find_package(MPI REQUIRED )
-     list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO_MPI)
-   elseif( HAVE_FIELD_API_ENABLE_IO_SERIAL )
-     list(APPEND CLOUDSC_DEFINITIONS FIELD_API_IO_SERIAL)
-   endif()
-endif()
-
 ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
                     DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
                     CONDITION HAVE_FIELD_API

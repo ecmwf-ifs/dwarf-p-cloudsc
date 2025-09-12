@@ -41,7 +41,7 @@ macro( cloudsc_add_cuda_exe TARGET DRIVER KERNEL )
     target_compile_options( ${TARGET}-${prec}-lib
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:SHELL:${CLOUDSC_CUDA_OPT_FLAGS} ${CLOUDSC_CUDA_FLAGS}>
     )
-    target_link_libraries(${TARGET}-${prec}-lib PRIVATE $<${HAVE_MPI}:MPI::MPI_C>)
+#    target_link_libraries(${TARGET}-${prec}-lib PRIVATE $<${HAVE_MPI}:MPI::MPI_C>)
 
     set_target_properties( ${TARGET}-${prec}-lib
         PROPERTIES CUDA_SEPARABLE_COMPILATION ON

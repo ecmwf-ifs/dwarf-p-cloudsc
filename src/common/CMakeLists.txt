@@ -63,7 +63,6 @@ macro( cloudsc_add_common_lib )
             ${CLOUDSC_FIAT_SOURCES}
             ${CLOUDSC_COMMON_SOURCES}
             ${COMMON_LIB_SOURCES}
-#            $<$<NOT:$<BOOL:${HAVE_FIAT}>>:${CLOUDSC_FIAT_SOURCES}>
             $<${HAVE_HDF5}:module/hdf5_file_mod.F90>
             $<${HAVE_MPI}:module/cloudsc_mpif.F90>
         PUBLIC_LIBS
@@ -71,9 +70,6 @@ macro( cloudsc_add_common_lib )
             $<${HAVE_SERIALBOX}:Serialbox::Serialbox_Fortran>
             $<${HAVE_MPI}:MPI::MPI_Fortran>
             ${COMMON_LIB_LIBS}
-#            $<${HAVE_FIELD_API}:fiat>
-#            $<${HAVE_FIELD_API}:field_api_${prec}>
-#            $<$<NOT:$<BOOL:${HAVE_FIELD_API}>>:parkind_${prec}>
         PUBLIC_INCLUDES
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

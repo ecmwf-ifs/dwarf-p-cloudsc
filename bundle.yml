@@ -125,7 +125,7 @@ options :
             FIELD_API_ENABLE_IO_MPI={{value}}
             ENABLE_FIELD_API_ENABLE_IO={{value}}
             ENABLE_FIELD_API_ENABLE_IO_MPI={{value}}
-            ENABLE_MPI=ON
+#            ENABLE_MPI=ON
 
     - with-field-api-io-mpl :
         help : Enable Field API IO (requires MPL) [ON|OFF]
