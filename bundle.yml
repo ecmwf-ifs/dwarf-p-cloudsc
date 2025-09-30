@@ -115,6 +115,7 @@ options :
         cmake : >
             FIELD_API_ENABLE_IO={{value}}
             FIELD_API_ENABLE_IO_SERIAL={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
             ENABLE_FIELD_API_ENABLE_IO_SERIAL={{value}}
 
     - with-field-api-io-parallel :
@@ -123,6 +124,7 @@ options :
             FIELD_API_ENABLE_IO={{value}}
             FIELD_API_ENABLE_MPI={{value}}
             FIELD_API_ENABLE_IO_PARALLEL={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
             ENABLE_FIELD_API_ENABLE_IO_PARALLEL={{value}}
 
     - without-mapped-fields :

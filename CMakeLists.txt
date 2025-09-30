@@ -137,6 +137,9 @@ ecbuild_add_option( FEATURE FIELD_API_ENABLE_IO
                     DESCRIPTION "Use field_api IO to store field_api objects to disk."
                     CONDITION HAVE_FIELD_API
                     DEFAULT OFF )
+if( HAVE_FIELD_API )
+  list( APPEND CLOUDSC_DEFINITIONS FIELD_API_IO )
+endif()
 
 ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
                     DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
