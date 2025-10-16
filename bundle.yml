@@ -20,7 +20,7 @@ projects :
 
     - ecbuild :
         git     : https://github.com/ecmwf/ecbuild
-        version : 3.11.0
+        version : 3.12.0
         bundle  : false
 
     - serialbox :
@@ -44,7 +44,7 @@ projects :
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : 1.31.4
+        version : 1.32.2
         require : ecbuild
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
@@ -73,7 +73,7 @@ projects :
 
     - field_api :
         git     : https://github.com/ecmwf-ifs/field_api.git
-        version : napz-IO-fiat-mpi-independent
+        version : develop-ecmwf 
         require : ecbuild
         cmake   : >
             UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
@@ -81,7 +81,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : 0.43.1
+        version : 0.44.0
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
