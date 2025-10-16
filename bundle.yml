@@ -113,19 +113,14 @@ options :
     - with-field-api-io-serial :
         help : Enable Field API IO (serial only) [ON|OFF]
         cmake : >
-            FIELD_API_ENABLE_IO={{value}}
             FIELD_API_ENABLE_IO_SERIAL={{value}}
             ENABLE_FIELD_API_ENABLE_IO={{value}}
-            ENABLE_FIELD_API_ENABLE_IO_SERIAL={{value}}
 
     - with-field-api-io-parallel :
         help : Enable Field API IO (requires MPI) [ON|OFF]
         cmake : >
-            FIELD_API_ENABLE_IO={{value}}
-            FIELD_API_ENABLE_MPI={{value}}
             FIELD_API_ENABLE_IO_PARALLEL={{value}}
             ENABLE_FIELD_API_ENABLE_IO={{value}}
-            ENABLE_FIELD_API_ENABLE_IO_PARALLEL={{value}}
 
     - without-mapped-fields :
         help : Disables automatic registering of Field API fields in ACC map
