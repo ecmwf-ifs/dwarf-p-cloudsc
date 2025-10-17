@@ -211,7 +211,7 @@ jobs:
           ecmwf/eckit@refs/tags/1.32.2
           ecmwf/fckit@refs/tags/0.14.0
           ecmwf/atlas@refs/tags/0.44.0
-          ecmwf-ifs/loki@refs/tags/0.3.3
+          ecmwf-ifs/loki@refs/tags/0.3.5
         dependency_branch: develop
         dependency_cmake_options: |
           ecmwf/eckit: -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_TESTS=OFF -DENABLE_ECKIT_CMD=OFF -DENABLE_ECKIT_SQL=OFF -DENABLE_ECKIT_GEO=OFF -DENABLE_WARNINGS=OFF
