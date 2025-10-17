@@ -85,6 +85,11 @@ cloudsc_add_fortran_exe(
 
 # Default Fortran driver using FIELD_API
 if( HAVE_FIELD_API )
+    if(NOT HAVE_MPI AND FIELD_API_ENABLE_IO_PARALLEL STREQUAL "ON")
+      ecbuild_error("--with-field-api-io-parallel=ON was requested without --with-mpi=ON")
+    elseif(HAVE_MPI AND FIELD_API_ENABLE_IO_SERIAL STREQUAL "ON")
+      ecbuild_error("--with-field-api-io-serial=ON was requested but --with-mpi=ON")
+    endif()
     cloudsc_add_fortran_exe(
         TARGET dwarf-cloudsc-fortran-field
         DRIVER cloudsc_driver_field_mod.F90

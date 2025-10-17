@@ -10,6 +10,7 @@ cmake : >
         BUILD_eckit=OFF
         BUILD_fckit=OFF
         BUILD_atlas=OFF
+        BUILD_fiat=OFF
         BUILD_field_api=OFF
         BUILD_loki=OFF
         ENABLE_MPI=OFF
@@ -19,7 +20,7 @@ projects :
 
     - ecbuild :
         git     : https://github.com/ecmwf/ecbuild
-        version : 3.11.0
+        version : 3.12.0
         bundle  : false
 
     - serialbox :
@@ -36,14 +37,14 @@ projects :
 
     - loki :
         git     : https://github.com/ecmwf-ifs/loki
-        version : 0.3.1
+        version : 0.3.3
         require : ecbuild
         cmake   : >
             LOKI_ENABLE_TESTS=OFF
 
     - eckit :
         git     : https://github.com/ecmwf/eckit
-        version : 1.30.0
+        version : 1.32.2
         require : ecbuild
         cmake   : >
             ECKIT_ENABLE_TESTS=OFF
@@ -54,24 +55,33 @@ projects :
             ECKIT_ENABLE_ECKIT_SQL=OFF
             ECKIT_ENABLE_WARNINGS=OFF
 
-    - field_api :
-        git     : https://github.com/ecmwf-ifs/field_api
-        version : develop-ecmwf
+    - fiat      :
+        git     : https://github.com/ecmwf-ifs/fiat
+        version : 1.6.1 
         require : ecbuild
         optional: true
         cmake   : >
-            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
-
+            FIAT_ENABLE_TESTS=OFF
+            
     - fckit :
         git     : https://github.com/ecmwf/fckit
         version : 0.14.0
         require : ecbuild eckit
         cmake   : >
             FCKIT_ENABLE_TESTS=OFF
+            FCKIT_ENABLE_FCKIT_VENV=ON
+
+    - field_api :
+        git     : https://github.com/ecmwf-ifs/field_api.git
+        version : develop-ecmwf 
+        require : ecbuild
+        cmake   : >
+            UTIL_MODULE_PATH=${CMAKE_SOURCE_DIR}/cloudsc-dwarf/src/common/module
+            FIELD_API_ENABLE_TESTS=OFF
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : 0.43.1
+        version : 0.44.0
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
@@ -99,6 +109,18 @@ options :
     - with-field-api :
         help : Enable Field API variants [ON|OFF]
         cmake : BUILD_field_api={{value}}
+
+    - with-field-api-io-serial :
+        help : Enable Field API IO (serial only) [ON|OFF]
+        cmake : >
+            FIELD_API_ENABLE_IO_SERIAL={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
+
+    - with-field-api-io-parallel :
+        help : Enable Field API IO (requires MPI) [ON|OFF]
+        cmake : >
+            FIELD_API_ENABLE_IO_PARALLEL={{value}}
+            ENABLE_FIELD_API_ENABLE_IO={{value}}
 
     - without-mapped-fields :
         help : Disables automatic registering of Field API fields in ACC map
