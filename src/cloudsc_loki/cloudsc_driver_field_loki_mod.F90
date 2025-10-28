@@ -15,7 +15,7 @@ MODULE CLOUDSC_DRIVER_FIELD_LOKI_MOD
   USE TIMER_MOD, ONLY : PERFORMANCE_TIMER, GET_THREAD_NUM
   USE EC_PMON_MOD, ONLY: EC_PMON
   USE CLOUDSC_FIELD_STATE_MOD, ONLY: CLOUDSC_AUX_TYPE, CLOUDSC_FLUX_TYPE, CLOUDSC_STATE_TYPE
-
+  USE FIELD_ASYNC_MODULE
   USE CLOUDSC_MOD, ONLY : CLOUDSC
 
   IMPLICIT NONE
@@ -54,7 +54,12 @@ CONTAINS
 
     ! Global timer for the parallel region
     CALL TIMER%START(NUMOMP)
-
+#ifdef CLOUDSC_GPU_SCC_FIELD_ASYNC || CLOUDSC_GPU_SCC_FIELD_BLOCKED
+    ! Thread timer that measures the total time for kernel + data transfers, as
+    ! opposed to other gpu variants, where this only measures the kernel time.
+    TID = GET_THREAD_NUM()
+    CALL TIMER%THREAD_START(TID)
+#endif
     ! Workaround for PGI / OpenACC oddities:
     ! Create a local copy of the parameter struct to ensure they get
     ! moved to the device the in ``acc data`` clause below
@@ -65,11 +70,14 @@ CONTAINS
     !$omp parallel default(shared) private(JKGLO,IBL,ICEND,TID) &
     !$omp& num_threads(NUMOMP) firstprivate(PAUX, FLUX, TENDENCY_TMP, TENDENCY_LOC)
 
-    ! Local timer for each thread
+#ifndef CLOUDSC_GPU_SCC_FIELD_ASYNC || CLOUDSC_GPU_SCC_FIELD_BLOCKED
+    ! If no blocking, then we use the thread local timer to measure kernel execution time
     TID = GET_THREAD_NUM()
     CALL TIMER%THREAD_START(TID)
+#endif
 
     !$omp do schedule(runtime) reduction(+:power_total,power_count)
+    !$loki driver-loop
     DO JKGLO=1,NGPTOT,NPROMA
         IBL=(JKGLO-1)/NPROMA+1
         ICEND=MIN(NPROMA,NGPTOT-JKGLO+1)
@@ -117,13 +125,18 @@ CONTAINS
       !   i.e. we should not wait for slowest thread to finish before measuring tloc
       !$omp end do nowait
 
+#ifndef CLOUDSC_GPU_SCC_FIELD_ASYNC || CLOUDSC_GPU_SCC_FIELD_BLOCKED
       CALL TIMER%THREAD_END(TID)
+#endif
 
       !$omp end parallel
 
       !$loki end data
 
-      CALL TIMER%END()
+#ifdef CLOUDSC_GPU_SCC_FIELD_ASYNC || CLOUDSC_GPU_SCC_FIELD_BLOCKED
+      CALL TIMER%THREAD_END(TID)
+#endif
+CALL TIMER%END()
 
 #ifdef CLOUDSC_GPU_TIMING
     ! On GPUs, adding block-level column totals is cumbersome and
