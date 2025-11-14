@@ -55,7 +55,7 @@ contains
     call fs_create_savepoint(NAME, ppser_savepoint)
     call ppser_set_mode(1)
 #elif defined(HAVE_HDF5)
-    call input_file%open_file(NAME//'.h5')
+    call input_file%open_file(NAME//'.hdf5')
 #else
     call abor1('ERROR: Serialbox and HDF5 not found.')
 #endif
