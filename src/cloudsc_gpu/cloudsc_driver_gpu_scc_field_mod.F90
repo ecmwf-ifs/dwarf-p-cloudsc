@@ -110,8 +110,8 @@ CONTAINS
     IF(USE_PACKED)THEN
       CALL AUX%DATA_RDONLY%SYNC_DEVICE_RDONLY()
       CALL FLUX%DATA_WRONLY%SYNC_DEVICE_RDWR()
-      CALL TENDENCY_TMP%FIELD_GANG%SYNC_DEVICE_RDONLY()
-      CALL TENDENCY_LOC%FIELD_GANG%SYNC_DEVICE_RDWR()
+      CALL TENDENCY_TMP%FIELD_STACK%SYNC_DEVICE_RDONLY()
+      CALL TENDENCY_LOC%FIELD_STACK%SYNC_DEVICE_RDWR()
        ! If this is called then the subsequent FIELDS_RDONLY/RWONLY%PTR%GET_DEVICE_DATA()
        ! calls don't trigger any data movement, they just return an updated device pointer
     ENDIF
@@ -239,7 +239,7 @@ CONTAINS
 
     IF(USE_PACKED)THEN
        CALL FLUX%DATA_WRONLY%SYNC_HOST_RDWR()
-       CALL TENDENCY_LOC%FIELD_GANG%SYNC_HOST_RDWR()
+       CALL TENDENCY_LOC%FIELD_STACK%SYNC_HOST_RDWR()
        ! If this is called then the subsequent ...%F_PTR%SYNC_HOST_RDWR() calls
        ! don't trigger any data movement
     ENDIF
