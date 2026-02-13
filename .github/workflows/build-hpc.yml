@@ -83,7 +83,7 @@ jobs:
               #SBATCH --gpus-per-task=1
               #SBATCH --partition=dev-g
               #SBATCH --account={0}
-            arch: eurohpc/lumi/cray-gpu/17.0.1
+            arch: eurohpc/lumi/cray-gpu/19.0.0
             modules: ~
             output_dir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
             workdir: /scratch/{0}/github-actions/dwarf-p-cloudsc/${{ github.run_id }}
@@ -91,10 +91,7 @@ jobs:
             build_options: --with-loki=ON --with-openmp=OFF --with-atlas=ON --with-hip=ON --with-acc=ON
             # TODO: These tests fail with "Memory access fault by GPU node-4"
             exclude_tests:
-              - dwarf-cloudsc-hip-dp-serial
-              - dwarf-cloudsc-hip-hoist-dp-serial
-              - dwarf-cloudsc-hip-k-caching-dp-serial
-              - dwarf-cloudsc-hip-sp-serial
+              - dwarf-cloudsc-mix-dp-serial
 
     runs-on: [self-hosted, linux, hpc]
     env:
