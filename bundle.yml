@@ -71,7 +71,7 @@ projects :
 
     - atlas :
         git     : https://github.com/ecmwf/atlas
-        version : 0.43.1
+        version : 0.45.0
         optional: true
         require : ecbuild eckit fckit
         cmake   : >
