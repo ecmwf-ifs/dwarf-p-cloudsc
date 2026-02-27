@@ -62,7 +62,7 @@ function( cloudsc_add_loki_exe )
         PUBLIC_INCLUDES
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module-${_CL_TARGET}>"
         PUBLIC_LIBS
-            cloudsc-common-${prec}-${_CL_COMMON_LIB}
+            cloudsc_common.${prec}.${_CL_COMMON_LIB}
     )
 
     set_target_properties( ${_CL_TARGET}-${prec}-lib
@@ -95,7 +95,7 @@ function( cloudsc_add_loki_exe )
         SOURCES dwarf_cloudsc.F90
         LIBS
             ${_CL_TARGET}-${prec}-lib
-            cloudsc-common-${prec}-${_CL_COMMON_LIB}
+            cloudsc_common.${prec}.${_CL_COMMON_LIB}
     )
 
     ecbuild_add_test(
@@ -371,7 +371,7 @@ if( "${prec}" STREQUAL "dp" )
             yomcst_fc.F90
             yoecldp_fc.F90
         LIBS
-            cloudsc-common-${prec}-lib
+            cloudsc_common.${prec}.lib
         DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
     )

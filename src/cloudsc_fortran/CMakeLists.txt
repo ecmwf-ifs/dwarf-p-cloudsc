@@ -27,7 +27,7 @@ function( cloudsc_add_fortran_exe )
             ${_CL_DRIVER}
             cloudsc.F90
         LIBS
-            cloudsc-common-${prec}-${_CL_COMMON_LIB}
+            cloudsc_common.${prec}.${_CL_COMMON_LIB}
             $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
         DEFINITIONS
             ${_CL_DEFINITIONS}

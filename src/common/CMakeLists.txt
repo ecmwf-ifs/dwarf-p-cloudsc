@@ -49,7 +49,7 @@ macro( cloudsc_add_common_lib )
     endif()
 
     ecbuild_add_library(
-        TARGET cloudsc-common-${prec}-${COMMON_LIB_SUFFIX}
+        TARGET cloudsc_common.${prec}.${COMMON_LIB_SUFFIX}
         TYPE ${COMMON_LIB_TYPE}
         PUBLIC_DEFINITIONS
             ${CLOUDSC_DEFINITIONS}
@@ -71,7 +71,7 @@ macro( cloudsc_add_common_lib )
             $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/module-${COMMON_LIB_SUFFIX}>
     )
 
-    set_target_properties( cloudsc-common-${prec}-${COMMON_LIB_SUFFIX}
+    set_target_properties( cloudsc_common.${prec}.${COMMON_LIB_SUFFIX}
         PROPERTIES
             Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/module-${COMMON_LIB_SUFFIX}"
     )
@@ -80,7 +80,7 @@ macro( cloudsc_add_common_lib )
         if( "${COMMON_LIB_LIBS}" MATCHES "OpenMP::OpenMP_Fortran" )
             # Workaround for Linker issue with Cray compiler, see
             # https://gitlab.kitware.com/cmake/cmake/-/issues/24402
-            target_link_options( cloudsc-common-${prec}-${COMMON_LIB_SUFFIX} PUBLIC "-fopenmp" )
+            target_link_options( cloudsc_common.${prec}.${COMMON_LIB_SUFFIX} PUBLIC "-fopenmp" )
         endif()
     endif()
 
@@ -166,8 +166,8 @@ if( HAVE_OMP AND HAVE_OMP_TARGET )
     )
 
     if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
-        target_compile_options( cloudsc-common-${prec}-omp PUBLIC "-mp=gpu" )
-        target_link_options( cloudsc-common-${prec}-omp PUBLIC "-mp=gpu" )
+        target_compile_options( cloudsc_common.${prec}.omp PUBLIC "-mp=gpu" )
+        target_link_options( cloudsc_common.${prec}.omp PUBLIC "-mp=gpu" )
     endif()
 
 endif()
@@ -212,7 +212,7 @@ if( HAVE_CUDA )
             CUDA::cudart
     )
 
-    target_link_options( cloudsc-common-${prec}-cuda
+    target_link_options( cloudsc_common.${prec}.cuda
         PUBLIC "-cuda" )
 
 endif()

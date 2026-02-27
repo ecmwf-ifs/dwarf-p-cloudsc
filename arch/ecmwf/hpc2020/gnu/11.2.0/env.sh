@@ -30,6 +30,7 @@ module_load hdf5/1.10.6
 module_load cmake/3.28.3
 module_load python3/3.11.10-01
 module_load java/11.0.6
+module_load meson/1.2.1
 module_load ninja/1.11.1
 
 # Restore tracing to stored setting

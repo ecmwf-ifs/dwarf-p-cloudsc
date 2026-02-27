@@ -116,10 +116,11 @@ jobs:
         echo "FC=${{ matrix.compiler_fc }}"     >> $GITHUB_ENV
 
         if [[ "${{ matrix.os }}" =~ macos ]]; then
+          brew install meson
           brew install ninja
         else
           sudo apt-get update
-          sudo apt-get install ninja-build
+          sudo apt-get install meson ninja-build
 
           if [[ "${{ matrix.name }}" =~ mpi ]]; then
             sudo apt-get install libopenmpi-dev libhdf5-dev

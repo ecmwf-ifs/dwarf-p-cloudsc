@@ -18,17 +18,20 @@ if( NOT Python3_EXECUTABLE )
 endif()
 
 # Install the "cloudscf2py" Python package and runner in editable mode
-add_custom_command( OUTPUT ${Python3_VENV_BIN}/cloudsc_f2py.py
+add_custom_command(
+    OUTPUT  ${Python3_VENV_BIN}/cloudsc_f2py.py ${Python3_VENV_BIN}/cloudsc_jit.py
     COMMAND ${Python3_EXECUTABLE} -m ensurepip --upgrade
     COMMAND ${Python3_EXECUTABLE} -m pip install --disable-pip-version-check -e ${CMAKE_CURRENT_SOURCE_DIR}
 COMMENT "[CLOUDSC-Python] Installing cloudscf2py into virtualenv [${cloudsc_VENV_PATH}]"
 )
 
 # Copy the CLI driver script into the bin directory for execution
-add_custom_command( OUTPUT ${CMAKE_BINARY_DIR}/bin/cloudsc_f2py.py
+add_custom_command(
+    OUTPUT  ${CMAKE_BINARY_DIR}/bin/cloudsc_f2py.py ${CMAKE_BINARY_DIR}/bin/cloudsc_jit.py
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${Python3_VENV_BIN}/cloudsc_f2py.py ${CMAKE_BINARY_DIR}/bin/cloudsc_f2py.py
-    DEPENDS ${Python3_VENV_BIN}/cloudsc_f2py.py
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${Python3_VENV_BIN}/cloudsc_jit.py ${CMAKE_BINARY_DIR}/bin/cloudsc_jit.py
+    DEPENDS ${Python3_VENV_BIN}/cloudsc_f2py.py ${Python3_VENV_BIN}/cloudsc_jit.py
     COMMENT "[CLOUDSC-Python] Linking Python driver scripts from virtualenv [${cloudsc_VENV_PATH}]"
 )
 
@@ -39,6 +42,14 @@ ecbuild_add_test(
     TARGET cloudsc_f2py.py
     COMMAND ${CMAKE_BINARY_DIR}/bin/cloudsc_f2py.py
     ARGS --ngptot=100 --nproma=16
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OMP 1
+)
+
+ecbuild_add_test(
+    TARGET cloudsc_jit.py
+    COMMAND ${CMAKE_BINARY_DIR}/bin/cloudsc_jit.py
+    ARGS --ngptot=100
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OMP 1
 )
