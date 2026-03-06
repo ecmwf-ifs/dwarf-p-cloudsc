@@ -1,0 +1,26 @@
+parameterset:
+  # System architecture specification
+  - name: arch_set
+    init_with: include/include_arch.yml
+    parameter:
+      # Architecture definition to pass to bundle build command
+      - {name: arch, _: "arch/generic/x86_64/intel_oneAPI/2024.0.2"}  # Choose from arch
+
+      # Number of NUMA domains on a node (e.g., the number of sockets)
+      - name: numa_domains
+        type: int
+        mode: shell
+        _: "lscpu | awk '/NUMA node\\(s\\)/{print $NF}'"
+
+      # Number of cores per NUMA domain (e.g., number of cores per CPU)
+      - name: cores_per_numa_domain
+        type: int
+        mode: shell
+        _: "lscpu | awk '/^CPU\\(s\\)/{print $NF}'"
+
+      # MPI launch command to use
+      - name: launch_cmd
+        mode: python
+        separator: ;
+        _: "'OMP_PLACES=cores mpirun -np ${{ NPROC }} --map-by core:PE=${{ NUMOMP }}'" 
+      - {name: launch_cmd_end, _: ""}
