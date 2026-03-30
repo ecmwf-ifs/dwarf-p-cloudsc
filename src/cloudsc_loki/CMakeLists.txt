@@ -201,6 +201,33 @@ elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
         PRIVATE "-Mcray=pointer" )
 endif()
 
+########################################################
+##  SCC K-Caching mode                                ##
+##   * Uses SCCVerticalKCaching transformation         ##
+##   * Fuses all vertical loops into single sweep      ##
+##   * Demotes KLEV temporaries to scalars/carries     ##
+##   * Pool allocator for remaining temporaries        ##
+########################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-scc-k-caching
+    MODE scc-k-caching
+    CONFIG cloudsc_loki.config
+    COMMON_LIB ${GPU_COMMON_LIB}
+    DEFINITIONS
+        ${CLOUDSC_DEFINITIONS}
+        CLOUDSC_GPU_TIMING
+)
+
+if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    target_compile_options(
+        dwarf-cloudsc-loki-scc-k-caching-${prec}-lib
+        PRIVATE "-fcray-pointer" )
+elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+    target_compile_options(
+        dwarf-cloudsc-loki-scc-k-caching-${prec}-lib
+        PRIVATE "-Mcray=pointer" )
+endif()
+
 ####################################################
 ##  SCC-hoist mode                                ##
 ##   * SCC with vector loop hoisted               ##
