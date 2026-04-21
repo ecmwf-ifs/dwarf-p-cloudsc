@@ -159,6 +159,21 @@ elseif( CMAKE_FORTRAN_COMPILER_ID MATCHES "Intel" )
         PRIVATE "-safe-cray-ptr" )
 endif()
 
+
+############################################################
+##  Idempotence mode with k-caching                       ##
+##   * Internal "do-nothing" mode for Loki debug,         ##
+##     but with temporaries handling                      ##
+############################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-idem-k-caching
+    MODE idem-k-caching
+    CONFIG cloudsc_loki.config
+    COMMON_LIB lib
+    DEFINITIONS ${CLOUDSC_DEFINITIONS}
+)
+
+
 ####################################################
 ##  "Single Column Coalesced" (SCC) mode          ##
 ##   * Removes horizontal vector loops            ##
