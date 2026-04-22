@@ -159,6 +159,21 @@ elseif( CMAKE_FORTRAN_COMPILER_ID MATCHES "Intel" )
         PRIVATE "-safe-cray-ptr" )
 endif()
 
+
+############################################################
+##  Idempotence mode with k-caching                       ##
+##   * Internal "do-nothing" mode for Loki debug,         ##
+##     but with temporaries handling                      ##
+############################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-idem-k-caching
+    MODE idem-k-caching
+    CONFIG cloudsc_loki.config
+    COMMON_LIB lib
+    DEFINITIONS ${CLOUDSC_DEFINITIONS}
+)
+
+
 ####################################################
 ##  "Single Column Coalesced" (SCC) mode          ##
 ##   * Removes horizontal vector loops            ##
@@ -198,6 +213,33 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
     target_compile_options(
         dwarf-cloudsc-loki-scc-stack-${prec}-lib
+        PRIVATE "-Mcray=pointer" )
+endif()
+
+########################################################
+##  SCC K-Caching mode                                ##
+##   * Uses SCCVerticalKCaching transformation         ##
+##   * Fuses all vertical loops into single sweep      ##
+##   * Demotes KLEV temporaries to scalars/carries     ##
+##   * Pool allocator for remaining temporaries        ##
+########################################################
+cloudsc_add_loki_exe(
+    TARGET dwarf-cloudsc-loki-scc-k-caching
+    MODE scc-k-caching
+    CONFIG cloudsc_loki.config
+    COMMON_LIB ${GPU_COMMON_LIB}
+    DEFINITIONS
+        ${CLOUDSC_DEFINITIONS}
+        CLOUDSC_GPU_TIMING
+)
+
+if( CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    target_compile_options(
+        dwarf-cloudsc-loki-scc-k-caching-${prec}-lib
+        PRIVATE "-fcray-pointer" )
+elseif( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+    target_compile_options(
+        dwarf-cloudsc-loki-scc-k-caching-${prec}-lib
         PRIVATE "-Mcray=pointer" )
 endif()
 
