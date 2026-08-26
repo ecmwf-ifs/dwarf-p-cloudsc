@@ -1983,7 +1983,7 @@ MODULE CLOUDSC_STD_PAR_SCC_K_CACHING_MOD
         ! If temperature less than zero
         IF (ZTP1(JK_I) < RTT) THEN
           
-          IF (PRAINFRAC_TOPRFZ(JL, IBL) > 0.8) THEN
+          IF (LLRAINLIQ) THEN
             
             ! Majority of raindrops completely melted
             ! Refreezing is by slow heterogeneous freezing

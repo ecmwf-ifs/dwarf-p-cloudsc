@@ -1971,7 +1971,7 @@ CONTAINS
         ! If temperature less than zero
         IF (ZTP1(JK_I) < RTT) THEN
           
-          IF (PRAINFRAC_TOPRFZ(JL) > 0.8) THEN
+          IF (LLRAINLIQ) THEN
             
             ! Majority of raindrops completely melted
             ! Refreezing is by slow heterogeneous freezing
@@ -2130,7 +2130,7 @@ CONTAINS
           ZLAMBDA = (YRECLDP%RCL_FAC1 / ((ZRHO*ZPRECLR)))**YRECLDP%RCL_FAC2            ! ZPRECLR=kg/kg
           
           ZEVAP_DENOM = YRECLDP%RCL_CDENOM1*ZESATLIQ - YRECLDP%RCL_CDENOM2*ZTP1(JK_I)*ZESATLIQ + YRECLDP%RCL_CDENOM3*ZTP1( &
-          & JK)**3._JPRB*PAP(JL, JK)
+          & JK_I)**3._JPRB*PAP(JL, JK)
           
           ! Temperature dependent conductivity
           ZCORR2 = ((ZTP1(JK_I) / 273._JPRB)**1.5_JPRB*393._JPRB) / (ZTP1(JK_I) + 120._JPRB)

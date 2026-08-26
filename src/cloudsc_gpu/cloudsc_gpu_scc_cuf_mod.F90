@@ -2053,7 +2053,7 @@ ATTRIBUTES(GLOBAL)  SUBROUTINE CLOUDSC_SCC_CUF (KIDIA, KFDIA, KLON, KGPBLKS, PTS
           ! If temperature less than zero
           IF (ZTP1(JK) < RTT) THEN
             
-            IF (PRAINFRAC_TOPRFZ(JL,JBLK) > 0.8) THEN
+            IF (LLRAINLIQ) THEN
               
               ! Majority of raindrops completely melted
               ! Refreezing is by slow heterogeneous freezing

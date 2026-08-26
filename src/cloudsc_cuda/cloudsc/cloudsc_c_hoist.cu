@@ -1918,7 +1918,7 @@ __global__ void cloudsc_c(int kidia, int kfdia, int klon, int klev, dtype ptsphy
       // If temperature less than zero
       if (ztp1[jl + klon*(jk + klev*ibl)] < rtt) {
         
-        if (prainfrac_toprfz[jl + klon*ibl] > 0.8) {
+        if (llrainliq) {
           
           // Majority of raindrops completely melted
           // Refreezing is by slow heterogeneous freezing

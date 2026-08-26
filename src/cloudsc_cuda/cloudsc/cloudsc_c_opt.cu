@@ -594,7 +594,7 @@ __global__ void cloudsc_c_opt(int kidia, int kfdia, int klon, dtype ptsphy,
   // ----------------------
   // non CLV initialization
   // ----------------------
-  for (jk = 0; jk <= klev + 1 + -1; jk += 1) {
+  for (jk = 0; jk < klev; jk += 1) {
 
     int to_load = jk + stage_count - 1;
     if (to_load < klev) {
@@ -2045,7 +2045,7 @@ __global__ void cloudsc_c_opt(int kidia, int kfdia, int klon, dtype ptsphy,
           // If temperature less than zero
           if (ztp1[1] < rtt) {
 
-            if (prainfrac_toprfz[jl + klon*ibl] > 0.8) {
+            if (llrainliq) {
 
               // Majority of raindrops completely melted
               // Refreezing is by slow heterogeneous freezing
@@ -2795,17 +2795,25 @@ __global__ void cloudsc_c_opt(int kidia, int kfdia, int klon, dtype ptsphy,
     paph_ = paph_next;
     pap_prev = pap_;
     plude[jl + klon*(jk + klev*ibl)] = plude_;
+    ztp1[0] = ztp1[1];
+    za[0] = za[1];
+    for (jm = 0; jm <= 5 - 1 + -1; jm += 1) {
+      zpfplsx[1 + 2*jm] = zpfplsx[0 + 2*jm];
+    }
 
     pipeline.consumer_release();
     block.sync();
 
   }
 
-  ztp1[0] = ztp1[1];
-  za[0] = za[1];
-  for (jm = 0; jm <= 5 - 1 + -1; jm += 1) {
-    zpfplsx[1 + 2*jm] = zpfplsx[0 + 2*jm];
-  }	  
+  pfplsl[jl + klon*(klev + (klev + 1)*ibl)] =
+    zpfplsx[1 + 2*(2)] + zpfplsx[1 + 2*(0)];
+  pfplsn[jl + klon*(klev + (klev + 1)*ibl)] =
+    zpfplsx[1 + 2*(3)] + zpfplsx[1 + 2*(1)];
+  pfhpsl[jl + klon*(klev + (klev + 1)*ibl)] =
+    -rlvtt*pfplsl[jl + klon*(klev + (klev + 1)*ibl)];
+  pfhpsn[jl + klon*(klev + (klev + 1)*ibl)] =
+    -rlstt*pfplsn[jl + klon*(klev + (klev + 1)*ibl)];
 
   }
 }

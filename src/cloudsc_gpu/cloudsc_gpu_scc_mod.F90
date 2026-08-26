@@ -1970,7 +1970,7 @@ CONTAINS
           ! If temperature less than zero
           IF (ZTP1(JL, JK) < RTT) THEN
             
-            IF (PRAINFRAC_TOPRFZ(JL) > 0.8) THEN
+            IF (LLRAINLIQ) THEN
               
               ! Majority of raindrops completely melted
               ! Refreezing is by slow heterogeneous freezing
