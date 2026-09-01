@@ -70,6 +70,33 @@ ecbuild_add_option( FEATURE CUDA
                     REQUIRED_PACKAGES "CUDAToolkit" )
 include(features/CUDA)
 
+ecbuild_add_option( FEATURE CUDA_UNIFIED
+                    DESCRIPTION "Use full CUDA Unified Memory with system allocations"
+                    DEFAULT OFF
+                    CONDITION HAVE_CUDA AND CMAKE_Fortran_COMPILER_ID MATCHES "PGI|NVHPC" )
+
+if( HAVE_CUDA_UNIFIED )
+  set( _cloudsc_cuda_unified_flag "-gpu=mem:unified:nomanagedalloc" )
+
+  if( HAVE_ACC AND TARGET OpenACC::OpenACC_Fortran )
+    string( APPEND OpenACC_Fortran_FLAGS " ${_cloudsc_cuda_unified_flag}" )
+    target_compile_options( OpenACC::OpenACC_Fortran INTERFACE
+                            "$<$<COMPILE_LANGUAGE:Fortran>:${_cloudsc_cuda_unified_flag}>" )
+    target_link_options( OpenACC::OpenACC_Fortran INTERFACE
+                         "${_cloudsc_cuda_unified_flag}" )
+  endif()
+
+  if( HAVE_OMP_TARGET AND TARGET OpenMP::OpenMP_Fortran )
+    string( APPEND OpenMP_Fortran_FLAGS " ${_cloudsc_cuda_unified_flag}" )
+    target_compile_options( OpenMP::OpenMP_Fortran INTERFACE
+                            "$<$<COMPILE_LANGUAGE:Fortran>:${_cloudsc_cuda_unified_flag}>" )
+    target_link_options( OpenMP::OpenMP_Fortran INTERFACE
+                         "${_cloudsc_cuda_unified_flag}" )
+  endif()
+
+  unset( _cloudsc_cuda_unified_flag )
+endif()
+
 check_language( HIP )
 ecbuild_add_option( FEATURE HIP
                     DESCRIPTION "Support for using GPUs with HIP"
