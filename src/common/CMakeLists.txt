@@ -124,6 +124,7 @@ if( HAVE_FIELD_API )
         LIBS
             $<${HAVE_OMP}:OpenMP::OpenMP_Fortran>
             $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
+            fiat # This only needs to be linked publicly due to an NVHPC bug
             field_api_${prec}
     )
 endif()

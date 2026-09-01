@@ -131,7 +131,7 @@ ecbuild_add_option( FEATURE LOKI
 ecbuild_add_option( FEATURE FIELD_API
                     DESCRIPTION "Use field_api to manage GPU data offload and copyback"
                     DEFAULT ON
-                    REQUIRED_PACKAGES "field_api" )
+                    REQUIRED_PACKAGES "fiat;field_api" )
 
 ecbuild_add_option( FEATURE FIELD_API_DISABLE_MAPPED_MEMORY
                     DESCRIPTION "Disable the use of ACC mapped memory in Field API objects"
