@@ -209,7 +209,7 @@ if( HAVE_STDPAR )
             KERNEL
                 cloudsc_std_par_${variant_}_mod.F90
                 nlev_mod.F90
-            COMMON_LIB  acc
+            COMMON_LIB  stdpar
         )
     endforeach()
 

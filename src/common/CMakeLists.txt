@@ -186,6 +186,26 @@ if( HAVE_ACC )
 
 endif()
 
+### Common lib for Fortran standard parallelism
+
+if( HAVE_STDPAR )
+
+    cloudsc_add_common_lib(
+        SUFFIX stdpar
+        TYPE ${GPU_LINK_TYPE}
+        LIBS
+            OpenACC::OpenACC_Fortran
+    )
+
+    if( CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC" )
+        target_compile_options( cloudsc-common-${prec}-stdpar PRIVATE
+            $<$<COMPILE_LANGUAGE:Fortran>:-stdpar=gpu>
+        )
+        target_link_options( cloudsc-common-${prec}-stdpar PUBLIC "-stdpar=gpu" )
+    endif()
+
+endif()
+
 ### Common lib for CUDA targets
 
 if( HAVE_CUDA )
